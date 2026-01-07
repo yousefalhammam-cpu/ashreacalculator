@@ -3,8 +3,8 @@
 
   const nf0 = new Intl.NumberFormat("en-US", {maximumFractionDigits:0});
   const nf2 = new Intl.NumberFormat("en-US", {maximumFractionDigits:2});
-  const format0 = (n)=> (n==null || Number.isNaN(n)) ? "—" : nf0.format(n);
-  const format2 = (n)=> (n==null || Number.isNaN(n)) ? "—" : nf2.format(n);
+  const fmt0 = (n)=> (n==null || Number.isNaN(n)) ? "—" : nf0.format(n);
+  const fmt2 = (n)=> (n==null || Number.isNaN(n)) ? "—" : nf2.format(n);
 
   function toNum(x){
     if (x===null || x===undefined) return null;
@@ -17,8 +17,8 @@
   }
 
   async function loadRef(){
-    // robust: replace NaN with null
-    const resp = await fetch("data.json", { cache: "no-store" });
+    // robust: some exports include NaN (invalid JSON) -> replace with null
+    const resp = await fetch("data.json", { cache:"no-store" });
     const txt = await resp.text();
     const cleaned = txt.replace(/\bNaN\b/g, "null");
     const parsed = JSON.parse(cleaned);
@@ -28,7 +28,7 @@
   let ref = [];
   try{
     ref = await loadRef();
-    $("statusTag").textContent = `Loaded: ${ref.length} rooms`;
+    $("statusTag").textContent = `Loaded: ${ref.length} room types`;
     $("statusTag").className = "tag";
   } catch(e){
     $("statusTag").textContent = "Error loading data.json";
@@ -37,320 +37,277 @@
     return;
   }
 
-  // Build selectable list (Display + ASHRAE)
-  // If displayName/ashraeName not present -> use "Room Type"
-  const options = ref
-    .map((r, i) => {
-      const roomType = (r["Room Type"] ?? "").toString().trim();
-      const display = (r.displayName ?? roomType).toString().trim();
-      const ashrae  = (r.ashraeName  ?? roomType).toString().trim();
-      return { i, display, ashrae };
-    })
-    .filter(x => x.display);
+  // Build dropdown: display (simple) + keep ASHRAE name for output.
+  const options = ref.map((r, i)=>{
+    const rt = (r["Room Type"] ?? "").toString().trim();
+    const display = (r.displayName ?? rt).toString().trim() || rt || `Room ${i+1}`;
+    const ashrae  = (r.ashraeName  ?? rt).toString().trim() || rt || display;
+    return { i, display, ashrae };
+  }).filter(o=>o.display);
 
-  options.sort((a,b)=>a.display.localeCompare(b.display, "en"));
+  options.sort((a,b)=>a.display.localeCompare(b.display,"en"));
 
-  function buildRoomTypeSelect(selectedIdx){
-    const safe = (s)=>String(s).replace(/"/g, "&quot;");
-    return `
-      <select class="rtSel">
-        ${options.map(o => `<option value="${o.i}" ${Number(selectedIdx)===o.i ? "selected":""}>${safe(o.display)}</option>`).join("")}
-      </select>
-    `;
-  }
+  $("roomType").innerHTML = options
+    .map(o=>`<option value="${o.i}">${String(o.display).replace(/"/g,"&quot;")}</option>`)
+    .join("");
 
-  function cellInput(cls, value, placeholder="", readonly=false, type="text"){
-    const ro = readonly ? "readonly" : "";
-    const v = value==null ? "" : String(value);
-    return `<input class="${cls}" type="${type}" ${ro} value="${v}" placeholder="${placeholder}">`;
-  }
+  const rooms = []; // added rooms list
 
-  function cellText(cls, text){
-    const t = (text==null || String(text).trim()==="") ? "—" : String(text).trim();
-    return `<input class="${cls}" type="text" readonly value="${t}">`;
-  }
+  function compute(row, inputs){
+    const volumeM3 = inputs.volumeM3;
+    const volFt3 = volumeM3 * 35.3147;
 
-  const rowsBody = $("rowsBody");
+    const totalAch = toNum(row["Total ACH"]);
+    const oaRaw = (row["Outdoor Air ACH"] ?? "").toString().trim();
+    const oaRefNum = toNum(row["Outdoor Air ACH"]); // null if Optional/blank
 
-  function defaultRowModel(){
-    // match your Excel-like inputs
+    const pressure = (row["Pressure"] ?? "").toString().trim(); // P/N/blank
+    const exhOut = (row["Exhaust to Outdoors"] ?? "").toString().trim();
+
+    // OA Override
+    const oaOverride = inputs.oaOverride; // number|null
+    const hasOverride = oaOverride !== null && Number.isFinite(oaOverride) && oaOverride >= 0;
+
+    let oaAch = null;
+    let oaSource = "—";
+    let oaTag = "";
+
+    if (hasOverride){
+      oaAch = oaOverride;
+      oaSource = "Override";
+      oaTag = "";
+    } else if (oaRefNum !== null){
+      oaAch = oaRefNum;
+      oaSource = "Reference";
+      oaTag = "";
+    } else if (oaRaw.toLowerCase() === "optional"){
+      oaAch = 0;
+      oaSource = "Optional (assumed 0)";
+      oaTag = "warn";
+    } else {
+      oaAch = null;
+      oaSource = "Not specified";
+      oaTag = "danger";
+    }
+
+    const totalCfm = (totalAch===null) ? null : (volFt3 * totalAch / 60.0);
+    const oaCfm    = (oaAch===null) ? null : (volFt3 * oaAch / 60.0);
+
+    // Exhaust estimate using offset
+    const offset = inputs.offsetPct / 100.0;
+    let exhCfm = null;
+    if (totalCfm !== null){
+      if (pressure.toUpperCase() === "P") exhCfm = totalCfm * (1 - offset);
+      else if (pressure.toUpperCase() === "N") exhCfm = totalCfm * (1 + offset);
+      else if (exhOut.toLowerCase() === "yes") exhCfm = totalCfm;
+    }
+
+    const tr = (totalCfm===null) ? null : (totalCfm / inputs.thumb);
+
     return {
-      roomName: "",
-      refIdx: options[0]?.i ?? 0,
-      volumeM3: 60,
-      oaOverride: "",          // optional ACH
-      offsetPct: 10,
-      thumb: 400
+      volFt3, totalAch, oaRaw, oaAch, oaSource, oaTag,
+      pressure, exhOut,
+      rh: (row["RH (%)"] ?? "").toString().trim(),
+      tempC: (row["Temp (°C)"] ?? "").toString().trim(),
+      totalCfm, oaCfm, exhCfm, tr
     };
   }
 
-  function addRow(model){
-    const m = model || defaultRowModel();
+  function render(){
+    $("countTag").textContent = `Rooms: ${rooms.length}`;
+    const list = $("list");
+    const empty = $("emptyState");
+    empty.style.display = rooms.length ? "none" : "block";
 
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${cellInput("roomName", m.roomName, "مثال: OR-01")}</td>
+    // cards
+    list.innerHTML = rooms.map((r, idx)=>{
+      const tagHtml = r.calc.oaTag
+        ? `<span class="tag ${r.calc.oaTag}">Outdoor Air: ${r.calc.oaSource}</span>`
+        : `<span class="tag">Outdoor Air: ${r.calc.oaSource}</span>`;
 
-      <td>${buildRoomTypeSelect(m.refIdx)}</td>
-      <td>${cellText("ashraeRef", "")}</td>
+      return `
+        <div class="roomCard">
+          <div class="roomHead">
+            <div>
+              <h3>${r.roomName ? `${r.roomName} — ` : ""}${r.display}</h3>
+              <div class="sub">ASHRAE Reference: <b>${r.ashrae}</b></div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              ${tagHtml}
+              <button class="btn danger" data-del="${idx}" style="width:auto; padding:8px 10px;">حذف</button>
+            </div>
+          </div>
 
-      <td>${cellInput("volM3", m.volumeM3, "m³", false, "number")}</td>
+          <div class="sub" style="margin-top:8px;">
+            Volume: <b>${fmt2(r.volumeM3)}</b> m³ — Offset: <b>${fmt2(r.offsetPct)}</b>% — Thumb: <b>${r.thumb}</b>
+          </div>
 
-      <td>${cellText("oaAchRaw", "")}</td>
-      <td>${cellInput("oaOverride", m.oaOverride, "اختياري", false, "number")}</td>
+          <div class="metrics">
+            <div class="metric"><div class="k">Total ACH</div><div class="v">${r.calc.totalAch ?? "—"}</div></div>
+            <div class="metric"><div class="k">Outdoor ACH (Ref)</div><div class="v">${r.calc.oaRaw || "—"}</div></div>
+            <div class="metric"><div class="k">Supply (CFM)</div><div class="v">${fmt0(r.calc.totalCfm)}</div></div>
+            <div class="metric"><div class="k">Outdoor (CFM)</div><div class="v">${fmt0(r.calc.oaCfm)}</div></div>
 
-      <td>${cellText("totalAch", "")}</td>
-      <td>${cellText("pressurePN", "")}</td>
-      <td>${cellText("exhOut", "")}</td>
+            <div class="metric"><div class="k">Exhaust (CFM)</div><div class="v">${fmt0(r.calc.exhCfm)}</div></div>
+            <div class="metric"><div class="k">TR (est)</div><div class="v">${fmt2(r.calc.tr)}</div></div>
+            <div class="metric"><div class="k">Pressure (P/N)</div><div class="v">${r.calc.pressure || "—"}</div></div>
+            <div class="metric"><div class="k">Temp/RH</div><div class="v">${(r.calc.tempC||"—")}/${(r.calc.rh||"—")}</div></div>
+          </div>
+        </div>
+      `;
+    }).join("");
 
-      <td>${cellText("rh", "")}</td>
-      <td>${cellText("tempC", "")}</td>
-
-      <td>${cellInput("offset", m.offsetPct, "%", false, "number")}</td>
-      <td>
-        <select class="thumb">
-          <option value="350" ${Number(m.thumb)===350?"selected":""}>350</option>
-          <option value="400" ${Number(m.thumb)===400?"selected":""}>400</option>
-          <option value="450" ${Number(m.thumb)===450?"selected":""}>450</option>
-        </select>
-      </td>
-
-      <td>${cellText("volFt3", "")}</td>
-      <td>${cellText("oaCfm", "")}</td>
-      <td>${cellText("supplyCfm", "")}</td>
-      <td>${cellText("exhCfm", "")}</td>
-      <td>${cellText("tr", "")}</td>
-
-      <td><button class="btn danger delBtn" type="button">حذف</button></td>
-    `;
-
-    rowsBody.appendChild(tr);
-
-    // events
-    tr.querySelector(".delBtn").addEventListener("click", ()=>{
-      tr.remove();
-      recalcAll();
+    // bind delete
+    list.querySelectorAll("[data-del]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const i = Number(btn.getAttribute("data-del"));
+        rooms.splice(i, 1);
+        render();
+        renderSummary();
+      });
     });
 
-    const recalcOn = ["change","input"];
-    ["rtSel","volM3","oaOverride","offset","thumb","roomName"].forEach(cls=>{
-      const el = tr.querySelector("."+cls);
-      if (!el) return;
-      recalcOn.forEach(ev => el.addEventListener(ev, ()=>{ recalcRow(tr); recalcSummary(); }));
-    });
-
-    recalcRow(tr);
-    recalcSummary();
+    renderSummary();
   }
 
-  function getRefRow(idx){
-    const r = ref[Number(idx)];
-    return r || null;
-  }
-
-  function recalcRow(tr){
-    const idx = Number(tr.querySelector(".rtSel").value);
-    const r = getRefRow(idx);
-    if (!r) return;
-
-    const roomType = (r["Room Type"] ?? "").toString().trim();
-    const display = (r.displayName ?? roomType).toString().trim();
-    const ashrae  = (r.ashraeName  ?? roomType).toString().trim();
-
-    const volM3 = Number(tr.querySelector(".volM3").value || 0);
-    const volFt3 = volM3 * 35.3147;
-
-    const totalAch = toNum(r["Total ACH"]);
-    const oaRaw = (r["Outdoor Air ACH"] ?? "").toString().trim();
-    const oaRefNum = toNum(r["Outdoor Air ACH"]); // null if Optional/blank
-
-    const pressure = (r["Pressure"] ?? "").toString().trim();
-    const exhOut = (r["Exhaust to Outdoors"] ?? "").toString().trim();
-    const rh = (r["RH (%)"] ?? "").toString().trim();
-    const tempC = (r["Temp (°C)"] ?? "").toString().trim();
-
-    // OA Override (professional)
-    const oaOverrideStr = (tr.querySelector(".oaOverride").value ?? "").toString().trim();
-    const oaOverrideVal = oaOverrideStr === "" ? null : Number(oaOverrideStr);
-    const hasOverride = oaOverrideVal !== null && Number.isFinite(oaOverrideVal) && oaOverrideVal >= 0;
-
-    let oaAch = null;
-    let oaNote = "";
-    if (hasOverride){
-      oaAch = oaOverrideVal;
-      oaNote = "Override";
-    } else if (oaRefNum !== null){
-      oaAch = oaRefNum;
-      oaNote = "Ref";
-    } else if (oaRaw.toLowerCase() === "optional"){
-      oaAch = 0;
-      oaNote = "Optional→0";
-    } else {
-      oaAch = null; // Not specified
-      oaNote = "Not specified";
-    }
-
-    const supplyCfm = (totalAch===null) ? null : (volFt3 * totalAch / 60.0);
-    const oaCfm = (oaAch===null) ? null : (volFt3 * oaAch / 60.0);
-
-    const offsetPct = Number(tr.querySelector(".offset").value || 0) / 100.0;
-    const thumb = Number(tr.querySelector(".thumb").value || 400);
-
-    const trEst = (supplyCfm===null) ? null : (supplyCfm / thumb);
-
-    // Exhaust estimate
-    let exhCfm = null;
-    if (supplyCfm !== null){
-      if (pressure.toUpperCase() === "P") exhCfm = supplyCfm * (1 - offsetPct);
-      else if (pressure.toUpperCase() === "N") exhCfm = supplyCfm * (1 + offsetPct);
-      else if (exhOut.toLowerCase() === "yes") exhCfm = supplyCfm;
-    }
-
-    // Fill readonly cells
-    tr.querySelector(".ashraeRef").value = ashrae || display || "—";
-    tr.querySelector(".oaAchRaw").value = oaRaw ? `${oaRaw}${oaNote ? " ("+oaNote+")":""}` : (oaNote==="Not specified" ? "— (Not specified)" : "—");
-    tr.querySelector(".totalAch").value = (totalAch===null) ? "—" : String(totalAch);
-    tr.querySelector(".pressurePN").value = pressure || "—";
-    tr.querySelector(".exhOut").value = exhOut || "—";
-    tr.querySelector(".rh").value = rh || "—";
-    tr.querySelector(".tempC").value = tempC || "—";
-
-    tr.querySelector(".volFt3").value = format0(volFt3);
-    tr.querySelector(".oaCfm").value = format0(oaCfm);
-    tr.querySelector(".supplyCfm").value = format0(supplyCfm);
-    tr.querySelector(".exhCfm").value = format0(exhCfm);
-    tr.querySelector(".tr").value = format2(trEst);
-
-    // store hidden metadata for export
-    tr.dataset.displayName = display;
-    tr.dataset.ashraeName = ashrae;
-    tr.dataset.oaAch = (oaAch===null) ? "" : String(oaAch);
-    tr.dataset.totalAch = (totalAch===null) ? "" : String(totalAch);
-  }
-
-  function recalcSummary(){
-    const trs = Array.from(rowsBody.querySelectorAll("tr"));
-    $("sumRooms").textContent = String(trs.length);
-
+  function renderSummary(){
     let sumSupply=0, sumOA=0, sumExh=0, sumTR=0;
     let hasSupply=false, hasOA=false, hasExh=false, hasTR=false;
 
-    trs.forEach(tr=>{
-      const supply = Number(String(tr.querySelector(".supplyCfm").value).replace(/,/g,""));
-      const oa = Number(String(tr.querySelector(".oaCfm").value).replace(/,/g,""));
-      const exh = Number(String(tr.querySelector(".exhCfm").value).replace(/,/g,""));
-      const trv = Number(String(tr.querySelector(".tr").value).replace(/,/g,""));
-
-      if (Number.isFinite(supply)) { sumSupply+=supply; hasSupply=true; }
-      if (Number.isFinite(oa)) { sumOA+=oa; hasOA=true; }
-      if (Number.isFinite(exh)) { sumExh+=exh; hasExh=true; }
-      if (Number.isFinite(trv)) { sumTR+=trv; hasTR=true; }
+    rooms.forEach(r=>{
+      const c = r.calc;
+      if (Number.isFinite(c.totalCfm)) { sumSupply += c.totalCfm; hasSupply = true; }
+      if (Number.isFinite(c.oaCfm)) { sumOA += c.oaCfm; hasOA = true; }
+      if (Number.isFinite(c.exhCfm)) { sumExh += c.exhCfm; hasExh = true; }
+      if (Number.isFinite(c.tr)) { sumTR += c.tr; hasTR = true; }
     });
 
-    $("sumSupply").textContent = hasSupply ? format0(sumSupply) : "—";
-    $("sumOA").textContent = hasOA ? format0(sumOA) : "—";
-    $("sumExh").textContent = hasExh ? format0(sumExh) : "—";
-    $("sumTR").textContent = hasTR ? format2(sumTR) : "—";
+    $("sumSupply").textContent = hasSupply ? fmt0(sumSupply) : "—";
+    $("sumOA").textContent     = hasOA ? fmt0(sumOA) : "—";
+    $("sumExh").textContent    = hasExh ? fmt0(sumExh) : "—";
+    $("sumTR").textContent     = hasTR ? fmt2(sumTR) : "—";
   }
 
-  function recalcAll(){
-    Array.from(rowsBody.querySelectorAll("tr")).forEach(tr=>recalcRow(tr));
-    recalcSummary();
+  function addRoom(){
+    const idx = Number($("roomType").value);
+    const row = ref[idx];
+    const opt = options.find(o=>o.i===idx);
+
+    const volumeM3 = Number($("volumeM3").value || 0);
+    if (!Number.isFinite(volumeM3) || volumeM3 <= 0){
+      alert("اكتب حجم صحيح بالمتر المكعب (m³).");
+      return;
+    }
+
+    const roomName = ($("roomName").value || "").trim();
+    const offsetPct = Number($("offsetPct").value || 0);
+    const thumb = Number($("thumb").value || 400);
+
+    const oaOverrideStr = ($("oaOverride").value || "").trim();
+    const oaOverride = oaOverrideStr === "" ? null : Number(oaOverrideStr);
+
+    const inputs = { volumeM3, offsetPct, thumb, oaOverride };
+    const calc = compute(row, inputs);
+
+    rooms.push({
+      roomName,
+      idx,
+      display: opt?.display || "—",
+      ashrae: opt?.ashrae || "—",
+      volumeM3,
+      offsetPct,
+      thumb,
+      oaOverride,
+      calc
+    });
+
+    // reset small inputs
+    $("roomName").value = "";
+    $("oaOverride").value = "";
+
+    render();
   }
 
-  function exportCsv(){
-    const trs = Array.from(rowsBody.querySelectorAll("tr"));
-
+  function exportExcelCsv(){
+    // CSV that opens in Excel. Add UTF-8 BOM for Arabic
     const header = [
       "Room Name",
       "Display Name",
       "ASHRAE Reference",
-      "Room Volume (m3)",
-      "Outdoor Air ACH (Ref)",
-      "OA Override (ACH)",
-      "Total ACH",
-      "Room Pressure",
-      "Exhaust to Outdoors",
-      "RH (%)",
-      "Temp (C)",
-      "Pressure Offset (%)",
-      "Rule of Thumb (CFM/TR)",
+      "Volume (m3)",
       "Volume (ft3)",
-      "Outdoor Air CFM",
-      "Total Supply CFM",
-      "Estimated Exhaust CFM",
-      "Estimated TR"
+      "Total ACH",
+      "Outdoor Air ACH (Ref)",
+      "Outdoor Air Source",
+      "OA Override (ACH)",
+      "Supply (CFM)",
+      "Outdoor (CFM)",
+      "Exhaust (CFM)",
+      "TR (est)",
+      "Pressure (P/N)",
+      "Exhaust to Outdoors",
+      "Temp (°C)",
+      "RH (%)",
+      "Offset (%)",
+      "Rule of Thumb (CFM/TR)"
     ];
 
-    const rows = trs.map(tr=>{
-      const get = (sel)=>tr.querySelector(sel)?.value ?? "";
-      const safe = (v)=>`"${String(v).replace(/"/g,'""')}"`;
-
+    const rows = rooms.map(r=>{
+      const c = r.calc;
+      const safe = (v)=>`"${String(v ?? "").replace(/"/g,'""')}"`;
       return [
-        get(".roomName"),
-        tr.dataset.displayName || "",
-        tr.dataset.ashraeName || "",
-        get(".volM3"),
-        get(".oaAchRaw"),
-        get(".oaOverride"),
-        tr.dataset.totalAch || get(".totalAch"),
-        get(".pressurePN"),
-        get(".exhOut"),
-        get(".rh"),
-        get(".tempC"),
-        get(".offset"),
-        get(".thumb"),
-        get(".volFt3"),
-        get(".oaCfm"),
-        get(".supplyCfm"),
-        get(".exhCfm"),
-        get(".tr")
+        r.roomName,
+        r.display,
+        r.ashrae,
+        r.volumeM3,
+        c.volFt3,
+        c.totalAch ?? "",
+        c.oaRaw || "",
+        c.oaSource,
+        r.oaOverride ?? "",
+        c.totalCfm,
+        c.oaCfm,
+        c.exhCfm,
+        c.tr,
+        c.pressure || "",
+        c.exhOut || "",
+        c.tempC || "",
+        c.rh || "",
+        r.offsetPct,
+        r.thumb
       ].map(safe).join(",");
     });
 
     const csv = [header.map(h=>`"${h}"`).join(","), ...rows].join("\n");
-    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const bom = "\uFEFF"; // UTF-8 BOM
+    const blob = new Blob([bom + csv], {type:"text/csv;charset=utf-8"});
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "ASHRAE170P_rooms.csv";
+    a.download = "ASHRAE170P_Rooms.csv";
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
   }
 
-  // Search filter (client-side hide/show)
-  function applySearch(q){
-    const query = (q||"").trim().toLowerCase();
-    const trs = Array.from(rowsBody.querySelectorAll("tr"));
-    trs.forEach(tr=>{
-      const d = (tr.dataset.displayName||"").toLowerCase();
-      const a = (tr.dataset.ashraeName||"").toLowerCase();
-      const rn = (tr.querySelector(".roomName")?.value || "").toLowerCase();
-      const show = !query || d.includes(query) || a.includes(query) || rn.includes(query);
-      tr.style.display = show ? "" : "none";
-    });
+  function clearAll(){
+    rooms.length = 0;
+    render();
+    renderSummary();
   }
 
-  // Buttons
-  $("addRowBtn").addEventListener("click", ()=>addRow());
-  $("exportCsvBtn").addEventListener("click", exportCsv);
-  $("clearBtn").addEventListener("click", ()=>{
-    rowsBody.innerHTML = "";
-    recalcSummary();
-  });
-  $("searchRoom").addEventListener("input", (e)=>applySearch(e.target.value));
+  $("addBtn").addEventListener("click", addRoom);
+  $("exportBtn").addEventListener("click", exportExcelCsv);
+  $("clearBtn").addEventListener("click", clearAll);
 
-  // Start with 3 rows like Excel feel
-  addRow(defaultRowModel());
-  addRow({ ...defaultRowModel(), volumeM3: 80 });
-  addRow({ ...defaultRowModel(), volumeM3: 40 });
+  render();
 
-  // Service worker
+  // Register SW
   if ("serviceWorker" in navigator){
     try { await navigator.serviceWorker.register("sw.js"); } catch(e){ /* ignore */ }
   }
 })();
+
 
