@@ -119,7 +119,6 @@
     const empty = $("emptyState");
     empty.style.display = rooms.length ? "none" : "block";
 
-    // cards
     list.innerHTML = rooms.map((r, idx)=>{
       const tagHtml = r.calc.oaTag
         ? `<span class="tag ${r.calc.oaTag}">Outdoor Air: ${r.calc.oaSource}</span>`
@@ -157,7 +156,6 @@
       `;
     }).join("");
 
-    // bind delete
     list.querySelectorAll("[data-del]").forEach(btn=>{
       btn.addEventListener("click", ()=>{
         const i = Number(btn.getAttribute("data-del"));
@@ -221,7 +219,6 @@
       calc
     });
 
-    // reset small inputs
     $("roomName").value = "";
     $("oaOverride").value = "";
 
@@ -229,7 +226,6 @@
   }
 
   function exportExcelCsv(){
-    // CSV that opens in Excel. Add UTF-8 BOM for Arabic
     const header = [
       "Room Name",
       "Display Name",
@@ -279,7 +275,7 @@
     });
 
     const csv = [header.map(h=>`"${h}"`).join(","), ...rows].join("\n");
-    const bom = "\uFEFF"; // UTF-8 BOM
+    const bom = "\uFEFF"; // UTF-8 BOM for Arabic
     const blob = new Blob([bom + csv], {type:"text/csv;charset=utf-8"});
     const url = URL.createObjectURL(blob);
 
@@ -304,7 +300,6 @@
 
   render();
 
-  // Register SW
   if ("serviceWorker" in navigator){
     try { await navigator.serviceWorker.register("sw.js"); } catch(e){ /* ignore */ }
   }
