@@ -4,55 +4,119 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>ASHRAE 170P — ACH/CFM/TR</title>
-  <meta name="description" content="حاسبة ACH / CFM / TR (Hospital) مبنية على مرجع ASHRAE 170P." />
+  <meta name="description" content="إضافة غرف + حجم (m³) → حساب ACH/CFM/TR مع تصدير Excel." />
   <meta name="theme-color" content="#0b3d2e" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
 
   <style>
-    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#22c55e; --warn:#f59e0b; --danger:#ef4444; }
+    :root{
+      --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb;
+      --accent:#22c55e; --warn:#f59e0b; --danger:#ef4444; --line: rgba(148,163,184,.16);
+    }
     *{ box-sizing:border-box; }
-    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: linear-gradient(180deg,#0b1220,#0f172a); color:var(--text); }
-    header{ padding:16px 16px 10px; position:sticky; top:0; backdrop-filter: blur(10px); background: rgba(15,23,42,.75); border-bottom: 1px solid rgba(148,163,184,.15); z-index:5; }
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: linear-gradient(180deg,#0b1220,#0f172a); color:var(--text);
+    }
+    header{
+      padding:16px 16px 12px; position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px); background: rgba(15,23,42,.75);
+      border-bottom:1px solid var(--line);
+    }
     header h1{ margin:0; font-size:18px; }
     header p{ margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.5; }
 
-    main{ padding:16px; max-width:1200px; margin:0 auto; }
-    .card{ background: rgba(17,24,39,.85); border:1px solid rgba(148,163,184,.15); border-radius:16px; padding:14px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
-    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom:12px; }
-    .toolbar .left, .toolbar .right{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .btn{ padding:10px 12px; border-radius:12px; border:1px solid rgba(148,163,184,.2); background: rgba(2,6,23,.35); color:var(--text); font-weight:800; cursor:pointer; }
-    .btn.primary{ background: var(--accent); border:0; color:#052e16; }
-    .btn.danger{ border-color: rgba(239,68,68,.35); color: #fecaca; }
-    .btn:active{ transform: translateY(1px); }
-    .small{ font-size:11px; color:rgba(148,163,184,.85); line-height:1.5; }
-    .muted{ color:var(--muted); }
+    main{ padding:14px; max-width:980px; margin:0 auto; }
+    .card{
+      background: rgba(17,24,39,.86);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+      margin-bottom:12px;
+    }
+    .grid{ display:grid; grid-template-columns:1fr; gap:10px; }
+    @media (min-width: 820px){ .grid{ grid-template-columns: 1.2fr .8fr; } }
 
-    input, select{
-      width:100%; padding:10px 10px; border-radius:10px;
+    label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+    select,input{
+      width:100%; padding:12px 12px;
+      border-radius:12px;
       border:1px solid rgba(148,163,184,.22);
       background: rgba(2,6,23,.55);
-      color:var(--text); outline:none;
+      color:var(--text);
+      outline:none;
+      font-size:13px;
+    }
+    input::placeholder{ color: rgba(148,163,184,.7); }
+    .row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media (max-width: 380px){ .row{ grid-template-columns:1fr; } }
+
+    .btn{
+      width:100%; padding:12px; border-radius:12px; border:1px solid rgba(148,163,184,.22);
+      background: rgba(2,6,23,.35); color:var(--text); font-weight:900; cursor:pointer;
+    }
+    .btn.primary{ background: var(--accent); border:0; color:#052e16; }
+    .btn.danger{ border-color: rgba(239,68,68,.35); color:#fecaca; }
+    .btn:active{ transform: translateY(1px); }
+
+    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; }
+    .toolbar .btn{ width:auto; flex:1; min-width: 140px; }
+
+    .tag{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:6px 10px; border-radius:999px; font-size:12px;
+      border:1px solid rgba(148,163,184,.2);
+      background: rgba(2,6,23,.35);
+      color: var(--muted);
+    }
+    .tag.warn{ border-color: rgba(245,158,11,.35); color: var(--warn); }
+    .tag.danger{ border-color: rgba(239,68,68,.35); color: var(--danger); }
+
+    .list{ display:flex; flex-direction:column; gap:10px; }
+    .roomCard{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background: rgba(2,6,23,.35);
+      padding:12px;
+    }
+    .roomHead{
+      display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+      flex-wrap:wrap;
+    }
+    .roomHead h3{ margin:0; font-size:14px; }
+    .sub{ color:var(--muted); font-size:12px; margin-top:4px; line-height:1.4; }
+
+    .metrics{
+      display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;
+    }
+    @media (min-width: 620px){ .metrics{ grid-template-columns: repeat(4, 1fr); } }
+    .metric{
+      border:1px solid rgba(148,163,184,.12);
+      border-radius:14px;
+      padding:10px;
+      background: rgba(2,6,23,.25);
+    }
+    .metric .k{ color:var(--muted); font-size:11px; }
+    .metric .v{ margin-top:6px; font-size:16px; font-weight:900; }
+
+    .muted{ color:var(--muted); font-size:12px; line-height:1.6; }
+    .small{ font-size:11px; color:rgba(148,163,184,.85); line-height:1.6; }
+
+    .summary{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(148,163,184,.2);
+      background: rgba(2,6,23,.35);
+      color:var(--muted);
       font-size:12px;
     }
-    input[readonly]{ opacity:.85; }
-
-    .tableWrap{ overflow:auto; border-radius:14px; border:1px solid rgba(148,163,184,.15); }
-    table{ width:100%; border-collapse: collapse; font-size:12px; min-width:1400px; }
-    th, td{ padding:10px; border-bottom:1px solid rgba(148,163,184,.12); text-align:right; vertical-align:top; }
-    th{ position:sticky; top:0; background: rgba(2,6,23,.75); backdrop-filter: blur(8px); z-index:2; color:var(--muted); font-weight:900; }
-    tr:hover td{ background: rgba(2,6,23,.20); }
-
-    .tag{ display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid rgba(148,163,184,.2); background: rgba(2,6,23,.35); }
-    .tag.warn { border-color: rgba(245,158,11,.35); color: var(--warn); }
-    .tag.danger { border-color: rgba(239,68,68,.35); color: var(--danger); }
-
-    .summary{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
-    .pill{ display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border-radius:999px; border:1px solid rgba(148,163,184,.2); background: rgba(2,6,23,.35); font-size:12px; color:var(--muted); }
     .pill b{ color:var(--text); font-weight:900; }
-
-    .twoCols{ display:grid; grid-template-columns: 1fr; gap:12px; margin-top:12px; }
-    @media (min-width: 980px){ .twoCols{ grid-template-columns: 1fr 1fr; } }
 
     footer{ padding:18px 16px; color:var(--muted); font-size:12px; text-align:center; }
   </style>
@@ -60,81 +124,80 @@
 
 <body>
 <header>
-  <h1>ASHRAE 170P — ACH / CFM / TR (جدول مثل الإكسل)</h1>
-  <p>أضف غرفك كسطور (Room Type + Volume m³ + Offset% + Rule of Thumb + OA Override اختياري) ويحسب لك باقي الأعمدة تلقائيًا.</p>
+  <h1>ASHRAE 170P — إضافة غرف (m³) → النتائج</h1>
+  <p>تحط نوع الغرفة وحجمها بالمتر المكعب، وتضيف غرفة… وتطلع النتائج تحت + تصدير “Excel”.</p>
 </header>
 
-<main>
+<main class="grid">
+  <!-- INPUTS -->
   <section class="card">
-    <div class="toolbar">
-      <div class="left">
-        <button class="btn primary" id="addRowBtn">+ إضافة غرفة</button>
-        <button class="btn" id="exportCsvBtn">تصدير CSV</button>
-        <button class="btn danger" id="clearBtn">مسح كل الصفوف</button>
+    <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
+      <div class="tag" id="statusTag">Loading…</div>
+      <div class="tag" id="countTag">Rooms: 0</div>
+    </div>
+
+    <label for="roomType">نوع الغرفة</label>
+    <select id="roomType"></select>
+
+    <label for="volumeM3">حجم الغرفة (m³)</label>
+    <input id="volumeM3" type="number" min="0" step="0.1" placeholder="مثال: 60" value="60" />
+
+    <div class="row">
+      <div>
+        <label for="roomName">اسم الغرفة (اختياري)</label>
+        <input id="roomName" type="text" placeholder="مثال: ICU-01 / OR-02" />
       </div>
-      <div class="right">
-        <input id="searchRoom" placeholder="بحث (Display أو ASHRAE)..." style="min-width:260px;" />
-        <span class="tag" id="statusTag">Loading…</span>
+      <div>
+        <label for="offsetPct">Pressure Offset (%)</label>
+        <input id="offsetPct" type="number" min="0" max="50" step="0.5" value="10" />
       </div>
     </div>
 
-    <div class="tableWrap">
-      <table>
-        <thead>
-          <tr>
-            <th style="min-width:160px;">Room Name (اختياري)</th>
-
-            <th style="min-width:230px;">Room Type (Display)</th>
-            <th style="min-width:280px;">ASHRAE Reference</th>
-
-            <th style="min-width:130px;">Room Volume (m³)</th>
-
-            <th style="min-width:150px;">Outdoor Air ACH (Ref)</th>
-            <th style="min-width:150px;">OA Override (ACH)</th>
-
-            <th style="min-width:120px;">Total ACH</th>
-            <th style="min-width:120px;">Room Pressure (P/N)</th>
-            <th style="min-width:150px;">Exhaust to Outdoors</th>
-
-            <th style="min-width:150px;">RH (%)</th>
-            <th style="min-width:150px;">Temp (°C)</th>
-
-            <th style="min-width:140px;">Pressure Offset (%)</th>
-            <th style="min-width:160px;">Rule of Thumb (CFM/TR)</th>
-
-            <th style="min-width:140px;">Volume (ft³)</th>
-            <th style="min-width:150px;">Outdoor Air CFM</th>
-            <th style="min-width:150px;">Total Supply CFM</th>
-            <th style="min-width:160px;">Estimated Exhaust CFM</th>
-            <th style="min-width:150px;">Estimated TR</th>
-
-            <th style="min-width:90px;">حذف</th>
-          </tr>
-        </thead>
-        <tbody id="rowsBody"></tbody>
-      </table>
+    <div class="row">
+      <div>
+        <label for="thumb">Rule of Thumb (CFM/TR)</label>
+        <select id="thumb">
+          <option value="350">350</option>
+          <option value="400" selected>400</option>
+          <option value="450">450</option>
+        </select>
+      </div>
+      <div>
+        <label for="oaOverride">Outdoor Air Override (ACH) اختياري</label>
+        <input id="oaOverride" type="number" min="0" step="0.1" placeholder="مثال: 2.0" />
+      </div>
     </div>
+
+    <button class="btn primary" id="addBtn">+ إضافة غرفة</button>
+
+    <div class="toolbar" style="margin-top:10px;">
+      <button class="btn" id="exportBtn">تصدير Excel (CSV)</button>
+      <button class="btn danger" id="clearBtn">مسح كل الغرف</button>
+    </div>
+
+    <p class="small" style="margin-top:10px;">
+      • Outdoor Air “Optional” = يحسب 0 تلقائيًا ويظهر تنبيه.<br/>
+      • Outdoor Air “Not specified” = يظهر “—” إلا إذا حطّيت Override.<br/>
+      • TR تقديري (CFM ÷ Rule of Thumb).
+    </p>
+  </section>
+
+  <!-- OUTPUTS -->
+  <section class="card">
+    <h2 style="margin:0 0 10px; font-size:14px;">النتائج</h2>
 
     <div class="summary">
-      <span class="pill">Rooms: <b id="sumRooms">0</b></span>
       <span class="pill">Total Supply (CFM): <b id="sumSupply">—</b></span>
       <span class="pill">Total Outdoor (CFM): <b id="sumOA">—</b></span>
       <span class="pill">Total Exhaust (CFM): <b id="sumExh">—</b></span>
       <span class="pill">Total TR (est): <b id="sumTR">—</b></span>
     </div>
 
-    <div class="twoCols">
-      <div class="small">
-        <b class="muted">ملاحظات مهمة:</b><br/>
-        • Outdoor Air (Optional) = محسوب 0 تلقائيًا ويظهر تنبيه.<br/>
-        • Outdoor Air (Not specified) = يظهر “—” إلا إذا دخلت Override.<br/>
-        • TR هنا تقديري من CFM (Rule of Thumb) وليس بديل لحساب الأحمال الحرارية.
-      </div>
-      <div class="small">
-        <b class="muted">P/N:</b> P = موجب (Supply أكبر) / N = سالب (Exhaust أكبر).<br/>
-        Offset% يستخدم لتقدير Exhaust: موجب يقلّل، سالب يزيد (حسب P/N).
-      </div>
-    </div>
+    <div style="margin-top:12px;" class="list" id="list"></div>
+
+    <p class="muted" id="emptyState" style="margin-top:10px;">
+      ما أضفت أي غرفة… ابدأ من اليسار واضغط “إضافة غرفة”.
+    </p>
   </section>
 </main>
 
@@ -143,4 +206,5 @@
 <script src="app.js"></script>
 </body>
 </html>
+
 
