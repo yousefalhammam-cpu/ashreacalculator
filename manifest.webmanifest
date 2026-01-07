@@ -1,5 +1,5 @@
 {
-  "name": "ASHRAE 170P HVAC Calculator",
+  "name": "ASHRAE 170P Rooms Calculator",
   "short_name": "ASHRAE170P",
   "start_url": "./",
   "display": "standalone",
