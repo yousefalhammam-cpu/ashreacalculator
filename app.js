@@ -16,199 +16,341 @@
     return Number.isFinite(v) ? v : null;
   }
 
-  // Robust JSON load: fixes accidental NaN (not valid JSON) by replacing with null
-  async function loadData(){
+  async function loadRef(){
+    // robust: replace NaN with null
     const resp = await fetch("data.json", { cache: "no-store" });
     const txt = await resp.text();
-
-    // replace NaN tokens safely (common pandas export)
-    const cleaned = txt
-      .replace(/\bNaN\b/g, "null");
-
-    // ensure it's an array
+    const cleaned = txt.replace(/\bNaN\b/g, "null");
     const parsed = JSON.parse(cleaned);
     return Array.isArray(parsed) ? parsed : [parsed];
   }
 
-  let data = [];
+  let ref = [];
   try{
-    data = await loadData();
+    ref = await loadRef();
+    $("statusTag").textContent = `Loaded: ${ref.length} rooms`;
+    $("statusTag").className = "tag";
   } catch(e){
-    alert("في مشكلة بقراءة data.json. تأكد إنه JSON صحيح (بدون NaN).");
+    $("statusTag").textContent = "Error loading data.json";
+    $("statusTag").className = "tag danger";
     console.error(e);
     return;
   }
 
-  // Build items with fallback:
-  // displayName/ashraeName optional. If missing, use Room Type.
-  const items = data
+  // Build selectable list (Display + ASHRAE)
+  // If displayName/ashraeName not present -> use "Room Type"
+  const options = ref
     .map((r, i) => {
       const roomType = (r["Room Type"] ?? "").toString().trim();
       const display = (r.displayName ?? roomType).toString().trim();
-      const ashrae = (r.ashraeName ?? roomType).toString().trim();
+      const ashrae  = (r.ashraeName  ?? roomType).toString().trim();
       return { i, display, ashrae };
     })
     .filter(x => x.display);
 
-  items.sort((a,b)=>a.display.localeCompare(b.display, "en"));
+  options.sort((a,b)=>a.display.localeCompare(b.display, "en"));
 
-  $("roomType").innerHTML = items
-    .map(x => `<option value="${x.i}">${x.display}</option>`)
-    .join("");
-
-  $("roomType").value = String(items[0]?.i ?? "");
-
-  function tag(type, text){
-    const cls = type ? `tag ${type}` : "tag";
-    return `<span class="${cls}">${text}</span>`;
+  function buildRoomTypeSelect(selectedIdx){
+    const safe = (s)=>String(s).replace(/"/g, "&quot;");
+    return `
+      <select class="rtSel">
+        ${options.map(o => `<option value="${o.i}" ${Number(selectedIdx)===o.i ? "selected":""}>${safe(o.display)}</option>`).join("")}
+      </select>
+    `;
   }
 
-  function calc(){
-    const idx = Number($("roomType").value);
-    const row = data[idx];
-    if (!row) return;
+  function cellInput(cls, value, placeholder="", readonly=false, type="text"){
+    const ro = readonly ? "readonly" : "";
+    const v = value==null ? "" : String(value);
+    return `<input class="${cls}" type="${type}" ${ro} value="${v}" placeholder="${placeholder}">`;
+  }
 
-    const displayName = (row.displayName ?? row["Room Type"] ?? "—").toString().trim();
-    const ashraeName  = (row.ashraeName  ?? row["Room Type"] ?? "—").toString().trim();
+  function cellText(cls, text){
+    const t = (text==null || String(text).trim()==="") ? "—" : String(text).trim();
+    return `<input class="${cls}" type="text" readonly value="${t}">`;
+  }
 
-    const volume_m3 = Number($("volume").value || 0);
-    const offsetPct = Number($("offset").value || 0) / 100.0;
-    const thumb = Number($("thumb").value || 400);
+  const rowsBody = $("rowsBody");
 
-    const volFt3 = volume_m3 * 35.3147;
+  function defaultRowModel(){
+    // match your Excel-like inputs
+    return {
+      roomName: "",
+      refIdx: options[0]?.i ?? 0,
+      volumeM3: 60,
+      oaOverride: "",          // optional ACH
+      offsetPct: 10,
+      thumb: 400
+    };
+  }
 
-    const pressure = (row["Pressure"] ?? "").toString().trim();
-    const totalAch = toNum(row["Total ACH"]);
+  function addRow(model){
+    const m = model || defaultRowModel();
 
-    const oaAchRaw = (row["Outdoor Air ACH"] ?? "").toString().trim();
-    let oaAchRef = toNum(row["Outdoor Air ACH"]); // null for Optional / blanks
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${cellInput("roomName", m.roomName, "مثال: OR-01")}</td>
 
-    // Professional OA logic: Override > Reference number > Optional assumed 0 > Not specified (blank)
-    const oaOverrideStr = ($("oaOverride").value ?? "").toString().trim();
+      <td>${buildRoomTypeSelect(m.refIdx)}</td>
+      <td>${cellText("ashraeRef", "")}</td>
+
+      <td>${cellInput("volM3", m.volumeM3, "m³", false, "number")}</td>
+
+      <td>${cellText("oaAchRaw", "")}</td>
+      <td>${cellInput("oaOverride", m.oaOverride, "اختياري", false, "number")}</td>
+
+      <td>${cellText("totalAch", "")}</td>
+      <td>${cellText("pressurePN", "")}</td>
+      <td>${cellText("exhOut", "")}</td>
+
+      <td>${cellText("rh", "")}</td>
+      <td>${cellText("tempC", "")}</td>
+
+      <td>${cellInput("offset", m.offsetPct, "%", false, "number")}</td>
+      <td>
+        <select class="thumb">
+          <option value="350" ${Number(m.thumb)===350?"selected":""}>350</option>
+          <option value="400" ${Number(m.thumb)===400?"selected":""}>400</option>
+          <option value="450" ${Number(m.thumb)===450?"selected":""}>450</option>
+        </select>
+      </td>
+
+      <td>${cellText("volFt3", "")}</td>
+      <td>${cellText("oaCfm", "")}</td>
+      <td>${cellText("supplyCfm", "")}</td>
+      <td>${cellText("exhCfm", "")}</td>
+      <td>${cellText("tr", "")}</td>
+
+      <td><button class="btn danger delBtn" type="button">حذف</button></td>
+    `;
+
+    rowsBody.appendChild(tr);
+
+    // events
+    tr.querySelector(".delBtn").addEventListener("click", ()=>{
+      tr.remove();
+      recalcAll();
+    });
+
+    const recalcOn = ["change","input"];
+    ["rtSel","volM3","oaOverride","offset","thumb","roomName"].forEach(cls=>{
+      const el = tr.querySelector("."+cls);
+      if (!el) return;
+      recalcOn.forEach(ev => el.addEventListener(ev, ()=>{ recalcRow(tr); recalcSummary(); }));
+    });
+
+    recalcRow(tr);
+    recalcSummary();
+  }
+
+  function getRefRow(idx){
+    const r = ref[Number(idx)];
+    return r || null;
+  }
+
+  function recalcRow(tr){
+    const idx = Number(tr.querySelector(".rtSel").value);
+    const r = getRefRow(idx);
+    if (!r) return;
+
+    const roomType = (r["Room Type"] ?? "").toString().trim();
+    const display = (r.displayName ?? roomType).toString().trim();
+    const ashrae  = (r.ashraeName  ?? roomType).toString().trim();
+
+    const volM3 = Number(tr.querySelector(".volM3").value || 0);
+    const volFt3 = volM3 * 35.3147;
+
+    const totalAch = toNum(r["Total ACH"]);
+    const oaRaw = (r["Outdoor Air ACH"] ?? "").toString().trim();
+    const oaRefNum = toNum(r["Outdoor Air ACH"]); // null if Optional/blank
+
+    const pressure = (r["Pressure"] ?? "").toString().trim();
+    const exhOut = (r["Exhaust to Outdoors"] ?? "").toString().trim();
+    const rh = (r["RH (%)"] ?? "").toString().trim();
+    const tempC = (r["Temp (°C)"] ?? "").toString().trim();
+
+    // OA Override (professional)
+    const oaOverrideStr = (tr.querySelector(".oaOverride").value ?? "").toString().trim();
     const oaOverrideVal = oaOverrideStr === "" ? null : Number(oaOverrideStr);
     const hasOverride = oaOverrideVal !== null && Number.isFinite(oaOverrideVal) && oaOverrideVal >= 0;
 
     let oaAch = null;
-    let oaSource = "—";
-    let oaTagType = "";
-    let oaTagText = "";
-
+    let oaNote = "";
     if (hasOverride){
       oaAch = oaOverrideVal;
-      oaSource = "Override";
-      oaTagType = "";
-      oaTagText = `Outdoor Air: Override = ${oaAch}`;
-    } else if (oaAchRef !== null){
-      oaAch = oaAchRef;
-      oaSource = "Reference";
-      oaTagType = "";
-      oaTagText = `Outdoor Air: Reference = ${oaAch}`;
-    } else if (oaAchRaw.toLowerCase() === "optional"){
+      oaNote = "Override";
+    } else if (oaRefNum !== null){
+      oaAch = oaRefNum;
+      oaNote = "Ref";
+    } else if (oaRaw.toLowerCase() === "optional"){
       oaAch = 0;
-      oaSource = "Optional (assumed 0)";
-      oaTagType = "warn";
-      oaTagText = "Outdoor Air: Optional (assumed 0)";
-    } else if (oaAchRaw === "" || oaAchRaw.toLowerCase() === "null"){
-      oaAch = null;
-      oaSource = "Not specified";
-      oaTagType = "danger";
-      oaTagText = "Outdoor Air: Not specified";
+      oaNote = "Optional→0";
     } else {
-      // Any other string -> treat as not specified
-      oaAch = null;
-      oaSource = "Not specified";
-      oaTagType = "danger";
-      oaTagText = "Outdoor Air: Not specified";
+      oaAch = null; // Not specified
+      oaNote = "Not specified";
     }
 
-    const totalCfm = (totalAch===null) ? null : (volFt3 * totalAch / 60.0);
+    const supplyCfm = (totalAch===null) ? null : (volFt3 * totalAch / 60.0);
     const oaCfm = (oaAch===null) ? null : (volFt3 * oaAch / 60.0);
-    const tr = (totalCfm===null) ? null : (totalCfm / thumb);
+
+    const offsetPct = Number(tr.querySelector(".offset").value || 0) / 100.0;
+    const thumb = Number(tr.querySelector(".thumb").value || 400);
+
+    const trEst = (supplyCfm===null) ? null : (supplyCfm / thumb);
 
     // Exhaust estimate
-    const exhOut = (row["Exhaust to Outdoors"] ?? "").toString().trim();
-    let exh = null;
-    if (totalCfm !== null){
-      if (pressure.toUpperCase() === "P") exh = totalCfm * (1 - offsetPct);
-      else if (pressure.toUpperCase() === "N") exh = totalCfm * (1 + offsetPct);
-      else if (exhOut.toLowerCase() === "yes") exh = totalCfm;
+    let exhCfm = null;
+    if (supplyCfm !== null){
+      if (pressure.toUpperCase() === "P") exhCfm = supplyCfm * (1 - offsetPct);
+      else if (pressure.toUpperCase() === "N") exhCfm = supplyCfm * (1 + offsetPct);
+      else if (exhOut.toLowerCase() === "yes") exhCfm = supplyCfm;
     }
 
-    // UI
-    $("volFt3").textContent = format0(volFt3);
-    $("totalCfm").textContent = format0(totalCfm);
-    $("oaCfm").textContent = format0(oaCfm);
-    $("exhCfm").textContent = format0(exh);
-    $("trVal").textContent = format2(tr);
-    $("pressPN").textContent = pressure || "—";
+    // Fill readonly cells
+    tr.querySelector(".ashraeRef").value = ashrae || display || "—";
+    tr.querySelector(".oaAchRaw").value = oaRaw ? `${oaRaw}${oaNote ? " ("+oaNote+")":""}` : (oaNote==="Not specified" ? "— (Not specified)" : "—");
+    tr.querySelector(".totalAch").value = (totalAch===null) ? "—" : String(totalAch);
+    tr.querySelector(".pressurePN").value = pressure || "—";
+    tr.querySelector(".exhOut").value = exhOut || "—";
+    tr.querySelector(".rh").value = rh || "—";
+    tr.querySelector(".tempC").value = tempC || "—";
 
-    $("totalAch").textContent = (totalAch===null) ? "—" : String(totalAch);
-    $("oaAchRaw").textContent = oaAchRaw || "—";
-    $("exhOut").textContent = exhOut || "—";
-    $("recirc").textContent = (row["Recirc w/ In-room Units"] ?? "—").toString().trim() || "—";
-    $("rh").textContent = (row["RH (%)"] ?? "—").toString().trim() || "—";
-    $("tempC").textContent = (row["Temp (°C)"] ?? "—").toString().trim() || "—";
+    tr.querySelector(".volFt3").value = format0(volFt3);
+    tr.querySelector(".oaCfm").value = format0(oaCfm);
+    tr.querySelector(".supplyCfm").value = format0(supplyCfm);
+    tr.querySelector(".exhCfm").value = format0(exhCfm);
+    tr.querySelector(".tr").value = format2(trEst);
 
-    $("ashraeRef").textContent = ashraeName || "—";
-
-    // OA tag
-    const tags = [];
-    tags.push(tag("", `Display: <b>${displayName}</b>`));
-    if (oaTagText) tags.push(tag(oaTagType, oaTagText));
-    tags.push(tag("", `OA Source: <b>${oaSource}</b>`));
-    $("oaTagWrap").innerHTML = tags.join("");
-
-    // Update table highlight is not needed here
+    // store hidden metadata for export
+    tr.dataset.displayName = display;
+    tr.dataset.ashraeName = ashrae;
+    tr.dataset.oaAch = (oaAch===null) ? "" : String(oaAch);
+    tr.dataset.totalAch = (totalAch===null) ? "" : String(totalAch);
   }
 
-  // Reference table (search)
-  function renderTable(filter=""){
-    const tbody = $("refTable");
-    const q = filter.trim().toLowerCase();
+  function recalcSummary(){
+    const trs = Array.from(rowsBody.querySelectorAll("tr"));
+    $("sumRooms").textContent = String(trs.length);
 
-    const rows = items
-      .filter(x => q ? (x.display.toLowerCase().includes(q) || x.ashrae.toLowerCase().includes(q)) : true)
-      .slice(0, 250)
-      .map(x => {
-        const r = data[x.i];
-        const p = (r["Pressure"] ?? "").toString().trim();
-        const oa = (r["Outdoor Air ACH"] ?? "").toString().trim();
-        const ta = (r["Total ACH"] ?? "").toString().trim();
-        const eo = (r["Exhaust to Outdoors"] ?? "").toString().trim();
-        const rh = (r["RH (%)"] ?? "").toString().trim();
-        const tc = (r["Temp (°C)"] ?? "").toString().trim();
-        return `
-          <tr>
-            <td>${x.display}</td>
-            <td>${x.ashrae}</td>
-            <td>${p}</td>
-            <td>${oa}</td>
-            <td>${ta}</td>
-            <td>${eo}</td>
-            <td>${rh}</td>
-            <td>${tc}</td>
-          </tr>
-        `;
-      });
+    let sumSupply=0, sumOA=0, sumExh=0, sumTR=0;
+    let hasSupply=false, hasOA=false, hasExh=false, hasTR=false;
 
-    tbody.innerHTML = rows.join("");
+    trs.forEach(tr=>{
+      const supply = Number(String(tr.querySelector(".supplyCfm").value).replace(/,/g,""));
+      const oa = Number(String(tr.querySelector(".oaCfm").value).replace(/,/g,""));
+      const exh = Number(String(tr.querySelector(".exhCfm").value).replace(/,/g,""));
+      const trv = Number(String(tr.querySelector(".tr").value).replace(/,/g,""));
+
+      if (Number.isFinite(supply)) { sumSupply+=supply; hasSupply=true; }
+      if (Number.isFinite(oa)) { sumOA+=oa; hasOA=true; }
+      if (Number.isFinite(exh)) { sumExh+=exh; hasExh=true; }
+      if (Number.isFinite(trv)) { sumTR+=trv; hasTR=true; }
+    });
+
+    $("sumSupply").textContent = hasSupply ? format0(sumSupply) : "—";
+    $("sumOA").textContent = hasOA ? format0(sumOA) : "—";
+    $("sumExh").textContent = hasExh ? format0(sumExh) : "—";
+    $("sumTR").textContent = hasTR ? format2(sumTR) : "—";
   }
 
-  $("calcBtn").addEventListener("click", calc);
-  $("roomType").addEventListener("change", calc);
-  $("thumb").addEventListener("change", calc);
-  $("oaOverride").addEventListener("input", calc);
-  $("volume").addEventListener("input", ()=>{ /* optional live */ });
-  $("offset").addEventListener("input", ()=>{ /* optional live */ });
+  function recalcAll(){
+    Array.from(rowsBody.querySelectorAll("tr")).forEach(tr=>recalcRow(tr));
+    recalcSummary();
+  }
 
-  $("search").addEventListener("input", (e)=>renderTable(e.target.value));
-  $("clearSearch").addEventListener("click", ()=>{ $("search").value=""; renderTable(""); });
+  function exportCsv(){
+    const trs = Array.from(rowsBody.querySelectorAll("tr"));
 
-  renderTable("");
-  calc();
+    const header = [
+      "Room Name",
+      "Display Name",
+      "ASHRAE Reference",
+      "Room Volume (m3)",
+      "Outdoor Air ACH (Ref)",
+      "OA Override (ACH)",
+      "Total ACH",
+      "Room Pressure",
+      "Exhaust to Outdoors",
+      "RH (%)",
+      "Temp (C)",
+      "Pressure Offset (%)",
+      "Rule of Thumb (CFM/TR)",
+      "Volume (ft3)",
+      "Outdoor Air CFM",
+      "Total Supply CFM",
+      "Estimated Exhaust CFM",
+      "Estimated TR"
+    ];
 
-  // Register service worker
+    const rows = trs.map(tr=>{
+      const get = (sel)=>tr.querySelector(sel)?.value ?? "";
+      const safe = (v)=>`"${String(v).replace(/"/g,'""')}"`;
+
+      return [
+        get(".roomName"),
+        tr.dataset.displayName || "",
+        tr.dataset.ashraeName || "",
+        get(".volM3"),
+        get(".oaAchRaw"),
+        get(".oaOverride"),
+        tr.dataset.totalAch || get(".totalAch"),
+        get(".pressurePN"),
+        get(".exhOut"),
+        get(".rh"),
+        get(".tempC"),
+        get(".offset"),
+        get(".thumb"),
+        get(".volFt3"),
+        get(".oaCfm"),
+        get(".supplyCfm"),
+        get(".exhCfm"),
+        get(".tr")
+      ].map(safe).join(",");
+    });
+
+    const csv = [header.map(h=>`"${h}"`).join(","), ...rows].join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ASHRAE170P_rooms.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // Search filter (client-side hide/show)
+  function applySearch(q){
+    const query = (q||"").trim().toLowerCase();
+    const trs = Array.from(rowsBody.querySelectorAll("tr"));
+    trs.forEach(tr=>{
+      const d = (tr.dataset.displayName||"").toLowerCase();
+      const a = (tr.dataset.ashraeName||"").toLowerCase();
+      const rn = (tr.querySelector(".roomName")?.value || "").toLowerCase();
+      const show = !query || d.includes(query) || a.includes(query) || rn.includes(query);
+      tr.style.display = show ? "" : "none";
+    });
+  }
+
+  // Buttons
+  $("addRowBtn").addEventListener("click", ()=>addRow());
+  $("exportCsvBtn").addEventListener("click", exportCsv);
+  $("clearBtn").addEventListener("click", ()=>{
+    rowsBody.innerHTML = "";
+    recalcSummary();
+  });
+  $("searchRoom").addEventListener("input", (e)=>applySearch(e.target.value));
+
+  // Start with 3 rows like Excel feel
+  addRow(defaultRowModel());
+  addRow({ ...defaultRowModel(), volumeM3: 80 });
+  addRow({ ...defaultRowModel(), volumeM3: 40 });
+
+  // Service worker
   if ("serviceWorker" in navigator){
     try { await navigator.serviceWorker.register("sw.js"); } catch(e){ /* ignore */ }
   }
 })();
+
