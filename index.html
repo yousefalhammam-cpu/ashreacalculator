@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#0b3d2e" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
+
   <style>
     :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#22c55e; --warn:#f59e0b; --danger:#ef4444; }
     *{ box-sizing:border-box; }
@@ -24,31 +25,32 @@
     select,input{ width:100%; padding:12px 12px; border-radius:12px; border:1px solid rgba(148,163,184,.22); background: rgba(2,6,23,.55); color:var(--text); outline:none; }
     input::placeholder{ color: rgba(148,163,184,.7); }
     .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
-    .btn{ width:100%; padding:12px; border-radius:12px; border:0; background: var(--accent); color:#052e16; font-weight:700; cursor:pointer; margin-top:12px; }
+    .btn{ width:100%; padding:12px; border-radius:12px; border:0; background: var(--accent); color:#052e16; font-weight:800; cursor:pointer; margin-top:12px; }
     .btn:active{ transform: translateY(1px); }
     .pill{ display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border-radius:999px; border:1px solid rgba(148,163,184,.2); background: rgba(2,6,23,.35); font-size:12px; color:var(--muted); }
-    .pill b{ color: var(--text); font-weight:700; }
+    .pill b{ color: var(--text); font-weight:800; }
     .metrics{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     @media (min-width: 520px){ .metrics{ grid-template-columns: 1fr 1fr 1fr; } }
     .metric{ background: rgba(2,6,23,.35); border:1px solid rgba(148,163,184,.15); border-radius:14px; padding:12px; }
     .metric .k{ color:var(--muted); font-size:11px; }
-    .metric .v{ font-size:18px; margin-top:6px; font-weight:800; letter-spacing:.2px; }
-    .muted{ color:var(--muted); font-size:12px; line-height:1.5; }
-    .warn{ color: var(--warn); }
-    .danger{ color: var(--danger); }
+    .metric .v{ font-size:18px; margin-top:6px; font-weight:900; letter-spacing:.2px; }
+    .muted{ color:var(--muted); font-size:12px; line-height:1.6; }
+    .small{ font-size:11px; color:rgba(148,163,184,.85); }
     details summary{ cursor:pointer; color: var(--text); }
     table{ width:100%; border-collapse: collapse; font-size:12px; }
     th,td{ padding:10px; border-bottom:1px solid rgba(148,163,184,.15); text-align:right; }
-    th{ color: var(--muted); font-weight:600; }
+    th{ color: var(--muted); font-weight:700; }
     footer{ padding:18px 16px; color:var(--muted); font-size:12px; text-align:center; }
-    .small{ font-size:11px; color:rgba(148,163,184,.85); }
+    .tag { display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid rgba(148,163,184,.2); background: rgba(2,6,23,.35); }
+    .tag.warn { border-color: rgba(245,158,11,.35); color: var(--warn); }
+    .tag.danger { border-color: rgba(239,68,68,.35); color: var(--danger); }
   </style>
 </head>
+
 <body>
 <header>
   <h1>حاسبة ASHRAE 170P — (PWA)</h1>
-  <p>اختَر نوع الغرفة + أدخل حجمها (m³) → يطلع لك CFM/Outdoor/Exhaust/TR، ومعايير الضغط والحرارة والرطوبة.</p>
+  <p>اختر نوع الغرفة + حجمها (m³) → يطلع لك CFM/Outdoor/Exhaust/TR، مع إظهار اسم ASHRAE الرسمي للتدقيق.</p>
 </header>
 
 <main>
@@ -56,7 +58,7 @@
     <section class="card">
       <h2>إدخال البيانات</h2>
 
-      <label for="roomType">نوع الغرفة (Room Type)</label>
+      <label for="roomType">نوع الغرفة (Display Name)</label>
       <select id="roomType"></select>
 
       <div class="row">
@@ -80,23 +82,23 @@
           </select>
         </div>
         <div>
-          <label for="optionalOA">Outdoor Air ACH = Optional</label>
-          <select id="optionalOA">
-            <option value="0" selected>اعتبرها 0</option>
-            <option value="">خليها فاضية</option>
-          </select>
+          <label for="oaOverride">Outdoor Air ACH Override (اختياري)</label>
+          <input id="oaOverride" type="number" min="0" step="0.1" placeholder="مثال: 2.0" />
         </div>
       </div>
 
       <button class="btn" id="calcBtn">احسب</button>
 
       <p class="small" style="margin-top:10px;">
-        * تنبيه: TR هنا تقديري من الهواء (CFM) وليس بديلًا عن حساب الأحمال الحرارية الكامل.
+        * TR هنا تقديري من الهواء (CFM) وليس بديلًا عن حساب الأحمال الحرارية الكامل.
       </p>
     </section>
 
     <section class="card">
       <h2>النتائج</h2>
+
+      <div id="oaTagWrap" style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;"></div>
+
       <div class="metrics">
         <div class="metric">
           <div class="k">Volume (ft³)</div>
@@ -126,12 +128,16 @@
 
       <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
         <span class="pill">Total ACH: <b id="totalAch">—</b></span>
-        <span class="pill">Outdoor Air ACH: <b id="oaAch">—</b></span>
+        <span class="pill">Outdoor Air ACH: <b id="oaAchRaw">—</b></span>
         <span class="pill">Exhaust to Outdoors: <b id="exhOut">—</b></span>
         <span class="pill">Recirc (In-room): <b id="recirc">—</b></span>
       </div>
 
       <p class="muted" style="margin-top:12px;">
+        ASHRAE Reference: <b id="ashraeRef">—</b>
+      </p>
+
+      <p class="muted">
         <b>P</b> = Positive (Supply > Exhaust) — يمنع دخول تلوث. |
         <b>N</b> = Negative (Exhaust > Supply) — يمنع خروج تلوث.
       </p>
@@ -155,13 +161,13 @@
         <table>
           <thead>
             <tr>
-              <th>Room Type</th><th>P/N</th><th>OA ACH</th><th>Total ACH</th><th>Exh Out</th><th>RH</th><th>Temp (°C)</th>
+              <th>Display</th><th>ASHRAE</th><th>P/N</th><th>OA ACH</th><th>Total ACH</th><th>Exh Out</th><th>RH</th><th>Temp (°C)</th>
             </tr>
           </thead>
           <tbody id="refTable"></tbody>
         </table>
       </div>
-      <p class="small">البيانات مأخوذة من جدول المرجع داخل ملفك (ASHRAE 170P draft).</p>
+      <p class="small">ملاحظة: إذا ما كان عندك displayName/ashraeName في data.json، التطبيق يستخدم Room Type تلقائيًا لكليهما.</p>
     </section>
   </div>
 </main>
@@ -172,4 +178,6 @@
 
 <script src="app.js"></script>
 </body>
+</html>
+
 </html>
