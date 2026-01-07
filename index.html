@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>حاسبة ASHRAE 170P (PWA)</title>
+  <meta name="description" content="حاسبة ACH / CFM / Pressure / TR مبنية على مرجع ASHRAE 170P." />
+  <meta name="theme-color" content="#0b3d2e" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --accent:#22c55e; --warn:#f59e0b; --danger:#ef4444; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: linear-gradient(180deg,#0b1220,#0f172a); color:var(--text); }
+    header{ padding:16px 16px 8px; position:sticky; top:0; backdrop-filter: blur(10px); background: rgba(15,23,42,.7); border-bottom: 1px solid rgba(148,163,184,.15); }
+    header h1{ margin:0; font-size:18px; }
+    header p{ margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.4; }
+    main{ padding:16px; max-width:980px; margin:0 auto; }
+    .grid{ display:grid; grid-template-columns: 1fr; gap:12px; }
+    @media (min-width: 880px){ .grid{ grid-template-columns: 1fr 1fr; } }
+    .card{ background: rgba(17,24,39,.85); border:1px solid rgba(148,163,184,.15); border-radius:16px; padding:14px; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+    .card h2{ margin:0 0 10px; font-size:14px; color:#fff; }
+    label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+    select,input{ width:100%; padding:12px 12px; border-radius:12px; border:1px solid rgba(148,163,184,.22); background: rgba(2,6,23,.55); color:var(--text); outline:none; }
+    input::placeholder{ color: rgba(148,163,184,.7); }
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+    .btn{ width:100%; padding:12px; border-radius:12px; border:0; background: var(--accent); color:#052e16; font-weight:700; cursor:pointer; margin-top:12px; }
+    .btn:active{ transform: translateY(1px); }
+    .pill{ display:inline-flex; gap:8px; align-items:center; padding:8px 10px; border-radius:999px; border:1px solid rgba(148,163,184,.2); background: rgba(2,6,23,.35); font-size:12px; color:var(--muted); }
+    .pill b{ color: var(--text); font-weight:700; }
+    .metrics{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (min-width: 520px){ .metrics{ grid-template-columns: 1fr 1fr 1fr; } }
+    .metric{ background: rgba(2,6,23,.35); border:1px solid rgba(148,163,184,.15); border-radius:14px; padding:12px; }
+    .metric .k{ color:var(--muted); font-size:11px; }
+    .metric .v{ font-size:18px; margin-top:6px; font-weight:800; letter-spacing:.2px; }
+    .muted{ color:var(--muted); font-size:12px; line-height:1.5; }
+    .warn{ color: var(--warn); }
+    .danger{ color: var(--danger); }
+    details summary{ cursor:pointer; color: var(--text); }
+    table{ width:100%; border-collapse: collapse; font-size:12px; }
+    th,td{ padding:10px; border-bottom:1px solid rgba(148,163,184,.15); text-align:right; }
+    th{ color: var(--muted); font-weight:600; }
+    footer{ padding:18px 16px; color:var(--muted); font-size:12px; text-align:center; }
+    .small{ font-size:11px; color:rgba(148,163,184,.85); }
+  </style>
+</head>
+<body>
+<header>
+  <h1>حاسبة ASHRAE 170P — (PWA)</h1>
+  <p>اختَر نوع الغرفة + أدخل حجمها (m³) → يطلع لك CFM/Outdoor/Exhaust/TR، ومعايير الضغط والحرارة والرطوبة.</p>
+</header>
+
+<main>
+  <div class="grid">
+    <section class="card">
+      <h2>إدخال البيانات</h2>
+
+      <label for="roomType">نوع الغرفة (Room Type)</label>
+      <select id="roomType"></select>
+
+      <div class="row">
+        <div>
+          <label for="volume">حجم الغرفة (m³)</label>
+          <input id="volume" type="number" min="0" step="0.1" value="60" />
+        </div>
+        <div>
+          <label for="offset">Pressure Offset (%)</label>
+          <input id="offset" type="number" min="0" max="50" step="0.5" value="10" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="thumb">Rule of Thumb (CFM/TR)</label>
+          <select id="thumb">
+            <option value="350">350</option>
+            <option value="400" selected>400</option>
+            <option value="450">450</option>
+          </select>
+        </div>
+        <div>
+          <label for="optionalOA">Outdoor Air ACH = Optional</label>
+          <select id="optionalOA">
+            <option value="0" selected>اعتبرها 0</option>
+            <option value="">خليها فاضية</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn" id="calcBtn">احسب</button>
+
+      <p class="small" style="margin-top:10px;">
+        * تنبيه: TR هنا تقديري من الهواء (CFM) وليس بديلًا عن حساب الأحمال الحرارية الكامل.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>النتائج</h2>
+      <div class="metrics">
+        <div class="metric">
+          <div class="k">Volume (ft³)</div>
+          <div class="v" id="volFt3">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">Total Supply (CFM)</div>
+          <div class="v" id="totalCfm">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">Outdoor Air (CFM)</div>
+          <div class="v" id="oaCfm">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">Estimated Exhaust (CFM)</div>
+          <div class="v" id="exhCfm">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">Estimated Cooling (TR)</div>
+          <div class="v" id="trVal">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">Pressure (P/N)</div>
+          <div class="v" id="pressPN">—</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <span class="pill">Total ACH: <b id="totalAch">—</b></span>
+        <span class="pill">Outdoor Air ACH: <b id="oaAch">—</b></span>
+        <span class="pill">Exhaust to Outdoors: <b id="exhOut">—</b></span>
+        <span class="pill">Recirc (In-room): <b id="recirc">—</b></span>
+      </div>
+
+      <p class="muted" style="margin-top:12px;">
+        <b>P</b> = Positive (Supply > Exhaust) — يمنع دخول تلوث. |
+        <b>N</b> = Negative (Exhaust > Supply) — يمنع خروج تلوث.
+      </p>
+
+      <details style="margin-top:10px;">
+        <summary>عرض ظروف التشغيل (حرارة/رطوبة)</summary>
+        <div style="margin-top:10px;" class="muted">
+          RH (%): <b id="rh">—</b><br/>
+          Temp (°C): <b id="tempC">—</b>
+        </div>
+      </details>
+    </section>
+
+    <section class="card" style="grid-column: 1 / -1;">
+      <h2>بحث سريع في المرجع</h2>
+      <div class="row">
+        <input id="search" placeholder="اكتب جزء من اسم الغرفة للبحث..." />
+        <button class="btn" id="clearSearch" style="margin-top:0;">مسح</button>
+      </div>
+      <div style="overflow:auto; margin-top:10px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Room Type</th><th>P/N</th><th>OA ACH</th><th>Total ACH</th><th>Exh Out</th><th>RH</th><th>Temp (°C)</th>
+            </tr>
+          </thead>
+          <tbody id="refTable"></tbody>
+        </table>
+      </div>
+      <p class="small">البيانات مأخوذة من جدول المرجع داخل ملفك (ASHRAE 170P draft).</p>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div>تطبيق ويب (PWA) — يعمل Offline بعد أول فتح.</div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
