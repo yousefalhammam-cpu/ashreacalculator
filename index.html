@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>ASHRAE 170P — ACH/CFM/TR</title>
+  <title>حاسبة ASHRAE 170P — م. يوسف ال همام</title>
   <meta name="description" content="إضافة غرف + حجم (m³) → حساب ACH/CFM/TR مع تصدير Excel." />
   <meta name="theme-color" content="#0b3d2e" />
   <link rel="manifest" href="manifest.webmanifest" />
@@ -124,8 +124,17 @@
 
 <body>
 <header>
-  <h1>ASHRAE 170P — إضافة غرف (m³) → النتائج</h1>
-  <p>تحط نوع الغرفة وحجمها بالمتر المكعب، وتضيف غرفة… وتطلع النتائج تحت + تصدير “Excel”.</p>
+  <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
+    <div>
+      <h1>حاسبة تهوية وتكييف المستشفيات (ASHRAE 170P)</h1>
+      <p>إدخال نوع الغرفة + حجمها (m³) → حساب ACH / CFM / Exhaust / TR (تقديري) مع تصدير النتائج.</p>
+    </div>
+
+    <div style="text-align:left;">
+      <div class="tag" style="justify-content:center;">Hospital HVAC • PWA</div>
+      <div class="small" style="margin-top:6px;">Version: <b>1.0</b></div>
+    </div>
+  </div>
 </header>
 
 <main class="grid">
@@ -201,10 +210,21 @@
   </section>
 </main>
 
-<footer>تطبيق ويب (PWA) — يعمل Offline بعد أول فتح.</footer>
+<footer style="padding:18px 16px; color:var(--muted); font-size:12px; text-align:center; border-top:1px solid var(--line); background: rgba(15,23,42,.35);">
+  <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+    <div style="font-weight:800; color:var(--text);">© جميع الحقوق محفوظة — م. يوسف الهمام</div>
+    <div>
+      <a href="mailto:yousef.alhammam@live.com" style="color:var(--muted); text-decoration:none; border-bottom:1px dashed rgba(148,163,184,.35);">
+        yousef.alhammam@live.com
+      </a>
+    </div>
+    <div class="small">Designed & Built for mobile web (PWA)</div>
+  </div>
+</footer>
 
 <script src="app.js"></script>
 </body>
 </html>
+
 
 
