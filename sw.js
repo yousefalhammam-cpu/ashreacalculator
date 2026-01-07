@@ -1,4 +1,4 @@
-const CACHE = "ashrae170p-pwa-v6";
+const CACHE = "ashrae170p-pwa-v7";
 
 const ASSETS = [
   "./",
