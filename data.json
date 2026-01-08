@@ -172,4 +172,40 @@
   },
   {
     "Room Type": "Soiled Workroom (CSSD)",
+    "Pressure": "N",
+    "Outdoor Air ACH": 2,
+    "Total ACH": 6,
+    "Exhaust to Outdoors": "Yes",
+    "RH (%)": "",
+    "Temp (°C)": ""
+  },
+  {
+    "Room Type": "Sterile Storage (CSSD)",
+    "Pressure": "P",
+    "Outdoor Air ACH": 2,
+    "Total ACH": 4,
+    "Exhaust to Outdoors": "No",
+    "RH (%)": "30-60",
+    "Temp (°C)": "20-23"
+  },
+  {
+    "Room Type": "Corridor",
+    "Pressure": "",
+    "Outdoor Air ACH": "",
+    "Total ACH": 2,
+    "Exhaust to Outdoors": "No",
+    "RH (%)": "",
+    "Temp (°C)": ""
+  },
+  {
+    "Room Type": "Toilet Room",
+    "Pressure": "N",
+    "Outdoor Air ACH": "Optional",
+    "Total ACH": 10,
+    "Exhaust to Outdoors": "Yes",
+    "RH (%)": "",
+    "Temp (°C)": ""
+  }
+]
+
 
