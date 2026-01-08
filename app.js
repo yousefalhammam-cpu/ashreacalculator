@@ -119,6 +119,7 @@
     const empty = $("emptyState");
     empty.style.display = rooms.length ? "none" : "block";
 
+    // cards
     list.innerHTML = rooms.map((r, idx)=>{
       const tagHtml = r.calc.oaTag
         ? `<span class="tag ${r.calc.oaTag}">Outdoor Air: ${r.calc.oaSource}</span>`
@@ -142,20 +143,21 @@
           </div>
 
           <div class="metrics">
-            <div class="metric"><div class="k">Total ACH</div><div class="v">${r.calc.totalAch ?? "—"}</div></div>
-            <div class="metric"><div class="k">Outdoor ACH (Ref)</div><div class="v">${r.calc.oaRaw || "—"}</div></div>
+            <div class="metric"><div class="k">Total ACH (Ref)</div><div class="v">${(r.refTotalACH ?? "—")}</div></div>
+            <div class="metric"><div class="k">Outdoor ACH (Ref)</div><div class="v">${(r.refOutdoorACH || "—")}</div></div>
             <div class="metric"><div class="k">Supply (CFM)</div><div class="v">${fmt0(r.calc.totalCfm)}</div></div>
             <div class="metric"><div class="k">Outdoor (CFM)</div><div class="v">${fmt0(r.calc.oaCfm)}</div></div>
 
             <div class="metric"><div class="k">Exhaust (CFM)</div><div class="v">${fmt0(r.calc.exhCfm)}</div></div>
             <div class="metric"><div class="k">TR (est)</div><div class="v">${fmt2(r.calc.tr)}</div></div>
-            <div class="metric"><div class="k">Pressure (P/N)</div><div class="v">${r.calc.pressure || "—"}</div></div>
-            <div class="metric"><div class="k">Temp/RH</div><div class="v">${(r.calc.tempC||"—")}/${(r.calc.rh||"—")}</div></div>
+            <div class="metric"><div class="k">Pressure (P/N)</div><div class="v">${r.refPressure || "—"}</div></div>
+            <div class="metric"><div class="k">Temp/RH</div><div class="v">${(r.refTempC||"—")}/${(r.refRH||"—")}</div></div>
           </div>
         </div>
       `;
     }).join("");
 
+    // bind delete
     list.querySelectorAll("[data-del]").forEach(btn=>{
       btn.addEventListener("click", ()=>{
         const i = Number(btn.getAttribute("data-del"));
@@ -207,6 +209,7 @@
     const inputs = { volumeM3, offsetPct, thumb, oaOverride };
     const calc = compute(row, inputs);
 
+    // ✅ تثبيت المعايير المرجعية وقت الإضافة
     rooms.push({
       roomName,
       idx,
@@ -216,9 +219,18 @@
       offsetPct,
       thumb,
       oaOverride,
+
+      refPressure: (row["Pressure"] ?? "").toString().trim(),
+      refTotalACH: (row["Total ACH"] ?? ""),
+      refOutdoorACH: (row["Outdoor Air ACH"] ?? ""),
+      refExhaustOutdoors: (row["Exhaust to Outdoors"] ?? "").toString().trim(),
+      refTempC: (row["Temp (°C)"] ?? "").toString().trim(),
+      refRH: (row["RH (%)"] ?? "").toString().trim(),
+
       calc
     });
 
+    // reset small inputs
     $("roomName").value = "";
     $("oaOverride").value = "";
 
@@ -226,13 +238,14 @@
   }
 
   function exportExcelCsv(){
+    // CSV that opens in Excel. Add UTF-8 BOM for Arabic
     const header = [
       "Room Name",
       "Display Name",
       "ASHRAE Reference",
       "Volume (m3)",
       "Volume (ft3)",
-      "Total ACH",
+      "Total ACH (Ref)",
       "Outdoor Air ACH (Ref)",
       "Outdoor Air Source",
       "OA Override (ACH)",
@@ -257,25 +270,25 @@
         r.ashrae,
         r.volumeM3,
         c.volFt3,
-        c.totalAch ?? "",
-        c.oaRaw || "",
+        r.refTotalACH ?? "",
+        r.refOutdoorACH ?? "",
         c.oaSource,
         r.oaOverride ?? "",
         c.totalCfm,
         c.oaCfm,
         c.exhCfm,
         c.tr,
-        c.pressure || "",
-        c.exhOut || "",
-        c.tempC || "",
-        c.rh || "",
+        r.refPressure || "",
+        r.refExhaustOutdoors || "",
+        r.refTempC || "",
+        r.refRH || "",
         r.offsetPct,
         r.thumb
       ].map(safe).join(",");
     });
 
     const csv = [header.map(h=>`"${h}"`).join(","), ...rows].join("\n");
-    const bom = "\uFEFF"; // UTF-8 BOM for Arabic
+    const bom = "\uFEFF"; // UTF-8 BOM
     const blob = new Blob([bom + csv], {type:"text/csv;charset=utf-8"});
     const url = URL.createObjectURL(blob);
 
@@ -300,9 +313,11 @@
 
   render();
 
+  // Register SW
   if ("serviceWorker" in navigator){
     try { await navigator.serviceWorker.register("sw.js"); } catch(e){ /* ignore */ }
   }
 })();
+
 
 
