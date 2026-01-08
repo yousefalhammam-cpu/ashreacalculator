@@ -1,211 +1,27 @@
 [
-  {
-    "Room Type": "Operating Room (Class A)",
-    "Pressure": "P",
-    "Outdoor Air ACH": 3,
-    "Total ACH": 15,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "20-23"
-  },
-  {
-    "Room Type": "Operating Room (Procedure)",
-    "Pressure": "P",
-    "Outdoor Air ACH": 3,
-    "Total ACH": 15,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "20-23"
-  },
-  {
-    "Room Type": "Post-Anesthesia Care Unit (PACU)",
-    "Pressure": "",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Intensive Care Unit (ICU)",
-    "Pressure": "",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Patient Room",
-    "Pressure": "",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Airborne Infection Isolation Room (AII)",
-    "Pressure": "N",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 12,
-    "Exhaust to Outdoors": "Yes",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Protective Environment Room",
-    "Pressure": "P",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 12,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Examination Room",
-    "Pressure": "",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Treatment Room",
-    "Pressure": "",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Medication Room",
-    "Pressure": "P",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 4,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Pharmacy",
-    "Pressure": "P",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 4,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Laboratory - General",
-    "Pressure": "N",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "Yes",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Laboratory - Microbiology",
-    "Pressure": "N",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "Yes",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Laboratory - Histology",
-    "Pressure": "N",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "Yes",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Laboratory - Pathology",
-    "Pressure": "N",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "Yes",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Bronchoscopy Room",
-    "Pressure": "N",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 12,
-    "Exhaust to Outdoors": "Yes",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Endoscopy Room",
-    "Pressure": "",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "21-24"
-  },
-  {
-    "Room Type": "Autopsy Room",
-    "Pressure": "N",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 12,
-    "Exhaust to Outdoors": "Yes",
-    "RH (%)": "",
-    "Temp (°C)": ""
-  },
-  {
-    "Room Type": "Clean Workroom (CSSD)",
-    "Pressure": "P",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 4,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "20-23"
-  },
-  {
-    "Room Type": "Soiled Workroom (CSSD)",
-    "Pressure": "N",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 6,
-    "Exhaust to Outdoors": "Yes",
-    "RH (%)": "",
-    "Temp (°C)": ""
-  },
-  {
-    "Room Type": "Sterile Storage (CSSD)",
-    "Pressure": "P",
-    "Outdoor Air ACH": 2,
-    "Total ACH": 4,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "30-60",
-    "Temp (°C)": "20-23"
-  },
-  {
-    "Room Type": "Corridor",
-    "Pressure": "",
-    "Outdoor Air ACH": "",
-    "Total ACH": 2,
-    "Exhaust to Outdoors": "No",
-    "RH (%)": "",
-    "Temp (°C)": ""
-  },
-  {
-    "Room Type": "Toilet Room",
-    "Pressure": "N",
-    "Outdoor Air ACH": "Optional",
-    "Total ACH": 10,
-    "Exhaust to Outdoors": "Yes",
-    "RH (%)": "",
-    "Temp (°C)": ""
-  }
+  { "Room Type": "Operating Room (Class A)", "Pressure": "P", "Outdoor Air ACH": 3, "Total ACH": 15, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "20-23" },
+  { "Room Type": "Operating Room (Procedure)", "Pressure": "P", "Outdoor Air ACH": 3, "Total ACH": 15, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "20-23" },
+  { "Room Type": "Post-Anesthesia Care Unit (PACU)", "Pressure": "", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Intensive Care Unit (ICU)", "Pressure": "", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Patient Room", "Pressure": "", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Airborne Infection Isolation Room (AII)", "Pressure": "N", "Outdoor Air ACH": 2, "Total ACH": 12, "Exhaust to Outdoors": "Yes", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Protective Environment Room", "Pressure": "P", "Outdoor Air ACH": 2, "Total ACH": 12, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Examination Room", "Pressure": "", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Treatment Room", "Pressure": "", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Medication Room", "Pressure": "P", "Outdoor Air ACH": 2, "Total ACH": 4, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Pharmacy", "Pressure": "P", "Outdoor Air ACH": 2, "Total ACH": 4, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Laboratory - General", "Pressure": "N", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "Yes", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Laboratory - Microbiology", "Pressure": "N", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "Yes", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Laboratory - Histology", "Pressure": "N", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "Yes", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Laboratory - Pathology", "Pressure": "N", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "Yes", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Bronchoscopy Room", "Pressure": "N", "Outdoor Air ACH": 2, "Total ACH": 12, "Exhaust to Outdoors": "Yes", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Endoscopy Room", "Pressure": "", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "21-24" },
+  { "Room Type": "Autopsy Room", "Pressure": "N", "Outdoor Air ACH": 2, "Total ACH": 12, "Exhaust to Outdoors": "Yes", "RH (%)": "", "Temp (°C)": "" },
+  { "Room Type": "Clean Workroom (CSSD)", "Pressure": "P", "Outdoor Air ACH": 2, "Total ACH": 4, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "20-23" },
+  { "Room Type": "Soiled Workroom (CSSD)", "Pressure": "N", "Outdoor Air ACH": 2, "Total ACH": 6, "Exhaust to Outdoors": "Yes", "RH (%)": "", "Temp (°C)": "" },
+  { "Room Type": "Sterile Storage (CSSD)", "Pressure": "P", "Outdoor Air ACH": 2, "Total ACH": 4, "Exhaust to Outdoors": "No", "RH (%)": "30-60", "Temp (°C)": "20-23" },
+  { "Room Type": "Corridor", "Pressure": "", "Outdoor Air ACH": "", "Total ACH": 2, "Exhaust to Outdoors": "No", "RH (%)": "", "Temp (°C)": "" },
+  { "Room Type": "Toilet Room", "Pressure": "N", "Outdoor Air ACH": "Optional", "Total ACH": 10, "Exhaust to Outdoors": "Yes", "RH (%)": "", "Temp (°C)": "" }
 ]
 
 
