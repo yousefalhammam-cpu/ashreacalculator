@@ -1,323 +1,74 @@
-(async function(){
-  const $ = (id)=>document.getElementById(id);
-
-  const nf0 = new Intl.NumberFormat("en-US", {maximumFractionDigits:0});
-  const nf2 = new Intl.NumberFormat("en-US", {maximumFractionDigits:2});
-  const fmt0 = (n)=> (n==null || Number.isNaN(n)) ? "—" : nf0.format(n);
-  const fmt2 = (n)=> (n==null || Number.isNaN(n)) ? "—" : nf2.format(n);
-
-  function toNum(x){
-    if (x===null || x===undefined) return null;
-    if (typeof x === "number") return Number.isFinite(x) ? x : null;
-    const s = String(x).trim();
-    if (!s) return null;
-    if (s.toLowerCase() === "optional") return null;
-    const v = Number(s);
-    return Number.isFinite(v) ? v : null;
+  // ===== KIMO Dashboard =====
+  function setText(id, v){
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = (v==null || Number.isNaN(v) || v==="") ? "—" : String(v);
   }
 
-  async function loadRef(){
-    // robust: some exports include NaN (invalid JSON) -> replace with null
-    const resp = await fetch("data.json", { cache:"no-store" });
-    const txt = await resp.text();
-    const cleaned = txt.replace(/\bNaN\b/g, "null");
-    const parsed = JSON.parse(cleaned);
-    return Array.isArray(parsed) ? parsed : [parsed];
+  function nowClock(){
+    const d = new Date();
+    const time = d.toLocaleTimeString("en-GB", {hour:"2-digit", minute:"2-digit"});
+    const date = d.toLocaleDateString("en-GB", {day:"2-digit", month:"short", year:"numeric"});
+    setText("kimoTime", time);
+    setText("kimoDate", date);
   }
 
-  let ref = [];
-  try{
-    ref = await loadRef();
-    $("statusTag").textContent = `Loaded: ${ref.length} room types`;
-    $("statusTag").className = "tag";
-  } catch(e){
-    $("statusTag").textContent = "Error loading data.json";
-    $("statusTag").className = "tag danger";
-    console.error(e);
-    return;
+  function pressureMode(refPressure, measuredPa){
+    // if we have measured Pa, use it
+    if (measuredPa != null){
+      if (measuredPa > 0.5) return "Positive";
+      if (measuredPa < -0.5) return "Negative";
+      return "Neutral";
+    }
+    // fallback to reference P/N
+    const p = (refPressure || "").toString().trim().toUpperCase();
+    if (p === "P") return "Positive";
+    if (p === "N") return "Negative";
+    return "Neutral";
   }
 
-  // Build dropdown: display (simple) + keep ASHRAE name for output.
-  const options = ref.map((r, i)=>{
-    const rt = (r["Room Type"] ?? "").toString().trim();
-    const display = (r.displayName ?? rt).toString().trim() || rt || `Room ${i+1}`;
-    const ashrae  = (r.ashraeName  ?? rt).toString().trim() || rt || display;
-    return { i, display, ashrae };
-  }).filter(o=>o.display);
+  function updateKimoFromRoom(r){
+    if (!r) return;
 
-  options.sort((a,b)=>a.display.localeCompare(b.display,"en"));
+    // Name
+    const title = (r.roomName ? `${r.roomName} — ` : "") + (r.display || "—");
+    setText("kimoRoomName", title);
 
-  $("roomType").innerHTML = options
-    .map(o=>`<option value="${o.i}">${String(o.display).replace(/"/g,"&quot;")}</option>`)
-    .join("");
+    // Measured values (preferred) otherwise show calculated supply as airflow + ref pressure etc.
+    const m = r.measured || {};
+    const mc = r.measuredCalc || {};
+    const airflow = (m.mCfm != null) ? m.mCfm : r.calc?.totalCfm;
 
-  const rooms = []; // added rooms list
+    setText("kimoPa",  (m.mPa   != null) ? Number(m.mPa).toFixed(1) : "—");
+    setText("kimoTemp",(m.mTemp != null) ? Number(m.mTemp).toFixed(1) : "—");
+    setText("kimoRh",  (m.mRh   != null) ? Number(m.mRh).toFixed(1) : "—");
+    setText("kimoCfm", (airflow != null) ? Math.round(airflow) : "—");
+    setText("kimoAch", (mc.mAch != null) ? Number(mc.mAch).toFixed(2) : "—");
 
-  function compute(row, inputs){
-    const volumeM3 = inputs.volumeM3;
-    const volFt3 = volumeM3 * 35.3147;
+    // Mode
+    setText("kimoMode", pressureMode(r.refPressure, m.mPa));
 
-    const totalAch = toNum(row["Total ACH"]);
-    const oaRaw = (row["Outdoor Air ACH"] ?? "").toString().trim();
-    const oaRefNum = toNum(row["Outdoor Air ACH"]); // null if Optional/blank
+    // Bottom comparison
+    const refAchNum = (typeof r.refTotalACH === "number") ? r.refTotalACH : Number(r.refTotalACH);
+    setText("kimoRefAch", Number.isFinite(refAchNum) ? refAchNum : (r.refTotalACH || "—"));
 
-    const pressure = (row["Pressure"] ?? "").toString().trim(); // P/N/blank
-    const exhOut = (row["Exhaust to Outdoors"] ?? "").toString().trim();
-
-    // OA Override
-    const oaOverride = inputs.oaOverride; // number|null
-    const hasOverride = oaOverride !== null && Number.isFinite(oaOverride) && oaOverride >= 0;
-
-    let oaAch = null;
-    let oaSource = "—";
-    let oaTag = "";
-
-    if (hasOverride){
-      oaAch = oaOverride;
-      oaSource = "Override";
-      oaTag = "";
-    } else if (oaRefNum !== null){
-      oaAch = oaRefNum;
-      oaSource = "Reference";
-      oaTag = "";
-    } else if (oaRaw.toLowerCase() === "optional"){
-      oaAch = 0;
-      oaSource = "Optional (assumed 0)";
-      oaTag = "warn";
+    if (mc.diffAchPct != null){
+      setText("kimoDelta", `${Number(mc.diffAchPct).toFixed(2)}%`);
+      setText("kimoStatus", mc.status || "—");
     } else {
-      oaAch = null;
-      oaSource = "Not specified";
-      oaTag = "danger";
+      setText("kimoDelta", "—");
+      setText("kimoStatus", "—");
     }
-
-    const totalCfm = (totalAch===null) ? null : (volFt3 * totalAch / 60.0);
-    const oaCfm    = (oaAch===null) ? null : (volFt3 * oaAch / 60.0);
-
-    // Exhaust estimate using offset
-    const offset = inputs.offsetPct / 100.0;
-    let exhCfm = null;
-    if (totalCfm !== null){
-      if (pressure.toUpperCase() === "P") exhCfm = totalCfm * (1 - offset);
-      else if (pressure.toUpperCase() === "N") exhCfm = totalCfm * (1 + offset);
-      else if (exhOut.toLowerCase() === "yes") exhCfm = totalCfm;
-    }
-
-    const tr = (totalCfm===null) ? null : (totalCfm / inputs.thumb);
-
-    return {
-      volFt3, totalAch, oaRaw, oaAch, oaSource, oaTag,
-      pressure, exhOut,
-      rh: (row["RH (%)"] ?? "").toString().trim(),
-      tempC: (row["Temp (°C)"] ?? "").toString().trim(),
-      totalCfm, oaCfm, exhCfm, tr
-    };
   }
 
-  function render(){
-    $("countTag").textContent = `Rooms: ${rooms.length}`;
-    const list = $("list");
-    const empty = $("emptyState");
-    empty.style.display = rooms.length ? "none" : "block";
+  // keep clock updated
+  nowClock();
+  setInterval(nowClock, 15000);
 
-    // cards
-    list.innerHTML = rooms.map((r, idx)=>{
-      const tagHtml = r.calc.oaTag
-        ? `<span class="tag ${r.calc.oaTag}">Outdoor Air: ${r.calc.oaSource}</span>`
-        : `<span class="tag">Outdoor Air: ${r.calc.oaSource}</span>`;
-
-      return `
-        <div class="roomCard">
-          <div class="roomHead">
-            <div>
-              <h3>${r.roomName ? `${r.roomName} — ` : ""}${r.display}</h3>
-              <div class="sub">ASHRAE Reference: <b>${r.ashrae}</b></div>
-            </div>
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-              ${tagHtml}
-              <button class="btn danger" data-del="${idx}" style="width:auto; padding:8px 10px;">حذف</button>
-            </div>
-          </div>
-
-          <div class="sub" style="margin-top:8px;">
-            Volume: <b>${fmt2(r.volumeM3)}</b> m³ — Offset: <b>${fmt2(r.offsetPct)}</b>% — Thumb: <b>${r.thumb}</b>
-          </div>
-
-          <div class="metrics">
-            <div class="metric"><div class="k">Total ACH (Ref)</div><div class="v">${(r.refTotalACH ?? "—")}</div></div>
-            <div class="metric"><div class="k">Outdoor ACH (Ref)</div><div class="v">${(r.refOutdoorACH || "—")}</div></div>
-            <div class="metric"><div class="k">Supply (CFM)</div><div class="v">${fmt0(r.calc.totalCfm)}</div></div>
-            <div class="metric"><div class="k">Outdoor (CFM)</div><div class="v">${fmt0(r.calc.oaCfm)}</div></div>
-
-            <div class="metric"><div class="k">Exhaust (CFM)</div><div class="v">${fmt0(r.calc.exhCfm)}</div></div>
-            <div class="metric"><div class="k">TR (est)</div><div class="v">${fmt2(r.calc.tr)}</div></div>
-            <div class="metric"><div class="k">Pressure (P/N)</div><div class="v">${r.refPressure || "—"}</div></div>
-            <div class="metric"><div class="k">Temp/RH</div><div class="v">${(r.refTempC||"—")}/${(r.refRH||"—")}</div></div>
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    // bind delete
-    list.querySelectorAll("[data-del]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const i = Number(btn.getAttribute("data-del"));
-        rooms.splice(i, 1);
-        render();
-        renderSummary();
-      });
-    });
-
-    renderSummary();
-  }
-
-  function renderSummary(){
-    let sumSupply=0, sumOA=0, sumExh=0, sumTR=0;
-    let hasSupply=false, hasOA=false, hasExh=false, hasTR=false;
-
-    rooms.forEach(r=>{
-      const c = r.calc;
-      if (Number.isFinite(c.totalCfm)) { sumSupply += c.totalCfm; hasSupply = true; }
-      if (Number.isFinite(c.oaCfm)) { sumOA += c.oaCfm; hasOA = true; }
-      if (Number.isFinite(c.exhCfm)) { sumExh += c.exhCfm; hasExh = true; }
-      if (Number.isFinite(c.tr)) { sumTR += c.tr; hasTR = true; }
-    });
-
-    $("sumSupply").textContent = hasSupply ? fmt0(sumSupply) : "—";
-    $("sumOA").textContent     = hasOA ? fmt0(sumOA) : "—";
-    $("sumExh").textContent    = hasExh ? fmt0(sumExh) : "—";
-    $("sumTR").textContent     = hasTR ? fmt2(sumTR) : "—";
-  }
-
-  function addRoom(){
-    const idx = Number($("roomType").value);
-    const row = ref[idx];
-    const opt = options.find(o=>o.i===idx);
-
-    const volumeM3 = Number($("volumeM3").value || 0);
-    if (!Number.isFinite(volumeM3) || volumeM3 <= 0){
-      alert("اكتب حجم صحيح بالمتر المكعب (m³).");
-      return;
-    }
-
-    const roomName = ($("roomName").value || "").trim();
-    const offsetPct = Number($("offsetPct").value || 0);
-    const thumb = Number($("thumb").value || 400);
-
-    const oaOverrideStr = ($("oaOverride").value || "").trim();
-    const oaOverride = oaOverrideStr === "" ? null : Number(oaOverrideStr);
-
-    const inputs = { volumeM3, offsetPct, thumb, oaOverride };
-    const calc = compute(row, inputs);
-
-    // ✅ تثبيت المعايير المرجعية وقت الإضافة
-    rooms.push({
-      roomName,
-      idx,
-      display: opt?.display || "—",
-      ashrae: opt?.ashrae || "—",
-      volumeM3,
-      offsetPct,
-      thumb,
-      oaOverride,
-
-      refPressure: (row["Pressure"] ?? "").toString().trim(),
-      refTotalACH: (row["Total ACH"] ?? ""),
-      refOutdoorACH: (row["Outdoor Air ACH"] ?? ""),
-      refExhaustOutdoors: (row["Exhaust to Outdoors"] ?? "").toString().trim(),
-      refTempC: (row["Temp (°C)"] ?? "").toString().trim(),
-      refRH: (row["RH (%)"] ?? "").toString().trim(),
-
-      calc
-    });
-
-    // reset small inputs
-    $("roomName").value = "";
-    $("oaOverride").value = "";
-
-    render();
-  }
-
-  function exportExcelCsv(){
-    // CSV that opens in Excel. Add UTF-8 BOM for Arabic
-    const header = [
-      "Room Name",
-      "Display Name",
-      "ASHRAE Reference",
-      "Volume (m3)",
-      "Volume (ft3)",
-      "Total ACH (Ref)",
-      "Outdoor Air ACH (Ref)",
-      "Outdoor Air Source",
-      "OA Override (ACH)",
-      "Supply (CFM)",
-      "Outdoor (CFM)",
-      "Exhaust (CFM)",
-      "TR (est)",
-      "Pressure (P/N)",
-      "Exhaust to Outdoors",
-      "Temp (°C)",
-      "RH (%)",
-      "Offset (%)",
-      "Rule of Thumb (CFM/TR)"
-    ];
-
-    const rows = rooms.map(r=>{
-      const c = r.calc;
-      const safe = (v)=>`"${String(v ?? "").replace(/"/g,'""')}"`;
-      return [
-        r.roomName,
-        r.display,
-        r.ashrae,
-        r.volumeM3,
-        c.volFt3,
-        r.refTotalACH ?? "",
-        r.refOutdoorACH ?? "",
-        c.oaSource,
-        r.oaOverride ?? "",
-        c.totalCfm,
-        c.oaCfm,
-        c.exhCfm,
-        c.tr,
-        r.refPressure || "",
-        r.refExhaustOutdoors || "",
-        r.refTempC || "",
-        r.refRH || "",
-        r.offsetPct,
-        r.thumb
-      ].map(safe).join(",");
-    });
-
-    const csv = [header.map(h=>`"${h}"`).join(","), ...rows].join("\n");
-    const bom = "\uFEFF"; // UTF-8 BOM
-    const blob = new Blob([bom + csv], {type:"text/csv;charset=utf-8"});
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "ASHRAE170P_Rooms.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  function clearAll(){
-    rooms.length = 0;
-    render();
-    renderSummary();
-  }
-
-  $("addBtn").addEventListener("click", addRoom);
-  $("exportBtn").addEventListener("click", exportExcelCsv);
-  $("clearBtn").addEventListener("click", clearAll);
-
-  render();
-
-  // Register SW
-  if ("serviceWorker" in navigator){
-    try { await navigator.serviceWorker.register("sw.js"); } catch(e){ /* ignore */ }
-  }
-})();
-
-
-
+  // Hook: whenever we render, update KIMO dashboard with LAST room
+  const _renderOld = render;
+  render = function(){
+    _renderOld();
+    const last = rooms.length ? rooms[rooms.length - 1] : null;
+    updateKimoFromRoom(last);
+  };
