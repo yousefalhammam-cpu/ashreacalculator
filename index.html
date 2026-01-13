@@ -1,230 +1,152 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>حاسبة ASHRAE 170P — م. يوسف ال همام</title>
-  <meta name="description" content="إضافة غرف + حجم (m³) → حساب ACH/CFM/TR مع تصدير Excel." />
-  <meta name="theme-color" content="#0b3d2e" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="icon" href="icons/icon-192.png" />
-
-  <style>
-    :root{
-      --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb;
-      --accent:#22c55e; --warn:#f59e0b; --danger:#ef4444; --line: rgba(148,163,184,.16);
-    }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: linear-gradient(180deg,#0b1220,#0f172a); color:var(--text);
-    }
-    header{
-      padding:16px 16px 12px; position:sticky; top:0; z-index:10;
-      backdrop-filter: blur(10px); background: rgba(15,23,42,.75);
-      border-bottom:1px solid var(--line);
-    }
-    header h1{ margin:0; font-size:18px; }
-    header p{ margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.5; }
-
-    main{ padding:14px; max-width:980px; margin:0 auto; }
-    .card{
-      background: rgba(17,24,39,.86);
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,.25);
-      margin-bottom:12px;
-    }
-    .grid{ display:grid; grid-template-columns:1fr; gap:10px; }
-    @media (min-width: 820px){ .grid{ grid-template-columns: 1.2fr .8fr; } }
-
-    label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
-    select,input{
-      width:100%; padding:12px 12px;
-      border-radius:12px;
-      border:1px solid rgba(148,163,184,.22);
-      background: rgba(2,6,23,.55);
-      color:var(--text);
-      outline:none;
-      font-size:13px;
-    }
-    input::placeholder{ color: rgba(148,163,184,.7); }
-    .row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    @media (max-width: 380px){ .row{ grid-template-columns:1fr; } }
-
-    .btn{
-      width:100%; padding:12px; border-radius:12px; border:1px solid rgba(148,163,184,.22);
-      background: rgba(2,6,23,.35); color:var(--text); font-weight:900; cursor:pointer;
-    }
-    .btn.primary{ background: var(--accent); border:0; color:#052e16; }
-    .btn.danger{ border-color: rgba(239,68,68,.35); color:#fecaca; }
-    .btn:active{ transform: translateY(1px); }
-
-    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; }
-    .toolbar .btn{ width:auto; flex:1; min-width: 140px; }
-
-    .tag{
-      display:inline-flex; gap:8px; align-items:center;
-      padding:6px 10px; border-radius:999px; font-size:12px;
-      border:1px solid rgba(148,163,184,.2);
-      background: rgba(2,6,23,.35);
-      color: var(--muted);
-    }
-    .tag.warn{ border-color: rgba(245,158,11,.35); color: var(--warn); }
-    .tag.danger{ border-color: rgba(239,68,68,.35); color: var(--danger); }
-
-    .list{ display:flex; flex-direction:column; gap:10px; }
-    .roomCard{
-      border:1px solid var(--line);
-      border-radius:16px;
-      background: rgba(2,6,23,.35);
-      padding:12px;
-    }
-    .roomHead{
-      display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
-      flex-wrap:wrap;
-    }
-    .roomHead h3{ margin:0; font-size:14px; }
-    .sub{ color:var(--muted); font-size:12px; margin-top:4px; line-height:1.4; }
-
-    .metrics{
-      display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;
-    }
-    @media (min-width: 620px){ .metrics{ grid-template-columns: repeat(4, 1fr); } }
-    .metric{
-      border:1px solid rgba(148,163,184,.12);
-      border-radius:14px;
-      padding:10px;
-      background: rgba(2,6,23,.25);
-    }
-    .metric .k{ color:var(--muted); font-size:11px; }
-    .metric .v{ margin-top:6px; font-size:16px; font-weight:900; }
-
-    .muted{ color:var(--muted); font-size:12px; line-height:1.6; }
-    .small{ font-size:11px; color:rgba(148,163,184,.85); line-height:1.6; }
-
-    .summary{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin-top:10px;
-    }
-    .pill{
-      display:inline-flex; gap:8px; align-items:center;
-      padding:8px 10px; border-radius:999px;
-      border:1px solid rgba(148,163,184,.2);
-      background: rgba(2,6,23,.35);
-      color:var(--muted);
-      font-size:12px;
-    }
-    .pill b{ color:var(--text); font-weight:900; }
-
-    footer{ padding:18px 16px; color:var(--muted); font-size:12px; text-align:center; }
-  </style>
-</head>
-
-<body>
-<header>
-  <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap;">
-    <div>
-      <h1>حاسبة تهوية وتكييف المستشفيات (ASHRAE 170P)</h1>
-      <p>إدخال نوع الغرفة + حجمها (m³) → حساب ACH / CFM / Exhaust / TR (تقديري) مع تصدير النتائج.</p>
+<!-- KIMO-style Dashboard -->
+<section class="kimoWrap">
+  <div class="kimoTop">
+    <div class="kimoTitle">
+      <div class="kimoBadge">KIMO • Style</div>
+      <div class="kimoRoom" id="kimoRoomName">—</div>
     </div>
 
-    <div style="text-align:left;">
-      <div class="tag" style="justify-content:center;">Hospital HVAC • PWA</div>
-      <div class="small" style="margin-top:6px;">Version: <b>1.0</b></div>
+    <div class="kimoMeta">
+      <div class="kimoClock">
+        <div id="kimoTime">—</div>
+        <div id="kimoDate">—</div>
+      </div>
+      <div class="kimoMode">
+        <div class="kimoModeLabel">Room Mode</div>
+        <div class="kimoModeValue" id="kimoMode">—</div>
+      </div>
     </div>
   </div>
-</header>
 
-<main class="grid">
-  <!-- INPUTS -->
-  <section class="card">
-    <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;">
-      <div class="tag" id="statusTag">Loading…</div>
-      <div class="tag" id="countTag">Rooms: 0</div>
+  <div class="kimoGrid">
+    <div class="kimoRow">
+      <div class="kimoCh">C1: Pressure</div>
+      <div class="kimoVal"><span id="kimoPa">—</span> <span class="kimoUnit">Pa</span></div>
     </div>
-
-    <label for="roomType">نوع الغرفة</label>
-    <select id="roomType"></select>
-
-    <label for="volumeM3">حجم الغرفة (m³)</label>
-    <input id="volumeM3" type="number" min="0" step="0.1" placeholder="مثال: 60" value="60" />
-
-    <div class="row">
-      <div>
-        <label for="roomName">اسم الغرفة (اختياري)</label>
-        <input id="roomName" type="text" placeholder="مثال: ICU-01 / OR-02" />
-      </div>
-      <div>
-        <label for="offsetPct">Pressure Offset (%)</label>
-        <input id="offsetPct" type="number" min="0" max="50" step="0.5" value="10" />
-      </div>
+    <div class="kimoRow">
+      <div class="kimoCh">C2: Temperature</div>
+      <div class="kimoVal"><span id="kimoTemp">—</span> <span class="kimoUnit">°C</span></div>
     </div>
-
-    <div class="row">
-      <div>
-        <label for="thumb">Rule of Thumb (CFM/TR)</label>
-        <select id="thumb">
-          <option value="350">350</option>
-          <option value="400" selected>400</option>
-          <option value="450">450</option>
-        </select>
-      </div>
-      <div>
-        <label for="oaOverride">Outdoor Air Override (ACH) اختياري</label>
-        <input id="oaOverride" type="number" min="0" step="0.1" placeholder="مثال: 2.0" />
-      </div>
+    <div class="kimoRow">
+      <div class="kimoCh">C3: Humidity</div>
+      <div class="kimoVal"><span id="kimoRh">—</span> <span class="kimoUnit">%RH</span></div>
     </div>
-
-    <button class="btn primary" id="addBtn">+ إضافة غرفة</button>
-
-    <div class="toolbar" style="margin-top:10px;">
-      <button class="btn" id="exportBtn">تصدير Excel (CSV)</button>
-      <button class="btn danger" id="clearBtn">مسح كل الغرف</button>
+    <div class="kimoRow">
+      <div class="kimoCh">C4: Air Flow</div>
+      <div class="kimoVal"><span id="kimoCfm">—</span> <span class="kimoUnit">CFM</span></div>
     </div>
-
-    <p class="small" style="margin-top:10px;">
-      • Outdoor Air “Optional” = يحسب 0 تلقائيًا ويظهر تنبيه.<br/>
-      • Outdoor Air “Not specified” = يظهر “—” إلا إذا حطّيت Override.<br/>
-      • TR تقديري (CFM ÷ Rule of Thumb).
-    </p>
-  </section>
-
-  <!-- OUTPUTS -->
-  <section class="card">
-    <h2 style="margin:0 0 10px; font-size:14px;">النتائج</h2>
-
-    <div class="summary">
-      <span class="pill">Total Supply (CFM): <b id="sumSupply">—</b></span>
-      <span class="pill">Total Outdoor (CFM): <b id="sumOA">—</b></span>
-      <span class="pill">Total Exhaust (CFM): <b id="sumExh">—</b></span>
-      <span class="pill">Total TR (est): <b id="sumTR">—</b></span>
+    <div class="kimoRow">
+      <div class="kimoCh">C5: Air Change</div>
+      <div class="kimoVal"><span id="kimoAch">—</span> <span class="kimoUnit">ACH</span></div>
     </div>
-
-    <div style="margin-top:12px;" class="list" id="list"></div>
-
-    <p class="muted" id="emptyState" style="margin-top:10px;">
-      ما أضفت أي غرفة… ابدأ من اليسار واضغط “إضافة غرفة”.
-    </p>
-  </section>
-</main>
-
-<footer style="padding:18px 16px; color:var(--muted); font-size:12px; text-align:center; border-top:1px solid var(--line); background: rgba(15,23,42,.35);">
-  <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
-    <div style="font-weight:800; color:var(--text);">© جميع الحقوق محفوظة — م. يوسف ال همام</div>
-    <div>
-      <a href="mailto:yousef.alhammam@live.com" style="color:var(--muted); text-decoration:none; border-bottom:1px dashed rgba(148,163,184,.35);">
-        yousef.alhammam@live.com
-      </a>
-    </div>
-    <div class="small">Designed & Built for mobile web (PWA)</div>
   </div>
-</footer>
 
-<script src="app.js"></script>
-</body>
-</html>
+  <div class="kimoBottom">
+    <div class="kimoMini">
+      <div class="kimoMiniK">Design Total ACH</div>
+      <div class="kimoMiniV" id="kimoRefAch">—</div>
+    </div>
+    <div class="kimoMini">
+      <div class="kimoMiniK">ΔACH</div>
+      <div class="kimoMiniV" id="kimoDelta">—</div>
+    </div>
+    <div class="kimoMini">
+      <div class="kimoMiniK">Status</div>
+      <div class="kimoMiniV" id="kimoStatus">—</div>
+    </div>
+  </div>
+</section>
 
+<style>
+  .kimoWrap{
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:14px;
+    background: rgba(15,23,42,.55);
+    backdrop-filter: blur(10px);
+    margin: 14px 0 16px;
+  }
+  .kimoTop{
+    display:flex;
+    gap:12px;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .kimoTitle{ display:flex; flex-direction:column; gap:6px; }
+  .kimoBadge{
+    display:inline-flex;
+    width: fit-content;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    font-size:12px;
+    opacity:.9;
+  }
+  .kimoRoom{
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:.2px;
+  }
+  .kimoMeta{ display:flex; gap:12px; align-items:flex-start; }
+  .kimoClock{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:8px 10px;
+    font-size:12px;
+    text-align:right;
+    min-width: 110px;
+  }
+  .kimoMode{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:8px 10px;
+    min-width: 140px;
+  }
+  .kimoModeLabel{ font-size:12px; opacity:.8; margin-bottom:4px;}
+  .kimoModeValue{ font-size:16px; font-weight:900; }
 
+  .kimoGrid{
+    display:grid;
+    gap:10px;
+  }
+  .kimoRow{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:14px;
+  }
+  .kimoCh{
+    font-size:13px;
+    opacity:.85;
+  }
+  .kimoVal{
+    font-size:18px;
+    font-weight:900;
+    display:flex;
+    gap:6px;
+    align-items: baseline;
+  }
+  .kimoUnit{ font-size:12px; opacity:.75; }
 
+  .kimoBottom{
+    display:grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap:10px;
+    margin-top:10px;
+  }
+  .kimoMini{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px 12px;
+  }
+  .kimoMiniK{ font-size:12px; opacity:.8; margin-bottom:6px; }
+  .kimoMiniV{ font-size:16px; font-weight:900; }
+  @media (max-width:420px){
+    .kimoBottom{ grid-template-columns: 1fr; }
+    .kimoMeta{ width:100%; justify-content: space-between; }
+  }
+</style>
