@@ -1,15 +1,15 @@
 (async function () {
   const $ = (id) => document.getElementById(id);
 
-  // ===== Guards (لو أي ID ناقص يعطيك سبب واضح) =====
+  // ===== Guards =====
   const must = [
-    "statusTag", "countTag", "roomType", "roomName", "volumeM3", "offsetPct", "thumb", "oaOverride",
-    "mCfm", "mPa", "mTemp", "mRh",
-    "addBtn", "exportBtn", "clearBtn",
-    "list", "emptyState", "sumSupply", "sumOA", "sumExh", "sumTR",
-    "kimoRoomName", "kimoTime", "kimoDate", "kimoMode",
-    "kimoPa", "kimoTemp", "kimoRh", "kimoCfm", "kimoAch",
-    "kimoRefAch", "kimoDelta", "kimoStatus"
+    "statusTag","countTag","roomType","roomName","volumeM3","offsetPct","thumb","oaOverride",
+    "mCfm","mPa","mTemp","mRh",
+    "addBtn","exportBtn","clearBtn",
+    "list","emptyState","sumSupply","sumOA","sumExh","sumTR",
+    "kimoRoomName","kimoTime","kimoDate","kimoMode",
+    "kimoPa","kimoTemp","kimoRh","kimoCfm","kimoAch",
+    "kimoRefAch","kimoDelta","kimoStatus"
   ];
   const missing = must.filter((id) => !$(id));
   if (missing.length) {
@@ -40,7 +40,7 @@
     return Number.isFinite(v) ? v : null;
   }
 
-  // ===== KIMO Dashboard helpers =====
+  // ===== KIMO Dashboard =====
   function setText(id, v) {
     const el = $(id);
     if (!el) return;
@@ -69,7 +69,6 @@
 
   function updateKimoFromRoom(r) {
     if (!r) return;
-
     const title = (r.roomName ? `${r.roomName} — ` : "") + (r.display || "—");
     setText("kimoRoomName", title);
 
@@ -97,7 +96,7 @@
     }
   }
 
-  // ===== Data loader (with fallback) =====
+  // ===== Load reference data (data.json) + fallback =====
   async function loadRef() {
     const INLINE_DATA = [
       { "Room Type": "Airborne Infection Isolation room (AII)", "Pressure": "N", "Outdoor Air ACH": 2, "Total ACH": 12, "Exhaust to Outdoors": "Yes", "RH (%)": "30-60", "Temp (°C)": "21.1-23.9" },
@@ -126,14 +125,13 @@
       try {
         const resp = await fetch(bust(url), { cache: "no-store" });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
         const txt = await resp.text();
         const cleaned = txt.replace(/\bNaN\b/g, "null");
         const parsed = JSON.parse(cleaned);
         const arr = Array.isArray(parsed) ? parsed : [parsed];
 
         if (arr.length) {
-          $("statusTag").textContent = `Loaded from data.json: ${arr.length} rooms`;
+          $("statusTag").textContent = `Loaded rooms: ${arr.length}`;
           $("statusTag").className = "tag ok";
           return arr;
         }
@@ -224,7 +222,63 @@
     return { mAch, diffAch, diffAchPct, status };
   }
 
-  // ===== State =====
+  // ===== “AI” Advisor (rule-based) =====
+  function aiClassify(r){
+    const refAch = Number(r.refTotalACH);
+    const mAch = r.measuredCalc?.mAch;
+
+    if (!Number.isFinite(refAch) || !Number.isFinite(mAch)) {
+      return {grade:"—", score:null, reasons:["أدخل Measured CFM عشان أقدر أقارن."], actions:[]};
+    }
+
+    const tol = 10; // ±10%
+    const diffPct = ((mAch - refAch) / refAch) * 100;
+
+    let grade = "OK";
+    if (diffPct > tol) grade = "HIGH";
+    else if (diffPct < -tol) grade = "LOW";
+
+    const score = Math.max(0, Math.min(100, 100 - Math.abs(diffPct) * 3));
+    const reasons = [];
+    const actions = [];
+
+    const volFt3 = r.volumeM3 * 35.3147;
+    const targetCfm = (refAch * volFt3) / 60;
+    const mCfm = r.measured?.mCfm;
+
+    if (grade === "LOW"){
+      reasons.push("ACH الفعلي أقل من التصميم: احتمال damper مقفول/توازن غير مضبوط/سرعة المروحة منخفضة/فلتر متّسخ.");
+      if (Number.isFinite(mCfm)) actions.push(`اقترح رفع الهواء الكلي إلى ≈ ${Math.round(targetCfm)} CFM (الآن: ${Math.round(mCfm)}).`);
+    } else if (grade === "HIGH"){
+      reasons.push("ACH الفعلي أعلى من التصميم: احتمال over-supply أو damper مفتوح زيادة أو balancing غير دقيق.");
+      if (Number.isFinite(mCfm)) actions.push(`اقترح خفض الهواء الكلي إلى ≈ ${Math.round(targetCfm)} CFM (الآن: ${Math.round(mCfm)}).`);
+    } else {
+      reasons.push("القراءة ضمن التفاوت المقبول مقارنة بالتصميم.");
+      actions.push("راجع فقط اتجاه الضغط وفرق Supply/Exhaust حسب متطلبات الغرفة.");
+    }
+
+    const refP = (r.refPressure || "").toUpperCase();
+    const mPa = r.measured?.mPa;
+    if (mPa != null){
+      if (refP === "P" && mPa < 0) reasons.push("ضغط مقاس سلبي بينما الغرفة تصميمها Positive (P).");
+      if (refP === "N" && mPa > 0) reasons.push("ضغط مقاس إيجابي بينما الغرفة تصميمها Negative (N).");
+    }
+
+    if (Number.isFinite(r.calc?.oaCfm) && Number.isFinite(mCfm) && mCfm < r.calc.oaCfm){
+      reasons.push("تنبيه: CFM المقاس أقل من Outdoor Air المطلوب (راجع القياس/تعريف النقطة).");
+    }
+
+    return {grade, score: Math.round(score), diffPct, targetCfm, reasons, actions};
+  }
+
+  function aiBadge(grade){
+    if (grade === "OK") return `<span class="tag ok">AI: OK</span>`;
+    if (grade === "LOW") return `<span class="tag warn">AI: LOW</span>`;
+    if (grade === "HIGH") return `<span class="tag danger">AI: HIGH</span>`;
+    return `<span class="tag">AI: —</span>`;
+  }
+
+  // ===== Init data =====
   const ref = await loadRef();
 
   // Build dropdown
@@ -285,6 +339,8 @@
           </div>`
         : `<div class="sub" style="margin-top:6px; opacity:.8;">Measured: —</div>`;
 
+      const ai = aiClassify(r);
+
       return `
         <div class="roomCard">
           <div class="roomHead">
@@ -301,6 +357,20 @@
 
           <div class="sub" style="margin-top:8px;">
             Volume: <b>${fmt2(r.volumeM3)}</b> m³ — Offset: <b>${fmt2(r.offsetPct)}</b>% — Thumb: <b>${r.thumb}</b>
+          </div>
+
+          <div class="sub" style="margin-top:10px;">
+            ${aiBadge(ai.grade)}
+            <span class="tag">AI Score: <b>${ai.score ?? "—"}</b>/100</span>
+            ${ai.diffPct==null ? "" : `<span class="tag">ΔACH: <b>${ai.diffPct.toFixed(2)}%</b></span>`}
+          </div>
+
+          <div class="aiBox">
+            <div class="aiTitle">AI Advisor (Design vs Measured)</div>
+            <div class="sub" style="opacity:.92;">
+              ${ai.reasons.map(x=>`• ${x}`).join("<br/>")}
+            </div>
+            ${ai.actions.length ? `<div class="sub" style="margin-top:8px; opacity:.92;">${ai.actions.map(x=>`✅ ${x}`).join("<br/>")}</div>` : ""}
           </div>
 
           <div class="metrics">
@@ -333,7 +403,6 @@
 
     renderSummary();
 
-    // Update KIMO dashboard with last added room
     const last = rooms.length ? rooms[rooms.length - 1] : null;
     if (last) updateKimoFromRoom(last);
   }
@@ -388,7 +457,6 @@
       calc
     });
 
-    // reset inputs (خفيفة)
     $("roomName").value = "";
     $("oaOverride").value = "";
     $("mCfm").value = "";
@@ -401,18 +469,19 @@
 
   function exportExcelCsv() {
     const header = [
-      "Room Name", "Display Name", "ASHRAE Reference",
-      "Volume (m3)", "Total ACH (Ref)", "Outdoor ACH (Ref)",
-      "Supply (CFM)", "Outdoor (CFM)", "Exhaust (CFM)", "TR (est)",
-      "Pressure (P/N) (Ref)", "Temp (°C) (Ref)", "RH (%) (Ref)",
-      "Measured CFM", "Measured ACH", "Measured Pressure (Pa)", "Measured Temp (°C)", "Measured RH (%)",
-      "ΔACH (%)", "Offset (%)", "Rule of Thumb (CFM/TR)"
+      "Room Name","Display Name","ASHRAE Reference",
+      "Volume (m3)","Total ACH (Ref)","Outdoor ACH (Ref)",
+      "Supply (CFM)","Outdoor (CFM)","Exhaust (CFM)","TR (est)",
+      "Pressure (P/N) (Ref)","Temp (°C) (Ref)","RH (%) (Ref)",
+      "Measured CFM","Measured ACH","Measured Pressure (Pa)","Measured Temp (°C)","Measured RH (%)",
+      "ΔACH (%)","AI Grade","AI Score","Offset (%)","Rule of Thumb (CFM/TR)"
     ];
 
     const rows = rooms.map(r => {
       const c = r.calc;
       const m = r.measured || {};
       const mc = r.measuredCalc || {};
+      const ai = aiClassify(r);
       const safe = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
 
       return [
@@ -421,7 +490,8 @@
         c.totalCfm, c.oaCfm, c.exhCfm, c.tr,
         r.refPressure || "", r.refTempC || "", r.refRH || "",
         m.mCfm, mc.mAch, m.mPa, m.mTemp, m.mRh,
-        mc.diffAchPct, r.offsetPct, r.thumb
+        mc.diffAchPct, ai.grade, ai.score,
+        r.offsetPct, r.thumb
       ].map(safe).join(",");
     });
 
@@ -432,7 +502,7 @@
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "ASHRAE170_Rooms_WithMeasured.csv";
+    a.download = "ASHRAE170_Rooms_AI.csv";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -447,16 +517,4 @@
   // ===== Bind =====
   $("addBtn").addEventListener("click", addRoom);
   $("exportBtn").addEventListener("click", exportExcelCsv);
-  $("clearBtn").addEventListener("click", clearAll);
-
-  // init
-  nowClock();
-  setInterval(nowClock, 15000);
-
-  render();
-
-  // Register SW (اختياري)
-  if ("serviceWorker" in navigator) {
-    try { await navigator.serviceWorker.register("sw.js"); } catch (e) { /* ignore */ }
-  }
-})();
+  $("clearBtn").addEventListener("click", clearAll
