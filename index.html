@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
   <title>حاسبة تهوية وتكييف المستشفيات (ASHRAE 170)</title>
-
   <link rel="manifest" href="manifest.webmanifest" />
 
   <style>
@@ -22,7 +21,6 @@
       --shadow: 0 18px 45px rgba(0,0,0,.35);
       --radius: 18px;
     }
-
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
@@ -35,63 +33,17 @@
       color: var(--text);
       padding: 16px 14px 40px;
     }
-
-    .container{
-      max-width: 920px;
-      margin: 0 auto;
-    }
-
-    header{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      margin-bottom: 14px;
-    }
-
-    .titleRow{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-      flex-wrap:wrap;
-    }
-
-    h1{
-      margin:0;
-      font-size: 20px;
-      line-height: 1.25;
-      font-weight: 900;
-      letter-spacing: .2px;
-    }
-
-    .subtitle{
-      margin:0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.6;
-      max-width: 62ch;
-    }
-
-    .pillRow{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:flex-start;
-    }
-
+    .container{ max-width: 920px; margin: 0 auto; }
+    header{ display:flex; flex-direction:column; gap:10px; margin-bottom: 14px; }
+    .titleRow{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+    h1{ margin:0; font-size: 20px; line-height: 1.25; font-weight: 900; letter-spacing: .2px; }
+    .subtitle{ margin:0; color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 62ch; }
+    .pillRow{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-start; }
     .tag{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:7px 10px;
-      border-radius: 999px;
-      border:1px solid var(--line);
-      background: rgba(15,23,42,.35);
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1;
-      white-space:nowrap;
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px; border-radius: 999px; border:1px solid var(--line);
+      background: rgba(15,23,42,.35); color: var(--muted);
+      font-size: 12px; line-height: 1; white-space:nowrap;
     }
     .tag.danger{ background: var(--danger); border-color: rgba(239,68,68,.35); color:#fecaca;}
     .tag.warn{ background: var(--warn); border-color: rgba(245,158,11,.35); color:#fde68a;}
@@ -107,21 +59,10 @@
       margin: 12px 0;
     }
 
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    @media (max-width:680px){
-      .grid2{ grid-template-columns: 1fr; }
-    }
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width:680px){ .grid2{ grid-template-columns: 1fr; } }
 
-    label{
-      display:block;
-      font-size: 12px;
-      color: var(--muted);
-      margin: 0 0 6px;
-    }
+    label{ display:block; font-size: 12px; color: var(--muted); margin: 0 0 6px; }
 
     input, select{
       width:100%;
@@ -133,149 +74,67 @@
       outline: none;
       font-size: 14px;
     }
-
     input::placeholder{ color: rgba(226,232,240,.45); }
 
-    .row{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    @media (max-width:520px){
-      .row{ grid-template-columns: 1fr; }
-    }
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width:520px){ .row{ grid-template-columns: 1fr; } }
 
-    .actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top: 10px;
-    }
-
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
     .btn{
-      appearance:none;
-      border:1px solid var(--line);
-      background: rgba(2,6,23,.35);
-      color: var(--text);
-      padding: 11px 14px;
-      border-radius: 14px;
-      cursor:pointer;
-      font-weight: 800;
-      font-size: 14px;
+      appearance:none; border:1px solid var(--line);
+      background: rgba(2,6,23,.35); color: var(--text);
+      padding: 11px 14px; border-radius: 14px; cursor:pointer;
+      font-weight: 800; font-size: 14px;
     }
-    .btn.primary{
-      background: rgba(59,130,246,.20);
-      border-color: rgba(59,130,246,.35);
-    }
-    .btn.danger{
-      background: rgba(239,68,68,.16);
-      border-color: rgba(239,68,68,.35);
-    }
+    .btn.primary{ background: rgba(59,130,246,.20); border-color: rgba(59,130,246,.35); }
+    .btn.danger{ background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.35); }
     .btn:active{ transform: translateY(1px); }
 
-    .mutedLine{
-      font-size: 12px;
-      color: var(--muted2);
-      line-height: 1.6;
-      margin-top: 6px;
-    }
+    .mutedLine{ font-size: 12px; color: var(--muted2); line-height: 1.6; margin-top: 6px; }
+    .sep{ border:0; border-top:1px solid var(--line); margin: 12px 0; }
 
     .summary{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0,1fr));
-      gap: 10px;
-      margin-top: 10px;
+      display:grid; grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px; margin-top: 10px;
     }
-    @media (max-width:680px){
-      .summary{ grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width:420px){
-      .summary{ grid-template-columns: 1fr; }
-    }
+    @media (max-width:680px){ .summary{ grid-template-columns: 1fr 1fr; } }
+    @media (max-width:420px){ .summary{ grid-template-columns: 1fr; } }
     .sumBox{
       border:1px solid var(--line);
       border-radius: 16px;
       padding: 12px;
       background: rgba(2,6,23,.25);
     }
-    .sumK{
-      font-size:12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-    .sumV{
-      font-size: 18px;
-      font-weight: 900;
-    }
+    .sumK{ font-size:12px; color: var(--muted); margin-bottom: 6px; }
+    .sumV{ font-size: 18px; font-weight: 900; }
 
-    #list{
-      display:flex;
-      flex-direction:column;
-      gap: 12px;
-      margin-top: 12px;
-    }
-
+    #list{ display:flex; flex-direction:column; gap: 12px; margin-top: 12px; }
     .roomCard{
       border:1px solid var(--line);
       border-radius: 18px;
       background: rgba(2,6,23,.20);
       padding: 14px;
     }
-
-    .roomHead{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:flex-start;
-      flex-wrap:wrap;
-    }
-
-    .roomHead h3{
-      margin:0;
-      font-size: 16px;
-      font-weight: 950;
-      letter-spacing: .2px;
-    }
-
-    .sub{
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-    }
+    .roomHead{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+    .roomHead h3{ margin:0; font-size: 16px; font-weight: 950; letter-spacing: .2px; }
+    .sub{ margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.5; }
 
     .metrics{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0,1fr));
-      gap: 10px;
-      margin-top: 12px;
+      display:grid; grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px; margin-top: 12px;
     }
-    @media (max-width:820px){
-      .metrics{ grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width:420px){
-      .metrics{ grid-template-columns: 1fr; }
-    }
-
+    @media (max-width:820px){ .metrics{ grid-template-columns: 1fr 1fr; } }
+    @media (max-width:420px){ .metrics{ grid-template-columns: 1fr; } }
     .metric{
       border:1px solid var(--line);
       border-radius: 16px;
       padding: 10px 12px;
       background: rgba(2,6,23,.18);
       min-height: 62px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
+      display:flex; flex-direction:column; justify-content:space-between;
     }
-    .metric .k{
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-    .metric .v{
-      font-size: 18px;
-      font-weight: 950;
-    }
+    .metric .k{ font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .metric .v{ font-size: 18px; font-weight: 950; }
 
     .footer{
       margin-top: 16px;
@@ -283,12 +142,6 @@
       color: rgba(226,232,240,.6);
       font-size: 12px;
       line-height: 1.7;
-    }
-
-    .sep{
-      border:0;
-      border-top:1px solid var(--line);
-      margin: 12px 0;
     }
 
     /* ===== KIMO DASHBOARD ===== */
@@ -301,86 +154,38 @@
       margin: 12px 0 12px;
       box-shadow: var(--shadow);
     }
-    .kimoTop{
-      display:flex;
-      gap:12px;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-    }
+    .kimoTop{ display:flex; gap:12px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 10px; }
     .kimoTitle{ display:flex; flex-direction:column; gap:6px; }
-    .kimoBadge{
-      display:inline-flex;
-      width: fit-content;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      font-size:12px;
-      opacity:.9;
-    }
-    .kimoRoom{
-      font-size:16px;
-      font-weight:900;
-      letter-spacing:.2px;
-    }
+    .kimoBadge{ display:inline-flex; width: fit-content; padding:6px 10px; border-radius:999px; border:1px solid var(--line); font-size:12px; opacity:.9; }
+    .kimoRoom{ font-size:16px; font-weight:900; letter-spacing:.2px; }
     .kimoMeta{ display:flex; gap:12px; align-items:flex-start; }
-    .kimoClock{
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:8px 10px;
-      font-size:12px;
-      text-align:right;
-      min-width: 120px;
-    }
-    .kimoMode{
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:8px 10px;
-      min-width: 150px;
-    }
+    .kimoClock{ border:1px solid var(--line); border-radius:12px; padding:8px 10px; font-size:12px; text-align:right; min-width: 120px; }
+    .kimoMode{ border:1px solid var(--line); border-radius:12px; padding:8px 10px; min-width: 150px; }
     .kimoModeLabel{ font-size:12px; opacity:.8; margin-bottom:4px;}
     .kimoModeValue{ font-size:16px; font-weight:950; }
-
     .kimoGrid{ display:grid; gap:10px; }
-    .kimoRow{
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      padding:10px 12px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background: rgba(2,6,23,.18);
-    }
+    .kimoRow{ display:flex; justify-content: space-between; align-items:center; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background: rgba(2,6,23,.18); }
     .kimoCh{ font-size:13px; opacity:.85; }
-    .kimoVal{
-      font-size:18px;
-      font-weight:950;
-      display:flex;
-      gap:6px;
-      align-items: baseline;
-    }
+    .kimoVal{ font-size:18px; font-weight:950; display:flex; gap:6px; align-items: baseline; }
     .kimoUnit{ font-size:12px; opacity:.75; }
-
-    .kimoBottom{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap:10px;
-      margin-top:10px;
-    }
-    .kimoMini{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      background: rgba(2,6,23,.18);
-    }
+    .kimoBottom{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; margin-top:10px; }
+    .kimoMini{ border:1px solid var(--line); border-radius:14px; padding:10px 12px; background: rgba(2,6,23,.18); }
     .kimoMiniK{ font-size:12px; opacity:.8; margin-bottom:6px; }
     .kimoMiniV{ font-size:16px; font-weight:950; }
-
     @media (max-width:420px){
       .kimoBottom{ grid-template-columns: 1fr; }
       .kimoMeta{ width:100%; justify-content: space-between; }
     }
+
+    /* AI Advisor */
+    .aiBox{
+      margin-top:10px;
+      border:1px dashed rgba(148,163,184,.35);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(2,6,23,.18);
+    }
+    .aiTitle{ font-weight:950; font-size:12px; opacity:.9; margin-bottom:8px; }
   </style>
 </head>
 
@@ -392,14 +197,12 @@
         <div>
           <h1>حاسبة تهوية وتكييف المستشفيات (ASHRAE 170)</h1>
           <p class="subtitle">
-            إدخل نوع الغرفة + حجمها (m³) لتحصل على ACH/CFM/Exhaust/TR (تقديري)، مع خيار إدخال قراءات ميدانية (Measured)
-            ومقارنة Design vs Actual.
+            إدخل نوع الغرفة + حجمها (m³) لتحصل على ACH/CFM/Exhaust/TR (تقديري)، مع مقارنة Design vs Measured وتوصيات ذكية.
           </p>
         </div>
-
         <div class="pillRow">
           <span class="tag">Hospital HVAC • PWA</span>
-          <span class="tag">Version: <b>1.0</b></span>
+          <span class="tag">Version: <b>2.0</b></span>
         </div>
       </div>
 
@@ -416,7 +219,6 @@
           <div class="kimoBadge">KIMO • Style</div>
           <div class="kimoRoom" id="kimoRoomName">—</div>
         </div>
-
         <div class="kimoMeta">
           <div class="kimoClock">
             <div id="kimoTime">—</div>
@@ -540,7 +342,7 @@
       </div>
 
       <div class="mutedLine">
-        ملاحظة: النتائج تصميمية (Design) حسب قيم ACH المرجعية، ويمكن إدخال قراءات ميدانية للمقارنة (Measured).
+        “AI Advisor” هنا يعتمد قواعد ذكية داخل المتصفح (مجاني) لمقارنة Design vs Measured وتقديم توصيات.
       </div>
     </section>
 
