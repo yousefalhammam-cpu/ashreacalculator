@@ -1,35 +1,51 @@
-const CACHE = "ashrae170p-pwa-v950";
-
+const CACHE_NAME = "aircalc-cache-v1";
 const ASSETS = [
   "./",
   "./index.html",
+  "./styles.css",
   "./app.js",
-  "./data.json",
-  "./manifest.webmanifest",
-  "./sw.js",
+  "./manifest.json",
+  "./404.html",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
 
-self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c)=>c.addAll(ASSETS)));
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+  );
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (e) => {
-  e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.map(k => (k===CACHE)?null:caches.delete(k))))
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => (k === CACHE_NAME ? null : caches.delete(k))));
+      await self.clients.claim();
+    })()
   );
-  self.clients.claim();
 });
 
-self.addEventListener("fetch", (e) => {
-  const req = e.request;
-  e.respondWith(
-    caches.match(req).then((cached) => cached || fetch(req).then((resp)=>{
-      const copy = resp.clone();
-      caches.open(CACHE).then(c=>c.put(req, copy)).catch(()=>{});
-      return resp;
-    }).catch(()=>cached))
+// Cache-first for local assets، Network-first للطلبات الثانية
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // نفس النطاق
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      caches.match(req).then((cached) => cached || fetch(req).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+        return res;
+      }).catch(() => caches.match("./404.html")))
+    );
+    return;
+  }
+
+  // خارج النطاق: Network-first
+  event.respondWith(
+    fetch(req).catch(() => caches.match(req))
   );
 });
