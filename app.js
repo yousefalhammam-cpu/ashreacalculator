@@ -1,165 +1,149 @@
-(function () {
+(() => {
   const $ = (id) => document.getElementById(id);
 
-  const roomType = $("roomType");
-  const roomHint = $("roomHint");
-  const volume = $("volume");
-  const pressureOffset = $("pressureOffset");
-  const oaOverride = $("oaOverride");
-  const ruleOfThumb = $("ruleOfThumb");
+  // عناصر الصفحة (تأكد IDs موجودة في index.html)
+  const roomType = $("roomType");      // select
+  const volumeEl = $("volume");        // input m3
+  const achOverrideEl = $("achOverride"); // input optional
+  const result = $("result");          // div
+  const calcBtn = $("calcBtn");        // button
 
-  const measuredCfm = $("measuredCfm");
-  const measuredPa = $("measuredPa");
-  const measuredTemp = $("measuredTemp");
-  const measuredRh = $("measuredRh");
+  function setLoading(msg) {
+    roomType.innerHTML = `<option value="" selected>${msg}</option>`;
+  }
 
-  const results = $("results");
-  const statusDot = $("statusDot");
-  const statusText = $("statusText");
-
-  let db = null;
-  let flatItems = []; // for quick lookup by id
-
-  function setStatus(ok, text) {
-    statusDot.className = "dot " + (ok ? "ok" : "bad");
-    statusText.textContent = text;
+  function showError(e, extra = "") {
+    setLoading("فشل تحميل البيانات — راجع الرسالة تحت");
+    const msg = `DATA LOAD ERROR ❌\n${extra}\n${String(e)}`;
+    result.innerHTML =
+      `<pre style="white-space:pre-wrap;direction:ltr;text-align:left;
+      background:#081226;border:1px solid #1d2a46;padding:12px;border-radius:12px;color:#e9f1ff;">
+${msg}
+</pre>`;
+    console.error("DATA LOAD ERROR:", e);
   }
 
   async function loadData() {
-    try {
-      // مهم: كاش-بستر عشان ما يعلق الآيفون على نسخة قديمة
-      const url = "data.json?v=" + Date.now();
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      db = await res.json();
-      buildRoomList(db);
-      setStatus(true, "تم تحميل البيانات ✅");
-    } catch (e) {
-      console.error(e);
-      roomType.innerHTML = `<option value="">فشل تحميل data.json</option>`;
-      roomHint.textContent = "تأكد إن data.json بنفس مجلد index.html";
-      setStatus(false, "فيه مشكلة بتحميل البيانات ❌");
+    setLoading("جاري تحميل البيانات…");
+
+    // مسار صحيح داخل GitHub Pages
+    const basePath = location.pathname.endsWith("/")
+      ? location.pathname
+      : location.pathname.replace(/\/[^\/]*$/, "/");
+
+    const urls = [
+      `${basePath}data.json?v=${Date.now()}`,
+      `./data.json?v=${Date.now()}`
+    ];
+
+    let data = null;
+    let usedUrl = null;
+
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status} عند ${url}`);
+        data = await res.json();
+        usedUrl = url;
+        break;
+      } catch (e) {
+        // جرّب الرابط الثاني
+      }
     }
-  }
 
-  function buildRoomList(db) {
-    flatItems = [];
-    roomType.innerHTML = `<option value="">اختر نوع الغرفة…</option>`;
+    if (!data) {
+      showError("لم استطع قراءة data.json", `جرّبت:\n- ${urls.join("\n- ")}`);
+      return;
+    }
 
-    db.categories.forEach((cat) => {
+    // ✅ هذه هي البنية عندك: categories -> items
+    const categories = Array.isArray(data.categories) ? data.categories : null;
+    if (!categories) {
+      showError("شكل data.json غير صحيح",
+        `المتوقع: { "categories": [ { "name": "...", "items":[...] } ] }\nتم التحميل من: ${usedUrl}`
+      );
+      return;
+    }
+
+    // بناء القائمة
+    roomType.innerHTML = `<option value="" selected>اختر نوع الغرفة…</option>`;
+
+    let totalItems = 0;
+
+    categories.forEach((cat) => {
+      const items = Array.isArray(cat.items) ? cat.items : [];
+      if (!items.length) return;
+
       const og = document.createElement("optgroup");
-      og.label = cat.name;
+      og.label = cat.name || "Category";
 
-      cat.items.forEach((item) => {
-        flatItems.push(item);
+      items.forEach((it) => {
+        // label عربي افتراضي (ولو ما وجد نستخدم الإنجليزي)
+        const label = it.label_ar || it.label_en || it.id || "Room";
+        const ach = Number(it.ach ?? 0);
+        const p = Number(it.pressureOffset ?? 0);
+
         const opt = document.createElement("option");
-        opt.value = item.id;
-        opt.textContent = `${item.label_ar} — ${item.label_en}`;
+        opt.value = String(it.id ?? label);
+
+        // نخزن بيانات الحساب داخل الداتا سِت
+        opt.dataset.ach = String(ach);
+        opt.dataset.pressureOffset = String(p);
+        opt.textContent = `${label} (ACH ${ach}${p ? `, ΔP ${p}` : ""})`;
+
         og.appendChild(opt);
+        totalItems++;
       });
 
       roomType.appendChild(og);
     });
 
-    roomHint.textContent = "اختيارك بيعبّي ACH و Pressure Offset تلقائياً (تقدر تعدل).";
-  }
-
-  function getItemById(id) {
-    return flatItems.find((x) => x.id === id) || null;
-  }
-
-  function onRoomChange() {
-    const id = roomType.value;
-    const item = getItemById(id);
-    if (!item) return;
-
-    // عبّي القيم الافتراضية
-    if (pressureOffset.value === "" || pressureOffset.value === null) {
-      pressureOffset.value = item.pressureOffset ?? 0;
-    } else {
-      pressureOffset.value = item.pressureOffset ?? 0;
+    if (!totalItems) {
+      showError("القوائم فاضية", "categories موجودة لكن items فاضية.");
+      return;
     }
 
-    // نخزن ACH الافتراضي في oaOverride إذا كان فاضي (حتى يبان للمستخدم)
-    if (oaOverride.value === "" || oaOverride.value === null) {
-      oaOverride.value = item.ach ?? "";
-    } else {
-      // إذا المستخدم كاتب override بنفسه لا نغيّره
-    }
+    result.innerHTML = `<div class="muted">تم تحميل ${totalItems} غرفة ✅</div>`;
   }
 
   function calc() {
-    const v = parseFloat(volume.value);
-    if (!isFinite(v) || v <= 0) {
-      results.innerHTML = `<div class="badText">دخل حجم صحيح (m³).</div>`;
+    const opt = roomType.selectedOptions?.[0];
+    if (!opt || !opt.value) {
+      result.innerHTML = `<div class="muted">اختر نوع الغرفة أول.</div>`;
       return;
     }
 
-    const id = roomType.value;
-    const item = getItemById(id);
-    const ach = (oaOverride.value !== "" ? parseFloat(oaOverride.value) : (item ? item.ach : NaN));
-
-    if (!isFinite(ach) || ach <= 0) {
-      results.innerHTML = `<div class="badText">حدد نوع الغرفة أو اكتب ACH في Outdoor Air Override.</div>`;
+    const vol = parseFloat(volumeEl?.value || "0");
+    if (!vol || vol <= 0) {
+      result.innerHTML = `<div class="muted">دخل حجم الغرفة (m³) بشكل صحيح.</div>`;
       return;
     }
 
-    // ACH → CFM
-    // m³/h = ACH * Volume
-    // CFM = (m³/h) * 0.588577 (تقريب)
-    const m3h = ach * v;
-    const cfm = m3h * 0.588577;
+    const override = parseFloat(achOverrideEl?.value || "");
+    const ach = Number.isFinite(override) ? override : parseFloat(opt.dataset.ach || "0");
 
-    const pOff = parseFloat(pressureOffset.value || "0");
-    const rot = parseFloat(ruleOfThumb.value || "400");
-    const tr = cfm / rot;
+    if (!ach || ach <= 0) {
+      result.innerHTML = `<div class="muted">النوع المختار ما له ACH صحيح.</div>`;
+      return;
+    }
 
-    const measCfm = measuredCfm.value ? parseFloat(measuredCfm.value) : null;
+    const pressureOffset = parseFloat(opt.dataset.pressureOffset || "0");
 
-    results.innerHTML = `
-      <div class="grid">
-        <div class="k">ACH</div><div class="v">${ach.toFixed(2)}</div>
-        <div class="k">Volume (m³)</div><div class="v">${v.toFixed(2)}</div>
-        <div class="k">Outdoor Air (m³/h)</div><div class="v">${m3h.toFixed(1)}</div>
-        <div class="k">Outdoor Air (CFM)</div><div class="v">${cfm.toFixed(1)}</div>
-        <div class="k">Pressure Offset (%)</div><div class="v">${isFinite(pOff) ? pOff.toFixed(1) : "—"}</div>
-        <div class="k">TR (Rule ${rot})</div><div class="v">${tr.toFixed(2)}</div>
-        ${measCfm !== null && isFinite(measCfm) ? `<div class="k">Measured vs Required</div><div class="v">${(measCfm - cfm).toFixed(1)} CFM</div>` : ``}
+    // CFM = (ACH * Volume(m3) / 60) * 35.3147
+    const cfm = (ach * vol / 60) * 35.3147;
+
+    result.innerHTML = `
+      <div style="display:grid;gap:8px">
+        <div><b>نوع الغرفة:</b> ${opt.textContent}</div>
+        <div><b>الحجم (m³):</b> ${vol}</div>
+        <div><b>ACH:</b> ${ach}</div>
+        <div><b>الضغط (Pressure Offset):</b> ${pressureOffset}</div>
+        <div><b>التدفق المطلوب:</b> ${cfm.toFixed(1)} CFM</div>
       </div>
     `;
   }
 
-  function resetAll() {
-    $("roomName").value = "";
-    roomType.value = "";
-    volume.value = "";
-    pressureOffset.value = "";
-    oaOverride.value = "";
-    measuredCfm.value = "";
-    measuredPa.value = "";
-    measuredTemp.value = "";
-    measuredRh.value = "";
-    results.innerHTML = `<div class="muted">اختر نوع الغرفة وادخل الحجم ثم اضغط احسب.</div>`;
-  }
+  calcBtn?.addEventListener("click", calc);
 
-  // Service Worker (Offline)
-  async function registerSW() {
-    if (!("serviceWorker" in navigator)) return;
-    try {
-      const reg = await navigator.serviceWorker.register("sw.js");
-      // طلب تحديث سريع
-      reg.update();
-    } catch (e) {
-      console.warn("SW failed", e);
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded", async () => {
-    roomType.addEventListener("change", onRoomChange);
-    $("calcBtn").addEventListener("click", calc);
-    $("resetBtn").addEventListener("click", resetAll);
-
-    await loadData();
-    await registerSW();
-  });
+  loadData();
 })();
