@@ -1,75 +1,47 @@
 {
+  "version": 1,
   "categories": [
     {
-      "id": "hospital",
-      "name_ar": "غرف المستشفى",
-      "name_en": "Hospital Rooms",
-      "rooms": [
-        { "id": "patient_room", "name_ar": "غرفة تنويم (عام)", "name_en": "Patient Room (General)", "ach_default": 6, "pressurization": "neutral" },
-        { "id": "icu", "name_ar": "العناية المركزة ICU", "name_en": "ICU", "ach_default": 12, "pressurization": "neutral" },
-        { "id": "nicu", "name_ar": "عناية حديثي الولادة NICU", "name_en": "NICU", "ach_default": 12, "pressurization": "neutral" },
-
-        { "id": "or", "name_ar": "غرفة عمليات OR", "name_en": "Operating Room", "ach_default": 20, "pressurization": "positive" },
-        { "id": "or_minor", "name_ar": "عمليات صغرى / إجراءات", "name_en": "Minor Procedure Room", "ach_default": 15, "pressurization": "positive" },
-
-        { "id": "er_exam", "name_ar": "طوارئ - غرفة فحص", "name_en": "ER Exam Room", "ach_default": 6, "pressurization": "neutral" },
-        { "id": "er_trauma", "name_ar": "طوارئ - إنعاش/Trauma", "name_en": "ER Trauma/Resus", "ach_default": 12, "pressurization": "neutral" },
-
-        { "id": "isolation_airborne", "name_ar": "عزل تنفسي (AIIR) ضغط سالب", "name_en": "Airborne Isolation (AIIR)", "ach_default": 12, "pressurization": "negative" },
-        { "id": "protective_env", "name_ar": "عزل وقائي (PE) ضغط موجب", "name_en": "Protective Environment (PE)", "ach_default": 12, "pressurization": "positive" },
-
-        { "id": "imaging_xray", "name_ar": "أشعة X-Ray", "name_en": "X-Ray", "ach_default": 6, "pressurization": "neutral" },
-        { "id": "ct", "name_ar": "أشعة CT", "name_en": "CT", "ach_default": 6, "pressurization": "neutral" },
-        { "id": "mri", "name_ar": "أشعة MRI", "name_en": "MRI", "ach_default": 6, "pressurization": "neutral" },
-        { "id": "ultrasound", "name_ar": "سونار", "name_en": "Ultrasound", "ach_default": 6, "pressurization": "neutral" },
-
-        { "id": "lab_general", "name_ar": "مختبر عام", "name_en": "General Lab", "ach_default": 8, "pressurization": "neutral" },
-        { "id": "lab_micro", "name_ar": "مختبر أحياء دقيقة", "name_en": "Microbiology Lab", "ach_default": 10, "pressurization": "negative" },
-        { "id": "pharmacy", "name_ar": "صيدلية", "name_en": "Pharmacy", "ach_default": 6, "pressurization": "neutral" },
-
-        { "id": "cssd_clean", "name_ar": "CSSD منطقة نظيفة", "name_en": "CSSD Clean", "ach_default": 10, "pressurization": "positive" },
-        { "id": "cssd_dirty", "name_ar": "CSSD منطقة متسخة", "name_en": "CSSD Decontamination", "ach_default": 10, "pressurization": "negative" },
-
-        { "id": "endoscopy", "name_ar": "مناظير", "name_en": "Endoscopy", "ach_default": 12, "pressurization": "neutral" },
-        { "id": "dialysis", "name_ar": "غسيل كلى", "name_en": "Dialysis", "ach_default": 6, "pressurization": "neutral" },
-
-        { "id": "delivery_room", "name_ar": "ولادة LDR", "name_en": "Labor/Delivery Room", "ach_default": 12, "pressurization": "neutral" },
-        { "id": "nursery", "name_ar": "حضّانة", "name_en": "Nursery", "ach_default": 6, "pressurization": "neutral" },
-
-        { "id": "toilet_public", "name_ar": "دورات مياه عامة", "name_en": "Public Toilet", "ach_default": 10, "pressurization": "negative" },
-        { "id": "shower", "name_ar": "حمّام/شاور", "name_en": "Shower", "ach_default": 10, "pressurization": "negative" },
-
-        { "id": "waiting", "name_ar": "صالة انتظار", "name_en": "Waiting Area", "ach_default": 4, "pressurization": "neutral" },
-        { "id": "corridor", "name_ar": "ممرات", "name_en": "Corridors", "ach_default": 4, "pressurization": "neutral" },
-
-        { "id": "clean_utility", "name_ar": "مخزن/غرفة نظيفة Clean Utility", "name_en": "Clean Utility", "ach_default": 6, "pressurization": "positive" },
-        { "id": "soiled_utility", "name_ar": "مخزن متسخ Soiled Utility", "name_en": "Soiled Utility", "ach_default": 10, "pressurization": "negative" },
-
-        { "id": "kitchen", "name_ar": "مطبخ/تحضير طعام", "name_en": "Kitchen/Food Prep", "ach_default": 10, "pressurization": "negative" },
-        { "id": "laundry", "name_ar": "مغسلة/غسيل", "name_en": "Laundry", "ach_default": 10, "pressurization": "negative" },
-
-        { "id": "staff_office", "name_ar": "مكاتب/إدارة", "name_en": "Offices/Admin", "ach_default": 2, "pressurization": "neutral" },
-        { "id": "meeting", "name_ar": "قاعة اجتماع", "name_en": "Meeting Room", "ach_default": 4, "pressurization": "neutral" }
+      "name": "Hospital - Critical",
+      "items": [
+        { "id": "icu", "label_ar": "العناية المركزة (ICU)", "label_en": "ICU", "ach": 12, "pressureOffset": 0 },
+        { "id": "or", "label_ar": "غرفة عمليات (OR)", "label_en": "Operating Room", "ach": 20, "pressureOffset": 0 },
+        { "id": "isolation_aiir", "label_ar": "عزل سلبي (AIIR)", "label_en": "Airborne Infection Isolation", "ach": 12, "pressureOffset": -10 },
+        { "id": "protective_env", "label_ar": "عزل إيجابي (Protective Env.)", "label_en": "Protective Environment", "ach": 12, "pressureOffset": 10 },
+        { "id": "er_trauma", "label_ar": "الطوارئ/إنعاش", "label_en": "ER/Trauma", "ach": 12, "pressureOffset": 0 }
       ]
     },
-
     {
-      "id": "residential",
-      "name_ar": "غرف المنازل",
-      "name_en": "Residential Rooms",
-      "rooms": [
-        { "id": "living", "name_ar": "صالة/معيشة", "name_en": "Living Room", "ach_default": 1, "pressurization": "neutral" },
-        { "id": "bedroom", "name_ar": "غرفة نوم", "name_en": "Bedroom", "ach_default": 1, "pressurization": "neutral" },
-        { "id": "majlis", "name_ar": "مجلس", "name_en": "Majlis", "ach_default": 1, "pressurization": "neutral" },
-        { "id": "dining", "name_ar": "سفرة/طعام", "name_en": "Dining", "ach_default": 1, "pressurization": "neutral" },
-
-        { "id": "kitchen_home", "name_ar": "مطبخ", "name_en": "Kitchen", "ach_default": 6, "pressurization": "negative" },
-        { "id": "bathroom_home", "name_ar": "دورة مياه", "name_en": "Bathroom", "ach_default": 8, "pressurization": "negative" },
-        { "id": "laundry_home", "name_ar": "غرفة غسيل", "name_en": "Laundry", "ach_default": 6, "pressurization": "negative" },
-
-        { "id": "store", "name_ar": "مستودع/خزانة", "name_en": "Store/Closet", "ach_default": 1, "pressurization": "neutral" },
-        { "id": "garage", "name_ar": "كراج", "name_en": "Garage", "ach_default": 6, "pressurization": "negative" },
-        { "id": "stair", "name_ar": "درج/ردهة", "name_en": "Stairs/Lobby", "ach_default": 1, "pressurization": "neutral" }
+      "name": "Hospital - General",
+      "items": [
+        { "id": "patient_room", "label_ar": "غرفة مريض", "label_en": "Patient Room", "ach": 6, "pressureOffset": 0 },
+        { "id": "exam_room", "label_ar": "غرفة فحص", "label_en": "Exam Room", "ach": 6, "pressureOffset": 0 },
+        { "id": "waiting", "label_ar": "انتظار", "label_en": "Waiting Area", "ach": 4, "pressureOffset": 0 },
+        { "id": "nurse_station", "label_ar": "محطة تمريض", "label_en": "Nurse Station", "ach": 6, "pressureOffset": 0 },
+        { "id": "lab", "label_ar": "مختبر", "label_en": "Laboratory", "ach": 8, "pressureOffset": 0 },
+        { "id": "pharmacy", "label_ar": "صيدلية", "label_en": "Pharmacy", "ach": 6, "pressureOffset": 0 },
+        { "id": "imaging", "label_ar": "أشعة/تصوير", "label_en": "Imaging", "ach": 6, "pressureOffset": 0 },
+        { "id": "cssd", "label_ar": "تعقيم مركزي (CSSD)", "label_en": "Central Sterile", "ach": 10, "pressureOffset": 0 }
+      ]
+    },
+    {
+      "name": "Hospital - Support",
+      "items": [
+        { "id": "toilet", "label_ar": "دورة مياه", "label_en": "Toilet", "ach": 10, "pressureOffset": -5 },
+        { "id": "soiled_utility", "label_ar": "غرفة نفايات/متسخة", "label_en": "Soiled Utility", "ach": 10, "pressureOffset": -10 },
+        { "id": "clean_utility", "label_ar": "غرفة نظيفة", "label_en": "Clean Utility", "ach": 6, "pressureOffset": 5 },
+        { "id": "storage", "label_ar": "مستودع", "label_en": "Storage", "ach": 4, "pressureOffset": 0 }
+      ]
+    },
+    {
+      "name": "Residential - Home",
+      "items": [
+        { "id": "bedroom", "label_ar": "غرفة نوم", "label_en": "Bedroom", "ach": 2, "pressureOffset": 0 },
+        { "id": "living", "label_ar": "صالة/معيشة", "label_en": "Living Room", "ach": 2, "pressureOffset": 0 },
+        { "id": "kitchen", "label_ar": "مطبخ", "label_en": "Kitchen", "ach": 5, "pressureOffset": -5 },
+        { "id": "bath", "label_ar": "حمام", "label_en": "Bathroom", "ach": 6, "pressureOffset": -5 },
+        { "id": "laundry", "label_ar": "غرفة غسيل", "label_en": "Laundry", "ach": 4, "pressureOffset": -3 },
+        { "id": "corridor", "label_ar": "ممر", "label_en": "Corridor", "ach": 1, "pressureOffset": 0 }
       ]
     }
   ]
