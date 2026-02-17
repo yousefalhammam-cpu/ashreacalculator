@@ -2,167 +2,99 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Air Calc Pro</title>
 
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#0b1220" />
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b1220">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-  <link rel="icon" href="icons/icon-192.png" />
-  <link rel="apple-touch-icon" href="icons/icon-192.png" />
-
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=1">
 </head>
-
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo">AC</div>
-        <div class="titles">
-          <div class="name">Air Calc Pro</div>
-          <div class="sub">HVAC • ACH • CFM • TR</div>
-        </div>
-      </div>
-      <div class="status" id="netStatus">…</div>
+  <div class="wrap">
+    <header class="top">
+      <h1>Air Calc Pro</h1>
+      <p class="sub">حاسبة التهوية (ACH / CFM) — مستشفى + منازل</p>
     </header>
 
-    <main class="card">
-      <h1>حاسبة التهوية والتبريد</h1>
-
-      <section class="grid">
-        <label class="field">
-          <span class="label">نوع الغرفة (ASHRAE)</span>
-          <select id="roomType"></select>
-          <small class="hint" id="roomHint">—</small>
-        </label>
-
-        <label class="field">
-          <span class="label">اسم الغرفة (اختياري)</span>
-          <input id="roomName" type="text" placeholder="مثال: Isolation Room 1.3.2.1" />
-        </label>
-
-        <label class="field">
-          <span class="label">حجم الغرفة (m³)</span>
-          <input id="volume" type="number" inputmode="decimal" placeholder="مثال: 60" />
-        </label>
-
-        <label class="field">
-          <span class="label">Pressure Offset (%)</span>
-          <input id="pressureOffset" type="number" inputmode="decimal" placeholder="10" />
-          <small class="hint">اختياري—يظهر بالأرقام فقط (ما يغير معادلات ACH)</small>
-        </label>
-
-        <label class="field">
-          <span class="label">Rule of Thumb (CFM/TR)</span>
-          <select id="rot">
-            <option value="350">350</option>
-            <option value="400" selected>400</option>
-            <option value="450">450</option>
-            <option value="500">500</option>
-          </select>
-        </label>
-
-        <label class="field">
-          <span class="label">Outdoor Air Override (ACH) — اختياري</span>
-          <input id="oaOverride" type="number" inputmode="decimal" placeholder="اتركه فاضي للتطبيق المرجع" />
-        </label>
-      </section>
-
-      <hr class="sep" />
-
-      <section>
-        <h2>قراءة ميدانية (اختياري) — لنفس الغرفة</h2>
-        <div class="grid">
-          <label class="field">
-            <span class="label">Measured Airflow (CFM)</span>
-            <input id="measCfm" type="number" inputmode="decimal" placeholder="مثال: 313" />
-          </label>
-
-          <label class="field">
-            <span class="label">Measured Pressure (Pa)</span>
-            <input id="measPa" type="number" inputmode="decimal" placeholder="مثال: -10" />
-          </label>
-
-          <label class="field">
-            <span class="label">Measured Temp (°C)</span>
-            <input id="measTemp" type="number" inputmode="decimal" placeholder="مثال: 20.6" />
-          </label>
-
-          <label class="field">
-            <span class="label">Measured RH (%)</span>
-            <input id="measRh" type="number" inputmode="decimal" placeholder="مثال: 45" />
-          </label>
-        </div>
-      </section>
-
-      <div class="actions">
-        <button class="btn primary" id="calcBtn">احسب</button>
-        <button class="btn" id="clearBtn">مسح</button>
+    <section class="card">
+      <div class="row">
+        <label for="roomType">نوع الغرفة (ASHRAE)</label>
+        <select id="roomType">
+          <option value="">جاري تحميل البيانات…</option>
+        </select>
+        <small id="roomHint" class="hint"></small>
       </div>
 
-      <section class="results" id="results" hidden>
-        <h2>النتائج</h2>
-        <div class="kpis">
-          <div class="kpi">
-            <div class="kpiLabel">ACH المرجعي</div>
-            <div class="kpiVal" id="kpiAch">—</div>
-          </div>
-          <div class="kpi">
-            <div class="kpiLabel">Outdoor Air المطلوب (CFM)</div>
-            <div class="kpiVal" id="kpiReqCfm">—</div>
-          </div>
-          <div class="kpi">
-            <div class="kpiLabel">تقدير الحمل (TR)</div>
-            <div class="kpiVal" id="kpiTr">—</div>
-          </div>
-          <div class="kpi">
-            <div class="kpiLabel">Rule of Thumb CFM</div>
-            <div class="kpiVal" id="kpiRotCfm">—</div>
-          </div>
-        </div>
+      <div class="row">
+        <label for="roomName">اسم الغرفة (اختياري)</label>
+        <input id="roomName" placeholder="مثال: Isolation Room 1.3.2.1" />
+      </div>
 
-        <div class="panel" id="measPanel" hidden>
-          <h3>مقارنة بالقراءة الميدانية</h3>
-          <div class="measGrid">
-            <div class="row">
-              <span>Measured CFM</span>
-              <b id="mCfm">—</b>
-            </div>
-            <div class="row">
-              <span>Measured ACH</span>
-              <b id="mAch">—</b>
-            </div>
-            <div class="row">
-              <span>فرق CFM</span>
-              <b id="diffCfm">—</b>
-            </div>
-            <div class="row">
-              <span>الحالة</span>
-              <b id="passFail">—</b>
-            </div>
-          </div>
-          <small class="hint">*المعادلات: CFM = (ACH × Volume m³ × 35.3147) ÷ 60</small>
-        </div>
+      <div class="row">
+        <label for="volume">حجم الغرفة (m³)</label>
+        <input id="volume" type="number" inputmode="decimal" placeholder="مثال: 60" />
+      </div>
 
-        <div class="note" id="noteBox"></div>
-      </section>
-    </main>
+      <div class="row">
+        <label for="pressureOffset">Pressure Offset (%)</label>
+        <input id="pressureOffset" type="number" inputmode="decimal" placeholder="مثال: 10" />
+      </div>
 
-    <footer class="footer">
-      <span>Offline-ready • GitHub Pages</span>
-      <span class="dot">•</span>
-      <span id="versionTag">v1.0</span>
+      <div class="row">
+        <label for="ruleOfThumb">Rule of Thumb (CFM/TR)</label>
+        <input id="ruleOfThumb" type="number" inputmode="decimal" value="400" />
+      </div>
+
+      <div class="row">
+        <label for="oaOverride">Outdoor Air Override (ACH) — اختياري</label>
+        <input id="oaOverride" type="number" inputmode="decimal" placeholder="اتركه فاضي للتطبيق المرجع" />
+      </div>
+
+      <hr>
+
+      <h3 class="secTitle">قراءة ميدانية (اختياري)</h3>
+
+      <div class="row">
+        <label for="measuredCfm">Measured Airflow (CFM)</label>
+        <input id="measuredCfm" type="number" inputmode="decimal" placeholder="مثال: 313" />
+      </div>
+
+      <div class="row">
+        <label for="measuredPa">Measured Pressure (Pa)</label>
+        <input id="measuredPa" type="number" inputmode="decimal" placeholder="مثال: -10" />
+      </div>
+
+      <div class="row">
+        <label for="measuredTemp">Measured Temp (°C)</label>
+        <input id="measuredTemp" type="number" inputmode="decimal" placeholder="مثال: 20.6" />
+      </div>
+
+      <div class="row">
+        <label for="measuredRh">Measured RH (%)</label>
+        <input id="measuredRh" type="number" inputmode="decimal" placeholder="مثال: 45" />
+      </div>
+
+      <div class="actions">
+        <button id="calcBtn">احسب</button>
+        <button id="resetBtn" class="ghost">مسح</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 class="secTitle">النتائج</h3>
+      <div id="results" class="results">
+        <div class="muted">اختر نوع الغرفة وادخل الحجم ثم اضغط احسب.</div>
+      </div>
+    </section>
+
+    <footer class="foot muted">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">جاهز</span>
     </footer>
   </div>
 
-  <script src="app.js"></script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js");
-    }
-  </script>
+  <script src="app.js?v=1"></script>
 </body>
 </html>
