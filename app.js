@@ -1,234 +1,165 @@
-/* =========================================
-   Air Calc Pro - app.js (Hospital + Residential)
-   - Fills Category (Hospital/Residential)
-   - Fills Room Type based on category
-   - Auto-fills ACH Override when room selected
-   ========================================= */
+(function () {
+  const $ = (id) => document.getElementById(id);
 
-'use strict';
+  const roomType = $("roomType");
+  const roomHint = $("roomHint");
+  const volume = $("volume");
+  const pressureOffset = $("pressureOffset");
+  const oaOverride = $("oaOverride");
+  const ruleOfThumb = $("ruleOfThumb");
 
-/* ========= DOM IDS (عدّلها إذا أسماء عناصر HTML عندك مختلفة) ========= */
-const IDS = {
-  categorySelect: 'categorySelect',     // select: مستشفى/منازل
-  roomTypeSelect: 'roomTypeSelect',     // select: نوع الغرفة
-  roomNameInput: 'roomName',            // input: اسم الغرفة (اختياري)
-  roomVolumeInput: 'roomVolume',        // input: حجم الغرفة (m3)
-  pressureOffsetInput: 'pressureOffset',// input: Pressure Offset %
-  ruleOfThumbInput: 'ruleOfThumb',      // input: Rule of Thumb (CFM/TR)
-  outdoorAirOverrideInput: 'outdoorAirOverride', // input: ACH Override
+  const measuredCfm = $("measuredCfm");
+  const measuredPa = $("measuredPa");
+  const measuredTemp = $("measuredTemp");
+  const measuredRh = $("measuredRh");
 
-  measuredAirflowInput: 'measuredAirflow',
-  measuredPressureInput: 'measuredPressure',
-  measuredTempInput: 'measuredTemp',
-  measuredRhInput: 'measuredRh',
+  const results = $("results");
+  const statusDot = $("statusDot");
+  const statusText = $("statusText");
 
-  // Areas to show results (اختياري)
-  resultBox: 'resultBox',
-  resultText: 'resultText'
-};
+  let db = null;
+  let flatItems = []; // for quick lookup by id
 
-/* ========= Helpers ========= */
-function $(id) {
-  return document.getElementById(id);
-}
-function setText(el, text) {
-  if (el) el.textContent = text;
-}
-function setValue(el, val) {
-  if (el) el.value = val;
-}
-function num(val, fallback = 0) {
-  const n = Number(val);
-  return Number.isFinite(n) ? n : fallback;
-}
-function clearOptions(selectEl) {
-  if (!selectEl) return;
-  while (selectEl.options.length) selectEl.remove(0);
-}
-function addOption(selectEl, value, label) {
-  if (!selectEl) return;
-  const opt = document.createElement('option');
-  opt.value = value;
-  opt.textContent = label;
-  selectEl.appendChild(opt);
-}
-function uiLang() {
-  // لو موقعك عربي غالبًا html lang="ar"
-  const lang = (document.documentElement.lang || '').toLowerCase();
-  return lang.includes('ar') ? 'ar' : 'en';
-}
-function labelRoom(room, lang) {
-  return lang === 'ar' ? (room.name_ar || room.name_en || room.id) : (room.name_en || room.name_ar || room.id);
-}
-function labelCategory(cat, lang) {
-  return lang === 'ar' ? (cat.name_ar || cat.name_en || cat.id) : (cat.name_en || cat.name_ar || cat.id);
-}
-
-/* ========= Data ========= */
-let DATA = null;
-let currentCategoryId = null;
-let currentRoomId = null;
-
-/* ========= Load data.json ========= */
-async function loadData() {
-  // data.json لازم يكون في نفس مجلد index.html على GitHub Pages
-  const res = await fetch('./data.json', { cache: 'no-cache' });
-  if (!res.ok) throw new Error(`Failed to load data.json (${res.status})`);
-  const json = await res.json();
-
-  if (!json || !Array.isArray(json.categories)) {
-    throw new Error('data.json structure invalid. Expected: { "categories": [ ... ] }');
-  }
-  return json;
-}
-
-/* ========= Populate UI ========= */
-function populateCategories() {
-  const lang = uiLang();
-  const catSelect = $(IDS.categorySelect);
-  clearOptions(catSelect);
-
-  addOption(catSelect, '', lang === 'ar' ? 'اختر الاستخدام…' : 'Select category…');
-
-  DATA.categories.forEach(cat => {
-    addOption(catSelect, cat.id, labelCategory(cat, lang));
-  });
-
-  // اختر الافتراضي: hospital إذا موجود
-  const defaultCat = DATA.categories.find(c => c.id === 'hospital') ? 'hospital' : (DATA.categories[0]?.id || '');
-  setValue(catSelect, defaultCat);
-  currentCategoryId = defaultCat;
-}
-
-function populateRooms(categoryId) {
-  const lang = uiLang();
-  const roomSelect = $(IDS.roomTypeSelect);
-  clearOptions(roomSelect);
-
-  addOption(roomSelect, '', lang === 'ar' ? 'اختر نوع الغرفة…' : 'Select room type…');
-
-  const cat = DATA.categories.find(c => c.id === categoryId);
-  if (!cat || !Array.isArray(cat.rooms)) return;
-
-  cat.rooms.forEach(r => {
-    addOption(roomSelect, r.id, labelRoom(r, lang));
-  });
-
-  // لا تختار غرفة تلقائيًا، خله المستخدم يختار
-  setValue(roomSelect, '');
-  currentRoomId = null;
-
-  // امسح ACH override (اختياري)
-  const achEl = $(IDS.outdoorAirOverrideInput);
-  if (achEl) achEl.placeholder = lang === 'ar'
-    ? 'اتركه فاضي للتطبيق المرجع'
-    : 'Leave blank to use default';
-}
-
-function applyRoomDefaults(categoryId, roomId) {
-  const cat = DATA.categories.find(c => c.id === categoryId);
-  if (!cat) return;
-  const room = (cat.rooms || []).find(r => r.id === roomId);
-  if (!room) return;
-
-  // Auto-fill ACH Override
-  const achEl = $(IDS.outdoorAirOverrideInput);
-  if (achEl) {
-    // نحط الرقم مباشرة (تقدر تغيره)
-    achEl.value = String(room.ach_default ?? '');
+  function setStatus(ok, text) {
+    statusDot.className = "dot " + (ok ? "ok" : "bad");
+    statusText.textContent = text;
   }
 
-  // ممكن نعرض ضغط الغرفة كتلميح (اختياري)
-  const resultText = $(IDS.resultText);
-  const lang = uiLang();
-  if (resultText) {
-    const press = room.pressurization || 'neutral';
-    const pressAr = press === 'positive' ? 'موجب' : press === 'negative' ? 'سالب' : 'محايد';
-    const pressEn = press === 'positive' ? 'Positive' : press === 'negative' ? 'Negative' : 'Neutral';
-
-    setText(
-      resultText,
-      lang === 'ar'
-        ? `تم اختيار: ${room.name_ar || room.name_en}. الضغط: ${pressAr}. تم تعبئة ACH = ${room.ach_default}.`
-        : `Selected: ${room.name_en || room.name_ar}. Pressurization: ${pressEn}. ACH set to ${room.ach_default}.`
-    );
+  async function loadData() {
+    try {
+      // مهم: كاش-بستر عشان ما يعلق الآيفون على نسخة قديمة
+      const url = "data.json?v=" + Date.now();
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      db = await res.json();
+      buildRoomList(db);
+      setStatus(true, "تم تحميل البيانات ✅");
+    } catch (e) {
+      console.error(e);
+      roomType.innerHTML = `<option value="">فشل تحميل data.json</option>`;
+      roomHint.textContent = "تأكد إن data.json بنفس مجلد index.html";
+      setStatus(false, "فيه مشكلة بتحميل البيانات ❌");
+    }
   }
-}
 
-/* ========= Optional: basic calculation example (إذا عندك نتائج) =========
-   ملاحظة: ما غيرت حاسباتك الأساسية لأنك ممكن عندك منطق خاص.
-   لكن لو تبي أربطه بالنتائج الموجودة عندك، قلّي ايش IDs حق حقول النتيجة.
-*/
-function wireBasicRecalcHooks() {
-  const inputs = [
-    IDS.roomVolumeInput,
-    IDS.pressureOffsetInput,
-    IDS.ruleOfThumbInput,
-    IDS.outdoorAirOverrideInput,
-    IDS.measuredAirflowInput,
-    IDS.measuredPressureInput,
-    IDS.measuredTempInput,
-    IDS.measuredRhInput
-  ].map(id => $(id)).filter(Boolean);
+  function buildRoomList(db) {
+    flatItems = [];
+    roomType.innerHTML = `<option value="">اختر نوع الغرفة…</option>`;
 
-  inputs.forEach(el => {
-    el.addEventListener('input', () => {
-      // مكان مناسب تنادي دوال حسابك الموجودة لو عندك
-      // recalc();
+    db.categories.forEach((cat) => {
+      const og = document.createElement("optgroup");
+      og.label = cat.name;
+
+      cat.items.forEach((item) => {
+        flatItems.push(item);
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = `${item.label_ar} — ${item.label_en}`;
+        og.appendChild(opt);
+      });
+
+      roomType.appendChild(og);
     });
-  });
-}
 
-/* ========= Event bindings ========= */
-function bindEvents() {
-  const catSelect = $(IDS.categorySelect);
-  const roomSelect = $(IDS.roomTypeSelect);
-
-  if (catSelect) {
-    catSelect.addEventListener('change', (e) => {
-      currentCategoryId = e.target.value;
-      populateRooms(currentCategoryId);
-    });
+    roomHint.textContent = "اختيارك بيعبّي ACH و Pressure Offset تلقائياً (تقدر تعدل).";
   }
 
-  if (roomSelect) {
-    roomSelect.addEventListener('change', (e) => {
-      currentRoomId = e.target.value;
-      if (currentCategoryId && currentRoomId) {
-        applyRoomDefaults(currentCategoryId, currentRoomId);
-      }
-    });
+  function getItemById(id) {
+    return flatItems.find((x) => x.id === id) || null;
   }
 
-  wireBasicRecalcHooks();
-}
+  function onRoomChange() {
+    const id = roomType.value;
+    const item = getItemById(id);
+    if (!item) return;
 
-/* ========= Init ========= */
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    // تأكد العناصر موجودة
-    const catEl = $(IDS.categorySelect);
-    const roomEl = $(IDS.roomTypeSelect);
-    if (!catEl || !roomEl) {
-      console.warn('Missing categorySelect or roomTypeSelect in index.html');
+    // عبّي القيم الافتراضية
+    if (pressureOffset.value === "" || pressureOffset.value === null) {
+      pressureOffset.value = item.pressureOffset ?? 0;
+    } else {
+      pressureOffset.value = item.pressureOffset ?? 0;
     }
 
-    DATA = await loadData();
-
-    populateCategories();
-    populateRooms(currentCategoryId);
-
-    bindEvents();
-
-    const box = $(IDS.resultBox);
-    if (box) box.style.display = 'block';
-  } catch (err) {
-    console.error(err);
-    const lang = uiLang();
-    const msg = lang === 'ar'
-      ? `خطأ: تأكد أن data.json موجود وبنفس المجلد. التفاصيل: ${err.message}`
-      : `Error: Make sure data.json exists in the same folder. Details: ${err.message}`;
-
-    alert(msg);
+    // نخزن ACH الافتراضي في oaOverride إذا كان فاضي (حتى يبان للمستخدم)
+    if (oaOverride.value === "" || oaOverride.value === null) {
+      oaOverride.value = item.ach ?? "";
+    } else {
+      // إذا المستخدم كاتب override بنفسه لا نغيّره
+    }
   }
-});
+
+  function calc() {
+    const v = parseFloat(volume.value);
+    if (!isFinite(v) || v <= 0) {
+      results.innerHTML = `<div class="badText">دخل حجم صحيح (m³).</div>`;
+      return;
+    }
+
+    const id = roomType.value;
+    const item = getItemById(id);
+    const ach = (oaOverride.value !== "" ? parseFloat(oaOverride.value) : (item ? item.ach : NaN));
+
+    if (!isFinite(ach) || ach <= 0) {
+      results.innerHTML = `<div class="badText">حدد نوع الغرفة أو اكتب ACH في Outdoor Air Override.</div>`;
+      return;
+    }
+
+    // ACH → CFM
+    // m³/h = ACH * Volume
+    // CFM = (m³/h) * 0.588577 (تقريب)
+    const m3h = ach * v;
+    const cfm = m3h * 0.588577;
+
+    const pOff = parseFloat(pressureOffset.value || "0");
+    const rot = parseFloat(ruleOfThumb.value || "400");
+    const tr = cfm / rot;
+
+    const measCfm = measuredCfm.value ? parseFloat(measuredCfm.value) : null;
+
+    results.innerHTML = `
+      <div class="grid">
+        <div class="k">ACH</div><div class="v">${ach.toFixed(2)}</div>
+        <div class="k">Volume (m³)</div><div class="v">${v.toFixed(2)}</div>
+        <div class="k">Outdoor Air (m³/h)</div><div class="v">${m3h.toFixed(1)}</div>
+        <div class="k">Outdoor Air (CFM)</div><div class="v">${cfm.toFixed(1)}</div>
+        <div class="k">Pressure Offset (%)</div><div class="v">${isFinite(pOff) ? pOff.toFixed(1) : "—"}</div>
+        <div class="k">TR (Rule ${rot})</div><div class="v">${tr.toFixed(2)}</div>
+        ${measCfm !== null && isFinite(measCfm) ? `<div class="k">Measured vs Required</div><div class="v">${(measCfm - cfm).toFixed(1)} CFM</div>` : ``}
+      </div>
+    `;
+  }
+
+  function resetAll() {
+    $("roomName").value = "";
+    roomType.value = "";
+    volume.value = "";
+    pressureOffset.value = "";
+    oaOverride.value = "";
+    measuredCfm.value = "";
+    measuredPa.value = "";
+    measuredTemp.value = "";
+    measuredRh.value = "";
+    results.innerHTML = `<div class="muted">اختر نوع الغرفة وادخل الحجم ثم اضغط احسب.</div>`;
+  }
+
+  // Service Worker (Offline)
+  async function registerSW() {
+    if (!("serviceWorker" in navigator)) return;
+    try {
+      const reg = await navigator.serviceWorker.register("sw.js");
+      // طلب تحديث سريع
+      reg.update();
+    } catch (e) {
+      console.warn("SW failed", e);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    roomType.addEventListener("change", onRoomChange);
+    $("calcBtn").addEventListener("click", calc);
+    $("resetBtn").addEventListener("click", resetAll);
+
+    await loadData();
+    await registerSW();
+  });
+})();
