@@ -1,149 +1,200 @@
-(() => {
-  const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
 
-  // عناصر الصفحة (تأكد IDs موجودة في index.html)
-  const roomType = $("roomType");      // select
-  const volumeEl = $("volume");        // input m3
-  const achOverrideEl = $("achOverride"); // input optional
-  const result = $("result");          // div
-  const calcBtn = $("calcBtn");        // button
+const els = {
+  roomType: $("roomType"),
+  roomName: $("roomName"),
+  volume: $("volume"),
+  pressureOffset: $("pressureOffset"),
+  ruleOfThumb: $("ruleOfThumb"),
+  outdoorOverride: $("outdoorOverride"),
+  measuredAirflow: $("measuredAirflow"),
+  measuredPressure: $("measuredPressure"),
+  measuredTemp: $("measuredTemp"),
+  measuredRH: $("measuredRH"),
+  calcBtn: $("calcBtn"),
+  resetBtn: $("resetBtn"),
+  achOut: $("achOut"),
+  cfmOut: $("cfmOut"),
+  trOut: $("trOut"),
+  pOut: $("pOut"),
+  noteOut: $("noteOut"),
+  status: $("status")
+};
 
-  function setLoading(msg) {
-    roomType.innerHTML = `<option value="" selected>${msg}</option>`;
-  }
+let roomMap = new Map(); // id -> item
 
-  function showError(e, extra = "") {
-    setLoading("فشل تحميل البيانات — راجع الرسالة تحت");
-    const msg = `DATA LOAD ERROR ❌\n${extra}\n${String(e)}`;
-    result.innerHTML =
-      `<pre style="white-space:pre-wrap;direction:ltr;text-align:left;
-      background:#081226;border:1px solid #1d2a46;padding:12px;border-radius:12px;color:#e9f1ff;">
-${msg}
-</pre>`;
-    console.error("DATA LOAD ERROR:", e);
-  }
+function setStatus(msg) {
+  if (els.status) els.status.textContent = msg;
+}
 
-  async function loadData() {
-    setLoading("جاري تحميل البيانات…");
+function num(v) {
+  if (v === "" || v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
 
-    // مسار صحيح داخل GitHub Pages
-    const basePath = location.pathname.endsWith("/")
-      ? location.pathname
-      : location.pathname.replace(/\/[^\/]*$/, "/");
+function fmt(n, digits = 2) {
+  if (!Number.isFinite(n)) return "—";
+  return n.toFixed(digits);
+}
 
-    const urls = [
-      `${basePath}data.json?v=${Date.now()}`,
-      `./data.json?v=${Date.now()}`
-    ];
+async function loadData() {
+  try {
+    setStatus("جاري تحميل البيانات…");
 
-    let data = null;
-    let usedUrl = null;
+    const res = await fetch("./data.json?v=1", { cache: "no-store" });
+    if (!res.ok) throw new Error("Fetch failed: " + res.status);
 
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP ${res.status} عند ${url}`);
-        data = await res.json();
-        usedUrl = url;
-        break;
-      } catch (e) {
-        // جرّب الرابط الثاني
-      }
-    }
+    const data = await res.json();
+    const categories = data.categories || [];
 
-    if (!data) {
-      showError("لم استطع قراءة data.json", `جرّبت:\n- ${urls.join("\n- ")}`);
-      return;
-    }
+    // reset select
+    els.roomType.innerHTML = `<option value="" selected disabled>اختر نوع الغرفة</option>`;
+    roomMap.clear();
 
-    // ✅ هذه هي البنية عندك: categories -> items
-    const categories = Array.isArray(data.categories) ? data.categories : null;
-    if (!categories) {
-      showError("شكل data.json غير صحيح",
-        `المتوقع: { "categories": [ { "name": "...", "items":[...] } ] }\nتم التحميل من: ${usedUrl}`
-      );
-      return;
-    }
+    categories.forEach(cat => {
+      const group = document.createElement("optgroup");
+      group.label = cat.name || "Category";
 
-    // بناء القائمة
-    roomType.innerHTML = `<option value="" selected>اختر نوع الغرفة…</option>`;
-
-    let totalItems = 0;
-
-    categories.forEach((cat) => {
-      const items = Array.isArray(cat.items) ? cat.items : [];
-      if (!items.length) return;
-
-      const og = document.createElement("optgroup");
-      og.label = cat.name || "Category";
-
-      items.forEach((it) => {
-        // label عربي افتراضي (ولو ما وجد نستخدم الإنجليزي)
-        const label = it.label_ar || it.label_en || it.id || "Room";
-        const ach = Number(it.ach ?? 0);
-        const p = Number(it.pressureOffset ?? 0);
+      (cat.items || []).forEach(item => {
+        roomMap.set(item.id, item);
 
         const opt = document.createElement("option");
-        opt.value = String(it.id ?? label);
-
-        // نخزن بيانات الحساب داخل الداتا سِت
-        opt.dataset.ach = String(ach);
-        opt.dataset.pressureOffset = String(p);
-        opt.textContent = `${label} (ACH ${ach}${p ? `, ΔP ${p}` : ""})`;
-
-        og.appendChild(opt);
-        totalItems++;
+        opt.value = item.id;
+        opt.textContent = (item.label_ar || item.label_en || item.id);
+        group.appendChild(opt);
       });
 
-      roomType.appendChild(og);
+      els.roomType.appendChild(group);
     });
 
-    if (!totalItems) {
-      showError("القوائم فاضية", "categories موجودة لكن items فاضية.");
-      return;
-    }
+    setStatus("جاهز");
+  } catch (e) {
+    console.error(e);
+    els.roomType.innerHTML = `<option value="" selected disabled>فشل تحميل البيانات</option>`;
+    setStatus("فشل تحميل البيانات");
+  }
+}
 
-    result.innerHTML = `<div class="muted">تم تحميل ${totalItems} غرفة ✅</div>`;
+function applySelectedDefaults() {
+  const id = els.roomType.value;
+  const item = roomMap.get(id);
+  if (!item) return;
+
+  // ACH reference goes to pressureOffset default only (ach used in calc)
+  const p = num(item.pressureOffset);
+  if (p !== null) els.pressureOffset.value = p;
+}
+
+function calc() {
+  const id = els.roomType.value;
+  const item = roomMap.get(id);
+
+  if (!item) {
+    setStatus("اختر نوع الغرفة أولاً");
+    els.noteOut.textContent = "⚠️ اختر نوع الغرفة من القائمة.";
+    return;
   }
 
-  function calc() {
-    const opt = roomType.selectedOptions?.[0];
-    if (!opt || !opt.value) {
-      result.innerHTML = `<div class="muted">اختر نوع الغرفة أول.</div>`;
-      return;
-    }
-
-    const vol = parseFloat(volumeEl?.value || "0");
-    if (!vol || vol <= 0) {
-      result.innerHTML = `<div class="muted">دخل حجم الغرفة (m³) بشكل صحيح.</div>`;
-      return;
-    }
-
-    const override = parseFloat(achOverrideEl?.value || "");
-    const ach = Number.isFinite(override) ? override : parseFloat(opt.dataset.ach || "0");
-
-    if (!ach || ach <= 0) {
-      result.innerHTML = `<div class="muted">النوع المختار ما له ACH صحيح.</div>`;
-      return;
-    }
-
-    const pressureOffset = parseFloat(opt.dataset.pressureOffset || "0");
-
-    // CFM = (ACH * Volume(m3) / 60) * 35.3147
-    const cfm = (ach * vol / 60) * 35.3147;
-
-    result.innerHTML = `
-      <div style="display:grid;gap:8px">
-        <div><b>نوع الغرفة:</b> ${opt.textContent}</div>
-        <div><b>الحجم (m³):</b> ${vol}</div>
-        <div><b>ACH:</b> ${ach}</div>
-        <div><b>الضغط (Pressure Offset):</b> ${pressureOffset}</div>
-        <div><b>التدفق المطلوب:</b> ${cfm.toFixed(1)} CFM</div>
-      </div>
-    `;
+  const volume = num(els.volume.value);
+  if (volume === null || volume <= 0) {
+    setStatus("أدخل حجم الغرفة");
+    els.noteOut.textContent = "⚠️ لازم تدخل حجم الغرفة بالمتر المكعب (m³).";
+    return;
   }
 
-  calcBtn?.addEventListener("click", calc);
+  const overrideACH = num(els.outdoorOverride.value);
+  const achRef = (overrideACH !== null && overrideACH > 0) ? overrideACH : Number(item.ach || 0);
 
-  loadData();
-})();
+  if (!Number.isFinite(achRef) || achRef <= 0) {
+    setStatus("ACH غير صالح");
+    els.noteOut.textContent = "⚠️ قيمة ACH المرجعية غير صحيحة لهذا النوع.";
+    return;
+  }
+
+  // ACH -> CFM
+  // CFM = ACH * Volume(m3) / 60(min/hr) * (35.3147 ft3/m3)
+  const cfm = achRef * volume * 35.3147 / 60;
+
+  // TR (approx) from rule of thumb
+  const rot = num(els.ruleOfThumb.value) ?? 400;
+  const tr = cfm / rot;
+
+  // pressure offset suggestion
+  const pUser = num(els.pressureOffset.value);
+  const pSuggested = (pUser !== null) ? pUser : (num(item.pressureOffset) ?? 0);
+
+  // output
+  els.achOut.textContent = `${fmt(achRef, 2)} ACH`;
+  els.cfmOut.textContent = `${fmt(cfm, 1)} CFM`;
+  els.trOut.textContent = `${fmt(tr, 2)} TR`;
+  els.pOut.textContent = `${fmt(pSuggested, 0)} %`;
+
+  // optional measured notes
+  const mAir = num(els.measuredAirflow.value);
+  const mP = num(els.measuredPressure.value);
+  const mT = num(els.measuredTemp.value);
+  const mRH = num(els.measuredRH.value);
+
+  let note = `• النوع المختار: ${item.label_ar || item.label_en || item.id}\n`;
+  note += `• ACH المرجعي: ${achRef}\n`;
+  note += `• CFM المطلوب: ${fmt(cfm, 1)}\n`;
+
+  if (mAir !== null) {
+    const diff = mAir - cfm;
+    const pct = (diff / cfm) * 100;
+    note += `\nالقراءة الميدانية:\n`;
+    note += `• Measured CFM: ${fmt(mAir, 1)} (فرق ${fmt(diff, 1)} = ${fmt(pct, 1)}%)\n`;
+  }
+  if (mP !== null) note += `• Pressure: ${mP} Pa\n`;
+  if (mT !== null) note += `• Temp: ${mT} °C\n`;
+  if (mRH !== null) note += `• RH: ${mRH}%\n`;
+
+  els.noteOut.textContent = note;
+
+  setStatus("تم الحساب");
+}
+
+function resetAll() {
+  els.roomType.selectedIndex = 0;
+  els.roomName.value = "";
+  els.volume.value = "";
+  els.pressureOffset.value = 0;
+  els.ruleOfThumb.value = 400;
+  els.outdoorOverride.value = "";
+  els.measuredAirflow.value = "";
+  els.measuredPressure.value = "";
+  els.measuredTemp.value = "";
+  els.measuredRH.value = "";
+
+  els.achOut.textContent = "—";
+  els.cfmOut.textContent = "—";
+  els.trOut.textContent = "—";
+  els.pOut.textContent = "—";
+  els.noteOut.textContent = "";
+
+  setStatus("جاهز");
+}
+
+function registerSW() {
+  if (!("serviceWorker" in navigator)) return;
+
+  window.addEventListener("load", async () => {
+    try {
+      await navigator.serviceWorker.register("./sw.js?v=1");
+      // console.log("SW registered");
+    } catch (e) {
+      console.warn("SW failed", e);
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadData();
+
+  els.roomType.addEventListener("change", applySelectedDefaults);
+  els.calcBtn.addEventListener("click", calc);
+  els.resetBtn.addEventListener("click", resetAll);
+
+  registerSW();
+});
