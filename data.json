@@ -2,42 +2,42 @@
   "version": 1,
   "categories": [
     {
-      "name": "Hospital - Critical",
+      "name": "Hospital — Critical",
       "items": [
         { "id": "icu", "label_ar": "العناية المركزة (ICU)", "label_en": "ICU", "ach": 12, "pressureOffset": 0 },
         { "id": "or", "label_ar": "غرفة عمليات (OR)", "label_en": "Operating Room", "ach": 20, "pressureOffset": 0 },
-        { "id": "isolation_aiir", "label_ar": "عزل سلبي (AIIR)", "label_en": "Airborne Infection Isolation", "ach": 12, "pressureOffset": -10 },
-        { "id": "protective_env", "label_ar": "عزل إيجابي (Protective Env.)", "label_en": "Protective Environment", "ach": 12, "pressureOffset": 10 },
-        { "id": "er_trauma", "label_ar": "الطوارئ/إنعاش", "label_en": "ER/Trauma", "ach": 12, "pressureOffset": 0 }
+        { "id": "isolation_airborne_neg", "label_ar": "عزل سلبي (Airborne) -", "label_en": "Airborne Infection Isolation (Neg)", "ach": 12, "pressureOffset": -10 },
+        { "id": "protective_env_pos", "label_ar": "عزل إيجابي (Protective) +", "label_en": "Protective Environment (Pos)", "ach": 12, "pressureOffset": 10 },
+        { "id": "er_trauma", "label_ar": "الطوارئ / إنعاش", "label_en": "ER / Trauma", "ach": 12, "pressureOffset": 0 }
       ]
     },
     {
-      "name": "Hospital - General",
+      "name": "Hospital — General",
       "items": [
         { "id": "patient_room", "label_ar": "غرفة مريض", "label_en": "Patient Room", "ach": 6, "pressureOffset": 0 },
         { "id": "exam_room", "label_ar": "غرفة فحص", "label_en": "Exam Room", "ach": 6, "pressureOffset": 0 },
         { "id": "waiting", "label_ar": "انتظار", "label_en": "Waiting Area", "ach": 4, "pressureOffset": 0 },
         { "id": "nurse_station", "label_ar": "محطة تمريض", "label_en": "Nurse Station", "ach": 6, "pressureOffset": 0 },
-        { "id": "lab", "label_ar": "مختبر", "label_en": "Laboratory", "ach": 8, "pressureOffset": 0 },
+        { "id": "laboratory", "label_ar": "مختبر", "label_en": "Laboratory", "ach": 8, "pressureOffset": 0 },
         { "id": "pharmacy", "label_ar": "صيدلية", "label_en": "Pharmacy", "ach": 6, "pressureOffset": 0 },
-        { "id": "imaging", "label_ar": "أشعة/تصوير", "label_en": "Imaging", "ach": 6, "pressureOffset": 0 },
+        { "id": "imaging", "label_ar": "أشعة / تصوير", "label_en": "Imaging", "ach": 6, "pressureOffset": 0 },
         { "id": "cssd", "label_ar": "تعقيم مركزي (CSSD)", "label_en": "Central Sterile", "ach": 10, "pressureOffset": 0 }
       ]
     },
     {
-      "name": "Hospital - Support",
+      "name": "Hospital — Support",
       "items": [
         { "id": "toilet", "label_ar": "دورة مياه", "label_en": "Toilet", "ach": 10, "pressureOffset": -5 },
-        { "id": "soiled_utility", "label_ar": "غرفة نفايات/متسخة", "label_en": "Soiled Utility", "ach": 10, "pressureOffset": -10 },
+        { "id": "soiled_utility", "label_ar": "غرفة متسخة / نفايات", "label_en": "Soiled Utility", "ach": 10, "pressureOffset": -10 },
         { "id": "clean_utility", "label_ar": "غرفة نظيفة", "label_en": "Clean Utility", "ach": 6, "pressureOffset": 5 },
         { "id": "storage", "label_ar": "مستودع", "label_en": "Storage", "ach": 4, "pressureOffset": 0 }
       ]
     },
     {
-      "name": "Residential - Home",
+      "name": "Residential — Home",
       "items": [
         { "id": "bedroom", "label_ar": "غرفة نوم", "label_en": "Bedroom", "ach": 2, "pressureOffset": 0 },
-        { "id": "living", "label_ar": "صالة/معيشة", "label_en": "Living Room", "ach": 2, "pressureOffset": 0 },
+        { "id": "living", "label_ar": "صالة / معيشة", "label_en": "Living Room", "ach": 2, "pressureOffset": 0 },
         { "id": "kitchen", "label_ar": "مطبخ", "label_en": "Kitchen", "ach": 5, "pressureOffset": -5 },
         { "id": "bath", "label_ar": "حمام", "label_en": "Bathroom", "ach": 6, "pressureOffset": -5 },
         { "id": "laundry", "label_ar": "غرفة غسيل", "label_en": "Laundry", "ach": 4, "pressureOffset": -3 },
