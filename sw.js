@@ -1,4 +1,4 @@
-const CACHE_NAME = "air-calc-pro-v1.0.0";
+const CACHE = "aircalc-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -10,41 +10,36 @@ const ASSETS = [
   "./icons/icon-512.png"
 ];
 
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+self.addEventListener("install", (e) => {
+  e.waitUntil(
+    caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
-    )
+      Promise.all(keys.map((k) => (k !== CACHE ? caches.delete(k) : null)))
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Cache-first للملفات الثابتة + Network fallback
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
+// Network-first للـ data.json عشان التحديث يبان فوراً
+self.addEventListener("fetch", (e) => {
+  const url = new URL(e.request.url);
 
-  // تجاهل POST وغيره
-  if (req.method !== "GET") return;
+  if (url.pathname.endsWith("/data.json")) {
+    e.respondWith(
+      fetch(e.request).then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put("./data.json", copy));
+        return res;
+      }).catch(() => caches.match("./data.json"))
+    );
+    return;
+  }
 
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(req)
-        .then((res) => {
-          // خزن نسخة من الملفات GET الناجحة
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match("./index.html"));
-    })
+  e.respondWith(
+    caches.match(e.request).then((cached) => cached || fetch(e.request))
   );
 });
