@@ -1,10 +1,76 @@
 {
-  "roomTypes": [
-    { "id": "general_office", "name_ar": "مكتب عام", "name_en": "General Office", "ach": 2, "notes_ar": "قيمة عامة للتقدير — راجع مرجعك حسب المشروع." },
-    { "id": "meeting", "name_ar": "قاعة اجتماع", "name_en": "Meeting Room", "ach": 4, "notes_ar": "مناسب للاجتماعات/الكثافة المتوسطة." },
-    { "id": "toilet", "name_ar": "دورات مياه", "name_en": "Toilet", "ach": 10, "notes_ar": "عادة ACH أعلى حسب الكود." },
-    { "id": "isolation", "name_ar": "غرفة عزل", "name_en": "Isolation Room", "ach": 12, "notes_ar": "قيم شائعة بالمستشفيات—تأكد من اشتراطات المنشأة." },
-    { "id": "lab", "name_ar": "مختبر", "name_en": "Lab", "ach": 8, "notes_ar": "قد تزيد حسب نوع المختبر." },
-    { "id": "corridor", "name_ar": "ممر", "name_en": "Corridor", "ach": 2, "notes_ar": "قيمة تقريبية للممرات." }
+  "categories": [
+    {
+      "id": "hospital",
+      "name_ar": "غرف المستشفى",
+      "name_en": "Hospital Rooms",
+      "rooms": [
+        { "id": "patient_room", "name_ar": "غرفة تنويم (عام)", "name_en": "Patient Room (General)", "ach_default": 6, "pressurization": "neutral" },
+        { "id": "icu", "name_ar": "العناية المركزة ICU", "name_en": "ICU", "ach_default": 12, "pressurization": "neutral" },
+        { "id": "nicu", "name_ar": "عناية حديثي الولادة NICU", "name_en": "NICU", "ach_default": 12, "pressurization": "neutral" },
+
+        { "id": "or", "name_ar": "غرفة عمليات OR", "name_en": "Operating Room", "ach_default": 20, "pressurization": "positive" },
+        { "id": "or_minor", "name_ar": "عمليات صغرى / إجراءات", "name_en": "Minor Procedure Room", "ach_default": 15, "pressurization": "positive" },
+
+        { "id": "er_exam", "name_ar": "طوارئ - غرفة فحص", "name_en": "ER Exam Room", "ach_default": 6, "pressurization": "neutral" },
+        { "id": "er_trauma", "name_ar": "طوارئ - إنعاش/Trauma", "name_en": "ER Trauma/Resus", "ach_default": 12, "pressurization": "neutral" },
+
+        { "id": "isolation_airborne", "name_ar": "عزل تنفسي (AIIR) ضغط سالب", "name_en": "Airborne Isolation (AIIR)", "ach_default": 12, "pressurization": "negative" },
+        { "id": "protective_env", "name_ar": "عزل وقائي (PE) ضغط موجب", "name_en": "Protective Environment (PE)", "ach_default": 12, "pressurization": "positive" },
+
+        { "id": "imaging_xray", "name_ar": "أشعة X-Ray", "name_en": "X-Ray", "ach_default": 6, "pressurization": "neutral" },
+        { "id": "ct", "name_ar": "أشعة CT", "name_en": "CT", "ach_default": 6, "pressurization": "neutral" },
+        { "id": "mri", "name_ar": "أشعة MRI", "name_en": "MRI", "ach_default": 6, "pressurization": "neutral" },
+        { "id": "ultrasound", "name_ar": "سونار", "name_en": "Ultrasound", "ach_default": 6, "pressurization": "neutral" },
+
+        { "id": "lab_general", "name_ar": "مختبر عام", "name_en": "General Lab", "ach_default": 8, "pressurization": "neutral" },
+        { "id": "lab_micro", "name_ar": "مختبر أحياء دقيقة", "name_en": "Microbiology Lab", "ach_default": 10, "pressurization": "negative" },
+        { "id": "pharmacy", "name_ar": "صيدلية", "name_en": "Pharmacy", "ach_default": 6, "pressurization": "neutral" },
+
+        { "id": "cssd_clean", "name_ar": "CSSD منطقة نظيفة", "name_en": "CSSD Clean", "ach_default": 10, "pressurization": "positive" },
+        { "id": "cssd_dirty", "name_ar": "CSSD منطقة متسخة", "name_en": "CSSD Decontamination", "ach_default": 10, "pressurization": "negative" },
+
+        { "id": "endoscopy", "name_ar": "مناظير", "name_en": "Endoscopy", "ach_default": 12, "pressurization": "neutral" },
+        { "id": "dialysis", "name_ar": "غسيل كلى", "name_en": "Dialysis", "ach_default": 6, "pressurization": "neutral" },
+
+        { "id": "delivery_room", "name_ar": "ولادة LDR", "name_en": "Labor/Delivery Room", "ach_default": 12, "pressurization": "neutral" },
+        { "id": "nursery", "name_ar": "حضّانة", "name_en": "Nursery", "ach_default": 6, "pressurization": "neutral" },
+
+        { "id": "toilet_public", "name_ar": "دورات مياه عامة", "name_en": "Public Toilet", "ach_default": 10, "pressurization": "negative" },
+        { "id": "shower", "name_ar": "حمّام/شاور", "name_en": "Shower", "ach_default": 10, "pressurization": "negative" },
+
+        { "id": "waiting", "name_ar": "صالة انتظار", "name_en": "Waiting Area", "ach_default": 4, "pressurization": "neutral" },
+        { "id": "corridor", "name_ar": "ممرات", "name_en": "Corridors", "ach_default": 4, "pressurization": "neutral" },
+
+        { "id": "clean_utility", "name_ar": "مخزن/غرفة نظيفة Clean Utility", "name_en": "Clean Utility", "ach_default": 6, "pressurization": "positive" },
+        { "id": "soiled_utility", "name_ar": "مخزن متسخ Soiled Utility", "name_en": "Soiled Utility", "ach_default": 10, "pressurization": "negative" },
+
+        { "id": "kitchen", "name_ar": "مطبخ/تحضير طعام", "name_en": "Kitchen/Food Prep", "ach_default": 10, "pressurization": "negative" },
+        { "id": "laundry", "name_ar": "مغسلة/غسيل", "name_en": "Laundry", "ach_default": 10, "pressurization": "negative" },
+
+        { "id": "staff_office", "name_ar": "مكاتب/إدارة", "name_en": "Offices/Admin", "ach_default": 2, "pressurization": "neutral" },
+        { "id": "meeting", "name_ar": "قاعة اجتماع", "name_en": "Meeting Room", "ach_default": 4, "pressurization": "neutral" }
+      ]
+    },
+
+    {
+      "id": "residential",
+      "name_ar": "غرف المنازل",
+      "name_en": "Residential Rooms",
+      "rooms": [
+        { "id": "living", "name_ar": "صالة/معيشة", "name_en": "Living Room", "ach_default": 1, "pressurization": "neutral" },
+        { "id": "bedroom", "name_ar": "غرفة نوم", "name_en": "Bedroom", "ach_default": 1, "pressurization": "neutral" },
+        { "id": "majlis", "name_ar": "مجلس", "name_en": "Majlis", "ach_default": 1, "pressurization": "neutral" },
+        { "id": "dining", "name_ar": "سفرة/طعام", "name_en": "Dining", "ach_default": 1, "pressurization": "neutral" },
+
+        { "id": "kitchen_home", "name_ar": "مطبخ", "name_en": "Kitchen", "ach_default": 6, "pressurization": "negative" },
+        { "id": "bathroom_home", "name_ar": "دورة مياه", "name_en": "Bathroom", "ach_default": 8, "pressurization": "negative" },
+        { "id": "laundry_home", "name_ar": "غرفة غسيل", "name_en": "Laundry", "ach_default": 6, "pressurization": "negative" },
+
+        { "id": "store", "name_ar": "مستودع/خزانة", "name_en": "Store/Closet", "ach_default": 1, "pressurization": "neutral" },
+        { "id": "garage", "name_ar": "كراج", "name_en": "Garage", "ach_default": 6, "pressurization": "negative" },
+        { "id": "stair", "name_ar": "درج/ردهة", "name_en": "Stairs/Lobby", "ach_default": 1, "pressurization": "neutral" }
+      ]
+    }
   ]
 }
