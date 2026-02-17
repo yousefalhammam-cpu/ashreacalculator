@@ -1,262 +1,234 @@
-/* Air Calc Pro - PWA HVAC Calculator (Offline/Online) */
+/* =========================================
+   Air Calc Pro - app.js (Hospital + Residential)
+   - Fills Category (Hospital/Residential)
+   - Fills Room Type based on category
+   - Auto-fills ACH Override when room selected
+   ========================================= */
 
-const $ = (id) => document.getElementById(id);
+'use strict';
 
-const els = {
-  roomType: $("roomType"),
-  roomName: $("roomName"),
-  volumeM3: $("volumeM3"),
-  ach: $("ach"),
-  cfmPerTR: $("cfmPerTR"),
-  pressureOffset: $("pressureOffset"),
-  measCfm: $("measCfm"),
-  measPa: $("measPa"),
-  measTemp: $("measTemp"),
-  measRh: $("measRh"),
+/* ========= DOM IDS (عدّلها إذا أسماء عناصر HTML عندك مختلفة) ========= */
+const IDS = {
+  categorySelect: 'categorySelect',     // select: مستشفى/منازل
+  roomTypeSelect: 'roomTypeSelect',     // select: نوع الغرفة
+  roomNameInput: 'roomName',            // input: اسم الغرفة (اختياري)
+  roomVolumeInput: 'roomVolume',        // input: حجم الغرفة (m3)
+  pressureOffsetInput: 'pressureOffset',// input: Pressure Offset %
+  ruleOfThumbInput: 'ruleOfThumb',      // input: Rule of Thumb (CFM/TR)
+  outdoorAirOverrideInput: 'outdoorAirOverride', // input: ACH Override
 
-  outCfm: $("outCfm"),
-  outLs: $("outLs"),
-  outM3h: $("outM3h"),
-  outTr: $("outTr"),
-  outCfmOffset: $("outCfmOffset"),
+  measuredAirflowInput: 'measuredAirflow',
+  measuredPressureInput: 'measuredPressure',
+  measuredTempInput: 'measuredTemp',
+  measuredRhInput: 'measuredRh',
 
-  btnCalc: $("btnCalc"),
-  btnReset: $("btnReset"),
-  btnCompare: $("btnCompare"),
-
-  note: $("note"),
-  compareBox: $("compareBox"),
-
-  netDot: $("netDot"),
-  netText: $("netText"),
-
-  installBtn: $("installBtn"),
+  // Areas to show results (اختياري)
+  resultBox: 'resultBox',
+  resultText: 'resultText'
 };
 
-let deferredPrompt = null;
-
-function fmt(n, digits = 1) {
-  if (!Number.isFinite(n)) return "—";
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: digits }).format(n);
+/* ========= Helpers ========= */
+function $(id) {
+  return document.getElementById(id);
+}
+function setText(el, text) {
+  if (el) el.textContent = text;
+}
+function setValue(el, val) {
+  if (el) el.value = val;
+}
+function num(val, fallback = 0) {
+  const n = Number(val);
+  return Number.isFinite(n) ? n : fallback;
+}
+function clearOptions(selectEl) {
+  if (!selectEl) return;
+  while (selectEl.options.length) selectEl.remove(0);
+}
+function addOption(selectEl, value, label) {
+  if (!selectEl) return;
+  const opt = document.createElement('option');
+  opt.value = value;
+  opt.textContent = label;
+  selectEl.appendChild(opt);
+}
+function uiLang() {
+  // لو موقعك عربي غالبًا html lang="ar"
+  const lang = (document.documentElement.lang || '').toLowerCase();
+  return lang.includes('ar') ? 'ar' : 'en';
+}
+function labelRoom(room, lang) {
+  return lang === 'ar' ? (room.name_ar || room.name_en || room.id) : (room.name_en || room.name_ar || room.id);
+}
+function labelCategory(cat, lang) {
+  return lang === 'ar' ? (cat.name_ar || cat.name_en || cat.id) : (cat.name_en || cat.name_ar || cat.id);
 }
 
-// --- Core formulas
-// ACH = (CFM * 60) / ft3, and 1 m3 = 35.3147 ft3
-// => CFM = (ACH * m3 * 35.3147) / 60 = (ACH * m3) / 1.699
-function cfmFromAch(volumeM3, ach) {
-  return (ach * volumeM3) / 1.699;
-}
+/* ========= Data ========= */
+let DATA = null;
+let currentCategoryId = null;
+let currentRoomId = null;
 
-function lsFromCfm(cfm) {
-  return cfm * 0.47194745; // L/s
-}
+/* ========= Load data.json ========= */
+async function loadData() {
+  // data.json لازم يكون في نفس مجلد index.html على GitHub Pages
+  const res = await fetch('./data.json', { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`Failed to load data.json (${res.status})`);
+  const json = await res.json();
 
-function m3hFromAch(volumeM3, ach) {
-  return ach * volumeM3;
-}
-
-function trFromCfm(cfm, cfmPerTR) {
-  return cfm / cfmPerTR;
-}
-
-function applyOffset(cfm, offsetPct) {
-  const o = (Number(offsetPct) || 0) / 100;
-  return cfm * (1 + o);
-}
-
-// --- UI helpers
-function setNote(text) {
-  if (!text) {
-    els.note.classList.remove("show");
-    els.note.textContent = "";
-    return;
+  if (!json || !Array.isArray(json.categories)) {
+    throw new Error('data.json structure invalid. Expected: { "categories": [ ... ] }');
   }
-  els.note.textContent = text;
-  els.note.classList.add("show");
+  return json;
 }
 
-function setCompare(text) {
-  if (!text) {
-    els.compareBox.classList.remove("show");
-    els.compareBox.textContent = "";
-    return;
-  }
-  els.compareBox.textContent = text;
-  els.compareBox.classList.add("show");
-}
+/* ========= Populate UI ========= */
+function populateCategories() {
+  const lang = uiLang();
+  const catSelect = $(IDS.categorySelect);
+  clearOptions(catSelect);
 
-function updateNetworkUI() {
-  const online = navigator.onLine;
-  els.netDot.classList.toggle("on", online);
-  els.netDot.classList.toggle("off", !online);
-  els.netText.textContent = online ? "متصل" : "غير متصل (Offline)";
-}
+  addOption(catSelect, '', lang === 'ar' ? 'اختر الاستخدام…' : 'Select category…');
 
-function readInputs() {
-  return {
-    roomType: els.roomType.value,
-    roomName: els.roomName.value.trim(),
-    volumeM3: Number(els.volumeM3.value),
-    ach: Number(els.ach.value),
-    cfmPerTR: Number(els.cfmPerTR.value),
-    pressureOffset: Number(els.pressureOffset.value || 0),
-    measCfm: Number(els.measCfm.value),
-    measPa: Number(els.measPa.value),
-    measTemp: Number(els.measTemp.value),
-    measRh: Number(els.measRh.value),
-  };
-}
-
-function validate({ volumeM3, ach }) {
-  if (!Number.isFinite(volumeM3) || volumeM3 <= 0) return "اكتب حجم الغرفة (m³) بشكل صحيح.";
-  if (!Number.isFinite(ach) || ach <= 0) return "اكتب ACH بشكل صحيح.";
-  return null;
-}
-
-function calcAndRender() {
-  const data = readInputs();
-  const err = validate(data);
-  if (err) {
-    setNote(err);
-    return;
-  }
-
-  const cfm = cfmFromAch(data.volumeM3, data.ach);
-  const cfmOff = applyOffset(cfm, data.pressureOffset);
-  const ls = lsFromCfm(cfm);
-  const m3h = m3hFromAch(data.volumeM3, data.ach);
-  const tr = trFromCfm(cfm, data.cfmPerTR);
-
-  els.outCfm.textContent = fmt(cfm, 1);
-  els.outCfmOffset.textContent = fmt(cfmOff, 1);
-  els.outLs.textContent = fmt(ls, 1);
-  els.outM3h.textContent = fmt(m3h, 1);
-  els.outTr.textContent = fmt(tr, 2);
-
-  const title =
-    (data.roomName ? `${data.roomName} — ` : "") +
-    (data.roomType ? data.roomType : "Room");
-
-  setNote(`✅ تم الحساب: ${title}`);
-  setCompare("");
-  saveState();
-}
-
-function resetAll() {
-  ["roomType","roomName","volumeM3","ach","pressureOffset","measCfm","measPa","measTemp","measRh"].forEach(k=>{
-    els[k].value = "";
-  });
-  els.cfmPerTR.value = "400";
-
-  ["outCfm","outLs","outM3h","outTr","outCfmOffset"].forEach(k=>{
-    els[k].textContent = "—";
+  DATA.categories.forEach(cat => {
+    addOption(catSelect, cat.id, labelCategory(cat, lang));
   });
 
-  setNote("");
-  setCompare("");
-  localStorage.removeItem("aircalc_state_v1");
+  // اختر الافتراضي: hospital إذا موجود
+  const defaultCat = DATA.categories.find(c => c.id === 'hospital') ? 'hospital' : (DATA.categories[0]?.id || '');
+  setValue(catSelect, defaultCat);
+  currentCategoryId = defaultCat;
 }
 
-function compareMeasured() {
-  const data = readInputs();
-  const err = validate(data);
-  if (err) {
-    setCompare("");
-    setNote(err);
-    return;
+function populateRooms(categoryId) {
+  const lang = uiLang();
+  const roomSelect = $(IDS.roomTypeSelect);
+  clearOptions(roomSelect);
+
+  addOption(roomSelect, '', lang === 'ar' ? 'اختر نوع الغرفة…' : 'Select room type…');
+
+  const cat = DATA.categories.find(c => c.id === categoryId);
+  if (!cat || !Array.isArray(cat.rooms)) return;
+
+  cat.rooms.forEach(r => {
+    addOption(roomSelect, r.id, labelRoom(r, lang));
+  });
+
+  // لا تختار غرفة تلقائيًا، خله المستخدم يختار
+  setValue(roomSelect, '');
+  currentRoomId = null;
+
+  // امسح ACH override (اختياري)
+  const achEl = $(IDS.outdoorAirOverrideInput);
+  if (achEl) achEl.placeholder = lang === 'ar'
+    ? 'اتركه فاضي للتطبيق المرجع'
+    : 'Leave blank to use default';
+}
+
+function applyRoomDefaults(categoryId, roomId) {
+  const cat = DATA.categories.find(c => c.id === categoryId);
+  if (!cat) return;
+  const room = (cat.rooms || []).find(r => r.id === roomId);
+  if (!room) return;
+
+  // Auto-fill ACH Override
+  const achEl = $(IDS.outdoorAirOverrideInput);
+  if (achEl) {
+    // نحط الرقم مباشرة (تقدر تغيره)
+    achEl.value = String(room.ach_default ?? '');
   }
 
-  const targetCfm = applyOffset(cfmFromAch(data.volumeM3, data.ach), data.pressureOffset);
+  // ممكن نعرض ضغط الغرفة كتلميح (اختياري)
+  const resultText = $(IDS.resultText);
+  const lang = uiLang();
+  if (resultText) {
+    const press = room.pressurization || 'neutral';
+    const pressAr = press === 'positive' ? 'موجب' : press === 'negative' ? 'سالب' : 'محايد';
+    const pressEn = press === 'positive' ? 'Positive' : press === 'negative' ? 'Negative' : 'Neutral';
 
-  if (!Number.isFinite(data.measCfm) || data.measCfm <= 0) {
-    setCompare("اكتب Measured Airflow (CFM) عشان نقارن.");
-    return;
-  }
-
-  const diff = data.measCfm - targetCfm;
-  const pct = (diff / targetCfm) * 100;
-
-  const status =
-    Math.abs(pct) <= 10 ? "ممتاز ✅" :
-    Math.abs(pct) <= 20 ? "قريب ⚠️" :
-    "بعيد ❗";
-
-  setCompare(
-    `المطلوب ≈ ${fmt(targetCfm,1)} CFM | المقاس = ${fmt(data.measCfm,1)} CFM\n` +
-    `الفرق = ${fmt(diff,1)} CFM (${fmt(pct,1)}%) → ${status}`
-  );
-  setNote("");
-  saveState();
-}
-
-// --- Persistence
-function saveState() {
-  const data = readInputs();
-  localStorage.setItem("aircalc_state_v1", JSON.stringify(data));
-}
-
-function loadState() {
-  const raw = localStorage.getItem("aircalc_state_v1");
-  if (!raw) return;
-  try {
-    const d = JSON.parse(raw);
-    els.roomType.value = d.roomType ?? "";
-    els.roomName.value = d.roomName ?? "";
-    els.volumeM3.value = (d.volumeM3 ?? "") === 0 ? "" : (d.volumeM3 ?? "");
-    els.ach.value = (d.ach ?? "") === 0 ? "" : (d.ach ?? "");
-    els.cfmPerTR.value = String(d.cfmPerTR ?? 400);
-    els.pressureOffset.value = (d.pressureOffset ?? "") === 0 ? "" : (d.pressureOffset ?? "");
-    els.measCfm.value = (d.measCfm ?? "") === 0 ? "" : (d.measCfm ?? "");
-    els.measPa.value = (d.measPa ?? "") === 0 ? "" : (d.measPa ?? "");
-    els.measTemp.value = (d.measTemp ?? "") === 0 ? "" : (d.measTemp ?? "");
-    els.measRh.value = (d.measRh ?? "") === 0 ? "" : (d.measRh ?? "");
-  } catch {}
-}
-
-// --- PWA install prompt
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  els.installBtn.classList.remove("hidden");
-});
-
-els.installBtn.addEventListener("click", async (e) => {
-  e.preventDefault();
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  els.installBtn.classList.add("hidden");
-});
-
-// --- Service Worker
-async function registerSW() {
-  if (!("serviceWorker" in navigator)) return;
-  try {
-    await navigator.serviceWorker.register("./sw.js", { scope: "./" });
-  } catch (err) {
-    // ignore in dev
+    setText(
+      resultText,
+      lang === 'ar'
+        ? `تم اختيار: ${room.name_ar || room.name_en}. الضغط: ${pressAr}. تم تعبئة ACH = ${room.ach_default}.`
+        : `Selected: ${room.name_en || room.name_ar}. Pressurization: ${pressEn}. ACH set to ${room.ach_default}.`
+    );
   }
 }
 
-// --- Events
-els.btnCalc.addEventListener("click", calcAndRender);
-els.btnReset.addEventListener("click", resetAll);
-els.btnCompare.addEventListener("click", compareMeasured);
+/* ========= Optional: basic calculation example (إذا عندك نتائج) =========
+   ملاحظة: ما غيرت حاسباتك الأساسية لأنك ممكن عندك منطق خاص.
+   لكن لو تبي أربطه بالنتائج الموجودة عندك، قلّي ايش IDs حق حقول النتيجة.
+*/
+function wireBasicRecalcHooks() {
+  const inputs = [
+    IDS.roomVolumeInput,
+    IDS.pressureOffsetInput,
+    IDS.ruleOfThumbInput,
+    IDS.outdoorAirOverrideInput,
+    IDS.measuredAirflowInput,
+    IDS.measuredPressureInput,
+    IDS.measuredTempInput,
+    IDS.measuredRhInput
+  ].map(id => $(id)).filter(Boolean);
 
-["roomType","roomName","volumeM3","ach","cfmPerTR","pressureOffset","measCfm","measPa","measTemp","measRh"]
-  .forEach(id=>{
-    $(id).addEventListener("change", saveState);
-    $(id).addEventListener("input", () => {
-      // لا نحسب تلقائيًا عشان ما يزعجك، بس نحفظ.
-      saveState();
+  inputs.forEach(el => {
+    el.addEventListener('input', () => {
+      // مكان مناسب تنادي دوال حسابك الموجودة لو عندك
+      // recalc();
     });
   });
+}
 
-window.addEventListener("online", updateNetworkUI);
-window.addEventListener("offline", updateNetworkUI);
+/* ========= Event bindings ========= */
+function bindEvents() {
+  const catSelect = $(IDS.categorySelect);
+  const roomSelect = $(IDS.roomTypeSelect);
 
-// Init
-updateNetworkUI();
-loadState();
-registerSW();
+  if (catSelect) {
+    catSelect.addEventListener('change', (e) => {
+      currentCategoryId = e.target.value;
+      populateRooms(currentCategoryId);
+    });
+  }
+
+  if (roomSelect) {
+    roomSelect.addEventListener('change', (e) => {
+      currentRoomId = e.target.value;
+      if (currentCategoryId && currentRoomId) {
+        applyRoomDefaults(currentCategoryId, currentRoomId);
+      }
+    });
+  }
+
+  wireBasicRecalcHooks();
+}
+
+/* ========= Init ========= */
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // تأكد العناصر موجودة
+    const catEl = $(IDS.categorySelect);
+    const roomEl = $(IDS.roomTypeSelect);
+    if (!catEl || !roomEl) {
+      console.warn('Missing categorySelect or roomTypeSelect in index.html');
+    }
+
+    DATA = await loadData();
+
+    populateCategories();
+    populateRooms(currentCategoryId);
+
+    bindEvents();
+
+    const box = $(IDS.resultBox);
+    if (box) box.style.display = 'block';
+  } catch (err) {
+    console.error(err);
+    const lang = uiLang();
+    const msg = lang === 'ar'
+      ? `خطأ: تأكد أن data.json موجود وبنفس المجلد. التفاصيل: ${err.message}`
+      : `Error: Make sure data.json exists in the same folder. Details: ${err.message}`;
+
+    alert(msg);
+  }
+});
