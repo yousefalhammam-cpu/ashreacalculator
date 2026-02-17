@@ -1,11 +1,11 @@
-const CACHE_NAME = "aircalc-cache-v1";
+const CACHE_NAME = "air-calc-pro-v1.0.0";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
-  "./manifest.json",
-  "./404.html",
+  "./data.json",
+  "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
@@ -19,33 +19,32 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      await Promise.all(keys.map(k => (k === CACHE_NAME ? null : caches.delete(k))));
-      await self.clients.claim();
-    })()
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
+    )
   );
+  self.clients.claim();
 });
 
-// Cache-first for local assets، Network-first للطلبات الثانية
+// Cache-first للملفات الثابتة + Network fallback
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-  const url = new URL(req.url);
 
-  // نفس النطاق
-  if (url.origin === self.location.origin) {
-    event.respondWith(
-      caches.match(req).then((cached) => cached || fetch(req).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-        return res;
-      }).catch(() => caches.match("./404.html")))
-    );
-    return;
-  }
+  // تجاهل POST وغيره
+  if (req.method !== "GET") return;
 
-  // خارج النطاق: Network-first
   event.respondWith(
-    fetch(req).catch(() => caches.match(req))
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
+
+      return fetch(req)
+        .then((res) => {
+          // خزن نسخة من الملفات GET الناجحة
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match("./index.html"));
+    })
   );
 });
