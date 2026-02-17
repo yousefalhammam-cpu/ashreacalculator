@@ -2,13 +2,13 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Air Calc Pro</title>
 
-  <link rel="manifest" href="./manifest.webmanifest?v=3">
+  <link rel="manifest" href="./manifest.webmanifest?v=1" />
   <meta name="theme-color" content="#0b1220" />
 
-  <link rel="stylesheet" href="./styles.css?v=3" />
+  <link rel="stylesheet" href="./styles.css?v=1" />
 </head>
 
 <body>
@@ -18,58 +18,77 @@
   </header>
 
   <main class="card">
-    <label class="lbl">نوع الغرفة (ASHRAE)</label>
+    <label class="lbl" for="roomType">نوع الغرفة (ASHRAE)</label>
     <select id="roomType">
-      <option value="" selected>جاري تحميل البيانات…</option>
+      <option value="" selected disabled>جاري تحميل البيانات…</option>
     </select>
 
-    <label class="lbl">اسم الغرفة (اختياري)</label>
+    <label class="lbl" for="roomName">اسم الغرفة (اختياري)</label>
     <input id="roomName" type="text" placeholder="مثال: Isolation Room 1.3.2.1" />
 
-    <label class="lbl">حجم الغرفة (m³)</label>
+    <label class="lbl" for="volume">حجم الغرفة (m³)</label>
     <input id="volume" type="number" inputmode="decimal" placeholder="مثال: 60" />
 
     <div class="row">
       <div>
-        <label class="lbl">Pressure Offset (%)</label>
-        <input id="pressureOffset" type="number" inputmode="decimal" value="10" />
+        <label class="lbl" for="pressureOffset">Pressure Offset (%)</label>
+        <input id="pressureOffset" type="number" inputmode="decimal" value="0" />
       </div>
       <div>
-        <label class="lbl">Rule of Thumb (CFM/TR)</label>
-        <input id="cfmPerTR" type="number" inputmode="decimal" value="400" />
+        <label class="lbl" for="ruleOfThumb">Rule of Thumb (CFM/TR)</label>
+        <input id="ruleOfThumb" type="number" inputmode="decimal" value="400" />
       </div>
     </div>
 
-    <label class="lbl">Outdoor Air Override (ACH) — اختياري</label>
-    <input id="achOverride" type="number" inputmode="decimal" placeholder="اتركه فاضي للتطبيق المرجع" />
+    <label class="lbl" for="outdoorOverride">Outdoor Air Override (ACH) — اختياري</label>
+    <input id="outdoorOverride" type="number" inputmode="decimal" placeholder="اتركه فاضي للتطبيق المرجع" />
 
-    <hr class="hr">
+    <hr class="sep" />
 
-    <h2 class="h2">Measured (اختياري)</h2>
+    <div class="hint">(اختياري) قراءة ميدانية لنفس الغرفة</div>
 
-    <label class="lbl">Measured Airflow (CFM)</label>
-    <input id="measuredCfm" type="number" inputmode="decimal" placeholder="مثال: 313" />
+    <label class="lbl" for="measuredAirflow">Measured Airflow (CFM)</label>
+    <input id="measuredAirflow" type="number" inputmode="decimal" placeholder="مثال: 313" />
 
-    <label class="lbl">Measured Pressure (Pa)</label>
-    <input id="measuredPa" type="number" inputmode="decimal" placeholder="مثال: -10" />
+    <label class="lbl" for="measuredPressure">Measured Pressure (Pa)</label>
+    <input id="measuredPressure" type="number" inputmode="decimal" placeholder="مثال: -10" />
 
-    <label class="lbl">Measured Temp (°C)</label>
+    <label class="lbl" for="measuredTemp">Measured Temp (°C)</label>
     <input id="measuredTemp" type="number" inputmode="decimal" placeholder="مثال: 20.6" />
 
-    <label class="lbl">Measured RH (%)</label>
-    <input id="measuredRh" type="number" inputmode="decimal" placeholder="مثال: 55" />
+    <label class="lbl" for="measuredRH">Measured RH (%)</label>
+    <input id="measuredRH" type="number" inputmode="decimal" placeholder="مثال: 55" />
 
-    <button id="calcBtn" class="btn">احسب</button>
+    <div class="actions">
+      <button id="calcBtn" class="btn">احسب</button>
+      <button id="resetBtn" class="btn ghost">مسح</button>
+    </div>
 
-    <section class="result" id="result">
-      <div class="muted">اختر نوع الغرفة + أدخل الحجم ثم “احسب”.</div>
+    <section class="results" id="results" aria-live="polite">
+      <div class="resultRow">
+        <div class="k">ACH المرجعي</div>
+        <div class="v" id="achOut">—</div>
+      </div>
+      <div class="resultRow">
+        <div class="k">CFM المطلوب</div>
+        <div class="v" id="cfmOut">—</div>
+      </div>
+      <div class="resultRow">
+        <div class="k">مكافئ TR (تقريبي)</div>
+        <div class="v" id="trOut">—</div>
+      </div>
+      <div class="resultRow">
+        <div class="k">Pressure Offset المقترح</div>
+        <div class="v" id="pOut">—</div>
+      </div>
+      <div class="note" id="noteOut"></div>
     </section>
+
+    <footer class="foot">
+      <span id="status">جاهز</span>
+    </footer>
   </main>
 
-  <footer class="foot">
-    <small>Offline Ready • v3</small>
-  </footer>
-
-  <script defer src="./app.js?v=3"></script>
+  <script src="./app.js?v=1" defer></script>
 </body>
 </html>
