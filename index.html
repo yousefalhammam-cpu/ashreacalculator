@@ -15,7 +15,6 @@
       --line: rgba(255,255,255,.12);
       --muted: rgba(255,255,255,.72);
       --txt: rgba(255,255,255,.92);
-      --accent: rgba(255,255,255,.12);
       --shadow: 0 10px 28px rgba(0,0,0,.35);
       --r:18px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
@@ -32,21 +31,15 @@
         radial-gradient(900px 600px at 60% 90%, rgba(34,197,94,.08), transparent 60%),
         var(--bg);
     }
-    a{ color:inherit; }
     .wrap{ max-width:980px; margin:0 auto; padding:14px 12px 92px; }
 
-    /* Header */
     .topbar{
       display:flex; align-items:center; justify-content:space-between;
       gap:10px; flex-wrap:wrap;
       margin: 8px 0 12px;
     }
-    .brand{
-      display:flex; flex-direction:column; gap:4px;
-    }
-    .brand .title{
-      font-weight:900; letter-spacing:.2px; font-size:18px;
-    }
+    .brand{ display:flex; flex-direction:column; gap:4px; }
+    .brand .title{ font-weight:900; letter-spacing:.2px; font-size:18px; }
     .brand .sub{
       font-size:12px; color: var(--muted);
       display:flex; gap:8px; flex-wrap:wrap;
@@ -61,7 +54,6 @@
       width:fit-content;
     }
 
-    /* Cards & inputs */
     .card{
       border:1px solid var(--line);
       border-radius: var(--r);
@@ -73,10 +65,7 @@
     .grid{ display:grid; gap:10px; }
     .grid2{ display:grid; gap:10px; grid-template-columns: 1fr 1fr; }
     .grid3{ display:grid; gap:10px; grid-template-columns: 1fr 1fr 1fr; }
-
-    @media (max-width:720px){
-      .grid2,.grid3{ grid-template-columns: 1fr; }
-    }
+    @media (max-width:720px){ .grid2,.grid3{ grid-template-columns: 1fr; } }
 
     label{ display:block; font-size:12px; color: var(--muted); margin-bottom:6px; }
     .input, select, button{
@@ -90,31 +79,17 @@
       font-size:14px;
     }
     select{ cursor:pointer; }
-    .row{ display:flex; gap:10px; align-items:end; flex-wrap:wrap; }
-    .btn{
-      cursor:pointer;
-      font-weight:900;
-      background: rgba(255,255,255,.08);
-    }
-    .btnPrimary{
-      background: rgba(56,189,248,.16);
-      border-color: rgba(56,189,248,.24);
-    }
-    .btnDanger{
-      background: rgba(239,68,68,.14);
-      border-color: rgba(239,68,68,.22);
-    }
+    .btn{ cursor:pointer; font-weight:900; background: rgba(255,255,255,.08); }
+    .btnPrimary{ background: rgba(56,189,248,.16); border-color: rgba(56,189,248,.24); }
+    .btnDanger{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.22); }
 
     .muted{ color: var(--muted); font-size:12px; }
     .mono{ font-family: var(--mono); }
-
-    /* Tabs / pages */
     .tabPage{ display:none; }
     .tabPage.active{ display:block; }
     .h2{ font-size:16px; font-weight:900; margin: 6px 0 8px; }
     .divider{ height:1px; background: var(--line); margin: 10px 0; }
 
-    /* Results list */
     .list{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
     .item{
       border:1px solid var(--line);
@@ -125,12 +100,9 @@
     .itemTop{
       display:flex; justify-content:space-between; gap:10px; align-items:start; flex-wrap:wrap;
     }
-    .itemTitle{
-      font-weight:900; font-size:14px;
-    }
-    .itemSub{
-      font-size:12px; color: var(--muted); margin-top:3px;
-    }
+    .itemTitle{ font-weight:900; font-size:14px; }
+    .itemSub{ font-size:12px; color: var(--muted); margin-top:3px; }
+
     .kv{
       display:grid; gap:8px; margin-top:10px;
       grid-template-columns: repeat(2, minmax(0,1fr));
@@ -153,7 +125,6 @@
     .k .vv{ font-size:16px; font-weight:900; margin-top:3px; }
     .k .uu{ font-size:12px; color: var(--muted); font-weight:700; margin-inline-start:6px; }
 
-    /* Bottom nav */
     .bottomNav{
       position:fixed;
       left:10px; right:10px; bottom:10px;
@@ -186,7 +157,6 @@
     .navIco{ font-size:18px; line-height:18px; }
     .navTxt{ font-size:11px; font-weight:900; opacity:.95; }
 
-    /* Small helper badge */
     .status{
       font-size:12px;
       color: var(--muted);
@@ -197,7 +167,6 @@
       width: fit-content;
     }
 
-    /* Footer credit */
     .credit{
       margin-top:10px;
       font-size:12px;
@@ -222,38 +191,38 @@
       <div class="credit">
         <span>©</span>
         <strong>م. يوسف ال همام</strong>
-        <span class="mono">yousef.alhammam@live</span>
+        <span class="mono">yousef.alhammam@live.com</span>
       </div>
     </div>
 
     <!-- ===== TAB: CALC ===== -->
     <section id="tab-calc" class="tabPage active">
       <div class="card">
-        <div class="h2">الحاسبة</div>
-        <div class="muted">اختر نوع الغرفة + أدخل حجم الغرفة (m³) ثم اضغط “إضافة غرفة”. النتائج تتراكم تحت.</div>
+        <div class="h2" data-i18n="calc_title">الحاسبة</div>
+        <div class="muted" data-i18n="calc_hint">اختر نوع الغرفة + أدخل حجم الغرفة (m³) ثم اضغط “إضافة غرفة”. النتائج تتراكم تحت.</div>
 
         <div class="divider"></div>
 
         <div class="grid2">
           <div>
-            <label>نوع الغرفة</label>
+            <label data-i18n="room_type_lbl">نوع الغرفة</label>
             <select id="roomType"></select>
             <div class="muted" style="margin-top:6px" id="roomMeta">—</div>
           </div>
 
           <div class="grid">
             <div>
-              <label>حجم الغرفة (m³)</label>
+              <label data-i18n="vol_lbl">حجم الغرفة (m³)</label>
               <input id="roomVol" class="input" type="number" inputmode="decimal" placeholder="مثال: 120" />
             </div>
 
             <div class="grid2">
               <div>
-                <label>Offset % (فرق الضغط للحساب)</label>
+                <label data-i18n="offset_lbl">Offset % (فرق الضغط للحساب)</label>
                 <input id="offsetPct" class="input" type="number" inputmode="decimal" value="10" />
               </div>
               <div>
-                <label>Rule of Thumb (CFM/ton)</label>
+                <label data-i18n="thumb_lbl">Rule of Thumb (CFM/ton)</label>
                 <select id="thumb">
                   <option value="350">350</option>
                   <option value="400" selected>400</option>
@@ -262,7 +231,7 @@
               </div>
             </div>
 
-            <button id="btnAdd" class="btn btnPrimary">إضافة غرفة</button>
+            <button id="btnAdd" class="btn btnPrimary" data-i18n="add_btn">إضافة غرفة</button>
           </div>
         </div>
 
@@ -276,55 +245,17 @@
 
         <div class="grid3">
           <div class="k">
-            <div class="kk">إجمالي Supply</div>
+            <div class="kk" data-i18n="sum_supply">إجمالي Supply</div>
             <div class="vv"><span id="sumSupply">0</span> <span class="uu">CFM</span></div>
           </div>
           <div class="k">
-            <div class="kk">إجمالي Exhaust</div>
+            <div class="kk" data-i18n="sum_exh">إجمالي Exhaust</div>
             <div class="vv"><span id="sumExh">0</span> <span class="uu">CFM</span></div>
           </div>
           <div class="k">
-            <div class="kk">إجمالي تقديري TR</div>
+            <div class="kk" data-i18n="sum_tr">إجمالي تقديري TR</div>
             <div class="vv"><span id="sumTR">0</span> <span class="uu">TR</span></div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== TAB: ASHRAE ===== -->
-    <section id="tab-ashrae" class="tabPage">
-      <div class="card">
-        <div class="h2">مرجع المعايير</div>
-        <div class="muted">يعرض قيم الغرفة المختارة (ACH / الضغط) لاستخدامها كمرجع.</div>
-
-        <div class="divider"></div>
-
-        <div class="grid2">
-          <div>
-            <label>الغرفة المختارة</label>
-            <div class="k">
-              <div class="kk">Room</div>
-              <div class="vv" id="refRoomName">—</div>
-              <div class="muted" id="refRoomEn" style="margin-top:4px">—</div>
-            </div>
-          </div>
-          <div class="grid">
-            <div class="k">
-              <div class="kk">Total ACH (Ref)</div>
-              <div class="vv"><span id="refAch">—</span></div>
-            </div>
-            <div class="k">
-              <div class="kk">Pressure (P/N)</div>
-              <div class="vv"><span id="refPN">—</span></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="k">
-          <div class="kk">ملاحظة</div>
-          <div class="muted">إذا احتجت “Outdoor Air ACH” لاحقًا نضيفه كحقل منفصل ونطلع Outdoor CFM بنفس المنهج.</div>
         </div>
       </div>
     </section>
@@ -332,12 +263,12 @@
     <!-- ===== TAB: ROOMS ===== -->
     <section id="tab-rooms" class="tabPage">
       <div class="card">
-        <div class="h2">قائمة الغرف</div>
-        <div class="muted">ابحث بسرعة وتأكد من ACH لكل غرفة.</div>
+        <div class="h2" data-i18n="rooms_title">قائمة الغرف</div>
+        <div class="muted" data-i18n="rooms_hint">ابحث بسرعة وتأكد من ACH لكل غرفة.</div>
 
         <div class="divider"></div>
 
-        <label>بحث</label>
+        <label data-i18n="search_lbl">بحث</label>
         <input id="roomSearch" class="input" placeholder="مثال: مختبر / OR / Patient ..." />
 
         <div class="list" id="roomsList" style="margin-top:10px"></div>
@@ -347,27 +278,57 @@
     <!-- ===== TAB: EXPORT ===== -->
     <section id="tab-export" class="tabPage">
       <div class="card">
-        <div class="h2">تصدير النتائج</div>
-        <div class="muted">تصدير CSV (يفتح مباشرة في Excel).</div>
+        <div class="h2" data-i18n="export_title">تصدير النتائج</div>
+        <div class="muted" data-i18n="export_hint">تصدير CSV (يفتح مباشرة في Excel).</div>
 
         <div class="divider"></div>
 
-        <button id="btnExport" class="btn btnPrimary">تصدير CSV</button>
+        <button id="btnExport" class="btn btnPrimary" data-i18n="export_btn">تصدير CSV</button>
         <div class="muted" id="exportHint" style="margin-top:10px">—</div>
+      </div>
+    </section>
+
+    <!-- ===== TAB: CONTACT ===== -->
+    <section id="tab-contact" class="tabPage">
+      <div class="card">
+        <div class="h2" data-i18n="contact_title">تواصل معنا</div>
+        <div class="divider"></div>
+
+        <div class="k">
+          <div class="kk" data-i18n="contact_name_lbl">الاسم</div>
+          <div class="vv">م. يوسف ال همام</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="grid2">
+          <div class="k">
+            <div class="kk" data-i18n="contact_email_lbl">الإيميل</div>
+            <div class="vv mono">yousef.alhammam@live.com</div>
+          </div>
+          <div class="k">
+            <div class="kk" data-i18n="contact_phone_lbl">رقم الجوال</div>
+            <div class="vv mono">٠٥٦٠٢٨٢٧٠١</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="muted" data-i18n="contact_note">للإقتراحات أو تطوير المعايير داخل التطبيق تواصل معي.</div>
       </div>
     </section>
 
     <!-- ===== TAB: SETTINGS ===== -->
     <section id="tab-settings" class="tabPage">
       <div class="card">
-        <div class="h2">إعدادات</div>
-        <div class="muted">إعدادات بسيطة للعرض.</div>
+        <div class="h2" data-i18n="settings_title">إعدادات</div>
+        <div class="muted" data-i18n="settings_hint">إعدادات بسيطة للعرض.</div>
 
         <div class="divider"></div>
 
         <div class="grid2">
           <div>
-            <label>اللغة</label>
+            <label data-i18n="lang_lbl">اللغة</label>
             <select id="langSel">
               <option value="ar" selected>عربي</option>
               <option value="en">English</option>
@@ -375,10 +336,10 @@
           </div>
 
           <div>
-            <label>إظهار الضغط Offset</label>
+            <label data-i18n="pressure_mode_lbl">إظهار الضغط Offset</label>
             <select id="pressureMode">
-              <option value="on" selected>تشغيل</option>
-              <option value="off">إيقاف</option>
+              <option value="on" selected data-i18n="on_opt">تشغيل</option>
+              <option value="off" data-i18n="off_opt">إيقاف</option>
             </select>
           </div>
         </div>
@@ -386,29 +347,33 @@
         <div class="divider"></div>
 
         <div class="k">
-          <div class="kk">نصيحة</div>
-          <div class="muted">إذا عدلت data.json على GitHub: لازم تحدث الصفحة (Refresh) أو امسح كاش المتصفح/التطبيق.</div>
+          <div class="kk" data-i18n="tip_lbl">نصيحة</div>
+          <div class="muted" data-i18n="tip_txt">إذا عدلت data.json على GitHub: لازم تحدث الصفحة (Refresh) أو امسح كاش المتصفح/التطبيق.</div>
         </div>
       </div>
     </section>
   </div>
 
-  <!-- Bottom Nav -->
+  <!-- Bottom Nav (الترتيب المطلوب: الحاسبة / الغرف / تصدير / تواصل / إعدادات) -->
   <nav class="bottomNav" role="navigation" aria-label="Air Calc Pro navigation">
     <button class="navBtn active" data-tab="tab-calc" aria-label="Calculator">
-      <span class="navIco">🧮</span><span class="navTxt">الحاسبة</span>
+      <span class="navIco">🧮</span><span class="navTxt" data-navkey="calc">الحاسبة</span>
     </button>
-    <button class="navBtn" data-tab="tab-ashrae" aria-label="ASHRAE">
-      <span class="navIco">📘</span><span class="navTxt">ASHRAE</span>
-    </button>
+
     <button class="navBtn" data-tab="tab-rooms" aria-label="Rooms">
-      <span class="navIco">🏥</span><span class="navTxt">الغرف</span>
+      <span class="navIco">🏥</span><span class="navTxt" data-navkey="rooms">الغرف</span>
     </button>
+
     <button class="navBtn" data-tab="tab-export" aria-label="Export">
-      <span class="navIco">⬇️</span><span class="navTxt">تصدير</span>
+      <span class="navIco">⬇️</span><span class="navTxt" data-navkey="export">تصدير</span>
     </button>
+
+    <button class="navBtn" data-tab="tab-contact" aria-label="Contact">
+      <span class="navIco">📩</span><span class="navTxt" data-navkey="contact">تواصل</span>
+    </button>
+
     <button class="navBtn" data-tab="tab-settings" aria-label="Settings">
-      <span class="navIco">⚙️</span><span class="navTxt">إعدادات</span>
+      <span class="navIco">⚙️</span><span class="navTxt" data-navkey="settings">إعدادات</span>
     </button>
   </nav>
 
