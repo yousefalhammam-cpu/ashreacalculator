@@ -1,3 +1,7 @@
+/* Air Calc Pro - Professional HVAC Stylesheet 
+   Designed for Mobile & Desktop (Modern Dark Theme)
+*/
+
 :root {
   --bg: #0b1220;
   --card: rgba(30, 41, 59, 0.7);
@@ -5,54 +9,253 @@
   --line: rgba(255, 255, 255, 0.1);
   --txt: #f8fafc;
   --muted: #94a3b8;
+  --danger: #ef4444;
+  --success: #107c10;
 }
 
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--txt); }
-.wrap { padding: 20px 20px 180px; max-width: 600px; margin: auto; }
-
-.tabPage { display: none; }
-.tabPage.active { display: block; }
-
-.card { 
-  background: var(--card); padding: 20px; border-radius: 24px; 
-  border: 1px solid var(--line); backdrop-filter: blur(12px); margin-bottom: 20px;
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.h2 { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg);
+  color: var(--txt);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
 
+/* Page Layout */
+.wrap {
+  padding: 20px 20px 180px; /* Space for fixed navigation and summary */
+  max-width: 600px;
+  margin: auto;
+}
+
+/* Tab Management */
+.tabPage {
+  display: none;
+}
+
+.tabPage.active {
+  display: block;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cards & Containers */
+.card {
+  background: var(--card);
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  backdrop-filter: blur(15px);
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Inputs & Selection */
 .input, select {
-  width: 100%; padding: 14px; background: rgba(0,0,0,0.3);
-  border: 1px solid var(--line); border-radius: 14px; color: white; margin-bottom: 15px; font-size: 16px; outline: none;
+  width: 100%;
+  padding: 14px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 16px;
+  transition: border-color 0.3s;
 }
 
-.btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-.btnPrimary { background: var(--primary); color: #0b1220; }
-.btnDanger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
+.input:focus, select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
 
-.item { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 20px; margin-bottom: 15px; border: 1px solid var(--line); position: relative; }
-.pill { background: var(--primary); color: #000; padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; float: left; }
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  border: none;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btnPrimary {
+  background: var(--primary);
+  color: #0b1220;
+}
+
+.btnDanger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+}
+
+/* Result Items & Recommendations */
+.item {
+  background: rgba(255, 255, 255, 0.04);
+  padding: 18px;
+  border-radius: 20px;
+  margin-bottom: 15px;
+  border: 1px solid var(--line);
+  position: relative;
+  transition: background 0.3s;
+}
+
+.pill {
+  background: var(--primary);
+  color: #000;
+  padding: 4px 12px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  float: left;
+  margin-top: -2px;
+}
 
 .recommendation-box {
-    background: rgba(56, 189, 248, 0.1); padding: 12px; border-radius: 12px; margin-top: 10px; 
-    font-size: 12px; color: #bae6fd; border-right: 4px solid var(--primary);
+  background: rgba(56, 189, 248, 0.12);
+  padding: 14px;
+  border-radius: 12px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: #bae6fd;
+  border-right: 4px solid var(--primary);
+  line-height: 1.4;
 }
 
+/* Fix for English recommendation box border */
+[dir="ltr"] .recommendation-box {
+  border-right: none;
+  border-left: 4px solid var(--primary);
+}
+
+/* Dashboard Chart Container */
+#dashCard {
+  transition: all 0.5s ease;
+  overflow: hidden;
+}
+
+/* Bottom Summary Bar */
 .quick-summary {
-  position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%);
-  width: 90%; max-width: 500px; background: rgba(15, 23, 42, 0.95);
-  display: flex; justify-content: space-around; padding: 15px;
-  border-radius: 25px; border: 1px solid var(--line); backdrop-filter: blur(10px); z-index: 99;
+  position: fixed;
+  bottom: 95px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 500px;
+  background: rgba(15, 23, 42, 0.92);
+  display: flex;
+  justify-content: space-around;
+  padding: 15px;
+  border-radius: 25px;
+  border: 1px solid var(--line);
+  backdrop-filter: blur(15px);
+  z-index: 999;
+  box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
 }
-.sum-item { text-align: center; }
-.sum-item small { display: block; color: var(--muted); font-size: 10px; }
-.sum-item b { color: var(--primary); font-size: 16px; }
 
-.bottomNav {
-  position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
-  width: 95%; max-width: 480px; background: #1e293b;
-  display: flex; padding: 10px; border-radius: 35px; border: 1px solid var(--line); z-index: 100;
+.sum-item {
+  text-align: center;
 }
-.navBtn { background: none; border: none; color: #64748b; flex: 1; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-.navBtn.active { color: var(--primary); }
-.navIco { font-size: 22px; }
-.navTxt { font-size: 10px; margin-top: 4px; }
+
+.sum-item small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sum-item b {
+  color: var(--primary);
+  font-size: 18px;
+}
+
+/* Bottom Navigation Bar */
+.bottomNav {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 480px;
+  background: #1e293b;
+  display: flex;
+  padding: 12px 5px;
+  border-radius: 35px;
+  border: 1px solid var(--line);
+  z-index: 1000;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+
+.navBtn {
+  background: none;
+  border: none;
+  color: #64748b;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.navBtn.active {
+  color: var(--primary);
+}
+
+.navIco {
+  font-size: 24px;
+  margin-bottom: 2px;
+}
+
+.navTxt {
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* Reference List Styles */
+#roomsList .item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#roomsList small {
+  color: var(--muted);
+}
+
+/* Charts adjustment */
+canvas {
+  max-width: 100% !important;
+  margin: auto;
+}
