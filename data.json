@@ -4,16 +4,43 @@
       "name_ar": "المستشفيات (ASHRAE 170)",
       "name_en": "Hospitals (ASHRAE 170)",
       "items": [
-        { "id": "h1", "ar": "غرفة عمليات", "en": "Operating Room", "ach": 20, "med": true },
-        { "id": "h2", "ar": "تنويم مريض", "en": "Patient Room", "ach": 6, "med": false }
+        { "id": "h1", "ar": "غرفة عمليات (OR)", "en": "Operating Room (OR)", "ach": 20, "med": true },
+        { "id": "h2", "ar": "عزل ضغط موجب (PE)", "en": "Positive Pressure (PE)", "ach": 12, "med": true },
+        { "id": "h3", "ar": "عزل ضغط سالب (AII)", "en": "Negative Pressure (AII)", "ach": 12, "med": true },
+        { "id": "h4", "ar": "العناية المركزة (ICU)", "en": "ICU", "ach": 6, "med": true },
+        { "id": "h5", "ar": "غرفة طوارئ", "en": "Emergency Room", "ach": 12, "med": true },
+        { "id": "h6", "ar": "مختبر عام", "en": "General Lab", "ach": 6, "med": true },
+        { "id": "h7", "ar": "غرفة تنويم مريض", "en": "Patient Room", "ach": 6, "med": true },
+        { "id": "h8", "ar": "غرفة الأشعة", "en": "X-Ray Room", "ach": 6, "med": true },
+        { "id": "h9", "ar": "المناظير", "en": "Endoscopy", "ach": 15, "med": true },
+        { "id": "h10", "ar": "التعقيم المركزي", "en": "Sterile Storage", "ach": 4, "med": true },
+        { "id": "h11", "ar": "غرفة الولادة", "en": "Delivery Room", "ach": 15, "med": true },
+        { "id": "h12", "ar": "الصيدلية", "en": "Pharmacy", "ach": 4, "med": true }
       ]
     },
     {
-      "name_ar": "التجاري والسكن",
-      "name_en": "Commercial & Residential",
+      "name_ar": "المباني التجارية (ASHRAE 62.1)",
+      "name_en": "Commercial (ASHRAE 62.1)",
       "items": [
-        { "id": "c1", "ar": "مكاتب", "en": "Offices", "ach": 4, "med": false },
-        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "med": false }
+        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 4, "med": false },
+        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Conference Room", "ach": 10, "med": false },
+        { "id": "c3", "ar": "صالة مطعم", "en": "Dining Area", "ach": 10, "med": false },
+        { "id": "c4", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 30, "med": false },
+        { "id": "c5", "ar": "نادي رياضي", "en": "Gym / Fitness", "ach": 8, "med": false },
+        { "id": "c6", "ar": "صالة عرض / محلات", "en": "Retail / Store", "ach": 6, "med": false },
+        { "id": "c7", "ar": "قاعة محاضرات", "en": "Lecture Hall", "ach": 8, "med": false },
+        { "id": "c8", "ar": "ردهة / استقبال", "en": "Lobby", "ach": 4, "med": false }
+      ]
+    },
+    {
+      "name_ar": "المباني السكنية",
+      "name_en": "Residential",
+      "items": [
+        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "med": false },
+        { "id": "r2", "ar": "غرفة نوم", "en": "Bedroom", "ach": 2, "med": false },
+        { "id": "r3", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "ach": 6, "med": false },
+        { "id": "r4", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "med": false },
+        { "id": "r5", "ar": "ممر / مدخل", "en": "Corridor", "ach": 2, "med": false }
       ]
     }
   ]
