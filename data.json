@@ -1,42 +1,36 @@
 {
   "categories": [
     {
-      "name": "الرعاية الصحية (ASHRAE 170)",
+      "name_ar": "المستشفيات (ASHRAE 170)",
+      "name_en": "Hospitals (ASHRAE 170)",
       "items": [
-        { "id": "h1", "label_ar": "غرفة عمليات (OR)", "label_en": "Operating Room", "ach": 20, "pressureOffset": 5 },
-        { "id": "h2", "label_ar": "عزل ضغط سالب (AII)", "label_en": "Infection Isolation", "ach": 12, "pressureOffset": -10 },
-        { "id": "h3", "label_ar": "عزل ضغط موجب (PE)", "label_en": "Protective Environment", "ach": 12, "pressureOffset": 10 },
-        { "id": "h4", "label_ar": "العناية المركزة (ICU)", "label_en": "Intensive Care Unit", "ach": 6, "pressureOffset": 2 },
-        { "id": "h5", "label_ar": "المختبرات العامة", "label_en": "General Labs", "ach": 6, "pressureOffset": -5 },
-        { "id": "h6", "label_ar": "غرفة تنويم المرضى", "label_en": "Patient Room", "ach": 6, "pressureOffset": 0 },
-        { "id": "h7", "label_ar": "غرفة الطوارئ (ER)", "label_en": "Emergency Room", "ach": 12, "pressureOffset": -5 },
-        { "id": "h8", "label_ar": "المشرحة", "label_en": "Autopsy Room", "ach": 12, "pressureOffset": -15 },
-        { "id": "h9", "label_ar": "غرفة الأشعة (X-Ray)", "label_en": "X-Ray Room", "ach": 6, "pressureOffset": -2 },
-        { "id": "h10", "label_ar": "الصيدلية", "label_en": "Pharmacy", "ach": 4, "pressureOffset": 2 }
+        { "id": "h1", "ar": "غرفة عمليات (OR)", "en": "Operating Room (OR)", "ach": 20, "unit": "AHU + HEPA" },
+        { "id": "h2", "ar": "عزل ضغط سالب", "en": "Negative Isolation", "ach": 12, "unit": "AHU" },
+        { "id": "h3", "ar": "العناية المركزة", "en": "ICU", "ach": 6, "unit": "Medical FCU" },
+        { "id": "h4", "ar": "غرفة الطوارئ", "en": "Emergency Room", "ach": 12, "unit": "AHU" },
+        { "id": "h5", "ar": "مختبر عام", "en": "General Lab", "ach": 6, "unit": "AHU" },
+        { "id": "h6", "ar": "تنويم مريض", "en": "Patient Room", "ach": 6, "unit": "FCU/Split" }
       ]
     },
     {
-      "name": "التجاري والمحلات (ASHRAE 62.1)",
+      "name_ar": "التجاري (ASHRAE 62.1)",
+      "name_en": "Commercial (ASHRAE 62.1)",
       "items": [
-        { "id": "c1", "label_ar": "مكاتب مفتوحة", "label_en": "Open Office", "ach": 4, "pressureOffset": 0 },
-        { "id": "c2", "label_ar": "غرفة اجتماعات", "label_en": "Conference Room", "ach": 10, "pressureOffset": 0 },
-        { "id": "c3", "label_ar": "مطعم / صالة طعام", "label_en": "Dining Area", "ach": 8, "pressureOffset": -2 },
-        { "id": "c4", "label_ar": "مطبخ تجاري", "label_en": "Commercial Kitchen", "ach": 30, "pressureOffset": -15 },
-        { "id": "c5", "label_ar": "نادي رياضي (Gym)", "label_en": "Gymnasium", "ach": 8, "pressureOffset": -5 },
-        { "id": "c6", "label_ar": "محل حلاقة / صالون", "label_en": "Beauty Salon", "ach": 10, "pressureOffset": -5 },
-        { "id": "c7", "label_ar": "قاعة سينما / مسرح", "label_en": "Theater", "ach": 6, "pressureOffset": 0 },
-        { "id": "c8", "label_ar": "محل تجاري / معرض", "label_en": "Retail Store", "ach": 4, "pressureOffset": 0 },
-        { "id": "c9", "label_ar": "سوبر ماركت", "label_en": "Supermarket", "ach": 4, "pressureOffset": 0 }
+        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 4, "unit": "Split/FCU" },
+        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Meeting Room", "ach": 10, "unit": "Ducted Split" },
+        { "id": "c3", "ar": "مطعم (صالة)", "en": "Restaurant Area", "ach": 10, "unit": "Package" },
+        { "id": "c4", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 30, "unit": "Make-up Air" },
+        { "id": "c5", "ar": "نادي رياضي", "en": "Gymnasium", "ach": 8, "unit": "Package" }
       ]
     },
     {
-      "name": "المباني السكنية",
+      "name_ar": "المباني السكنية",
+      "name_en": "Residential",
       "items": [
-        { "id": "r1", "label_ar": "غرفة معيشة", "label_en": "Living Room", "ach": 4, "pressureOffset": 0 },
-        { "id": "r2", "label_ar": "غرفة نوم", "label_en": "Bedroom", "ach": 2, "pressureOffset": 0 },
-        { "id": "r3", "label_ar": "مطبخ منزلي", "label_en": "Residential Kitchen", "ach": 6, "pressureOffset": -5 },
-        { "id": "r4", "label_ar": "دورة مياه", "label_en": "Bathroom", "ach": 10, "pressureOffset": -10 },
-        { "id": "r5", "label_ar": "ممر / موزع", "label_en": "Corridor", "ach": 2, "pressureOffset": 0 }
+        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "unit": "Split" },
+        { "id": "r2", "ar": "غرفة نوم", "en": "Bedroom", "ach": 2, "unit": "Split" },
+        { "id": "r3", "ar": "مطبخ منزلي", "en": "Kitchen", "ach": 6, "unit": "Exhaust" },
+        { "id": "r4", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "unit": "Exhaust" }
       ]
     }
   ]
