@@ -1,127 +1,23 @@
 {
-  "version": 2,
+  "version": "2.1",
   "categories": [
     {
-      "name": "Hospital - Critical / حرجة",
+      "name": "Hospital (ASHRAE 170)",
       "items": [
         { "id": "or", "label_ar": "غرفة عمليات (OR)", "label_en": "Operating Room", "ach": 20, "pressureOffset": 5 },
-        { "id": "hybrid_or", "label_ar": "غرفة عمليات هجينة", "label_en": "Hybrid OR", "ach": 20, "pressureOffset": 5 },
-        { "id": "cath_lab", "label_ar": "مختبر قسطرة (Cath Lab)", "label_en": "Cardiac Cath Lab", "ach": 15, "pressureOffset": 5 },
-        { "id": "ir_suite", "label_ar": "الأشعة التداخلية (IR)", "label_en": "Interventional Radiology", "ach": 6, "pressureOffset": 0 },
-
-        { "id": "icu", "label_ar": "العناية المركزة (ICU)", "label_en": "ICU", "ach": 6, "pressureOffset": 0 },
-        { "id": "nicu", "label_ar": "عناية مركزة حديثي الولادة (NICU)", "label_en": "NICU", "ach": 6, "pressureOffset": 0 },
-        { "id": "picu", "label_ar": "عناية مركزة أطفال (PICU)", "label_en": "PICU", "ach": 6, "pressureOffset": 0 },
-        { "id": "ccu", "label_ar": "عناية قلب (CCU)", "label_en": "CCU", "ach": 6, "pressureOffset": 0 },
-
-        { "id": "er_trauma", "label_ar": "طوارئ/إنعاش (Trauma/Resus)", "label_en": "ER Trauma/Resus", "ach": 15, "pressureOffset": 5 },
-        { "id": "er_treatment", "label_ar": "غرفة علاج طوارئ", "label_en": "ER Treatment Room", "ach": 6, "pressureOffset": 0 },
-
-        { "id": "isolation_airborne_neg", "label_ar": "عزل هوائي سلبي (AIIR)", "label_en": "Airborne Infection Isolation (AIIR)", "ach": 12, "pressureOffset": -10 },
-        { "id": "protective_env_pos", "label_ar": "عزل إيجابي (Protective Env.)", "label_en": "Protective Environment", "ach": 12, "pressureOffset": 10 }
+        { "id": "isolation_p", "label_ar": "عزل ضغط موجب (PE)", "label_en": "Protective Environment", "ach": 12, "pressureOffset": 10 },
+        { "id": "isolation_n", "label_ar": "عزل ضغط سالب (AII)", "label_en": "Airborne Infection Isolation", "ach": 12, "pressureOffset": -10 },
+        { "id": "er", "label_ar": "غرفة طوارئ", "label_en": "Emergency Room", "ach": 12, "pressureOffset": -5 },
+        { "id": "lab", "label_ar": "مختبر عام", "label_en": "General Laboratory", "ach": 6, "pressureOffset": -5 },
+        { "id": "patient", "label_ar": "غرفة تنويم مريض", "label_en": "Patient Room", "ach": 6, "pressureOffset": 2 }
       ]
     },
-
     {
-      "name": "Hospital - Inpatient / تنويم",
+      "name": "Residential / Commercial",
       "items": [
-        { "id": "patient_room", "label_ar": "غرفة مريض", "label_en": "Patient Room", "ach": 6, "pressureOffset": 0 },
-        { "id": "patient_room_neg", "label_ar": "غرفة مريض ضغط سلبي", "label_en": "Patient Room (Negative)", "ach": 6, "pressureOffset": -5 },
-        { "id": "patient_room_pos", "label_ar": "غرفة مريض ضغط إيجابي", "label_en": "Patient Room (Positive)", "ach": 6, "pressureOffset": 5 },
-
-        { "id": "nicu_nursery", "label_ar": "حضانة/غرفة مواليد", "label_en": "Nursery", "ach": 6, "pressureOffset": 0 },
-        { "id": "labor_delivery", "label_ar": "ولادة (LDR/LDRP)", "label_en": "Labor/Delivery (LDR/LDRP)", "ach": 6, "pressureOffset": 0 },
-        { "id": "postpartum", "label_ar": "ما بعد الولادة", "label_en": "Postpartum", "ach": 6, "pressureOffset": 0 },
-        { "id": "step_down", "label_ar": "وحدة متوسطة (Step-down)", "label_en": "Step-down Unit", "ach": 6, "pressureOffset": 0 }
-      ]
-    },
-
-    {
-      "name": "Hospital - Outpatient / عيادات",
-      "items": [
-        { "id": "exam_room", "label_ar": "غرفة فحص", "label_en": "Exam Room", "ach": 6, "pressureOffset": 0 },
-        { "id": "consult_room", "label_ar": "غرفة استشارة", "label_en": "Consult Room", "ach": 6, "pressureOffset": 0 },
-        { "id": "procedure_room", "label_ar": "غرفة إجراءات", "label_en": "Procedure Room", "ach": 6, "pressureOffset": 0 },
-        { "id": "minor_or", "label_ar": "عمليات صغرى", "label_en": "Minor Procedure/Minor OR", "ach": 15, "pressureOffset": 5 },
-
-        { "id": "dental_op", "label_ar": "عيادة أسنان", "label_en": "Dental Operatory", "ach": 6, "pressureOffset": 0 },
-        { "id": "endoscopy", "label_ar": "مناظير", "label_en": "Endoscopy", "ach": 12, "pressureOffset": 0 },
-        { "id": "dialysis", "label_ar": "غسيل كلى", "label_en": "Dialysis", "ach": 6, "pressureOffset": 0 },
-        { "id": "vaccination", "label_ar": "تطعيم", "label_en": "Vaccination", "ach": 6, "pressureOffset": 0 },
-
-        { "id": "waiting_area", "label_ar": "انتظار", "label_en": "Waiting Area", "ach": 2, "pressureOffset": 0 },
-        { "id": "triage", "label_ar": "فرز (Triage)", "label_en": "Triage", "ach": 6, "pressureOffset": 0 }
-      ]
-    },
-
-    {
-      "name": "Hospital - Diagnostic & Imaging / تشخيص",
-      "items": [
-        { "id": "xray", "label_ar": "أشعة سينية (X-ray)", "label_en": "X-ray", "ach": 6, "pressureOffset": 0 },
-        { "id": "ct", "label_ar": "تصوير مقطعي (CT)", "label_en": "CT", "ach": 6, "pressureOffset": 0 },
-        { "id": "mri", "label_ar": "رنين (MRI)", "label_en": "MRI", "ach": 6, "pressureOffset": 0 },
-        { "id": "us", "label_ar": "موجات فوق صوتية (US)", "label_en": "Ultrasound", "ach": 6, "pressureOffset": 0 },
-        { "id": "mammo", "label_ar": "ماموغرام", "label_en": "Mammography", "ach": 6, "pressureOffset": 0 },
-        { "id": "nuclear_med", "label_ar": "طب نووي", "label_en": "Nuclear Medicine", "ach": 6, "pressureOffset": 0 }
-      ]
-    },
-
-    {
-      "name": "Hospital - Labs & Pharmacy / مختبرات وصيدلية",
-      "items": [
-        { "id": "lab_general", "label_ar": "مختبر عام", "label_en": "Laboratory (General)", "ach": 6, "pressureOffset": -5 },
-        { "id": "lab_micro", "label_ar": "مختبر أحياء دقيقة", "label_en": "Microbiology Lab", "ach": 6, "pressureOffset": -5 },
-        { "id": "lab_path", "label_ar": "مختبر باثولوجي", "label_en": "Pathology Lab", "ach": 6, "pressureOffset": -5 },
-
-        { "id": "pharmacy", "label_ar": "صيدلية", "label_en": "Pharmacy", "ach": 4, "pressureOffset": 5 },
-        { "id": "clean_room", "label_ar": "غرفة تحضير معقم (Clean Room)", "label_en": "Clean Room/Compounding", "ach": 12, "pressureOffset": 5 }
-      ]
-    },
-
-    {
-      "name": "Hospital - Sterile & CSSD / تعقيم",
-      "items": [
-        { "id": "cssd_clean", "label_ar": "تعقيم مركزي - نظيف", "label_en": "CSSD Clean", "ach": 4, "pressureOffset": 5 },
-        { "id": "cssd_soiled", "label_ar": "تعقيم مركزي - متسخ", "label_en": "CSSD Soiled", "ach": 10, "pressureOffset": -5 },
-        { "id": "sterile_storage", "label_ar": "مستودع معقم", "label_en": "Sterile Storage", "ach": 4, "pressureOffset": 5 },
-        { "id": "instrument_prep", "label_ar": "تحضير أدوات", "label_en": "Instrument Prep", "ach": 4, "pressureOffset": 0 }
-      ]
-    },
-
-    {
-      "name": "Hospital - Support / خدمات مساندة",
-      "items": [
-        { "id": "nurse_station", "label_ar": "محطة تمريض", "label_en": "Nurse Station", "ach": 4, "pressureOffset": 0 },
-        { "id": "corridor", "label_ar": "ممر", "label_en": "Corridor", "ach": 2, "pressureOffset": 0 },
-
-        { "id": "toilet", "label_ar": "دورة مياه", "label_en": "Toilet", "ach": 10, "pressureOffset": -5 },
-        { "id": "shower", "label_ar": "دش", "label_en": "Shower", "ach": 10, "pressureOffset": -5 },
-
-        { "id": "soiled_utility", "label_ar": "غرفة متسخة (Soiled Utility)", "label_en": "Soiled Utility", "ach": 10, "pressureOffset": -10 },
-        { "id": "clean_utility", "label_ar": "غرفة نظيفة (Clean Utility)", "label_en": "Clean Utility", "ach": 4, "pressureOffset": 5 },
-
-        { "id": "evs_janitor", "label_ar": "غرفة نظافة/جانيتر", "label_en": "Janitor/EVS", "ach": 10, "pressureOffset": -5 },
-        { "id": "laundry", "label_ar": "مغسلة/غسيل", "label_en": "Laundry", "ach": 10, "pressureOffset": -3 },
-
-        { "id": "storage", "label_ar": "مستودع عام", "label_en": "Storage", "ach": 2, "pressureOffset": 0 },
-        { "id": "mechanical", "label_ar": "غرفة ميكانيكية", "label_en": "Mechanical Room", "ach": 6, "pressureOffset": 0 },
-        { "id": "electrical", "label_ar": "غرفة كهرباء", "label_en": "Electrical Room", "ach": 4, "pressureOffset": 0 },
-        { "id": "it_room", "label_ar": "غرفة شبكات/سيرفر", "label_en": "IT/Server Room", "ach": 6, "pressureOffset": 0 }
-      ]
-    },
-
-    {
-      "name": "Residential - Home / منازل",
-      "items": [
-        { "id": "home_living", "label_ar": "صالة/معيشة", "label_en": "Living Room", "ach": 2, "pressureOffset": 0 },
-        { "id": "home_bedroom", "label_ar": "غرفة نوم", "label_en": "Bedroom", "ach": 2, "pressureOffset": 0 },
-        { "id": "home_kitchen", "label_ar": "مطبخ", "label_en": "Kitchen", "ach": 5, "pressureOffset": -5 },
-        { "id": "home_bath", "label_ar": "حمام", "label_en": "Bathroom", "ach": 6, "pressureOffset": -5 },
-        { "id": "home_laundry", "label_ar": "غرفة غسيل", "label_en": "Laundry", "ach": 4, "pressureOffset": -3 },
-        { "id": "home_corridor", "label_ar": "ممر", "label_en": "Corridor", "ach": 1, "pressureOffset": 0 },
-        { "id": "home_majlis", "label_ar": "مجلس", "label_en": "Majlis", "ach": 2, "pressureOffset": 0 },
-        { "id": "home_dining", "label_ar": "سفرة/طعام", "label_en": "Dining", "ach": 2, "pressureOffset": 0 },
-        { "id": "home_store", "label_ar": "مستودع/مخزن", "label_en": "Store/Closet", "ach": 1, "pressureOffset": 0 }
+        { "id": "office", "label_ar": "مكتب عام", "label_en": "General Office", "ach": 4, "pressureOffset": 0 },
+        { "id": "kitchen", "label_ar": "مطبخ", "label_en": "Kitchen", "ach": 10, "pressureOffset": -10 },
+        { "id": "toilet", "label_ar": "دورة مياه", "label_en": "Public Toilet", "ach": 10, "pressureOffset": -15 }
       ]
     }
   ]
