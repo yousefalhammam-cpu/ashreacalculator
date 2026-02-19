@@ -4,33 +4,16 @@
       "name_ar": "المستشفيات (ASHRAE 170)",
       "name_en": "Hospitals (ASHRAE 170)",
       "items": [
-        { "id": "h1", "ar": "غرفة عمليات (OR)", "en": "Operating Room (OR)", "ach": 20, "unit": "AHU + HEPA" },
-        { "id": "h2", "ar": "عزل ضغط سالب", "en": "Negative Isolation", "ach": 12, "unit": "AHU" },
-        { "id": "h3", "ar": "العناية المركزة", "en": "ICU", "ach": 6, "unit": "Medical FCU" },
-        { "id": "h4", "ar": "غرفة الطوارئ", "en": "Emergency Room", "ach": 12, "unit": "AHU" },
-        { "id": "h5", "ar": "مختبر عام", "en": "General Lab", "ach": 6, "unit": "AHU" },
-        { "id": "h6", "ar": "تنويم مريض", "en": "Patient Room", "ach": 6, "unit": "FCU/Split" }
+        { "id": "h1", "ar": "غرفة عمليات", "en": "Operating Room", "ach": 20, "med": true },
+        { "id": "h2", "ar": "تنويم مريض", "en": "Patient Room", "ach": 6, "med": false }
       ]
     },
     {
-      "name_ar": "التجاري (ASHRAE 62.1)",
-      "name_en": "Commercial (ASHRAE 62.1)",
+      "name_ar": "التجاري والسكن",
+      "name_en": "Commercial & Residential",
       "items": [
-        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 4, "unit": "Split/FCU" },
-        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Meeting Room", "ach": 10, "unit": "Ducted Split" },
-        { "id": "c3", "ar": "مطعم (صالة)", "en": "Restaurant Area", "ach": 10, "unit": "Package" },
-        { "id": "c4", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 30, "unit": "Make-up Air" },
-        { "id": "c5", "ar": "نادي رياضي", "en": "Gymnasium", "ach": 8, "unit": "Package" }
-      ]
-    },
-    {
-      "name_ar": "المباني السكنية",
-      "name_en": "Residential",
-      "items": [
-        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "unit": "Split" },
-        { "id": "r2", "ar": "غرفة نوم", "en": "Bedroom", "ach": 2, "unit": "Split" },
-        { "id": "r3", "ar": "مطبخ منزلي", "en": "Kitchen", "ach": 6, "unit": "Exhaust" },
-        { "id": "r4", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "unit": "Exhaust" }
+        { "id": "c1", "ar": "مكاتب", "en": "Offices", "ach": 4, "med": false },
+        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "med": false }
       ]
     }
   ]
