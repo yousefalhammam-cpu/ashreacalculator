@@ -1,70 +1,93 @@
-// تبديل التبويبات
-function showTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+// 1. قاعدة بيانات ASHRAE الكاملة (تراكمي)
+const roomSpecs = {
+    standard: { ach: 6, loadFactor: 0.05, label: "سكني/مكاتب" },
+    or: { ach: 20, loadFactor: 0.08, label: "غرفة عمليات" },
+    icu: { ach: 6, loadFactor: 0.06, label: "عناية مركزة" },
+    isolation: { ach: 12, loadFactor: 0.07, label: "غرفة عزل" },
+    lab: { ach: 12, loadFactor: 0.07, label: "مختبر" }
+};
+
+let currentInput = "";
+
+// 2. وظائف الحاسبة المعتادة
+function press(num) {
+    currentInput += num;
+    document.getElementById('display').innerText = currentInput;
+}
+
+function clearDisplay() {
+    currentInput = "";
+    document.getElementById('display').innerText = "0";
+    document.getElementById('display-label').innerText = "أدخل المساحة أو استخدم المسح";
+    document.getElementById('system-recommendation').innerText = "بانتظار الحسابات...";
+}
+
+// 3. المسح الذكي بالكاميرا (محاكاة AR)
+function runARScan() {
+    const display = document.getElementById('display');
+    const label = document.getElementById('display-label');
+    display.innerText = "SCANNING...";
+    setTimeout(() => {
+        const areaResult = 25.5; // محاكاة نتيجة مسح الغرفة
+        currentInput = areaResult.toString();
+        display.innerText = areaResult;
+        label.innerText = "✅ المساحة الممسوحة (م²)";
+    }, 2000);
+}
+
+// 4. الحسابات الهندسية الشاملة ونظام التوصية
+function calculateLoad() {
+    const area = parseFloat(currentInput);
+    if (!area) return alert("يرجى إدخال المساحة أولاً");
+
+    const type = document.getElementById('room-select').value;
+    const spec = roomSpecs[type];
+
+    // حساب الحمل والـ CFM
+    const tr = area * spec.loadFactor;
+    const volumeCuFt = (area * 3) * 35.31; // ارتفاع 3م
+    const cfm = (volumeCuFt * spec.ach) / 60;
+
+    // عرض النتائج
+    document.getElementById('display').innerText = tr.toFixed(2);
+    document.getElementById('unit-label').innerText = `طناً تبريدياً | ${Math.round(cfm)} CFM`;
+
+    // نظام التوصية التراكمي
+    let advice = (type === 'or' || type === 'isolation') 
+        ? "توصية: يجب استخدام وحدة AHU مع فلاتر HEPA عالية الكفاءة." 
+        : (tr > 5 ? "توصية: يفضل استخدام نظام Package Unit لضمان التوزيع." : "توصية: نظام Ducted Split مناسب للمساحة.");
+    
+    document.getElementById('system-recommendation').innerText = advice;
+    
+    // ربط تلقائي مع حاسبة الدكت
+    document.getElementById('targetCFM').value = Math.round(cfm);
+}
+
+// 5. حاسبة الدكت المضافة حديثاً
+function runDuctCalc() {
+    const q = document.getElementById('targetCFM').value;
+    const w = document.getElementById('fixWidth').value;
+    if (!q || !w) return;
+
+    const areaIn = (q / 1000) * 144; // سرعة 1000 FPM
+    const h = Math.ceil(areaIn / w);
+    document.getElementById('duct-result').innerText = `المقاس النهائي: ${w} × ${h} بوصة`;
+}
+
+// 6. التنقل السلس بين التبويبات
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
     event.currentTarget.classList.add('active');
 }
 
-// محاكي مسح الكاميرا
-function runARScan() {
-    const msg = document.getElementById('scanMsg');
-    msg.innerHTML = "🔍 جاري التعرف على السطح...";
-    setTimeout(() => {
-        document.getElementById('L').value = 5.2;
-        document.getElementById('W').value = 4.5;
-        document.getElementById('H').value = 3.0;
-        msg.innerHTML = "✅ تم التقاط الأبعاد: 5.2 × 4.5 م";
-    }, 2500);
-}
-
-// حسابات ASHRAE
-function doHvacCalc() {
-    const l = document.getElementById('L').value;
-    const w = document.getElementById('W').value;
-    const h = document.getElementById('H').value;
-    const type = document.getElementById('usage').value;
-
-    if(!l || !w || !h) return alert("أدخل الأبعاد أولاً");
-
-    const area = l * w;
-    const vol = area * h;
-    const ach = (type === 'or') ? 20 : 6;
-    const cfm = (vol * 35.31 * ach) / 60;
-    const tr = area * ((type === 'or') ? 0.08 : 0.05);
-
-    const res = document.getElementById('resDisplay');
-    res.style.display = 'block';
-    res.innerHTML = `
-        <div style="background:#e3f2fd; padding:15px; border-radius:10px; text-align:center;">
-            <strong>الحمل: ${tr.toFixed(2)} طن</strong><br>
-            <strong>الهواء: ${Math.round(cfm)} CFM</strong>
-        </div>
-    `;
-    // تمرير الـ CFM للدكت تلقائياً
-    document.getElementById('cfm').value = Math.round(cfm);
-}
-
-// حساب الدكت
-function doDuctCalc() {
-    const q = document.getElementById('cfm').value;
-    const w = document.getElementById('ductWidth').value;
-    if(!q || !w) return;
-
-    const areaIn = (q / 1000) * 144; // فرض سرعة 1000 FPM
-    const h = Math.ceil(areaIn / w);
-    
-    const res = document.getElementById('ductRes');
-    res.style.display = 'block';
-    res.innerHTML = `المقاس المقترح: ${w} × ${h} بوصة`;
-}
-
-// ساحة النقاش
-function postToForum() {
-    const msg = document.getElementById('newMsg');
-    if(!msg.value) return;
-    const box = document.getElementById('chatArea');
-    box.innerHTML += `<div class="chat-msg"><strong>أنت:</strong> ${msg.value}</div>`;
-    msg.value = '';
+// 7. ساحة النقاش (ميزة المجتمع)
+function postMsg() {
+    const input = document.getElementById('chatInput');
+    if (!input.value) return;
+    const box = document.getElementById('forum-messages');
+    box.innerHTML += `<div class="msg-bubble"><strong>أنت:</strong> ${input.value}</div>`;
+    input.value = "";
     box.scrollTop = box.scrollHeight;
 }
