@@ -1,76 +1,73 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <title>HVAC Master Pro</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+    <title>Air Calc Pro</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" content="#0b1220">
 </head>
 <body>
-  <div class="wrap">
-    
-    <section id="tab-calc" class="tabPage active">
-      <div id="dashCard" class="card" style="display:none; height:200px">
-        <canvas id="loadChart"></canvas>
-      </div>
-      <div class="card">
-        <div class="h2">🧮 <span data-i18n="nav_calc">الحاسبة</span></div>
-        <select id="buildingCat" class="input" onchange="updateRoomList()"></select>
-        <select id="roomType" class="input"></select>
-        <input id="roomVol" class="input" type="number" placeholder="حجم الغرفة م³">
-        <button id="btnAdd" class="btn btnPrimary" data-i18n="btn_add">إضافة للتقرير</button>
-      </div>
-      <div id="resultsList"></div>
-    </section>
+    <header>
+        <img src="icons/icon-128x128.png" class="app-logo" alt="Air Calc Pro">
+        <h1>Air Calc Pro</h1>
+    </header>
 
-    <section id="tab-rooms" class="tabPage">
-      <div class="card">
-        <div class="h2">🏥 <span data-i18n="nav_ref">المرجع</span></div>
-        <input id="roomSearch" class="input" oninput="renderReference()" placeholder="بحث في الغرف...">
-        <div id="roomsList"></div>
-      </div>
-    </section>
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="showTab('calc-section')">الحسابات</button>
+        <button class="tab-btn" onclick="showTab('duct-section')">الدكت</button>
+        <button class="tab-btn" onclick="showTab('forum-section')">المجتمع</button>
+    </nav>
 
-    <section id="tab-export" class="tabPage">
-      <div class="card">
-        <div class="h2">⬇️ <span data-i18n="nav_exp">التصدير</span></div>
-        <div id="exportPreview" class="item" style="text-align:center; padding:20px;">
-             <p data-i18n="exp_ready">جاهز لاستخراج التقارير</p>
-        </div>
-        <button id="btnExportPDF" class="btn btnPrimary" style="margin-bottom:10px;">تحميل PDF (احترافي)</button>
-        <button id="btnExportExcel" class="btn" style="background:#107c10; color:white;">تصدير Excel</button>
-      </div>
-    </section>
-    
-    <section id="tab-settings" class="tabPage">
-        <div class="card">
-            <div class="h2">⚙️ <span data-i18n="nav_set">الإعدادات</span></div>
-            <select id="langSwitch" class="input" onchange="changeLanguage(this.value)">
-                <option value="ar">العربية</option>
-                <option value="en">English</option>
-            </select>
-            <button onclick="clearAllData()" class="btn btnDanger">مسح البيانات</button>
-        </div>
-    </section>
-  </div>
+    <main>
+        <section id="calc-section" class="tab-content active">
+            <div class="card">
+                <button class="scan-btn" onclick="runARScan()">📸 مسح الغرفة ذكياً</button>
+                <div id="scanMsg"></div>
+                <div class="input-grid">
+                    <input type="number" id="L" placeholder="الطول (م)">
+                    <input type="number" id="W" placeholder="العرض (م)">
+                    <input type="number" id="H" placeholder="الارتفاع (م)">
+                </div>
+                <select id="usage" class="select-field">
+                    <option value="standard">مكاتب/سكن (6 ACH)</option>
+                    <option value="or">غرفة عمليات (20 ACH)</option>
+                </select>
+                <button class="primary-btn" onclick="doHvacCalc()">احسب الآن</button>
+            </div>
+            <div id="resDisplay" class="res-container" style="display:none;"></div>
+        </section>
 
-  <div class="quick-summary">
-    <div><small>TR</small><br><b id="qTR">0.0</b></div>
-    <div><small>CFM</small><br><b id="qCFM">0</b></div>
-    <div><small>الغرف</small><br><b id="qCnt">0</b></div>
-  </div>
+        <section id="duct-section" class="tab-content">
+            <div class="card">
+                <h3>تصميم مجاري الهواء</h3>
+                <input type="number" id="cfm" class="input-field" placeholder="كمية الهواء (CFM)">
+                <input type="number" id="ductWidth" class="input-field" value="12" placeholder="العرض (بوصة)">
+                <button class="primary-btn" onclick="doDuctCalc()">حساب المقاس</button>
+                <div id="ductRes" class="res-item" style="display:none;"></div>
+            </div>
+        </section>
 
-  <nav class="bottomNav">
-    <button class="navBtn active" data-tab="tab-calc"><span>🧮</span><small>الحاسبة</small></button>
-    <button class="navBtn" data-tab="tab-rooms"><span>🏥</span><small>المرجع</small></button>
-    <button class="navBtn" data-tab="tab-export"><span>⬇️</span><small>تصدير</small></button>
-    <button class="navBtn" data-tab="tab-settings"><span>⚙️</span><small>إعدادات</small></button>
-  </nav>
+        <section id="forum-section" class="tab-content">
+            <div class="card">
+                <h3>💬 ساحة نقاش المهندسين</h3>
+                <div id="chatArea" class="chat-box">
+                    <div class="chat-msg"><strong>م. علي:</strong> ما هو معيار الفلترة لغرف العزل؟</div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="newMsg" placeholder="اكتب استفسارك...">
+                    <button onclick="postToForum()">إرسال</button>
+                </div>
+            </div>
+        </section>
+    </main>
 
-  <script src="app.js"></script>
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
 </body>
 </html>
