@@ -8,62 +8,62 @@
 </head>
 <body>
     <header class="app-header">
-        <img src="icons/icon-128x128.png" class="mini-logo">
-        <span id="app-title">Air Calc Pro</span>
+        <img src="icons/icon-128x128.png" class="mini-logo" alt="Logo">
+        <span id="txt-app-title">Air Calc Pro</span>
     </header>
 
     <main id="main-content">
         <section id="calc-tab" class="tab-panel active">
-            <div class="calculator-ui">
-                <div class="screen">
-                    <div id="txt-input-label">المساحة (م²)</div>
+            <div class="calculator-container">
+                <div class="calc-screen">
+                    <div id="txt-input-label">الحجم (م³)</div>
                     <div id="display">0</div>
                     <div id="unit-label">TR | CFM</div>
                 </div>
 
-                <div class="selection-area">
-                    <label id="txt-room-label">نوع الفراغ:</label>
-                    <select id="room-select" class="styled-select">
-                        <optgroup id="group-medical" label="🏥 المستشفيات">
-                            <option value="or">غرفة عمليات - OR</option>
-                            <option value="icu">عناية مركزة - ICU</option>
-                            <option value="isolation">غرفة عزل - Isolation</option>
-                        </optgroup>
-                        <optgroup id="group-comm" label="🏢 تجاري">
-                            <option value="office">مكاتب - Offices</option>
-                            <option value="mall">مول - Mall</option>
-                        </optgroup>
-                        <optgroup id="group-res" label="🏠 سكني">
-                            <option value="standard">منزل - Home</option>
-                        </optgroup>
-                    </select>
+                <div class="selection-container">
+                    <select id="room-select" class="calc-select">
+                        </select>
                 </div>
 
-                <div class="keypad">
-                    <button onclick="press(7)">7</button><button onclick="press(8)">8</button><button onclick="press(9)">9</button>
-                    <button class="op-blue" id="btn-calc" onclick="calculateLoad()">حساب</button>
-                    <button onclick="press(4)">4</button><button onclick="press(5)">5</button><button onclick="press(6)">6</button>
-                    <button class="op-orange" onclick="clearDisplay()">C</button>
-                    <button onclick="press(1)">1</button><button onclick="press(2)">2</button><button onclick="press(3)">3</button>
-                    <button onclick="press(0)">0</button>
+                <div class="calc-grid">
+                    <button class="btn-grey" onclick="clearDisplay()">AC</button>
+                    <button class="btn-grey" onclick="deleteLast()">DEL</button>
+                    <button class="btn-grey" onclick="press('.')">.</button>
+                    <button class="btn-op-blue" id="btn-calc" onclick="calculateLoad()">=</button>
+
+                    <button class="btn-num" onclick="press(7)">7</button>
+                    <button class="btn-num" onclick="press(8)">8</button>
+                    <button class="btn-num" onclick="press(9)">9</button>
+                    <button class="btn-op-navy" onclick="calculateLoad()">CALC</button>
+
+                    <button class="btn-num" onclick="press(4)">4</button>
+                    <button class="btn-num" onclick="press(5)">5</button>
+                    <button class="btn-num" onclick="press(6)">6</button>
+                    <button class="btn-num" onclick="press(0)">0</button>
+
+                    <button class="btn-num" onclick="press(1)">1</button>
+                    <button class="btn-num" onclick="press(2)">2</button>
+                    <button class="btn-num" onclick="press(3)">3</button>
+                    <button class="btn-orange" onclick="clearDisplay()">C</button>
                 </div>
-                <div id="system-recommendation" class="advisor-box">...</div>
+                <div id="system-recommendation" class="calc-advice">...</div>
             </div>
         </section>
 
         <section id="duct-tab" class="tab-panel">
             <div class="card">
-                <h3 id="txt-duct-title">تصميم الدكت</h3>
+                <h3 id="txt-duct-title">تصميم مجاري الهواء</h3>
                 <input type="number" id="targetCFM" placeholder="CFM">
                 <input type="number" id="fixWidth" value="12">
-                <button class="primary-btn" id="btn-duct-calc" onclick="runDuctCalc()">احسب</button>
+                <button class="primary-btn" id="btn-duct-go" onclick="runDuctCalc()">احسب</button>
                 <div id="duct-result" class="res-highlight"></div>
             </div>
         </section>
 
         <section id="forum-tab" class="tab-panel">
             <div class="card">
-                <h3 id="txt-forum-title">المجتمع الهندسي</h3>
+                <h3 id="txt-forum-title">ساحة النقاش</h3>
                 <div id="forum-messages" class="chat-display"></div>
                 <div class="chat-footer">
                     <input type="text" id="chatInput" placeholder="...">
@@ -77,7 +77,7 @@
         <button class="nav-item active" onclick="switchTab('calc-tab')"><i>🧮</i><span class="nav-text" data-key="nav_calc">الحاسبة</span></button>
         <button class="nav-item" onclick="switchTab('duct-tab')"><i>📏</i><span class="nav-text" data-key="nav_duct">الدكت</span></button>
         <button class="nav-item" onclick="switchTab('forum-tab')"><i>👥</i><span class="nav-text" data-key="nav_comm">المجتمع</span></button>
-        <button class="nav-item lang-toggle" onclick="toggleLanguage()"><i>🌐</i><span id="txt-lang-btn">English</span></button>
+        <button class="nav-item lang-btn" onclick="toggleLanguage()"><i>🌐</i><span id="txt-lang-btn">English</span></button>
     </nav>
 
     <script src="app.js"></script>
