@@ -1,109 +1,94 @@
 let REF_DATA = null;
-let FLAT_ITEMS = [];
 let RESULTS = [];
 
 const $ = (id) => document.getElementById(id);
 
 async function init() {
-  try {
-    const resp = await fetch('data.json?v=' + Date.now());
-    REF_DATA = await resp.json();
-    FLAT_ITEMS = [];
-    REF_DATA.categories.forEach(cat => {
-      cat.items.forEach(it => FLAT_ITEMS.push({ ...it, catName: cat.name }));
-    });
-    
-    buildRoomSelect();
-    setupTabs();
-    renderReference();
-  } catch (e) { console.error("Data load failed"); }
+  const resp = await fetch('data.json');
+  REF_DATA = await resp.json();
+  
+  const catSel = $("buildingCat");
+  REF_DATA.categories.forEach((cat, idx) => {
+    catSel.innerHTML += `<option value="${idx}">${cat.name}</option>`;
+  });
+
+  updateRoomList();
+  setupNavigation();
 }
 
-function setupTabs() {
+function updateRoomList() {
+  const catIdx = $("buildingCat").value;
+  const rooms = REF_DATA.categories[catIdx].items;
+  $("roomType").innerHTML = rooms.map(it => `<option value="${it.id}">${it.label_ar}</option>`).join("");
+}
+
+function setupNavigation() {
   document.querySelectorAll(".navBtn").forEach(btn => {
     btn.onclick = () => {
-      const target = btn.dataset.tab;
-      
-      // إخفاء كافة الصفحات
       document.querySelectorAll(".tabPage").forEach(p => p.classList.remove("active"));
       document.querySelectorAll(".navBtn").forEach(b => b.classList.remove("active"));
-      
-      // إظهار الصفحة المطلوبة
-      $(target).classList.add("active");
+      $(btn.dataset.tab).classList.add("active");
       btn.classList.add("active");
-
-      if(target === 'tab-export') renderExportPreview();
+      if(btn.dataset.tab === 'tab-export') renderExportPreview();
     };
   });
 }
 
-function buildRoomSelect() {
-  const sel = $("roomType");
-  sel.innerHTML = FLAT_ITEMS.map(it => `<option value="${it.id}">${it.label_ar}</option>`).join("");
-}
-
-function renderReference() {
-  const list = $("roomsList");
-  list.innerHTML = FLAT_ITEMS.map(it => `
-    <div class="item">
-      <div style="display:flex; justify-content:space-between;">
-        <b>${it.label_ar}</b>
-        <span style="color:var(--primary)">ACH: ${it.ach}</span>
-      </div>
-      <div style="font-size:11px; color:var(--muted)">${it.catName}</div>
-    </div>
-  `).join("");
+// تحليل السعة التجارية
+function analyzeUnit(tr) {
+    if (tr <= 1.1) return "1.0 TR (12k BTU)";
+    if (tr <= 1.6) return "1.5 TR (18k BTU)";
+    if (tr <= 2.2) return "2.0 TR (24k BTU)";
+    if (tr <= 3.2) return "3.0 TR (36k BTU)";
+    return Math.ceil(tr) + ".0 TR (Commercial)";
 }
 
 $("btnAdd").onclick = () => {
-  const it = FLAT_ITEMS.find(x => x.id === $("roomType").value);
+  const catIdx = $("buildingCat").value;
+  const roomIdx = $("roomType").selectedIndex;
+  const it = REF_DATA.categories[catIdx].items[roomIdx];
   const vol = parseFloat($("roomVol").value);
-  if(!vol) return alert("أدخل الحجم");
+  const unit = $("unitType").value;
 
-  const supply = (it.ach * (vol * 35.3147)) / 60;
+  if(!vol) return alert("يرجى إدخال الحجم");
+
+  const cfm = (it.ach * (vol * 35.3147)) / 60;
+  const tr = cfm / parseFloat($("thumb").value);
+
   RESULTS.unshift({
-    name: it.label_ar,
-    supply: Math.round(supply),
-    tr: (supply / parseFloat($("thumb").value)).toFixed(2)
+    room: it.label_ar,
+    unitType: unit,
+    cfm: Math.round(cfm),
+    tr: tr.toFixed(2),
+    rec: analyzeUnit(tr),
+    ach: it.ach
   });
-  
+
   renderResults();
   $("roomVol").value = "";
 };
 
 function renderResults() {
   $("resultsList").innerHTML = RESULTS.map((r, i) => `
-    <div class="item">
-      <div style="display:flex; justify-content:space-between">
-        <b>${r.name}</b>
-        <button onclick="RESULTS.splice(${i},1);renderResults();" style="color:red; background:none; border:none">حذف</button>
+    <div class="item card-result">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <b>${r.room} - <span style="color:var(--primary)">${r.unitType}</span></b>
+        <button onclick="RESULTS.splice(${i},1);renderResults();" class="del-btn">×</button>
       </div>
-      <div>Supply: ${r.supply} CFM | Load: ${r.tr} TR</div>
+      <div class="res-grid">
+        <div>CFM: <span>${r.cfm}</span></div>
+        <div>الحمل: <span>${r.tr} TR</span></div>
+        <div style="grid-column: span 2; color:#fbbf24; font-weight:bold;">المنصوح به: ${r.rec}</div>
+      </div>
     </div>
   `).join("");
 }
 
 function renderExportPreview() {
-  if(RESULTS.length === 0) {
-    $("exportPreview").innerHTML = "لا توجد بيانات مضافة";
-    return;
-  }
-  $("exportPreview").innerHTML = `لديك ${RESULTS.length} غرف جاهزة للتصدير`;
+    const box = $("exportPreview");
+    if(RESULTS.length === 0) return box.innerHTML = "أضف بيانات أولاً";
+    let sum = RESULTS.reduce((a, b) => a + parseFloat(b.tr), 0);
+    box.innerHTML = `عدد الوحدات: ${RESULTS.length} | الإجمالي: ${sum.toFixed(2)} TR`;
 }
-
-$("btnExportPDF").onclick = () => {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Air Calc Pro Report", 20, 20);
-  doc.autoTable({
-    head: [['الغرفة', 'CFM', 'TR']],
-    body: RESULTS.map(r => [r.name, r.supply, r.tr])
-  });
-  doc.save("Report.pdf");
-};
-
-$("btnClearAll").onclick = () => {
-  if(confirm("مسح الكل؟")) { RESULTS = []; renderResults(); }
-};
 
 init();
