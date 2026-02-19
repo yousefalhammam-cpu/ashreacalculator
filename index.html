@@ -1,13 +1,28 @@
-<div class="wrap">
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <title>Air Calc Pro - HVAC Advisor</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    
     <section id="tab-calc" class="tabPage active">
       <div id="dashCard" class="card" style="display:none; height:200px">
         <canvas id="loadChart"></canvas>
       </div>
       <div class="card">
+        <div class="h2">🧮 <span data-i18n="nav_calc">الحاسبة</span></div>
         <select id="buildingCat" class="input" onchange="updateRoomList()"></select>
         <select id="roomType" class="input"></select>
-        <input id="roomVol" class="input" type="number" placeholder="حجم الغرفة م³">
-        <button id="btnAdd" class="btn btnPrimary">إضافة الغرفة</button>
+        <input id="roomVol" class="input" type="number" data-i18n-ph="ph_vol" placeholder="حجم الغرفة م³">
+        <button id="btnAdd" class="btn btnPrimary" data-i18n="btn_add">إضافة للتقرير</button>
       </div>
       <div id="resultsList"></div>
     </section>
@@ -15,44 +30,49 @@
     <section id="tab-rooms" class="tabPage">
       <div class="card">
         <div class="h2">🏥 <span data-i18n="nav_ref">المرجع</span></div>
-        <input id="roomSearch" class="input" oninput="renderReference()" placeholder="بحث في الغرف...">
+        <input id="roomSearch" class="input" oninput="renderReference()" placeholder="بحث في المعايير...">
         <div id="roomsList"></div>
       </div>
     </section>
 
     <section id="tab-export" class="tabPage">
       <div class="card">
-        <div class="h2">⬇️ <span data-i18n="nav_exp">تصدير النتائج</span></div>
-        <div id="exportPreview" class="item" style="text-align:center; padding:20px;">
-             </div>
-        <button id="btnExportPDF" class="btn btnPrimary">حفظ كـ PDF</button>
+        <div class="h2">⬇️ <span data-i18n="nav_exp">تصدير</span></div>
+        <div id="exportPreview" class="item" style="text-align:center;">
+          <p data-i18n="exp_ready">التقرير جاهز للاستخراج</p>
+        </div>
+        <button id="btnExportPDF" class="btn btnPrimary" style="margin-bottom:12px;">Download PDF Report</button>
+        <button id="btnExportExcel" class="btn" style="background:#107c10; color:white;">Export Excel Sheet</button>
       </div>
     </section>
-    
-    <section id="tab-settings" class="tabPage">
-        <div class="card">
-            <div class="h2">⚙️ <span data-i18n="nav_set">الإعدادات</span></div>
-            <label>لغة التطبيق / Language</label>
-            <select id="langSwitch" class="input" onchange="changeLanguage(this.value)">
-                <option value="ar">العربية</option>
-                <option value="en">English</option>
-            </select>
-            <button onclick="clearAllData()" class="btn btnDanger">مسح كافة البيانات</button>
-        </div>
-    </section>
-</div>
 
-<nav class="bottomNav">
-    <button class="navBtn active" data-tab="tab-calc">
-        <span class="navIco">🧮</span><span class="navTxt">الحاسبة</span>
-    </button>
-    <button class="navBtn" data-tab="tab-rooms">
-        <span class="navIco">🏥</span><span class="navTxt">المرجع</span>
-    </button>
-    <button class="navBtn" data-tab="tab-export">
-        <span class="navIco">⬇️</span><span class="navTxt">تصدير</span>
-    </button>
-    <button class="navBtn" data-tab="tab-settings">
-        <span class="navIco">⚙️</span><span class="navTxt">إعدادات</span>
-    </button>
-</nav>
+    <section id="tab-settings" class="tabPage">
+      <div class="card">
+        <div class="h2">⚙️ <span data-i18n="nav_set">الإعدادات</span></div>
+        <label data-i18n="set_lang">لغة التطبيق / Language</label>
+        <select id="langSwitch" class="input" onchange="changeLanguage(this.value)">
+          <option value="ar">العربية</option>
+          <option value="en">English</option>
+        </select>
+        <button onclick="clearAllData()" class="btn btnDanger" data-i18n="btn_clear">مسح البيانات</button>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="quick-summary">
+    <div class="sum-item"><small data-i18n="sum_tr">الحمل</small><b id="qTR">0.0</b></div>
+    <div class="sum-item"><small data-i18n="sum_cfm">التدفق</small><b id="qCFM">0</b></div>
+    <div class="sum-item"><small data-i18n="sum_rooms">الغرف</small><b id="qCnt">0</b></div>
+  </div>
+
+  <nav class="bottomNav">
+    <button class="navBtn active" data-tab="tab-calc"><span class="navIco">🧮</span><span class="navTxt" data-i18n="nav_calc">الحاسبة</span></button>
+    <button class="navBtn" data-tab="tab-rooms"><span class="navIco">🏥</span><span class="navTxt" data-i18n="nav_ref">المرجع</span></button>
+    <button class="navBtn" data-tab="tab-export"><span class="navIco">⬇️</span><span class="navTxt" data-i18n="nav_exp">تصدير</span></button>
+    <button class="navBtn" data-tab="tab-settings"><span class="navIco">⚙️</span><span class="navTxt" data-i18n="nav_set">إعدادات</span></button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
