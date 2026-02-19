@@ -3,85 +3,70 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b1220" />
   <title>Air Calc Pro</title>
-
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="icon" href="icons/icon-192.png" />
-  
+  <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-
-  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
   <div class="wrap">
+    
     <section id="tab-calc" class="tabPage active">
       <div class="card">
         <div class="h2">🧮 الحاسبة</div>
-        <div class="grid">
-          <label>نوع الغرفة</label>
-          <select id="roomType"></select>
-          <div id="roomMeta" class="pill" style="border:none; color:var(--primary)">--</div>
-          
-          <label>حجم الغرفة (m³)</label>
-          <input id="roomVol" class="input" type="number" placeholder="مثال: 120" />
+        <label>نوع الغرفة</label>
+        <select id="roomType"></select>
+        
+        <label>حجم الغرفة (m³)</label>
+        <input id="roomVol" class="input" type="number" placeholder="مثال: 120">
 
-          <div class="grid2">
-            <div>
-              <label>Offset %</label>
-              <input id="offsetPct" class="input" type="number" value="10" />
-            </div>
-            <div>
-              <label>CFM/ton</label>
-              <select id="thumb">
-                <option value="400">400</option>
-                <option value="350">350</option>
-              </select>
-            </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <div>
+            <label>Offset %</label>
+            <input id="offsetPct" class="input" type="number" value="10">
           </div>
-          <button id="btnAdd" class="btn btnPrimary">إضافة الغرفة</button>
+          <div>
+            <label>CFM/ton</label>
+            <select id="thumb" class="input">
+              <option value="400">400</option>
+              <option value="350">350</option>
+            </select>
+          </div>
         </div>
-        <div class="divider"></div>
-        <div id="resultsList" class="list"></div>
+        <button id="btnAdd" class="btn btnPrimary">إضافة الغرفة</button>
       </div>
+      <div id="resultsList"></div>
     </section>
 
     <section id="tab-rooms" class="tabPage">
       <div class="card">
-        <div class="h2">🏥 مرجع معايير ASHRAE 170</div>
-        <input id="roomSearch" class="input" placeholder="بحث في الغرف..." style="margin-bottom:15px;" />
-        <div id="roomsList" class="list"></div>
+        <div class="h2">🏥 مرجع ASHRAE 170</div>
+        <input id="roomSearch" class="input" placeholder="بحث في المعايير...">
+        <div id="roomsList"></div>
       </div>
     </section>
 
     <section id="tab-export" class="tabPage">
       <div class="card">
-        <div class="h2">⬇️ تصدير النتائج</div>
-        <div id="exportPreview" class="item" style="background: rgba(255,255,255,0.05); min-height: 100px;">
-          </div>
-        <div class="grid2" style="margin-top:20px;">
-          <button id="btnExportPDF" class="btn btnPrimary">حفظ PDF</button>
-          <button id="btnExportCSV" class="btn btnOutline">تصدير Excel</button>
-        </div>
+        <div class="h2">⬇️ تصدير التقارير</div>
+        <div id="exportPreview" class="item"></div>
+        <button id="btnExportPDF" class="btn btnPrimary" style="margin-bottom:10px;">حفظ كـ PDF</button>
+        <button id="btnExportCSV" class="btn" style="background:white; color:black;">تصدير Excel</button>
       </div>
     </section>
 
     <section id="tab-settings" class="tabPage">
       <div class="card">
         <div class="h2">⚙️ الإعدادات</div>
-        <div class="grid">
-          <label>لغة التطبيق / Language</label>
-          <select id="langSel" class="input">
-            <option value="ar">العربية</option>
-            <option value="en">English</option>
-          </select>
-        </div>
-        <div class="divider"></div>
+        <label>اللغة / Language</label>
+        <select id="langSel" class="input">
+          <option value="ar">العربية</option>
+          <option value="en">English</option>
+        </select>
         <button id="btnClearAll" class="btn btnDanger">مسح كافة البيانات</button>
       </div>
     </section>
+
   </div>
 
   <nav class="bottomNav">
