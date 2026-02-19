@@ -5,57 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <title>Air Calc Pro</title>
   <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <div class="wrap">
     
     <section id="tab-calc" class="tabPage active">
       <div class="card">
-        <div class="h2">🧮 الحاسبة</div>
+        <div class="h2">🧮 حاسبة الأحمال</div>
+        <label>التصنيف</label>
+        <select id="buildingCat" class="input" onchange="updateRoomList()"></select>
         <label>نوع الغرفة</label>
         <select id="roomType" class="input"></select>
-        <input id="roomVol" class="input" type="number" placeholder="حجم الغرفة (m³)">
-        <button id="btnAdd" class="btn btnPrimary">إضافة الغرفة</button>
+        <input id="roomVol" class="input" type="number" placeholder="حجم الغرفة م³">
+        <button id="btnAdd" class="btn btnPrimary">إضافة الغرفة للتقرير</button>
       </div>
       <div id="resultsList"></div>
     </section>
 
     <section id="tab-rooms" class="tabPage">
       <div class="card">
-        <div class="h2">🏥 مرجع ASHRAE 170</div>
+        <div class="h2">🏥 مرجع ASHRAE الشامل</div>
+        <input id="roomSearch" class="input" placeholder="بحث في الغرف والمعايير..." oninput="renderReference()">
         <div id="roomsList"></div>
       </div>
     </section>
 
     <section id="tab-export" class="tabPage">
       <div class="card">
-        <div class="h2">⬇️ تصدير النتائج</div>
-        <div id="exportPreview"></div>
+        <div class="h2">⬇️ تصدير التقرير</div>
+        <div id="exportPreview" class="item" style="text-align:center;"></div>
+        <button id="btnExportPDF" class="btn btnPrimary" style="margin-bottom:12px;">حفظ PDF</button>
+        <button id="btnClearAll" class="btn btnDanger">مسح كافة البيانات</button>
       </div>
     </section>
 
     <section id="tab-settings" class="tabPage">
       <div class="card">
         <div class="h2">⚙️ الإعدادات</div>
-        <button id="btnClearAll" class="btn" style="background: #ef4444; color: white;">مسح كافة البيانات</button>
+        <label>اللغة / Language</label>
+        <select class="input"><option>العربية</option><option>English</option></select>
+        <p style="font-size: 12px; color: var(--muted);">Air Calc Pro v3.0 - ASHRAE Standard Compliance</p>
       </div>
     </section>
-
   </div>
 
   <nav class="bottomNav">
-    <button class="navBtn active" data-tab="tab-calc">
-      <span class="navIco">🧮</span><span class="navTxt">الحاسبة</span>
-    </button>
-    <button class="navBtn" data-tab="tab-rooms">
-      <span class="navIco">🏥</span><span class="navTxt">المرجع</span>
-    </button>
-    <button class="navBtn" data-tab="tab-export">
-      <span class="navIco">⬇️</span><span class="navTxt">تصدير</span>
-    </button>
-    <button class="navBtn" data-tab="tab-settings">
-      <span class="navIco">⚙️</span><span class="navTxt">إعدادات</span>
-    </button>
+    <button class="navBtn active" data-tab="tab-calc"><span class="navIco">🧮</span><span class="navTxt">الحاسبة</span></button>
+    <button class="navBtn" data-tab="tab-rooms"><span class="navIco">🏥</span><span class="navTxt">المرجع</span></button>
+    <button class="navBtn" data-tab="tab-export"><span class="navIco">⬇️</span><span class="navTxt">تصدير</span></button>
+    <button class="navBtn" data-tab="tab-settings"><span class="navIco">⚙️</span><span class="navTxt">إعدادات</span></button>
   </nav>
 
   <script src="app.js"></script>
