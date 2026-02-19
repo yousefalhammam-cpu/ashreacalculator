@@ -1,14 +1,4 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Air Calc Pro</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <div class="wrap">
+<div class="wrap">
     <section id="tab-calc" class="tabPage active">
       <div id="dashCard" class="card" style="display:none; height:200px">
         <canvas id="loadChart"></canvas>
@@ -21,28 +11,48 @@
       </div>
       <div id="resultsList"></div>
     </section>
+
+    <section id="tab-rooms" class="tabPage">
+      <div class="card">
+        <div class="h2">🏥 <span data-i18n="nav_ref">المرجع</span></div>
+        <input id="roomSearch" class="input" oninput="renderReference()" placeholder="بحث في الغرف...">
+        <div id="roomsList"></div>
+      </div>
+    </section>
+
+    <section id="tab-export" class="tabPage">
+      <div class="card">
+        <div class="h2">⬇️ <span data-i18n="nav_exp">تصدير النتائج</span></div>
+        <div id="exportPreview" class="item" style="text-align:center; padding:20px;">
+             </div>
+        <button id="btnExportPDF" class="btn btnPrimary">حفظ كـ PDF</button>
+      </div>
+    </section>
     
     <section id="tab-settings" class="tabPage">
         <div class="card">
+            <div class="h2">⚙️ <span data-i18n="nav_set">الإعدادات</span></div>
+            <label>لغة التطبيق / Language</label>
             <select id="langSwitch" class="input" onchange="changeLanguage(this.value)">
                 <option value="ar">العربية</option>
                 <option value="en">English</option>
             </select>
-            <button onclick="localStorage.clear(); location.reload();" class="btn" style="background:#ef4444">مسح البيانات</button>
+            <button onclick="clearAllData()" class="btn btnDanger">مسح كافة البيانات</button>
         </div>
     </section>
-  </div>
+</div>
 
-  <div class="quick-summary">
-    <div><small>الحمل الكلي</small><br><b id="qTR">0</b> TR</div>
-    <div><small>عدد الغرف</small><br><b id="qCnt">0</b></div>
-  </div>
-
-  <nav class="bottomNav">
-    <button class="navBtn active" data-tab="tab-calc"><span>🧮</span><small>الحاسبة</small></button>
-    <button class="navBtn" data-tab="tab-settings"><span>⚙️</span><small>الإعدادات</small></button>
-  </nav>
-
-  <script src="app.js"></script>
-</body>
-</html>
+<nav class="bottomNav">
+    <button class="navBtn active" data-tab="tab-calc">
+        <span class="navIco">🧮</span><span class="navTxt">الحاسبة</span>
+    </button>
+    <button class="navBtn" data-tab="tab-rooms">
+        <span class="navIco">🏥</span><span class="navTxt">المرجع</span>
+    </button>
+    <button class="navBtn" data-tab="tab-export">
+        <span class="navIco">⬇️</span><span class="navTxt">تصدير</span>
+    </button>
+    <button class="navBtn" data-tab="tab-settings">
+        <span class="navIco">⚙️</span><span class="navTxt">إعدادات</span>
+    </button>
+</nav>
