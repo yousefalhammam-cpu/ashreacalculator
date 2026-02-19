@@ -1,99 +1,85 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="html-tag">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <title>Air Calc Pro</title>
-    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="styles.css">
-    <meta name="theme-color" content="#0b1220">
 </head>
 <body>
     <header class="app-header">
-        <img src="icons/icon-128x128.png" class="mini-logo" alt="Logo">
-        <span>Air Calc Pro</span>
+        <img src="icons/icon-128x128.png" class="mini-logo">
+        <span id="app-title">Air Calc Pro</span>
     </header>
 
     <main id="main-content">
         <section id="calc-tab" class="tab-panel active">
             <div class="calculator-ui">
                 <div class="screen">
-                    <div id="display-label">أدخل المساحة أو استخدم المسح</div>
+                    <div id="txt-input-label">المساحة (م²)</div>
                     <div id="display">0</div>
-                    <div id="unit-label">TR / CFM</div>
+                    <div id="unit-label">TR | CFM</div>
                 </div>
 
-                <button class="ar-btn" onclick="runARScan()">📸 مسح أبعاد الغرفة ذكياً</button>
-
                 <div class="selection-area">
-                    <label>نوع الفراغ (معايير ASHRAE):</label>
+                    <label id="txt-room-label">نوع الفراغ:</label>
                     <select id="room-select" class="styled-select">
-                        <option value="standard">مكتب / سكني (6 ACH)</option>
-                        <option value="or">غرفة عمليات - OR (20 ACH)</option>
-                        <option value="icu">عناية مركزة - ICU (6 ACH)</option>
-                        <option value="isolation">غرفة عزل (12 ACH)</option>
-                        <option value="lab">مختبرات طبية (12 ACH)</option>
+                        <optgroup id="group-medical" label="🏥 المستشفيات">
+                            <option value="or">غرفة عمليات - OR</option>
+                            <option value="icu">عناية مركزة - ICU</option>
+                            <option value="isolation">غرفة عزل - Isolation</option>
+                        </optgroup>
+                        <optgroup id="group-comm" label="🏢 تجاري">
+                            <option value="office">مكاتب - Offices</option>
+                            <option value="mall">مول - Mall</option>
+                        </optgroup>
+                        <optgroup id="group-res" label="🏠 سكني">
+                            <option value="standard">منزل - Home</option>
+                        </optgroup>
                     </select>
                 </div>
 
                 <div class="keypad">
-                    <button class="num" onclick="press(7)">7</button>
-                    <button class="num" onclick="press(8)">8</button>
-                    <button class="num" onclick="press(9)">9</button>
-                    <button class="op-blue" onclick="calculateLoad()">حساب TR/CFM</button>
-                    
-                    <button class="num" onclick="press(4)">4</button>
-                    <button class="num" onclick="press(5)">5</button>
-                    <button class="num" onclick="press(6)">6</button>
+                    <button onclick="press(7)">7</button><button onclick="press(8)">8</button><button onclick="press(9)">9</button>
+                    <button class="op-blue" id="btn-calc" onclick="calculateLoad()">حساب</button>
+                    <button onclick="press(4)">4</button><button onclick="press(5)">5</button><button onclick="press(6)">6</button>
                     <button class="op-orange" onclick="clearDisplay()">C</button>
-                    
-                    <button class="num" onclick="press(1)">1</button>
-                    <button class="num" onclick="press(2)">2</button>
-                    <button class="num" onclick="press(3)">3</button>
-                    <button class="num" onclick="press(0)">0</button>
+                    <button onclick="press(1)">1</button><button onclick="press(2)">2</button><button onclick="press(3)">3</button>
+                    <button onclick="press(0)">0</button>
                 </div>
-
-                <div id="system-recommendation" class="advisor-box">
-                    بانتظار الحسابات لتقديم التوصية الفنية...
-                </div>
+                <div id="system-recommendation" class="advisor-box">...</div>
             </div>
         </section>
 
         <section id="duct-tab" class="tab-panel">
             <div class="card">
-                <h3>📏 تصميم مجاري الهواء (Duct Sizer)</h3>
-                <input type="number" id="targetCFM" placeholder="CFM الممرر من الحسابات">
-                <input type="number" id="fixWidth" value="12" placeholder="العرض المطلوب (بوصة)">
-                <button class="primary-btn" onclick="runDuctCalc()">تحديد المقاس النهائي</button>
+                <h3 id="txt-duct-title">تصميم الدكت</h3>
+                <input type="number" id="targetCFM" placeholder="CFM">
+                <input type="number" id="fixWidth" value="12">
+                <button class="primary-btn" id="btn-duct-calc" onclick="runDuctCalc()">احسب</button>
                 <div id="duct-result" class="res-highlight"></div>
             </div>
         </section>
 
         <section id="forum-tab" class="tab-panel">
             <div class="card">
-                <h3>💬 ساحة نقاش المهندسين</h3>
-                <div id="forum-messages" class="chat-display">
-                    <div class="msg-bubble"><strong>نظام:</strong> مرحباً بك في مجتمع Air Calc Pro.</div>
-                </div>
+                <h3 id="txt-forum-title">المجتمع الهندسي</h3>
+                <div id="forum-messages" class="chat-display"></div>
                 <div class="chat-footer">
-                    <input type="text" id="chatInput" placeholder="اكتب سؤالك المهني هنا...">
-                    <button onclick="postMsg()">نشر</button>
+                    <input type="text" id="chatInput" placeholder="...">
+                    <button id="btn-post" onclick="postMsg()">نشر</button>
                 </div>
             </div>
         </section>
     </main>
 
     <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('calc-tab')"><i>🧮</i><span>الحاسبة</span></button>
-        <button class="nav-item" onclick="switchTab('duct-tab')"><i>📏</i><span>الدكت</span></button>
-        <button class="nav-item" onclick="switchTab('forum-tab')"><i>👥</i><span>المجتمع</span></button>
+        <button class="nav-item active" onclick="switchTab('calc-tab')"><i>🧮</i><span class="nav-text" data-key="nav_calc">الحاسبة</span></button>
+        <button class="nav-item" onclick="switchTab('duct-tab')"><i>📏</i><span class="nav-text" data-key="nav_duct">الدكت</span></button>
+        <button class="nav-item" onclick="switchTab('forum-tab')"><i>👥</i><span class="nav-text" data-key="nav_comm">المجتمع</span></button>
+        <button class="nav-item lang-toggle" onclick="toggleLanguage()"><i>🌐</i><span id="txt-lang-btn">English</span></button>
     </nav>
 
     <script src="app.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-    </script>
 </body>
 </html>
