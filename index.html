@@ -1,87 +1,61 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
-  <title>Air Calc Pro | ASHRAE Edition</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <title>Air Calc Pro</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <div class="wrap">
     
     <section id="tab-calc" class="tabPage active">
       <div class="card">
-        <div class="h2">🧮 حاسبة الأحمال واختيار الوحدات</div>
-        
-        <label>تصنيف المبنى</label>
-        <select id="buildingCat" class="input" onchange="updateRoomList()"></select>
-        
-        <label>نوع الغرفة (حسب ASHRAE)</label>
+        <div class="h2">🧮 الحاسبة</div>
+        <label>نوع الغرفة</label>
         <select id="roomType" class="input"></select>
-        
-        <label>حجم الغرفة (الطول × العرض × الارتفاع) م³</label>
-        <input id="roomVol" class="input" type="number" placeholder="مثال: 45">
-
-        <div class="grid2">
-          <div>
-            <label>نوع وحدة التكييف</label>
-            <select id="unitType" class="input">
-              <option value="Split">Split Unit</option>
-              <option value="Package">Package Unit</option>
-              <option value="AHU">AHU (مركزي)</option>
-              <option value="FCU">FCU (تشلير)</option>
-            </select>
-          </div>
-          <div>
-            <label>CFM/ton</label>
-            <select id="thumb" class="input">
-              <option value="400">400 (Standard)</option>
-              <option value="350">350 (Desert)</option>
-            </select>
-          </div>
-        </div>
-        
-        <button id="btnAdd" class="btn btnPrimary">إضافة وتحليل الوحدة</button>
+        <input id="roomVol" class="input" type="number" placeholder="حجم الغرفة (m³)">
+        <button id="btnAdd" class="btn btnPrimary">إضافة الغرفة</button>
       </div>
       <div id="resultsList"></div>
     </section>
 
     <section id="tab-rooms" class="tabPage">
       <div class="card">
-        <div class="h2">🏥 دليل ASHRAE 170 / 62.1</div>
-        <input id="roomSearch" class="input" placeholder="بحث..." oninput="renderReference()">
+        <div class="h2">🏥 مرجع ASHRAE 170</div>
         <div id="roomsList"></div>
       </div>
     </section>
 
     <section id="tab-export" class="tabPage">
       <div class="card">
-        <div class="h2">⬇️ التقرير الفني النهائي</div>
-        <div id="exportPreview" class="item preview-box"></div>
-        <button id="btnExportPDF" class="btn btnPrimary" style="margin-bottom:10px;">تحميل PDF</button>
-        <button id="btnClearAll" class="btn btnDanger">تصفير البيانات</button>
+        <div class="h2">⬇️ تصدير النتائج</div>
+        <div id="exportPreview"></div>
       </div>
     </section>
 
     <section id="tab-settings" class="tabPage">
-        <div class="card">
-          <div class="h2">⚙️ الإعدادات</div>
-          <label>لغة التطبيق</label>
-          <select id="langSel" class="input">
-            <option value="ar">العربية</option>
-            <option value="en">English</option>
-          </select>
-        </div>
+      <div class="card">
+        <div class="h2">⚙️ الإعدادات</div>
+        <button id="btnClearAll" class="btn" style="background: #ef4444; color: white;">مسح كافة البيانات</button>
+      </div>
     </section>
+
   </div>
 
   <nav class="bottomNav">
-    <button class="navBtn active" data-tab="tab-calc"><span class="navIco">🧮</span><span class="navTxt">الحاسبة</span></button>
-    <button class="navBtn" data-tab="tab-rooms"><span class="navIco">🏥</span><span class="navTxt">المرجع</span></button>
-    <button class="navBtn" data-tab="tab-export"><span class="navIco">⬇️</span><span class="navTxt">تصدير</span></button>
-    <button class="navBtn" data-tab="tab-settings"><span class="navIco">⚙️</span><span class="navTxt">إعدادات</span></button>
+    <button class="navBtn active" data-tab="tab-calc">
+      <span class="navIco">🧮</span><span class="navTxt">الحاسبة</span>
+    </button>
+    <button class="navBtn" data-tab="tab-rooms">
+      <span class="navIco">🏥</span><span class="navTxt">المرجع</span>
+    </button>
+    <button class="navBtn" data-tab="tab-export">
+      <span class="navIco">⬇️</span><span class="navTxt">تصدير</span>
+    </button>
+    <button class="navBtn" data-tab="tab-settings">
+      <span class="navIco">⚙️</span><span class="navTxt">إعدادات</span>
+    </button>
   </nav>
 
   <script src="app.js"></script>
