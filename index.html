@@ -2,9 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
   <meta name="theme-color" content="#0b1220" />
-  <title>Air Calc Pro | HVAC Engineering</title>
+  <title>Air Calc Pro</title>
 
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon-192.png" />
@@ -12,241 +12,77 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-  <style>
-    :root{
-      --bg:#0b1220;
-      --card: rgba(15,23,42,.65);
-      --line: rgba(255,255,255,.12);
-      --muted: rgba(255,255,255,.65);
-      --txt: rgba(255,255,255,.95);
-      --primary: #38bdf8;
-      --success: #22c55e;
-      --danger: #ef4444;
-      --shadow: 0 10px 30px rgba(0,0,0,.4);
-      --r:20px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, sans-serif;
-    }
-    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    
-    body{
-      margin:0;
-      font-family: var(--sans);
-      color: var(--txt);
-      background:
-        radial-gradient(900px 600px at 10% 0%, rgba(56,189,248,.15), transparent 60%),
-        radial-gradient(800px 500px at 90% 90%, rgba(167,139,250,.1), transparent 60%),
-        var(--bg);
-      background-attachment: fixed;
-      line-height: 1.5;
-    }
-    
-    .wrap{ max-width:1000px; margin:0 auto; padding:15px 15px 100px; }
-
-    .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; flex-wrap:wrap; margin-bottom: 20px;
-      padding: 10px 5px;
-    }
-    .brand .title{ font-weight:900; font-size:22px; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    
-    .pill{
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.08);
-      padding:4px 12px;
-      border-radius: 99px;
-      font-size:11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .card{
-      border:1px solid var(--line);
-      border-radius: var(--r);
-      background: var(--card);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      box-shadow: var(--shadow);
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .grid{ display:grid; gap:12px; }
-    .grid2{ display:grid; gap:12px; grid-template-columns: 1.2fr 1fr; }
-    .grid3{ display:grid; gap:12px; grid-template-columns: 1fr 1fr 1fr; }
-    @media (max-width:768px){ .grid2, .grid3{ grid-template-columns: 1fr; } }
-
-    label{ display:block; font-size:13px; font-weight: 600; color: var(--muted); margin-bottom:8px; margin-inline-start: 4px; }
-    
-    .input, select, .btn{
-      width:100%;
-      border:1px solid var(--line);
-      background: rgba(15,23,42,0.4);
-      color: var(--txt);
-      padding: 12px 14px;
-      border-radius: 12px;
-      font-size:15px;
-      transition: all 0.2s;
-    }
-    
-    .input:focus, select:focus{ border-color: var(--primary); background: rgba(15,23,42,0.6); }
-
-    .btn{ cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; border:none; }
-    .btnPrimary{ background: var(--primary); color: #000; }
-    .btnPrimary:hover{ opacity: 0.9; transform: translateY(-1px); }
-    .btnOutline{ background: transparent; border: 1px solid var(--line); color: var(--txt); }
-    .btnDanger{ color: var(--danger); background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); }
-
-    .h2{ font-size:18px; font-weight:900; margin: 0 0 15px; display:flex; align-items:center; gap:8px; }
-    .divider{ height:1px; background: linear-gradient(to right, var(--line), transparent); margin: 20px 0; }
-
-    /* Results List Styling */
-    .item{
-      border:1px solid var(--line);
-      border-radius: 16px;
-      background: rgba(255,255,255,.03);
-      padding: 15px;
-      margin-top: 10px;
-      animation: slideIn 0.3s ease-out;
-    }
-    @keyframes slideIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
-
-    .k{
-      border:1px solid var(--line);
-      border-radius: 16px;
-      padding: 12px;
-      background: rgba(0,0,0,.2);
-    }
-    .k.blue{ border-left: 4px solid var(--primary); }
-    .k.green{ border-left: 4px solid var(--success); }
-    .k.purple{ border-left: 4px solid #a78bfa; }
-    
-    .k .kk{ font-size:11px; color: var(--muted); font-weight:bold; }
-    .k .vv{ font-size:18px; font-weight:900; margin-top:4px; color: #fff; }
-    .k .uu{ font-size:11px; color: var(--muted); margin-inline-start:4px; }
-
-    .bottomNav{
-      position:fixed; left:50%; bottom:15px; transform: translateX(-50%);
-      display:flex; gap:5px; width: calc(100% - 30px); max-width:600px;
-      background: rgba(15,23,42,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--line); border-radius: 22px; padding: 6px; z-index: 1000;
-    }
-    .navBtn{
-      flex:1; border:none; background:transparent; color: var(--muted);
-      padding:10px 5px; border-radius: 16px; cursor:pointer;
-      display:flex; flex-direction:column; align-items:center; transition: 0.2s;
-    }
-    .navBtn.active{ background: rgba(56,189,248,0.15); color: var(--primary); }
-    .navIco{ font-size:20px; margin-bottom: 2px; }
-    .navTxt{ font-size:10px; font-weight:800; }
-
-    #resultsList:empty::after {
-      content: "لا توجد غرف مضافة حالياً";
-      display: block; text-align: center; color: var(--muted); padding: 20px; font-size: 14px;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
   <div class="wrap">
-    <header class="topbar">
-      <div class="brand">
-        <div class="title">Air Calc Pro</div>
-        <div class="sub">
-          <span class="pill">ASHRAE 170 Standard</span>
-          <span class="pill mono" id="statusTag">Loading…</span>
-        </div>
-      </div>
-      <div class="credit">
-        <strong>م. يوسف ال همام</strong>
-      </div>
-    </header>
-
     <section id="tab-calc" class="tabPage active">
       <div class="card">
-        <div class="h2">🧮 <span data-i18n="calc_title">الحاسبة الهندسة</span></div>
-        
-        <div class="grid2">
-          <div class="grid">
+        <div class="h2">🧮 الحاسبة</div>
+        <div class="grid">
+          <label>نوع الغرفة</label>
+          <select id="roomType"></select>
+          <div id="roomMeta" class="pill" style="border:none; color:var(--primary)">--</div>
+          
+          <label>حجم الغرفة (m³)</label>
+          <input id="roomVol" class="input" type="number" placeholder="مثال: 120" />
+
+          <div class="grid2">
             <div>
-              <label data-i18n="room_type_lbl">نوع الغرفة (حسب المعايير)</label>
-              <select id="roomType"></select>
-              <div class="pill mono" style="margin-top:8px; border:none; padding:0;" id="roomMeta">--</div>
+              <label>Offset %</label>
+              <input id="offsetPct" class="input" type="number" value="10" />
             </div>
             <div>
-              <label data-i18n="vol_lbl">حجم الغرفة (m³)</label>
-              <input id="roomVol" class="input" type="number" inputmode="decimal" placeholder="المساحة × الارتفاع" />
+              <label>CFM/ton</label>
+              <select id="thumb">
+                <option value="400">400</option>
+                <option value="350">350</option>
+              </select>
             </div>
           </div>
-
-          <div class="grid">
-            <div class="grid2" style="grid-template-columns: 1fr 1fr;">
-              <div>
-                <label data-i18n="offset_lbl">Offset %</label>
-                <input id="offsetPct" class="input" type="number" value="10" />
-              </div>
-              <div>
-                <label data-i18n="thumb_lbl">CFM/ton</label>
-                <select id="thumb">
-                  <option value="350">350</option>
-                  <option value="400" selected>400</option>
-                  <option value="450">450</option>
-                </select>
-              </div>
-            </div>
-            <button id="btnAdd" class="btn btnPrimary">
-               <span>+</span> <span data-i18n="add_btn">إضافة الغرفة للحساب</span>
-            </button>
-            <button id="btnClearAll" class="btn btnDanger" style="font-size: 12px; padding: 8px;">
-               <span data-i18n="clear_all">مسح كافة البيانات</span>
-            </button>
-          </div>
+          <button id="btnAdd" class="btn btnPrimary">إضافة الغرفة</button>
         </div>
-
         <div class="divider"></div>
-
-        <div class="h2">📋 <span data-i18n="results_list">نتائج الغرف</span></div>
-        <div class="list" id="resultsList"></div>
-
-        <div class="divider"></div>
-
-        <div class="grid3">
-          <div class="k blue">
-            <div class="kk" data-i18n="sum_supply">TOTAL SUPPLY</div>
-            <div class="vv"><span id="sumSupply">0</span> <span class="uu">CFM</span></div>
-          </div>
-          <div class="k green">
-            <div class="kk" data-i18n="sum_exh">TOTAL EXHAUST</div>
-            <div class="vv"><span id="sumExh">0</span> <span class="uu">CFM</span></div>
-          </div>
-          <div class="k purple">
-            <div class="kk" data-i18n="sum_tr">ESTIMATED LOAD</div>
-            <div class="vv"><span id="sumTR">0</span> <span class="uu">TR</span></div>
-          </div>
-        </div>
+        <div id="resultsList" class="list"></div>
       </div>
     </section>
 
     <section id="tab-rooms" class="tabPage">
       <div class="card">
-        <div class="h2">🏥 <span data-i18n="rooms_title">مرجع الغرف</span></div>
-        <input id="roomSearch" class="input" placeholder="ابحث عن غرفة (مثلاً: Operating, Lab...)" style="margin-bottom:15px;" />
-        <div class="list" id="roomsList"></div>
+        <div class="h2">🏥 مرجع معايير ASHRAE 170</div>
+        <input id="roomSearch" class="input" placeholder="بحث في الغرف..." style="margin-bottom:15px;" />
+        <div id="roomsList" class="list"></div>
       </div>
     </section>
 
     <section id="tab-export" class="tabPage">
       <div class="card">
-        <div class="h2">⬇️ <span data-i18n="export_title">تصدير التقرير</span></div>
-        <div class="grid">
-            <button id="btnExportPDF" class="btn btnPrimary">حفظ كملف PDF (احترافي)</button>
-            <button id="btnExport" class="btn btnOutline">تصدير CSV (Excel)</button>
+        <div class="h2">⬇️ تصدير النتائج</div>
+        <div id="exportPreview" class="item" style="background: rgba(255,255,255,0.05); min-height: 100px;">
+          </div>
+        <div class="grid2" style="margin-top:20px;">
+          <button id="btnExportPDF" class="btn btnPrimary">حفظ PDF</button>
+          <button id="btnExportCSV" class="btn btnOutline">تصدير Excel</button>
         </div>
-        <p class="muted" style="text-align: center; margin-top: 15px;">سيتم تصدير كافة الغرف المضافة في قائمة الحاسبة.</p>
       </div>
     </section>
 
-    </div>
+    <section id="tab-settings" class="tabPage">
+      <div class="card">
+        <div class="h2">⚙️ الإعدادات</div>
+        <div class="grid">
+          <label>لغة التطبيق / Language</label>
+          <select id="langSel" class="input">
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div class="divider"></div>
+        <button id="btnClearAll" class="btn btnDanger">مسح كافة البيانات</button>
+      </div>
+    </section>
+  </div>
 
   <nav class="bottomNav">
     <button class="navBtn active" data-tab="tab-calc">
