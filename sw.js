@@ -1,35 +1,39 @@
-const CACHE_NAME = "aircalcpro-v1";
-const ASSETS = [
-  "./",
-  "./index.html",
-  "./app.js",
-  "./data.json",
-  "./manifest.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+/* Air Calc Pro - Service Worker for Offline Access */
+const cacheName = 'aircalc-pro-v2';
+const assets = [
+  './',
+  './index.html',
+  './app.js',
+  './styles.css',
+  './data.json',
+  './manifest.webmanifest',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js'
 ];
 
-self.addEventListener("install", (event) => {
+// Install: Cache all UI and library files
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(cacheName).then(cache => {
+      return cache.addAll(assets);
+    })
   );
 });
 
-self.addEventListener("activate", (event) => {
+// Activate: Clean up old caches
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : null)))
-    ).then(() => self.clients.claim())
+    caches.keys().then(keys => {
+      return Promise.all(keys.filter(key => key !== cacheName).map(key => caches.delete(key)));
+    })
   );
 });
 
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
+// Fetch: Serve from cache if offline
+self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(req).then(cached => cached || fetch(req).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put(req, copy)).catch(()=>{});
-      return res;
-    }).catch(() => caches.match("./index.html")))
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
   );
 });
