@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Air Calc Pro</title>
+    <title>Air Calc Pro | ASHRAE</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header class="simple-header">Air Calc Pro | HVAC Engineering</header>
+    <header class="simple-header">Air Calc Pro | HVAC Suite</header>
 
     <main id="main-content">
         <section id="calc-tab" class="tab-panel active">
@@ -20,7 +20,7 @@
                 
                 <div class="horizontal-inputs">
                     <div class="input-box room-box">
-                        <label data-ar="المنشأة" data-en="Facility">المنشأة</label>
+                        <label data-ar="الغرفة" data-en="Room Type">الغرفة</label>
                         <select id="room-select" onchange="resetAllFields()"></select>
                     </div>
                     <div class="input-box small-box">
@@ -58,8 +58,8 @@
 
                 <div class="history-section">
                     <div class="history-header">
-                        <span data-ar="سجل الغرف المحفوظة" data-en="Saved Rooms History">سجل الغرف المحفوظة</span>
-                        <button class="clear-history-mini" onclick="clearHistory()">Clear</button>
+                        <span data-ar="السجل التراكمي" data-en="Cumulative History">السجل التراكمي</span>
+                        <button class="clear-history-btn" onclick="clearHistory()">Clear</button>
                     </div>
                     <div class="history-scroll-container">
                         <table class="history-table">
@@ -71,17 +71,21 @@
         </section>
 
         <section id="duct-tab" class="tab-panel">
-            <div class="ios-card">
-                <h2 data-ar="مقاسات الدكت" data-en="Duct Sizing">مقاسات الدكت</h2>
+            <div class="ios-card duct-page">
+                <h2 data-ar="حساب مقاسات الدكت" data-en="Duct Sizer">حساب مقاسات الدكت</h2>
                 <div class="ios-input-group">
-                    <label>CFM</label>
-                    <input type="number" id="targetCFM" placeholder="Auto-filled from calc">
+                    <label>CFM (Linked from Calc)</label>
+                    <input type="number" id="targetCFM" placeholder="Enter CFM">
                 </div>
                 <div class="ios-input-group">
-                    <label data-ar="العرض الثابت (Inch)" data-en="Fixed Width (Inch)">العرض الثابت (Inch)</label>
+                    <label data-ar="العرض الثابت (انش)" data-en="Fixed Width (in)">العرض الثابت (انش)</label>
                     <input type="number" id="fixWidth" value="12">
                 </div>
-                <button class="btn-orange main-btn" onclick="runDuctCalc()" style="width: 100%; height: 50px; border-radius: 12px; margin-top: 10px;">احسب المقاس</button>
+                <div class="ios-input-group">
+                    <label data-ar="معدل الاحتكاك" data-en="Friction Rate">معدل الاحتكاك</label>
+                    <input type="text" value="0.1" disabled>
+                </div>
+                <button class="btn-orange main-btn" onclick="runDuctCalc()" style="width:100%; height:55px; border-radius:12px; font-size:1.1rem;">احسب المقاس</button>
                 <div id="duct-result" class="result-highlight">---</div>
             </div>
         </section>
@@ -89,7 +93,7 @@
 
     <div id="equip-modal" class="modal">
         <div class="modal-content">
-            <h3 data-ar="تحديد الأجهزة والكمية" data-en="Equipment & Qty">تحديد الأجهزة والكمية</h3>
+            <h3 data-ar="إضافة الأجهزة" data-en="Add Equipment">إضافة الأجهزة</h3>
             <div id="equip-checklist" class="checklist-container"></div>
             <button class="close-modal-btn" onclick="closeEquipModal()">Done / تم</button>
         </div>
