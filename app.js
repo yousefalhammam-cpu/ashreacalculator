@@ -1,49 +1,46 @@
-// المتغيرات العالمية
 let currentLang = 'ar';
 let currentInput = "";
 let lastResult = { tr: 0, cfm: 0, room: "", vol: 0 };
 
-// القائمة الشاملة للغرف (أكثر من 20 غرفة)
+// قاعدة بيانات الغرف الشاملة
 const roomData = {
     medical: [
         { id: 'or', ar: 'غرفة عمليات - OR', en: 'Operating Room', ach: 20, factor: 350 },
         { id: 'icu', ar: 'عناية مركزة - ICU', en: 'Intensive Care', ach: 6, factor: 400 },
         { id: 'iso', ar: 'غرفة عزل - Isolation', en: 'Isolation Room', ach: 12, factor: 380 },
         { id: 'er', ar: 'طوارئ - Emergency', en: 'Emergency Room', ach: 10, factor: 400 },
-        { id: 'lab', ar: 'مختبرات - Laboratories', en: 'Labs', ach: 12, factor: 350 },
+        { id: 'lab', ar: 'مختبرات - Labs', en: 'Laboratories', ach: 12, factor: 350 },
         { id: 'pharm', ar: 'صيدلية - Pharmacy', en: 'Pharmacy', ach: 4, factor: 450 },
-        { id: 'dent', ar: 'عيادة أسنان - Dental', en: 'Dental Clinic', ach: 8, factor: 380 },
-        { id: 'wait', ar: 'انتظار - Waiting Area', en: 'Waiting Room', ach: 6, factor: 450 }
+        { id: 'xray', ar: 'أشعة - Radiology', en: 'X-Ray Unit', ach: 6, factor: 400 },
+        { id: 'dent', ar: 'عيادة أسنان - Dental', en: 'Dental Clinic', ach: 8, factor: 380 }
     ],
     commercial: [
         { id: 'off', ar: 'مكاتب - Offices', en: 'Offices', ach: 6, factor: 450 },
         { id: 'mall', ar: 'مول تجاري - Mall', en: 'Shopping Mall', ach: 8, factor: 400 },
         { id: 'rest', ar: 'مطعم - Restaurant', en: 'Restaurant', ach: 15, factor: 300 },
         { id: 'gym', ar: 'نادي رياضي - Gym', en: 'Gymnasium', ach: 10, factor: 350 },
-        { id: 'hotel', ar: 'فندق - Hotel Room', en: 'Hotel Room', ach: 5, factor: 450 },
         { id: 'pray', ar: 'مصلى - Prayer Room', en: 'Prayer Room', ach: 8, factor: 400 }
     ],
     residential: [
         { id: 'bed', ar: 'غرفة نوم - Bedroom', en: 'Bedroom', ach: 4, factor: 500 },
-        { id: 'kit', ar: 'مطبخ - Kitchen', en: 'Kitchen', ach: 8, factor: 350 },
+        { id: 'kit', ar: 'مطبخ - Kitchen', en: 'Kitchen', ach: 8, factor: 400 },
         { id: 'maj', ar: 'مجلس - Majlis', en: 'Majlis', ach: 5, factor: 450 }
     ]
 };
 
 const translations = {
-    ar: { nav_calc: "الحاسبة", nav_duct: "الدكت", nav_comm: "المجتمع", nav_export: "تصدير", med: "🏥 طبي", comm: "🏢 تجاري", res: "🏠 سكني", lang: "English", input_title: "الحجم (م³)" },
-    en: { nav_calc: "Calc", nav_duct: "Duct", nav_comm: "Forum", nav_export: "Export", med: "🏥 Medical", comm: "🏢 Commercial", res: "🏠 Residential", lang: "العربية", input_title: "Volume (m³)" }
+    ar: { nav_calc: "الحاسبة", nav_duct: "الدكت", nav_comm: "المجتمع", nav_export: "تصدير", lang: "English", input_label: "الحجم (م³)" },
+    en: { nav_calc: "Calc", nav_duct: "Duct", nav_comm: "Forum", nav_export: "Export", lang: "العربية", input_label: "Volume (m³)" }
 };
 
-// تشغيل عند التحميل
-window.onload = () => {
-    updateUI();
-};
+window.onload = () => updateUI();
 
-// وظائف الحاسبة
-function press(num) {
-    currentInput += num;
-    document.getElementById('display').innerText = currentInput;
+// وظائف الأرقام
+function press(n) {
+    if (currentInput.length < 10) {
+        currentInput += n;
+        document.getElementById('display').innerText = currentInput;
+    }
 }
 
 function clearDisplay() {
@@ -57,15 +54,13 @@ function deleteLast() {
     document.getElementById('display').innerText = currentInput || "0";
 }
 
-// حساب الأحمال وربطها بالدكت
+// الحساب والربط
 function calculateLoad() {
     const vol = parseFloat(currentInput);
     if (!vol) return;
     const roomId = document.getElementById('room-select').value;
-    const allRooms = [...roomData.medical, ...roomData.commercial, ...roomData.residential];
-    const spec = allRooms.find(r => r.id === roomId);
+    const spec = [...roomData.medical, ...roomData.commercial, ...roomData.residential].find(r => r.id === roomId);
 
-    // معادلة الحجم (متر مكعب) إلى CFM
     const cfm = (vol * 35.3147 * spec.ach) / 60;
     const tr = cfm / spec.factor;
 
@@ -73,30 +68,16 @@ function calculateLoad() {
 
     document.getElementById('display').innerText = tr.toFixed(2);
     document.getElementById('unit-label').innerText = `${Math.round(cfm)} CFM | ${tr.toFixed(2)} TR`;
-    
-    // ربط النتيجة بتبويب الدكت
-    if(document.getElementById('targetCFM')) {
-        document.getElementById('targetCFM').value = Math.round(cfm);
-    }
+    document.getElementById('targetCFM').value = Math.round(cfm);
 }
 
-// التنقل بين التبويبات (الأيقونات السفلية)
-function switchTab(tabId) {
-    // إخفاء الكل
-    document.querySelectorAll('.tab-panel').forEach(panel => {
-        panel.style.display = 'none';
-        panel.classList.remove('active');
-    });
-    // إزالة التنشيط عن الأزرار
-    document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-
-    // إظهار المطلوب
-    const activeTab = document.getElementById(tabId);
-    activeTab.style.display = 'flex';
-    activeTab.classList.add('active');
+// التنقل بين التبويبات
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     
-    // تنشيط زر النابار
-    event.currentTarget.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
 }
 
 // تغيير اللغة
@@ -108,27 +89,40 @@ function toggleLanguage() {
 
 function updateUI() {
     const t = translations[currentLang];
-    document.getElementById('txt-input-label').innerText = t.input_title;
+    document.getElementById('txt-input-label').innerText = t.input_label;
     document.getElementById('txt-lang-btn').innerText = t.lang;
-    
-    document.querySelectorAll('.nav-text').forEach(el => {
-        const key = el.getAttribute('data-key');
-        if(t[key]) el.innerText = t[key];
-    });
+    document.querySelectorAll('.nav-text').forEach(el => el.innerText = t[el.getAttribute('data-key')]);
 
     const select = document.getElementById('room-select');
     select.innerHTML = `
-        <optgroup label="${t.med}">${roomData.medical.map(r => `<option value="${r.id}">${currentLang==='ar'?r.ar:r.en}</option>`).join('')}</optgroup>
-        <optgroup label="${t.comm}">${roomData.commercial.map(r => `<option value="${r.id}">${currentLang==='ar'?r.ar:r.en}</option>`).join('')}</optgroup>
-        <optgroup label="${t.res}">${roomData.residential.map(r => `<option value="${r.id}">${currentLang==='ar'?r.ar:r.en}</option>`).join('')}</optgroup>
+        <optgroup label="${currentLang==='ar'?'🏥 طبي':'🏥 Medical'}">${roomData.medical.map(r=>`<option value="${r.id}">${currentLang==='ar'?r.ar:r.en}</option>`).join('')}</optgroup>
+        <optgroup label="${currentLang==='ar'?'🏢 تجاري':'🏢 Commercial'}">${roomData.commercial.map(r=>`<option value="${r.id}">${currentLang==='ar'?r.ar:r.en}</option>`).join('')}</optgroup>
+        <optgroup label="${currentLang==='ar'?'🏠 سكني':'🏠 Residential'}">${roomData.residential.map(r=>`<option value="${r.id}">${currentLang==='ar'?r.ar:r.en}</option>`).join('')}</optgroup>
     `;
 }
 
-// دالة حساب الدكت
+// حساب الدكت
 function runDuctCalc() {
     const q = document.getElementById('targetCFM').value;
     const w = document.getElementById('fixWidth').value;
     if(!q || !w) return;
     const h = Math.ceil(((q / 1000) * 144) / w);
     document.getElementById('duct-result').innerText = `${w}" x ${h}" Inch`;
+}
+
+// التصدير
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text("HVAC Engineering Report", 10, 10);
+    doc.text(`Room: ${lastResult.room}`, 10, 20);
+    doc.text(`Load: ${lastResult.tr} TR`, 10, 30);
+    doc.save("Report.pdf");
+}
+
+function exportExcel() {
+    const ws = XLSX.utils.json_to_sheet([lastResult]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "HVAC");
+    XLSX.writeFile(wb, "AirCalc.xlsx");
 }
