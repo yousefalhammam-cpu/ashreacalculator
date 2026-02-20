@@ -34,7 +34,7 @@
                     <div class="input-box small-box">
                         <label data-ar="أجهزة" data-en="Equip">أجهزة</label>
                         <div class="equip-trigger" onclick="openEquipModal()">
-                            <input type="text" id="equip-watts" value="0" readonly style="cursor: pointer;">
+                            <input type="text" id="equip-watts" value="0" readonly>
                         </div>
                     </div>
                 </div>
@@ -76,7 +76,7 @@
                 <h2 data-ar="حساب مقاسات الدكت" data-en="Duct Sizer">حساب مقاسات الدكت</h2>
                 <div class="ios-input-group">
                     <label>CFM</label>
-                    <input type="number" id="targetCFM" placeholder="Auto-filled">
+                    <input type="number" id="targetCFM" placeholder="Auto-filled from calc">
                 </div>
                 <div class="ios-input-group">
                     <label data-ar="العرض الثابت (انش)" data-en="Fixed Width (in)">العرض الثابت (انش)</label>
@@ -90,7 +90,7 @@
 
     <div id="equip-modal" class="modal">
         <div class="modal-content">
-            <h3 data-ar="قائمة الأجهزة الشاملة" data-en="Equipment List">قائمة الأجهزة الشاملة</h3>
+            <h3 data-ar="إضافة الأجهزة" data-en="Add Equipment">إضافة الأجهزة</h3>
             <div id="equip-checklist" class="checklist-container"></div>
             <button class="close-modal-btn" onclick="closeEquipModal()">تم / Done</button>
         </div>
