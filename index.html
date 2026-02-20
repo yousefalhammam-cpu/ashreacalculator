@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Air Calc Pro - Engineering Suite</title>
+    <title>Air Calc Pro - Professional Edition</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -20,27 +20,35 @@
                     <div id="unit-label">0 CFM | 0 TR</div>
                 </div>
                 
-                <select id="room-select" class="calc-select" onchange="calculateLoad()"></select>
+                <select id="room-select" class="calc-select" onchange="resetForNewRoom()"></select>
                 
                 <div class="calc-grid">
                     <button class="btn-grey" onclick="clearDisplay()">AC</button>
                     <button class="btn-grey" onclick="deleteLast()">DEL</button>
-                    <button class="btn-blue-op" onclick="calculateLoad()">=</button>
-                    <button class="btn-navy-op" onclick="calculateLoad()">CALC</button>
+                    <button class="btn-blue-op" onclick="calculateLoad(true)">=</button>
+                    <button class="btn-navy-op" onclick="calculateLoad(true)">CALC</button>
+                    
                     <button onclick="press(7)">7</button><button onclick="press(8)">8</button><button onclick="press(9)">9</button>
                     <button class="btn-orange" onclick="clearDisplay()">C</button>
+                    
                     <button onclick="press(4)">4</button><button onclick="press(5)">5</button><button onclick="press(6)">6</button>
                     <button onclick="press('.')">.</button>
+                    
                     <button onclick="press(1)">1</button><button onclick="press(2)">2</button><button onclick="press(3)">3</button>
                     <button onclick="press(0)">0</button>
                 </div>
 
-                <div class="alert-info" id="txt-alert">ℹ️ الحسابات تتراكم بالأسفل للتصدير كتقرير كامل.</div>
+                <div class="alert-info" id="txt-alert">ℹ️ اضغط CALC لإضافة الغرفة للسجل أسفله.</div>
 
                 <div class="history-container">
                     <table class="history-table">
                         <thead>
-                            <tr><th>الغرفة</th><th>TR</th><th>CFM</th></tr>
+                            <tr>
+                                <th>الغرفة</th>
+                                <th>TR</th>
+                                <th>CFM</th>
+                                <th>حذف</th>
+                            </tr>
                         </thead>
                         <tbody id="history-body"></tbody>
                     </table>
@@ -49,25 +57,24 @@
                 <div class="export-actions">
                     <button class="exp-btn pdf" onclick="exportPDF()">PDF 📄</button>
                     <button class="exp-btn excel" onclick="exportExcel()">Excel 📊</button>
-                    <button class="exp-btn clear" onclick="clearHistory()">مسح 🗑️</button>
+                    <button class="exp-btn clear" onclick="clearHistory()">مسح الكل 🗑️</button>
                 </div>
             </div>
         </section>
 
         <section id="duct-tab" class="tab-panel">
             <div class="tab-card">
-                <h2 id="txt-duct-title">تصميم مقاس الدكت</h2>
+                <h2>تصميم مقاس الدكت</h2>
                 <div class="input-row">
                     <label>كمية الهواء (CFM):</label>
-                    <input type="number" id="targetCFM" placeholder="مثلاً: 1200">
+                    <input type="number" id="targetCFM" placeholder="450">
                 </div>
                 <div class="input-row">
-                    <label>العرض الثابت (Inch):</label>
+                    <label>العرض (Inch):</label>
                     <input type="number" id="fixWidth" value="12">
                 </div>
-                <button class="btn-blue-op" style="width:100%; padding:15px; border-radius:12px; font-weight:bold;" onclick="runDuctCalc()">احسب الارتفاع</button>
+                <button class="btn-blue-op" style="width:100%; padding:15px; border-radius:12px;" onclick="runDuctCalc()">احسب المقاس</button>
                 <div id="duct-result" class="result-highlight">---</div>
-                <p style="text-align:center; color:var(--text-dim); font-size:0.8rem; margin-top:10px;">المعادلة تعتمد على سرعة هواء $1000 \text{ fpm}$</p>
             </div>
         </section>
     </main>
