@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Air Calc Pro</title>
+    <title>Air Calc Pro - Cumulative Edition</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -19,7 +19,9 @@
                     <div id="display">0</div>
                     <div id="unit-label">0 CFM | 0 TR</div>
                 </div>
+                
                 <select id="room-select" class="calc-select" onchange="calculateLoad()"></select>
+                
                 <div class="calc-grid">
                     <button class="btn-grey" onclick="clearDisplay()">AC</button>
                     <button class="btn-grey" onclick="deleteLast()">DEL</button>
@@ -35,24 +37,49 @@
                     <button onclick="press(1)">1</button><button onclick="press(2)">2</button><button onclick="press(3)">3</button>
                     <button onclick="press(0)">0</button>
                 </div>
+
+                <div class="alert-info" id="txt-alert">
+                    ℹ️ الحسابات تتراكم تلقائياً في الجدول أدناه وفي صفحة التصدير.
+                </div>
+
+                <div class="history-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th id="th-room">الغرفة</th>
+                                <th id="th-tr">TR</th>
+                                <th id="th-cfm">CFM</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-body"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
         <section id="duct-tab" class="tab-panel">
             <div class="tab-card">
                 <h2 id="txt-duct-title">تصميم الدكت</h2>
-                <input type="number" id="targetCFM" style="width:100%; padding:15px; margin-bottom:10px;" placeholder="CFM">
-                <input type="number" id="fixWidth" style="width:100%; padding:15px; margin-bottom:10px;" value="12">
-                <button class="btn-blue-op" style="width:100%; padding:15px; border-radius:10px;" onclick="runDuctCalc()">احسب</button>
-                <div id="duct-result" class="result-highlight" style="text-align:center; font-size:2rem; margin-top:20px;">---</div>
+                <div class="input-row">
+                    <label>CFM:</label>
+                    <input type="number" id="targetCFM" placeholder="450">
+                </div>
+                <div class="input-row">
+                    <label>Width (Inch):</label>
+                    <input type="number" id="fixWidth" value="12">
+                </div>
+                <button class="btn-blue-op" style="width:100%; padding:15px; border-radius:10px;" onclick="runDuctCalc()">احسب المقاس</button>
+                <div id="duct-result" class="result-highlight">---</div>
             </div>
         </section>
 
         <section id="export-tab" class="tab-panel">
             <div class="tab-card">
-                <h2 id="txt-export-title">تصدير النتائج</h2>
-                <button class="export-btn" style="background:#e74c3c" onclick="exportPDF()">حفظ PDF</button>
-                <button class="export-btn" style="background:#27ae60" onclick="exportExcel()">حفظ Excel</button>
+                <h2 id="txt-export-title">تصدير تقرير المشروع</h2>
+                <p style="color:var(--text-dim); font-size:0.9rem;">سيتم تصدير كافة الغرف المسجلة في السجل التراكمي.</p>
+                <button class="export-btn pdf" onclick="exportPDF()">حفظ بصيغة PDF 📄</button>
+                <button class="export-btn excel" onclick="exportExcel()">حفظ بصيغة Excel 📊</button>
+                <button class="export-btn" style="background:#475569" onclick="clearHistory()">مسح السجل التراكمي 🗑️</button>
             </div>
         </section>
     </main>
