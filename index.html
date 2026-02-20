@@ -2,12 +2,12 @@
 <html lang="ar" dir="rtl" id="html-tag">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <title>Air Calc Pro</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header class="simple-header">Air Calc Pro | Professional Suite</header>
+    <header class="simple-header">Air Calc Pro | HVAC Engineering Suite</header>
     <main>
         <section id="calc-tab" class="tab-panel active">
             <div class="ios-calc-wrapper">
@@ -23,14 +23,14 @@
                 
                 <div class="horizontal-inputs">
                     <div class="input-box room-box">
-                        <label data-ar="الغرفة" data-en="Room">الغرفة</label>
+                        <label data-ar="تصنيف الغرفة" data-en="Room Type">تصنيف الغرفة</label>
                         <select id="room-select" onchange="resetAllFields()"></select>
                     </div>
-                    <div class="input-box small-box">
+                    <div class="input-box">
                         <label data-ar="أشخاص" data-en="People">أشخاص</label>
                         <input type="text" id="people-count" value="0" readonly onclick="focusField('people')">
                     </div>
-                    <div class="input-box small-box">
+                    <div class="input-box">
                         <label data-ar="أجهزة" data-en="Equip">أجهزة</label>
                         <input type="text" id="equip-watts" value="0" readonly onclick="openEquipModal()">
                     </div>
@@ -57,8 +57,8 @@
 
                 <div class="history-section">
                     <div class="history-header">
-                        <span data-ar="نتائج الغرف" data-en="History">نتائج الغرف</span>
-                        <button onclick="clearHistory()" class="clear-history-btn">مسح الكل</button>
+                        <span data-ar="سجل الحسابات" data-en="History">سجل الحسابات</span>
+                        <button onclick="clearHistory()" class="clear-history-btn">مسح</button>
                     </div>
                     <div id="history-list"></div>
                 </div>
@@ -67,7 +67,7 @@
 
         <section id="duct-tab" class="tab-panel">
             <div class="ios-card">
-                <h2 data-ar="حساب الدكت" data-en="Duct Sizer">حساب الدكت</h2>
+                <h2 data-ar="مقاسات الدكت" data-en="Duct Sizer">مقاسات الدكت</h2>
                 <div class="ios-input-group">
                     <label>CFM</label>
                     <input type="number" id="targetCFM">
@@ -84,7 +84,7 @@
 
     <div id="equip-modal" class="modal">
         <div class="modal-content">
-            <h3 data-ar="الأجهزة" data-en="Equipment">الأجهزة</h3>
+            <h3 data-ar="قائمة الأجهزة الشاملة" data-en="Equipment List">قائمة الأجهزة الشاملة</h3>
             <div id="equip-checklist"></div>
             <button class="close-modal-btn" onclick="closeEquipModal()">تم</button>
         </div>
