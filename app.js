@@ -3,30 +3,28 @@ let activeField = 'display';
 let inputs = { display: "0", people: "0", equip: "0" };
 let calcHistory = [];
 
-// قاعدة بيانات الغرف الشاملة (ASHRAE)
 const rooms = [
+    // غرف طبية
     { id: 'or', cat: 'h', ar: '🏥 غرفة عمليات', en: '🏥 Operating Room', ach: 20, factor: 300 },
     { id: 'icu', cat: 'h', ar: '🏥 العناية المركزة', en: '🏥 ICU', ach: 6, factor: 400 },
-    { id: 'pe', cat: 'h', ar: '🏥 غرف عزل PE', en: '🏥 Isolation Room', ach: 12, factor: 380 },
     { id: 'lab', cat: 'h', ar: '🏥 مختبرات', en: '🏥 Laboratories', ach: 8, factor: 400 },
+    // غرف تجارية
     { id: 'off', cat: 'c', ar: '🏢 مكاتب مفتوحة', en: '🏢 Open Offices', ach: 6, factor: 450 },
     { id: 'mall', cat: 'c', ar: '🏢 مول تجاري', en: '🏢 Shopping Mall', ach: 8, factor: 400 },
     { id: 'gym', cat: 'c', ar: '🏢 نادي رياضي', en: '🏢 Fitness Gym', ach: 15, factor: 350 },
-    { id: 'mosq', cat: 'c', ar: '🏢 مسجد/مصلى', en: '🏢 Prayer Hall', ach: 10, factor: 400 },
-    { id: 'bed', cat: 'r', ar: '🏠 غرفة نوم', en: '🏠 Bedroom', ach: 2, factor: 450 },
-    { id: 'liv', cat: 'r', ar: '🏠 صالة معيشة', en: '🏠 Living Room', ach: 4, factor: 500 },
+    { id: 'rest', cat: 'c', ar: '🏢 مطعم', en: '🏢 Restaurant', ach: 15, factor: 300 },
+    // غرف سكنية
+    { id: 'bed', cat: 'r', ar: '🏠 غرفة نوم', en: '🏠 Bedroom', ach: 2, factor: 400 },
+    { id: 'liv', cat: 'r', ar: '🏠 صالة معيشة', en: '🏠 Living Room', ach: 4, factor: 450 },
     { id: 'kit', cat: 'r', ar: '🏠 مطبخ', en: '🏠 Kitchen', ach: 6, factor: 450 }
 ];
 
-// قاعدة بيانات الأجهزة الشاملة
 const equipmentList = [
-    { id: 'pc', ar: '💻 كمبيوتر مكتب', en: 'Desktop PC', watts: 250, count: 0 },
-    { id: 'srv', ar: '🖥️ سيرفر', en: 'Server Unit', watts: 1000, count: 0 },
-    { id: 'med', ar: '🩺 جهاز طبي', en: 'Medical Device', watts: 350, count: 0 },
-    { id: 'tv', ar: '📺 شاشة عرض', en: 'TV/Display', watts: 150, count: 0 },
-    { id: 'cof', ar: '☕ ماكينة قهوة', en: 'Coffee Machine', watts: 800, count: 0 },
-    { id: 'mic', ar: '🍱 مايكرويف', en: 'Microwave', watts: 1200, count: 0 },
-    { id: 'cop', ar: '🖨️ طابعة كبرى', en: 'Large Copier', watts: 600, count: 0 }
+    { id: 'pc', ar: '💻 كمبيوتر', en: 'PC', watts: 250, count: 0 },
+    { id: 'srv', ar: '🖥️ سيرفر', en: 'Server', watts: 1000, count: 0 },
+    { id: 'med', ar: '🩺 جهاز طبي', en: 'Medical', watts: 350, count: 0 },
+    { id: 'tv', ar: '📺 شاشة', en: 'TV', watts: 150, count: 0 },
+    { id: 'mic', ar: '🍱 مايكرويف', en: 'Microwave', watts: 1200, count: 0 }
 ];
 
 window.onload = () => {
@@ -41,8 +39,10 @@ function calculateLoad(save = false) {
     const watts = parseFloat(inputs.equip) || 0;
     const room = rooms.find(r => r.id === document.getElementById('room-select').value);
 
+    // معادلة CFM بناءً على تبديل الهواء وحرارة الأشخاص
     let cfm = Math.round(((vol * 35.31 * room.ach) / 60) + (people * 15));
-    let tr = (((cfm * room.factor / 1.15) + (people * 450) + (watts * 3.41)) / 12000).toFixed(2);
+    // معادلة الطن التبريدي TR
+    let tr = (((cfm * room.factor / 1.1) + (people * 450) + (watts * 3.41)) / 12000).toFixed(2);
 
     document.getElementById('tr-result').innerText = `${tr} TR`;
     document.getElementById('cfm-result').innerText = `${cfm} CFM`;
@@ -62,7 +62,7 @@ function updateHistoryUI() {
                 <span style="color:#666; font-size:0.7rem">#${calcHistory.length - index}</span>
                 <span>${item.room}</span>
             </div>
-            <div class="vals">
+            <div class="vals" style="text-align:left">
                 <span class="tr-val">${item.tr} TR</span><br>
                 <span class="cfm-val">${item.cfm} CFM</span>
             </div>
@@ -71,14 +71,14 @@ function updateHistoryUI() {
 }
 
 function deleteItem(id) {
-    if(confirm(currentLang === 'ar' ? "حذف هذه الغرفة؟" : "Delete?")) {
+    if(confirm(currentLang === 'ar' ? "حذف؟" : "Delete?")) {
         calcHistory = calcHistory.filter(i => i.id !== id);
         updateHistoryUI();
     }
 }
 
 function clearHistory() {
-    if(confirm(currentLang === 'ar' ? "مسح السجل بالكامل؟" : "Clear all?")) {
+    if(confirm(currentLang === 'ar' ? "مسح الكل؟" : "Clear all?")) {
         calcHistory = [];
         updateHistoryUI();
     }
