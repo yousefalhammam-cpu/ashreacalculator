@@ -4,12 +4,13 @@ let calcHistory = [];
 
 const roomData = {
     medical: [
-        { id: 'or', ar: 'غرفة عمليات (OR)', en: 'Operating Room', ach: 20, factor: 300 },
+        { id: 'or_gen', ar: 'غرفة عمليات عامة', en: 'General OR', ach: 20, factor: 300 },
+        { id: 'or_ortho', ar: 'غرفة عمليات عظام', en: 'Orthopedic OR', ach: 25, factor: 280 },
         { id: 'icu', ar: 'عناية مركزة (ICU)', en: 'Intensive Care', ach: 6, factor: 400 },
         { id: 'pe', ar: 'عزل ضغط موجب', en: 'Positive Pressure', ach: 12, factor: 380 },
         { id: 'aii', ar: 'عزل ضغط سالب', en: 'Negative Pressure', ach: 12, factor: 380 },
         { id: 'er', ar: 'طوارئ واستقبال', en: 'Emergency Room', ach: 15, factor: 350 },
-        { id: 'patient', ar: 'غرفة تنويم', en: 'Patient Room', ach: 4, factor: 500 }
+        { id: 'patient', ar: 'غرفة تنويم مرضى', en: 'Patient Room', ach: 4, factor: 500 }
     ],
     commercial: [
         { id: 'off', ar: 'مكاتب مفتوحة', en: 'Open Offices', ach: 8, factor: 450 },
@@ -34,7 +35,7 @@ function resetForNewRoom() {
 }
 
 function press(n) { 
-    if (currentInput.length > 8) return;
+    if (currentInput.length > 9) return;
     currentInput += n; 
     document.getElementById('display').innerText = currentInput; 
 }
@@ -60,11 +61,11 @@ function calculateLoad(save = false) {
     const all = [...roomData.medical, ...roomData.commercial, ...roomData.residential];
     const spec = all.find(r => r.id === roomId);
     
-    // معادلة دقيقة
+    // معادلة هندسية شاملة
     let cfm_vent = (vol * 35.3147 * spec.ach) / 60;
-    const people_btu = people * 500;
+    const people_btu = people * 450;
     const equip_btu = watts * 3.41;
-    const base_btu = (cfm_vent * spec.factor / 1.1); 
+    const base_btu = (cfm_vent * spec.factor / 1.15); 
     
     const total_btu = base_btu + people_btu + equip_btu;
     const tr = (total_btu / 12000).toFixed(2);
@@ -135,12 +136,12 @@ function exportPDF() {
     const doc = new jsPDF();
     doc.text("HVAC Load Report", 20, 20);
     calcHistory.forEach((item, i) => doc.text(`${i+1}. ${item.room}: ${item.tr} TR / ${item.cfm} CFM`, 20, 30 + (i*10)));
-    doc.save("Report.pdf");
+    doc.save("Project_Report.pdf");
 }
 
 function exportExcel() {
     const ws = XLSX.utils.json_to_sheet(calcHistory);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Data");
-    XLSX.writeFile(wb, "Report.xlsx");
+    XLSX.writeFile(wb, "Project_Report.xlsx");
 }
