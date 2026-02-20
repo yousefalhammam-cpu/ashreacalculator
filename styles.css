@@ -1,30 +1,59 @@
-/* صف المدخلات الأفقي - متسق مع عرض الأزرار */
+:root {
+    --ios-black: #000000;
+    --ios-dark-grey: #1c1c1e;
+    --ios-btn-grey: #333333;
+    --ios-light-grey: #a5a5a5;
+    --ios-orange: #ff9f0a;
+    --ios-text: #ffffff;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body { 
+    margin: 0; background: var(--ios-black); color: var(--ios-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    height: 100vh; display: flex; flex-direction: column; overflow: hidden; 
+}
+
+.app-header { padding: 8px; text-align: center; color: #444; font-size: 0.7rem; }
+main { flex: 1; overflow-y: auto; padding-bottom: 90px; }
+.tab-panel { display: none; padding: 10px; }
+.tab-panel.active { display: block; }
+
+/* الحاوية المركزية للحاسبة */
+.ios-calc-wrapper {
+    max-width: 400px; /* العرض المرجعي لجميع العناصر */
+    margin: 0 auto;
+    width: 100%;
+}
+
+.calc-screen { 
+    text-align: right; padding: 10px; margin-bottom: 10px;
+    display: flex; flex-direction: column; justify-content: flex-end; min-height: 120px;
+}
+#display { font-size: 4rem; font-weight: 300; }
+#unit-label { color: var(--ios-orange); font-size: 1.1rem; font-weight: bold; }
+
+/* شريط المدخلات الأفقي المتناسق */
 .horizontal-inputs { 
     display: flex; 
-    gap: 5px; 
-    margin: 0 auto 15px auto; 
+    gap: 6px; 
+    margin-bottom: 15px; 
     background: #1c1c1e; 
     padding: 8px; 
     border-radius: 12px;
-    max-width: 400px; /* نفس عرض شبكة الأزرار */
     width: 100%;
-    justify-content: space-between;
 }
 
-.input-box { 
-    display: flex; 
-    flex-direction: column; 
-    min-width: 0; /* لمنع العناصر من التمدد خارج الحاوية */
-}
-
-.room-box { flex: 2; }    /* مساحة أكبر لنوع الغرفة */
-.small-box { flex: 0.8; } /* مساحة أقل للأرقام */
+.input-box { display: flex; flex-direction: column; min-width: 0; }
+.room-box { flex: 2; } 
+.small-box { flex: 0.8; }
 
 .input-box label { 
     font-size: 0.6rem; 
     color: #8e8e93; 
     margin-bottom: 4px; 
-    text-align: center;
+    padding-right: 4px;
     white-space: nowrap;
 }
 
@@ -33,19 +62,51 @@
     background: #2c2c2e;
     color: white;
     border: none;
-    padding: 8px 4px;
-    border-radius: 6px;
-    font-size: 0.75rem; /* خط أصغر ليناسب العرض */
+    padding: 10px 4px;
+    border-radius: 8px;
+    font-size: 0.8rem;
     outline: none;
     text-align: center;
     width: 100%;
 }
 
-/* تعديل عرض شبكة الأزرار ليكون مرجعاً */
+/* شبكة الأزرار */
 .ios-grid { 
     display: grid; 
     grid-template-columns: repeat(4, 1fr); 
     gap: 12px; 
-    max-width: 400px; 
-    margin: 0 auto; 
+    width: 100%;
 }
+.ios-grid button {
+    aspect-ratio: 1/1; border-radius: 50%; border: none; font-size: 1.6rem;
+    cursor: pointer; transition: opacity 0.1s;
+}
+.ios-grid button:active { opacity: 0.6; }
+
+.btn-dark-grey { background: var(--ios-btn-grey); color: white; }
+.btn-light-grey { background: var(--ios-light-grey); color: black; }
+.btn-orange { background: var(--ios-orange); color: white; }
+
+/* السجل */
+.history-section { margin-top: 20px; }
+.history-container { 
+    background: var(--ios-dark-grey); border-radius: 15px; max-height: 120px; 
+    overflow-y: auto; margin-bottom: 12px; border: 1px solid #2c2c2e;
+}
+.history-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.history-table th { color: #8e8e93; padding: 8px; border-bottom: 1px solid #333; font-weight: normal; }
+.history-table td { padding: 10px 5px; text-align: center; border-bottom: 1px solid #2c2c2e; }
+
+.export-actions { display: flex; gap: 8px; }
+.ios-exp { flex: 1; padding: 10px; border-radius: 20px; border: none; font-weight: bold; font-size: 0.75rem; background: #2c2c2e; color: white; }
+.clear { background: #ff3b30; }
+
+.bottom-nav { 
+    position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; 
+    background: rgba(10,10,10,0.95); display: flex; border-top: 0.5px solid #333; 
+}
+.nav-item { flex: 1; background: none; border: none; color: #8e8e93; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; }
+.nav-item.active { color: var(--ios-orange); }
+.nav-item i { font-size: 1.4rem; margin-bottom: 4px; font-style: normal; }
+
+.result-highlight { text-align: center; font-size: 2.5rem; color: var(--ios-orange); margin-top: 20px; font-weight: bold; }
