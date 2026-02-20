@@ -1,100 +1,129 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl" id="html-tag">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-    <title>Air Calc Pro</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+  <title>Air Calc Pro</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
 </head>
 <body>
-    <header class="simple-header">Air Calc Pro | HVAC Engineering Suite</header>
-    <main>
-        <section id="calc-tab" class="tab-panel active">
-            <div class="ios-calc-wrapper">
-                <div class="calc-screen">
-                    <div id="unit-label" class="result-label">
-                        <span id="tr-result">0 TR</span>
-                        <span class="divider">|</span>
-                        <span id="cfm-result">0 CFM</span>
-                    </div>
-                    <div id="display" class="active-field" onclick="focusField('display')">0</div>
-                    <div id="field-hint" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
-                </div>
-                
-                <div class="horizontal-inputs">
-                    <div class="input-box room-box">
-                        <label data-ar="تصنيف الغرفة" data-en="Room Type">تصنيف الغرفة</label>
-                        <select id="room-select" onchange="resetAllFields()"></select>
-                    </div>
-                    <div class="input-box">
-                        <label data-ar="أشخاص" data-en="People">أشخاص</label>
-                        <input type="text" id="people-count" value="0" readonly onclick="focusField('people')">
-                    </div>
-                    <div class="input-box">
-                        <label data-ar="أجهزة" data-en="Equip">أجهزة</label>
-                        <input type="text" id="equip-watts" value="0" readonly onclick="openEquipModal()">
-                    </div>
-                </div>
+  <header class="simple-header">Air Calc Pro | HVAC Engineering Suite</header>
 
-                <div class="ios-grid">
-                    <button class="btn-light-grey" onclick="clearActiveField()">AC</button>
-                    <button class="btn-light-grey" onclick="deleteLast()">DEL</button>
-                    <button class="btn-orange" onclick="calculateLoad(true)" data-ar="حفظ" data-en="SAVE">SAVE</button>
-                    <button class="btn-orange" onclick="calculateLoad(false)">=</button>
-                    <button class="btn-dark-grey" onclick="press(7)">7</button>
-                    <button class="btn-dark-grey" onclick="press(8)">8</button>
-                    <button class="btn-dark-grey" onclick="press(9)">9</button>
-                    <button class="btn-orange" onclick="clearActiveField()">C</button>
-                    <button class="btn-dark-grey" onclick="press(4)">4</button>
-                    <button class="btn-dark-grey" onclick="press(5)">5</button>
-                    <button class="btn-dark-grey" onclick="press(6)">6</button>
-                    <button class="btn-dark-grey" onclick="press('.')">.</button>
-                    <button class="btn-dark-grey" onclick="press(1)">1</button>
-                    <button class="btn-dark-grey" onclick="press(2)">2</button>
-                    <button class="btn-dark-grey" onclick="press(3)">3</button>
-                    <button class="btn-dark-grey" onclick="press(0)">0</button>
-                </div>
-
-                <div class="history-section">
-                    <div class="history-header">
-                        <span data-ar="سجل الحسابات" data-en="History">سجل الحسابات</span>
-                        <button onclick="clearHistory()" class="clear-history-btn">مسح</button>
-                    </div>
-                    <div id="history-list"></div>
-                </div>
-            </div>
-        </section>
-
-        <section id="duct-tab" class="tab-panel">
-            <div class="ios-card">
-                <h2 data-ar="مقاسات الدكت" data-en="Duct Sizer">مقاسات الدكت</h2>
-                <div class="ios-input-group">
-                    <label>CFM</label>
-                    <input type="number" id="targetCFM">
-                </div>
-                <div class="ios-input-group">
-                    <label data-ar="العرض (انش)" data-en="Width (in)">العرض (انش)</label>
-                    <input type="number" id="fixWidth" value="12">
-                </div>
-                <button class="btn-orange" onclick="runDuctCalc()" style="width:100%; padding:20px; border-radius:15px;">CALC</button>
-                <div id="duct-result" class="result-highlight">---</div>
-            </div>
-        </section>
-    </main>
-
-    <div id="equip-modal" class="modal">
-        <div class="modal-content">
-            <h3 data-ar="قائمة الأجهزة الشاملة" data-en="Equipment List">قائمة الأجهزة الشاملة</h3>
-            <div id="equip-checklist"></div>
-            <button class="close-modal-btn" onclick="closeEquipModal()">تم</button>
+  <main>
+    <!-- الحاسبة -->
+    <section id="calc-tab" class="tab-panel active">
+      <div class="ios-calc-wrapper">
+        <div class="calc-screen">
+          <div id="unit-label" class="result-label">
+            <span id="tr-result">0 TR</span>
+            <span class="divider">|</span>
+            <span id="cfm-result">0 CFM</span>
+          </div>
+          <div id="display" class="active-field" onclick="focusField('display')">0</div>
+          <div id="field-hint" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
         </div>
-    </div>
 
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('calc-tab', this)"><i>🧮</i><span data-ar="الحاسبة" data-en="Calc">الحاسبة</span></button>
-        <button class="nav-item" onclick="switchTab('duct-tab', this)"><i>📏</i><span data-ar="الدكت" data-en="Duct">الدكت</span></button>
-        <button class="nav-item" onclick="toggleLanguage()"><i>🌐</i><span id="lang-text">English</span></button>
-    </nav>
-    <script src="app.js"></script>
+        <div class="horizontal-inputs">
+          <div class="input-box room-box">
+            <label data-ar="تصنيف الغرفة" data-en="Room Type">تصنيف الغرفة</label>
+            <select id="room-select" onchange="resetAllFields()"></select>
+          </div>
+          <div class="input-box">
+            <label data-ar="أشخاص" data-en="People">أشخاص</label>
+            <input type="text" id="people-count" value="0" readonly onclick="focusField('people')" />
+          </div>
+          <div class="input-box">
+            <label data-ar="أجهزة (W)" data-en="Equip (W)">أجهزة (W)</label>
+            <input type="text" id="equip-watts" value="0" readonly onclick="openEquipModal()" />
+          </div>
+        </div>
+
+        <div class="ios-grid">
+          <button class="btn-light-grey" onclick="clearActiveField()">AC</button>
+          <button class="btn-light-grey" onclick="deleteLast()">DEL</button>
+          <button class="btn-orange" onclick="calculateLoad(true)" data-ar="حفظ" data-en="SAVE">حفظ</button>
+          <button class="btn-orange" onclick="calculateLoad(false)">=</button>
+
+          <button class="btn-dark-grey" onclick="press(7)">7</button>
+          <button class="btn-dark-grey" onclick="press(8)">8</button>
+          <button class="btn-dark-grey" onclick="press(9)">9</button>
+          <button class="btn-orange" onclick="clearActiveField()">C</button>
+
+          <button class="btn-dark-grey" onclick="press(4)">4</button>
+          <button class="btn-dark-grey" onclick="press(5)">5</button>
+          <button class="btn-dark-grey" onclick="press(6)">6</button>
+          <button class="btn-dark-grey" onclick="press('.')">.</button>
+
+          <button class="btn-dark-grey" onclick="press(1)">1</button>
+          <button class="btn-dark-grey" onclick="press(2)">2</button>
+          <button class="btn-dark-grey" onclick="press(3)">3</button>
+          <button class="btn-dark-grey" onclick="press(0)">0</button>
+        </div>
+
+        <div class="history-section">
+          <div class="history-header">
+            <span data-ar="سجل الحسابات" data-en="History">سجل الحسابات</span>
+            <button onclick="clearHistory()" class="clear-history-btn">مسح</button>
+          </div>
+          <div id="history-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- الدكت -->
+    <section id="duct-tab" class="tab-panel">
+      <div class="ios-card">
+        <h2 data-ar="مقاسات الدكت" data-en="Duct Sizer">مقاسات الدكت</h2>
+
+        <div class="ios-input-group">
+          <label>CFM</label>
+          <input type="number" id="targetCFM" />
+        </div>
+
+        <div class="ios-input-group">
+          <label data-ar="العرض (انش)" data-en="Width (in)">العرض (انش)</label>
+          <input type="number" id="fixWidth" value="12" />
+        </div>
+
+        <button class="btn-orange duct-btn" onclick="runDuctCalc()">CALC</button>
+        <div id="duct-result" class="result-highlight">---</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal الأجهزة -->
+  <div id="equip-modal" class="modal">
+    <div class="modal-content">
+      <h3 data-ar="قائمة الأجهزة الشاملة" data-en="Equipment List">قائمة الأجهزة الشاملة</h3>
+      <div id="equip-checklist"></div>
+      <button class="close-modal-btn" onclick="closeEquipModal()" data-ar="تم" data-en="Done">تم</button>
+    </div>
+  </div>
+
+  <!-- القائمة السفلية -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab onclick="switchTab('calc-tab', this)">
+      <i>🧮</i>
+      <span data-ar="الحاسبة" data-en="Calc">الحاسبة</span>
+    </button>
+
+    <button class="nav-item" data-tab onclick="switchTab('duct-tab', this)">
+      <i>📏</i>
+      <span data-ar="الدكت" data-en="Duct">الدكت</span>
+    </button>
+
+    <button class="nav-item" onclick="toggleLanguage()">
+      <i>🌐</i>
+      <span id="lang-text">English</span>
+    </button>
+  </nav>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').catch(console.error);
+    }
+  </script>
 </body>
 </html>
