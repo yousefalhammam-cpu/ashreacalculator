@@ -3,54 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-    <title>Air Calc Pro</title>
+    <title>Air Calc Pro - Full Edition</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <header class="app-header">
-        <img src="icons/icon-128x128.png" class="mini-logo">
         <span id="txt-app-title">Air Calc Pro</span>
     </header>
 
-    <main class="full-page-calc">
-        <div class="calc-screen">
-            <div id="txt-input-label">الحجم (م³) Volume</div>
-            <div id="display">0</div>
-            <div id="unit-label">TR | CFM</div>
-        </div>
-
-        <select id="room-select" class="calc-select" onchange="calculateLoad()">
-            </select>
-
-        <div class="calc-grid">
-            <button class="btn-grey" onclick="clearDisplay()">AC</button>
-            <button class="btn-grey" onclick="deleteLast()">DEL</button>
-            <button class="btn-blue-op" onclick="calculateLoad()">=</button>
-            <button class="btn-navy-op" onclick="calculateLoad()">CALC</button>
-
-            <button onclick="press(7)">7</button><button onclick="press(8)">8</button><button onclick="press(9)">9</button>
-            <button onclick="press(4)">4</button><button onclick="press(5)">5</button><button onclick="press(6)">6</button>
-            <button onclick="press(1)">1</button><button onclick="press(2)">2</button><button onclick="press(3)">3</button>
-            <button onclick="press(0)" class="btn-zero">0</button>
-            <button onclick="press('.')">.</button>
-            <button class="btn-orange" onclick="clearDisplay()">C</button>
-        </div>
-
-        <div class="duct-mini-frame">
-            <h4 id="txt-duct-title">تحديد مقاس الدكت (Duct Sizing)</h4>
-            <div class="duct-inputs">
-                <input type="number" id="targetCFM" placeholder="CFM" readonly>
-                <input type="number" id="fixWidth" value="12" placeholder="W">
-                <button onclick="runDuctCalc()" id="btn-duct-go">احسب</button>
+    <main id="main-content">
+        <section id="calc-tab" class="tab-panel active">
+            <div class="full-calc-wrapper">
+                <div class="calc-screen">
+                    <div id="txt-input-label">الحجم (م³) Volume</div>
+                    <div id="display">0</div>
+                    <div id="unit-label">0 CFM | 0 TR</div>
+                </div>
+                <select id="room-select" class="calc-select" onchange="calculateLoad()">
+                    </select>
+                <div class="calc-grid">
+                    <button class="btn-grey" onclick="clearDisplay()">AC</button>
+                    <button class="btn-grey" onclick="deleteLast()">DEL</button>
+                    <button class="btn-blue-op" onclick="calculateLoad()">=</button>
+                    <button class="btn-navy-op" onclick="calculateLoad()">CALC</button>
+                    <button onclick="press(7)">7</button><button onclick="press(8)">8</button><button onclick="press(9)">9</button>
+                    <button onclick="press(4)">4</button><button onclick="press(5)">5</button><button onclick="press(6)">6</button>
+                    <button onclick="press(1)">1</button><button onclick="press(2)">2</button><button onclick="press(3)">3</button>
+                    <button onclick="press(0)" class="btn-zero">0</button>
+                    <button onclick="press('.')">.</button>
+                    <button class="btn-orange" onclick="clearDisplay()">C</button>
+                </div>
             </div>
-            <div id="duct-result" class="duct-res-box">---</div>
-        </div>
-    </main>
+        </section>
+
+        <section id="duct-tab" class="tab-panel">
+            <div class="tab-card">
+                <h2 id="txt-duct-title">Duct Sizing</h2>
+                <div class="input-row">
+                    <label>CFM:</label>
+                    <input type="number" id="targetCFM">
+                </div>
+                <div class="input-row">
+                    <label id="txt-width-label">Width (Inch):</label>
+                    <input type="number" id="fixWidth" value="12">
+                </div>
+                <button class="action-btn" onclick="runDuctCalc()" id="btn-duct-calc">Calculate</button>
+                <div id="duct-result" class="result-highlight">---</div>
+            </div>
+        </section>
+
+        </main>
 
     <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('calc')"><i>🧮</i><span class="nav-text" data-key="nav_calc">الحاسبة</span></button>
-        <button class="nav-item" onclick="switchTab('forum')"><i>👥</i><span class="nav-text" data-key="nav_comm">المجتمع</span></button>
-        <button class="nav-item lang-btn" onclick="toggleLanguage()"><i>🌐</i><span id="txt-lang-btn">English</span></button>
+        <button class="nav-item active" onclick="switchTab('calc-tab')"><i>🧮</i><span class="nav-text" data-key="nav_calc">الحاسبة</span></button>
+        <button class="nav-item" onclick="switchTab('duct-tab')"><i>📏</i><span class="nav-text" data-key="nav_duct">الدكت</span></button>
+        <button class="nav-item" onclick="switchTab('forum-tab')"><i>👥</i><span class="nav-text" data-key="nav_comm">المجتمع</span></button>
+        <button class="nav-item" onclick="switchTab('export-tab')"><i>💾</i><span class="nav-text" data-key="nav_export">تصدير</span></button>
+        <button class="nav-item lang-toggle" onclick="toggleLanguage()"><i>🌐</i><span id="txt-lang-btn">English</span></button>
     </nav>
 
     <script src="app.js"></script>
