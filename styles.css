@@ -1,144 +1,57 @@
 :root {
-    --bg-dark: #0f172a;       /* خلفية داكنة جداً */
-    --card-dark: #1e293b;     /* لون الكروت والتبويبات */
-    --navy: #0b1220;          /* لون الهيدر والنابار */
-    --sky: #38bdf8;           /* لون أزرق سماوي ساطع */
-    --text-main: #f1f5f9;     /* لون النص الأساسي */
-    --text-dim: #94a3b8;      /* لون نص ثانوي */
-    --accent: #00ff41;        /* أخضر نيون للشاشات */
-    --orange: #f59e0b;        /* لون التنبيه/المسح */
+    --bg-dark: #0f172a;
+    --card-dark: #1e293b;
+    --navy: #0b1220;
+    --sky: #38bdf8;
+    --accent: #00ff41;
+    --orange: #f59e0b;
+    --text-main: #f1f5f9;
 }
 
 body { 
     margin: 0; 
     background: var(--bg-dark); 
     color: var(--text-main);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    font-family: 'Segoe UI', sans-serif; 
     height: 100vh; 
-    overflow: hidden; 
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-/* الهيدر */
-.app-header { 
-    background: var(--navy); 
-    color: var(--sky); 
-    padding: 15px; 
-    text-align: center; 
-    border-bottom: 2px solid var(--sky); 
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
+.app-header { background: var(--navy); padding: 12px; text-align: center; border-bottom: 2px solid var(--sky); font-weight: bold; color: var(--sky); }
 
-/* إدارة التبويبات */
-.tab-panel { 
-    display: none; 
-    height: calc(100vh - 160px); 
-    padding: 20px; 
-    flex-direction: column; 
-    overflow-y: auto; 
-}
+.tab-panel { display: none; flex: 1; padding: 15px; flex-direction: column; overflow-y: auto; }
 .tab-panel.active { display: flex; }
 
-/* شاشة الحاسبة */
-.calc-screen { 
-    background: #000000; 
-    color: var(--accent); 
-    padding: 30px; 
-    border-radius: 20px; 
-    text-align: right; 
-    border: 1px solid #333;
-    box-shadow: inset 0 0 15px rgba(0, 255, 65, 0.2);
-    margin-bottom: 15px;
-}
-#display { font-size: 3.5rem; font-family: 'Courier New', monospace; text-shadow: 0 0 10px var(--accent); }
-#unit-label { color: var(--text-dim); font-size: 1rem; margin-top: 5px; }
+/* الحاسبة العملاقة */
+.full-calc-wrapper { display: flex; flex-direction: column; height: 100%; gap: 10px; }
+.calc-screen { background: #000; color: var(--accent); padding: 25px; border-radius: 15px; text-align: right; box-shadow: inset 0 0 10px rgba(0,255,65,0.2); }
+#display { font-size: 3.8rem; font-family: monospace; text-shadow: 0 0 5px var(--accent); }
+#unit-label { font-size: 1rem; color: #888; margin-top: 5px; }
 
-/* قائمة الاختيار */
-.calc-select { 
-    padding: 15px; 
-    border-radius: 12px; 
-    border: 1px solid #334155; 
-    background: var(--card-dark); 
-    color: var(--text-main);
-    font-weight: bold;
-    margin-bottom: 15px;
-}
+.calc-select { padding: 15px; background: var(--card-dark); color: white; border-radius: 12px; border: 1px solid #334155; font-size: 1.1rem; }
 
-/* شبكة الأزرار */
-.calc-grid { 
-    display: grid; 
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 12px; 
-    flex-grow: 1; 
-}
-.calc-grid button { 
-    border: none; 
-    border-radius: 15px; 
-    font-size: 1.6rem; 
-    font-weight: bold; 
-    background: var(--card-dark); 
-    color: var(--text-main); 
-    box-shadow: 0 4px 0 #000;
-    cursor: pointer;
-    transition: 0.1s;
-}
-.calc-grid button:active { transform: translateY(2px); box-shadow: none; }
+.calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; flex: 1; }
+.calc-grid button { border: none; border-radius: 12px; font-size: 1.7rem; font-weight: bold; background: var(--card-dark); color: var(--text-main); box-shadow: 0 4px 0 #000; cursor: pointer; }
+.calc-grid button:active { transform: translateY(3px); box-shadow: none; }
 
-/* ألوان الأزرار الخاصة */
 .btn-blue-op { background: var(--sky) !important; color: #000 !important; }
-.btn-navy-op { background: #334155 !important; color: var(--sky) !important; border: 1px solid var(--sky) !important; }
+.btn-navy-op { background: #334155 !important; color: var(--sky) !important; }
 .btn-orange { background: var(--orange) !important; color: #000 !important; }
-.btn-grey { background: #475569 !important; color: #fff !important; }
+.btn-grey { background: #475569 !important; }
 
-/* الكروت في التبويبات الأخرى */
-.tab-card { 
-    background: var(--card-dark); 
-    padding: 20px; 
-    border-radius: 20px; 
-    border: 1px solid #334155;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-
-.input-row label { color: var(--text-dim); margin-bottom: 5px; display: block; }
-.input-row input { 
-    padding: 12px; 
-    background: #0f172a; 
-    border: 1px solid #334155; 
-    border-radius: 10px; 
-    color: var(--sky); 
-    font-size: 1.1rem;
-}
-
-.result-highlight { 
-    margin-top: 20px; 
-    font-size: 2.2rem; 
-    text-align: center; 
-    color: var(--accent); 
-    text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
-}
+/* الكروت والتصدير */
+.tab-card { background: var(--card-dark); padding: 20px; border-radius: 20px; border: 1px solid #334155; }
+.input-row { margin-bottom: 15px; display: flex; flex-direction: column; }
+.input-row input { padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: var(--sky); font-size: 1.1rem; }
+.action-btn { background: var(--sky); color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+.result-highlight { margin-top: 20px; font-size: 2.2rem; text-align: center; color: var(--accent); }
+.export-btn { width: 100%; padding: 15px; margin-bottom: 10px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
+.pdf { background: #e74c3c; } .excel { background: #27ae60; }
 
 /* الشريط السفلي */
-.bottom-nav { 
-    position: fixed; 
-    bottom: 0; 
-    width: 100%; 
-    height: 80px; 
-    background: var(--navy); 
-    display: flex; 
-    border-top: 1px solid #334155;
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
-}
-.nav-item { 
-    flex: 1; 
-    background: none; 
-    border: none; 
-    color: var(--text-dim); 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-    font-size: 0.75rem; 
-}
+.bottom-nav { height: 80px; background: var(--navy); display: flex; border-top: 1px solid #334155; }
+.nav-item { flex: 1; border: none; background: none; color: #64748b; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; }
 .nav-item.active { color: var(--sky); }
-.nav-item i { font-size: 1.5rem; margin-bottom: 4px; filter: grayscale(1); }
-.nav-item.active i { filter: grayscale(0); }
+.nav-item i { font-size: 1.5rem; margin-bottom: 4px; font-style: normal; }
