@@ -1,47 +1,58 @@
-let currentLang = 'ar';
 let activeField = 'display'; 
-let inputs = { display: "", people: "", equip: "" };
+let inputs = { display: "", people: "", equip: "0" };
 let calcHistory = [];
 
-// الدليل الشامل لغرف ASHRAE
 const rooms = [
-    // --- الصحية ---
+    // الصحية
     { id: 'or_gen', ar: '🏥 غرفة عمليات عامة', ach: 20, factor: 300 },
     { id: 'or_ortho', ar: '🏥 عمليات عظام/نقل أعضاء', ach: 25, factor: 280 },
     { id: 'icu', ar: '🏥 العناية المركزة ICU', ach: 6, factor: 400 },
     { id: 'pe_iso', ar: '🏥 عزل ضغط موجب PE', ach: 12, factor: 380 },
     { id: 'aii_iso', ar: '🏥 عزل ضغط سالب AII', ach: 12, factor: 380 },
-    { id: 'er_exam', ar: '🏥 غرف فحص الطوارئ', ach: 12, factor: 350 },
-    { id: 'delivery', ar: '🏥 غرف الولادة LDR', ach: 15, factor: 320 },
-    { id: 'trauma', ar: '🏥 غرف الصدمات Trauma', ach: 15, factor: 300 },
-    { id: 'lab_gen', ar: '🏥 مختبرات عامة', ach: 8, factor: 400 },
-    { id: 'pharmacy', ar: '🏥 الصيدلية', ach: 4, factor: 450 },
-    { id: 'patient_rm', ar: '🏥 غرف تنويم المرضى', ach: 4, factor: 500 },
-    { id: 'sterile_st', ar: '🏥 مستودع معقم', ach: 4, factor: 400 },
-    { id: 'dialysis', ar: '🏥 غسيل الكلى', ach: 6, factor: 400 },
-    { id: 'morgue', ar: '🏥 المشرحة', ach: 12, factor: 350 },
-    // --- التجارية ---
-    { id: 'office_op', ar: '🏢 مكاتب مفتوحة', ach: 6, factor: 450 },
-    { id: 'conf_rm', ar: '🏢 قاعات اجتماعات', ach: 10, factor: 350 },
-    { id: 'mall_shop', ar: '🏢 مراكز تجارية', ach: 8, factor: 400 },
-    { id: 'restaurant', ar: '🏢 صالة مطعم', ach: 15, factor: 300 },
-    { id: 'kitchen_com', ar: '🏢 مطبخ تجاري', ach: 30, factor: 250 },
-    { id: 'gym_hall', ar: '🏢 نادي رياضي', ach: 15, factor: 350 },
-    { id: 'mosque', ar: '🏢 مسجد/قاعة صلاة', ach: 10, factor: 400 },
-    { id: 'cinema', ar: '🏢 سينما/مسرح', ach: 12, factor: 350 },
+    { id: 'patient', ar: '🏥 غرف تنويم المرضى', ach: 4, factor: 500 },
+    { id: 'lab', ar: '🏥 مختبرات عامة', ach: 8, factor: 400 },
+    // التجارية
+    { id: 'office', ar: '🏢 مكاتب مفتوحة', ach: 8, factor: 450 },
+    { id: 'mall', ar: '🏢 مراكز تجارية', ach: 8, factor: 400 },
+    { id: 'gym', ar: '🏢 نادي رياضي', ach: 15, factor: 350 },
     { id: 'data_ctr', ar: '🏢 غرف سيرفرات', ach: 30, factor: 150 },
-    // --- السكنية ---
-    { id: 'living_rm', ar: '🏠 مجلس / صالة معيشة', ach: 4, factor: 500 },
-    { id: 'bedroom', ar: '🏠 غرف نوم', ach: 2, factor: 550 },
-    { id: 'kitchen_res', ar: '🏠 مطبخ منزلي', ach: 6, factor: 450 },
-    { id: 'laundry', ar: '🏠 غرف الغسيل', ach: 10, factor: 350 },
-    { id: 'basement', ar: '🏠 القبو', ach: 4, factor: 600 }
+    // السكنية
+    { id: 'living', ar: '🏠 مجلس / صالة معيشة', ach: 4, factor: 500 },
+    { id: 'bedroom', ar: '🏠 غرف نوم', ach: 2, factor: 550 }
+];
+
+const equipmentList = [
+    { id: 'pc', name: 'كمبيوتر مكتبي', watts: 250 },
+    { id: 'laptop', name: 'لاب توب', watts: 65 },
+    { id: 'printer', name: 'طابعة ليزر', watts: 400 },
+    { id: 'server', name: 'خادم (Server)', watts: 1000 },
+    { id: 'fridge', name: 'ثلاجة صغيرة', watts: 150 },
+    { id: 'med_mon', name: 'جهاز طبي', watts: 200 }
 ];
 
 window.onload = () => {
     updateUI();
+    renderEquipChecklist();
     focusField('display');
 };
+
+function renderEquipChecklist() {
+    const container = document.getElementById('equip-checklist');
+    container.innerHTML = equipmentList.map(item => `
+        <div class="check-item">
+            <label>${item.name} <span class="watt-tag">${item.watts}W</span></label>
+            <input type="checkbox" value="${item.watts}" onchange="updateTotalWatts()">
+        </div>
+    `).join('');
+}
+
+function updateTotalWatts() {
+    const checkboxes = document.querySelectorAll('#equip-checklist input[type="checkbox"]:checked');
+    let total = Array.from(checkboxes).reduce((sum, cb) => sum + parseInt(cb.value), 0);
+    inputs.equip = total.toString();
+    document.getElementById('equip-watts').value = inputs.equip;
+    calculateLoad(false);
+}
 
 function focusField(fieldId) {
     activeField = fieldId;
@@ -52,7 +63,7 @@ function focusField(fieldId) {
 
 function press(n) { 
     if (inputs[activeField].length > 7) return;
-    inputs[activeField] += n; 
+    inputs[activeField] = (inputs[activeField] === "0") ? n.toString() : inputs[activeField] + n;
     updateDisplayValues();
 }
 
@@ -61,9 +72,6 @@ function updateDisplayValues() {
     document.getElementById('people-count').value = inputs.people || "0";
     document.getElementById('equip-watts').value = inputs.equip || "0";
 }
-
-function clearActiveField() { inputs[activeField] = ""; updateDisplayValues(); }
-function deleteLast() { inputs[activeField] = inputs[activeField].slice(0, -1); updateDisplayValues(); }
 
 function calculateLoad(save = false) {
     const vol = parseFloat(inputs.display) || 0;
@@ -79,38 +87,35 @@ function calculateLoad(save = false) {
 
     document.getElementById('unit-label').innerText = `${cfm} CFM | ${tr} TR`;
     if (save) {
-        calcHistory.push({ id: Date.now(), room: spec.ar, tr: tr, cfm: cfm });
+        calcHistory.push({ room: spec.ar, tr: tr, cfm: cfm });
         updateHistoryUI();
     }
 }
 
 function updateHistoryUI() {
     document.getElementById('history-body').innerHTML = calcHistory.map(i => 
-        `<tr><td>${i.room}</td><td style="color:#ff9f0a">${i.tr} TR</td><td>${i.cfm} CFM</td></tr>`
+        `<tr><td>${i.room}</td><td style="color:#ff9f0a">${i.tr} TR</td><td>${i.cfm}</td></tr>`
     ).reverse().slice(0, 3).join('');
 }
 
 function updateUI() {
     const select = document.getElementById('room-select');
     let html = '';
-    const cats = [
-        { label: 'المنشآت الصحية (ASHRAE 170)', prefix: '🏥' },
-        { label: 'المنشآت التجارية', prefix: '🏢' },
-        { label: 'المنشآت السكنية', prefix: '🏠' }
-    ];
+    const cats = [{ l: 'المنشآت الصحية', p: '🏥' }, { l: 'التجارية', p: '🏢' }, { l: 'السكنية', p: '🏠' }];
     cats.forEach(c => {
-        html += `<optgroup label="${c.label}">`;
-        rooms.filter(r => r.ar.includes(c.prefix)).forEach(r => {
-            html += `<option value="${r.id}">${r.ar}</option>`;
-        });
+        html += `<optgroup label="${c.l}">`;
+        rooms.filter(r => r.ar.includes(c.p)).forEach(r => html += `<option value="${r.id}">${r.ar}</option>`);
         html += `</optgroup>`;
     });
     select.innerHTML = html;
 }
 
+function openEquipModal() { document.getElementById('equip-modal').style.display = 'block'; }
+function closeEquipModal() { document.getElementById('equip-modal').style.display = 'none'; }
 function openContact() { document.getElementById('contact-modal').style.display = 'block'; }
 function closeContact() { document.getElementById('contact-modal').style.display = 'none'; }
-function resetForNewRoom() { inputs = { display: "", people: "", equip: "" }; updateDisplayValues(); focusField('display'); }
+function clearActiveField() { inputs[activeField] = "0"; updateDisplayValues(); }
+function deleteLast() { inputs[activeField] = inputs[activeField].slice(0, -1) || "0"; updateDisplayValues(); }
 
 function switchTab(tabId, btn) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -122,8 +127,8 @@ function switchTab(tabId, btn) {
 function runDuctCalc() {
     const cfm = parseFloat(document.getElementById('targetCFM').value);
     const w = parseFloat(document.getElementById('fixWidth').value);
-    if (!cfm || !w) return;
-    const area = cfm / 800; // تقريبي لسرعة 800 fpm
-    const h = Math.round((area * 144) / w);
-    document.getElementById('duct-result').innerText = `${w}" x ${h}"`;
+    if (cfm && w) {
+        let h = Math.round((cfm / 800 * 144) / w);
+        document.getElementById('duct-result').innerText = `${w}" x ${h}"`;
+    }
 }
