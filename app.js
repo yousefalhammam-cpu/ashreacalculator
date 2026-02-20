@@ -6,11 +6,13 @@ const roomData = {
     medical: [
         { id: 'or', ar: 'غرفة عمليات (OR)', en: 'Operating Room', ach: 20, factor: 300 },
         { id: 'icu', ar: 'عناية مركزة (ICU)', en: 'Intensive Care', ach: 6, factor: 400 },
+        { id: 'pe', ar: 'عزل ضغط موجب', en: 'Positive Pressure', ach: 12, factor: 380 },
+        { id: 'aii', ar: 'عزل ضغط سالب', en: 'Negative Pressure', ach: 12, factor: 380 },
         { id: 'er', ar: 'طوارئ واستقبال', en: 'Emergency Room', ach: 15, factor: 350 },
         { id: 'patient', ar: 'غرفة تنويم', en: 'Patient Room', ach: 4, factor: 500 }
     ],
     commercial: [
-        { id: 'off', ar: 'مكاتب', en: 'Offices', ach: 8, factor: 450 },
+        { id: 'off', ar: 'مكاتب مفتوحة', en: 'Open Offices', ach: 8, factor: 450 },
         { id: 'mall', ar: 'مركز تجاري', en: 'Shopping Mall', ach: 10, factor: 400 },
         { id: 'rest', ar: 'مطعم', en: 'Restaurant', ach: 20, factor: 300 },
         { id: 'gym', ar: 'نادي رياضي', en: 'Gym', ach: 15, factor: 350 }
@@ -32,6 +34,7 @@ function resetForNewRoom() {
 }
 
 function press(n) { 
+    if (currentInput.length > 8) return;
     currentInput += n; 
     document.getElementById('display').innerText = currentInput; 
 }
@@ -57,21 +60,17 @@ function calculateLoad(save = false) {
     const all = [...roomData.medical, ...roomData.commercial, ...roomData.residential];
     const spec = all.find(r => r.id === roomId);
     
-    // 1. حساب CFM بناءً على التهوية (ACH)
+    // معادلة دقيقة
     let cfm_vent = (vol * 35.3147 * spec.ach) / 60;
-    
-    // 2. حساب الحمل التبريدي الإضافي (Sensible Heat)
-    // كل شخص تقريباً 450 BTU/h | كل 1 واط = 3.41 BTU/h
-    const people_btu = people * 450;
+    const people_btu = people * 500;
     const equip_btu = watts * 3.41;
-    const base_btu = (cfm_vent * spec.factor / 1.2); // تقدير حمل الحجم
+    const base_btu = (cfm_vent * spec.factor / 1.1); 
     
     const total_btu = base_btu + people_btu + equip_btu;
     const tr = (total_btu / 12000).toFixed(2);
-    const total_cfm = Math.round(cfm_vent + (people * 20)); // إضافة 20 CFM لكل شخص حسب ASHRAE 62.1
+    const total_cfm = Math.round(cfm_vent + (people * 15)); 
 
     document.getElementById('unit-label').innerText = `${total_cfm} CFM | ${tr} TR`;
-    if(document.getElementById('targetCFM')) document.getElementById('targetCFM').value = total_cfm;
 
     if (save) {
         calcHistory.push({ id: Date.now(), room: currentLang==='ar'?spec.ar:spec.en, tr: tr, cfm: total_cfm });
@@ -113,7 +112,7 @@ function toggleLanguage() {
 
 function updateUI() {
     const select = document.getElementById('room-select');
-    const t = currentLang === 'ar' ? {m:"🏥 طبي", c:"🏢 تجاري", r:"🏠 سكني"} : {m:"Medical", c:"Comm", r:"Res"};
+    const t = currentLang === 'ar' ? {m:"🏥 طبي", c:"🏢 تجاري", r:"🏠 سكني"} : {m:"Med", c:"Comm", r:"Res"};
     
     select.innerHTML = `
         <optgroup label="${t.m}">${roomData.medical.map(r=>`<option value="${r.id}">${currentLang=='ar'?r.ar:r.en}</option>`).join('')}</optgroup>
