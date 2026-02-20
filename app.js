@@ -4,29 +4,24 @@ let inputs = { display: "0", people: "0", equip: "0" };
 let calcHistory = [];
 let lastCFM = 0;
 
-// أضخم قاعدة بيانات غرف ASHRAE
 const rooms = [
-    // صحي
     { id: 'or', cat: 'h', ar: '🏥 غرفة عمليات', en: '🏥 Operating Room', ach: 20, factor: 300 },
     { id: 'icu', cat: 'h', ar: '🏥 العناية المركزة', en: '🏥 ICU', ach: 6, factor: 400 },
     { id: 'pe', cat: 'h', ar: '🏥 غرف عزل PE', en: '🏥 Isolation Room', ach: 12, factor: 380 },
     { id: 'lab', cat: 'h', ar: '🏥 مختبرات', en: '🏥 Laboratories', ach: 8, factor: 400 },
     { id: 'er', cat: 'h', ar: '🏥 الطوارئ', en: '🏥 Emergency Room', ach: 12, factor: 350 },
     { id: 'pharm', cat: 'h', ar: '🏥 الصيدلية', en: '🏥 Pharmacy', ach: 4, factor: 450 },
-    // تجاري
     { id: 'off', cat: 'c', ar: '🏢 مكاتب مفتوحة', en: '🏢 Open Offices', ach: 6, factor: 450 },
     { id: 'conf', cat: 'c', ar: '🏢 قاعة اجتماعات', en: '🏢 Conference', ach: 10, factor: 350 },
     { id: 'mall', cat: 'c', ar: '🏢 مول تجاري', en: '🏢 Shopping Mall', ach: 8, factor: 400 },
     { id: 'gym', cat: 'c', ar: '🏢 نادي رياضي', en: '🏢 Fitness Gym', ach: 15, factor: 350 },
     { id: 'mosq', cat: 'c', ar: '🏢 مسجد/مصلى', en: '🏢 Prayer Hall', ach: 10, factor: 400 },
     { id: 'rest', cat: 'c', ar: '🏢 مطعم', en: '🏢 Restaurant', ach: 15, factor: 300 },
-    // سكني
     { id: 'bed', cat: 'r', ar: '🏠 غرفة نوم', en: '🏠 Bedroom', ach: 2, factor: 550 },
     { id: 'liv', cat: 'r', ar: '🏠 صالة معيشة', en: '🏠 Living Room', ach: 4, factor: 500 },
     { id: 'kit', cat: 'r', ar: '🏠 مطبخ', en: '🏠 Kitchen', ach: 6, factor: 450 }
 ];
 
-// قائمة الأجهزة الكاملة
 const equipmentList = [
     { id: 'pc', ar: '💻 كمبيوتر مكتب', en: 'Desktop PC', watts: 250, count: 0 },
     { id: 'srv', ar: '🖥️ سيرفر', en: 'Server Unit', watts: 1000, count: 0 },
@@ -134,7 +129,6 @@ function runDuctCalc() {
     }
 }
 
-// أزرار الحاسبة
 function focusField(f) {
     activeField = f;
     document.getElementById('display').classList.toggle('active-field', f === 'display');
