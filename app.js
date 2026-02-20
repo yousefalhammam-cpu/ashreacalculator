@@ -4,22 +4,32 @@ let inputs = { display: "0", people: "0", equip: "0" };
 let calcHistory = [];
 let lastCFM = 0;
 
+// --- قاعدة بيانات الغرف الكاملة (ASHRAE) ---
 const rooms = [
     { id: 'or', cat: 'h', ar: '🏥 غرفة عمليات', en: '🏥 Operating Room', ach: 20, factor: 300 },
     { id: 'icu', cat: 'h', ar: '🏥 العناية المركزة', en: '🏥 ICU', ach: 6, factor: 400 },
-    { id: 'off', cat: 'c', ar: '🏢 مكاتب', en: '🏢 Offices', ach: 6, factor: 450 },
-    { id: 'bed', cat: 'r', ar: '🏠 غرفة نوم', en: '🏠 Bedroom', ach: 2, factor: 550 }
+    { id: 'pe', cat: 'h', ar: '🏥 غرف العزل', en: '🏥 Isolation Room', ach: 12, factor: 380 },
+    { id: 'lab', cat: 'h', ar: '🏥 المختبرات', en: '🏥 Laboratories', ach: 8, factor: 400 },
+    { id: 'er', cat: 'h', ar: '🏥 الطوارئ', en: '🏥 Emergency', ach: 12, factor: 350 },
+    { id: 'off', cat: 'c', ar: '🏢 مكاتب مفتوحة', en: '🏢 Open Office', ach: 6, factor: 450 },
+    { id: 'conf', cat: 'c', ar: '🏢 قاعة اجتماعات', en: '🏢 Conference', ach: 10, factor: 350 },
+    { id: 'mall', cat: 'c', ar: '🏢 معرض تجاري', en: '🏢 Retail/Mall', ach: 8, factor: 400 },
+    { id: 'mosq', cat: 'c', ar: '🏢 مسجد/صلاة', en: '🏢 Prayer Hall', ach: 10, factor: 400 },
+    { id: 'gym', cat: 'c', ar: '🏢 نادي رياضي', en: '🏢 Gym', ach: 15, factor: 350 },
+    { id: 'bed', cat: 'r', ar: '🏠 غرفة نوم', en: '🏠 Bedroom', ach: 2, factor: 550 },
+    { id: 'liv', cat: 'r', ar: '🏠 صالة معيشة', en: '🏠 Living Room', ach: 4, factor: 500 },
+    { id: 'kit', cat: 'r', ar: '🏠 مطبخ منزلي', en: '🏠 Kitchen', ach: 6, factor: 450 }
 ];
 
-// قائمة الأجهزة الشاملة لجميع الأقسام
+// --- قاعدة بيانات الأجهزة الكاملة ---
 const equipmentList = [
-    { id: 'pc', ar: '💻 كمبيوتر مكتب', en: 'Desktop PC', watts: 250, count: 0 },
-    { id: 'lap', ar: '💻 لاب توب', en: 'Laptop', watts: 65, count: 0 },
-    { id: 'srv', ar: '🖥️ سيرفر', en: 'Server Unit', watts: 1000, count: 0 },
-    { id: 'med', ar: '🩺 جهاز طبي', en: 'Medical Device', watts: 300, count: 0 },
-    { id: 'tv', ar: '📺 شاشة عرض', en: 'TV/Display', watts: 150, count: 0 },
-    { id: 'kit', ar: '☕ غلاية/ماكينة قهوة', en: 'Coffee Machine', watts: 800, count: 0 },
-    { id: 'mic', ar: '🍱 مايكرويف', en: 'Microwave', watts: 1200, count: 0 }
+    { id: 'pc', ar: '💻 كمبيوتر', en: 'PC', watts: 250, count: 0 },
+    { id: 'srv', ar: '🖥️ سيرفر', en: 'Server', watts: 1000, count: 0 },
+    { id: 'med', ar: '🩺 جهاز طبي', en: 'Medical Device', watts: 350, count: 0 },
+    { id: 'tv', ar: '📺 شاشة عرض', en: 'TV Screen', watts: 150, count: 0 },
+    { id: 'copier', ar: '🖨️ طابعة كبرى', en: 'Copier', watts: 500, count: 0 },
+    { id: 'coffee', ar: '☕ ماكينة قهوة', en: 'Coffee Machine', watts: 800, count: 0 },
+    { id: 'fridge', ar: '🧊 ثلاجة', en: 'Refrigerator', watts: 400, count: 0 }
 ];
 
 window.onload = () => {
@@ -40,10 +50,7 @@ function renderEquipChecklist() {
     const container = document.getElementById('equip-checklist');
     container.innerHTML = equipmentList.map((item, idx) => `
         <div class="equip-item-row">
-            <div>
-                <span style="display:block; font-size:0.9rem">${currentLang === 'ar' ? item.ar : item.en}</span>
-                <small style="color:orange">${item.watts}W</small>
-            </div>
+            <div><span>${currentLang === 'ar' ? item.ar : item.en}</span><small> (${item.watts}W)</small></div>
             <div class="counter-ctrl">
                 <button class="counter-btn" onclick="changeCount(${idx}, -1)">-</button>
                 <span id="cnt-${idx}">${item.count}</span>
@@ -56,8 +63,8 @@ function renderEquipChecklist() {
 function changeCount(idx, delta) {
     equipmentList[idx].count = Math.max(0, equipmentList[idx].count + delta);
     document.getElementById(`cnt-${idx}`).innerText = equipmentList[idx].count;
-    let totalWatts = equipmentList.reduce((sum, item) => sum + (item.watts * item.count), 0);
-    inputs.equip = totalWatts.toString();
+    let total = equipmentList.reduce((s, i) => s + (i.watts * i.count), 0);
+    inputs.equip = total.toString();
     document.getElementById('equip-watts').value = inputs.equip;
     calculateLoad(false);
 }
@@ -84,10 +91,10 @@ function calculateLoad(save = false) {
 function updateHistoryUI() {
     document.getElementById('history-body').innerHTML = calcHistory.map(i => `
         <tr>
-            <td style="color:#444">#${i.no}</td>
+            <td style="color:#666">#${i.no}</td>
             <td>${i.room}</td>
-            <td class="tr-val">${i.tr} TR</td>
-            <td class="cfm-val">${i.cfm} CFM</td>
+            <td style="color:orange; font-weight:bold">${i.tr} TR</td>
+            <td style="font-size:0.75rem; color:#8e8e93">${i.cfm} CFM</td>
         </tr>
     `).reverse().join('');
 }
@@ -108,7 +115,7 @@ function runDuctCalc() {
     }
 }
 
-// وظائف مساعدة
+// المساعدات
 function focusField(f) {
     activeField = f;
     document.getElementById('display').classList.toggle('active-field', f === 'display');
