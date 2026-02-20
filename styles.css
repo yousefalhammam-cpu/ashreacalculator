@@ -5,51 +5,46 @@
     --ios-text: #ffffff;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { margin: 0; background: var(--ios-black); color: var(--ios-text); font-family: -apple-system, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+body { margin: 0; background: var(--ios-black); color: var(--ios-text); font-family: -apple-system, sans-serif; height: 100vh; overflow: hidden; }
 
 .simple-header { padding: 8px; text-align: center; color: #444; font-size: 0.7rem; }
-main { flex: 1; overflow-y: auto; padding-bottom: 70px; }
-.tab-panel { display: none; padding: 10px; }
-.tab-panel.active { display: block; }
+main { height: calc(100vh - 120px); overflow-y: auto; }
 
-/* شاشة الحاسبة */
-.calc-screen { text-align: right; padding: 10px; min-height: 110px; display: flex; flex-direction: column; justify-content: flex-end; }
-#display { font-size: 3.2rem; font-weight: 300; }
-.active-field { color: var(--ios-orange) !important; }
-#unit-label { color: var(--ios-orange); font-size: 1.1rem; font-weight: bold; }
+/* الشاشة والمدخلات */
+.calc-screen { text-align: right; padding: 10px; min-height: 100px; display: flex; flex-direction: column; justify-content: flex-end; }
+#display { font-size: 3rem; font-weight: 300; }
+.active-field { color: var(--ios-orange) !important; border: 1px solid var(--ios-orange) !important; }
+#unit-label { color: var(--ios-orange); font-size: 1.2rem; font-weight: bold; }
 
-/* صف المدخلات */
-.horizontal-inputs { display: flex; gap: 6px; margin-bottom: 12px; background: #1c1c1e; padding: 6px; border-radius: 12px; }
-.input-box { display: flex; flex-direction: column; min-width: 0; }
-.room-box { flex: 2; } .small-box { flex: 0.8; }
-.input-box label { font-size: 0.6rem; color: #8e8e93; margin-bottom: 4px; text-align: center; }
-.horizontal-inputs input, .horizontal-inputs select {
-    background: #2c2c2e; color: white; border: 1px solid transparent; padding: 8px 2px; border-radius: 8px; font-size: 0.75rem; text-align: center; width: 100%; outline: none;
-}
-.equip-trigger { position: relative; cursor: pointer; }
-.plus-icon { position: absolute; left: 5px; top: 50%; transform: translateY(-50%); color: var(--ios-orange); }
+.horizontal-inputs { display: flex; gap: 5px; margin: 10px; background: #1c1c1e; padding: 8px; border-radius: 12px; }
+.input-box { display: flex; flex-direction: column; flex: 1; }
+.room-box { flex: 2; }
+.input-box label { font-size: 0.6rem; color: #8e8e93; text-align: center; margin-bottom: 4px; }
+.input-box input, .input-box select { background: #2c2c2e; color: white; border: 1px solid transparent; padding: 8px; border-radius: 8px; font-size: 0.75rem; text-align: center; outline: none; }
 
-/* أزرار الحاسبة */
-.ios-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.ios-grid button { aspect-ratio: 1/1; border-radius: 50%; border: none; font-size: 1.5rem; color: white; }
+/* أزرار iOS */
+.ios-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px; }
+.ios-grid button { aspect-ratio: 1/1; border-radius: 50%; border: none; font-size: 1.4rem; color: white; }
 .btn-orange { background: var(--ios-orange); }
 .btn-dark-grey { background: #333; }
 .btn-light-grey { background: #a5a5a5; color: black !important; }
 
-/* مودال الأجهزة والعدادات */
-.modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
-.modal-content { background: var(--ios-dark-grey); margin: 10% auto; padding: 20px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid #333; }
-.equip-list-content { max-height: 85vh; overflow-y: auto; text-align: right; }
-.checklist-container { display: flex; flex-direction: column; gap: 8px; margin: 15px 0; }
-.equip-item-row { display: flex; align-items: center; justify-content: space-between; background: #2c2c2e; padding: 10px; border-radius: 12px; }
-.equip-info { flex: 1; }
-.equip-name { display: block; font-size: 0.9rem; }
-.equip-watt-label { font-size: 0.7rem; color: var(--ios-orange); }
+/* السجل التراكمي */
+.history-section { margin: 15px 10px; }
+.history-section h4 { font-size: 0.75rem; color: #8e8e93; margin-bottom: 5px; }
+.history-scroll-container { background: #1c1c1e; border-radius: 12px; max-height: 200px; overflow-y: auto; border: 0.5px solid #333; -webkit-overflow-scrolling: touch; }
+.history-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+.history-table th { position: sticky; top: 0; background: #2c2c2e; padding: 8px; color: var(--ios-orange); }
+.history-table td { padding: 10px; text-align: center; border-bottom: 0.5px solid #333; }
 
-.counter-ctrl { display: flex; align-items: center; gap: 10px; background: #3a3a3c; border-radius: 8px; padding: 4px 8px; }
-.counter-btn { background: none; border: none; color: var(--ios-orange); font-size: 1.2rem; font-weight: bold; width: 25px; }
-.counter-val { font-size: 0.9rem; width: 15px; text-align: center; }
+/* مودال العدادات */
+.modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
+.modal-content { background: #1c1c1e; margin: 10% auto; padding: 20px; border-radius: 20px; width: 90%; max-height: 80vh; overflow-y: auto; }
+.equip-item-row { display: flex; align-items: center; justify-content: space-between; background: #2c2c2e; padding: 12px; border-radius: 12px; margin-bottom: 8px; }
+.counter-ctrl { display: flex; align-items: center; gap: 12px; }
+.counter-btn { background: #3a3a3c; border: none; color: var(--ios-orange); width: 32px; height: 32px; border-radius: 50%; font-weight: bold; font-size: 1.2rem; }
 
-.bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: rgba(18,18,18,0.98); display: flex; border-top: 0.5px solid #333; backdrop-filter: blur(10px); }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8e8e93; font-size: 0.6rem; background: none; border: none; }
+/* القائمة السفلية */
+.bottom-nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: rgba(18,18,18,0.98); display: flex; border-top: 0.5px solid #333; padding-bottom: 15px; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8e8e93; font-size: 0.7rem; background: none; border: none; }
 .nav-item.active { color: var(--ios-orange); }
