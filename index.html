@@ -31,7 +31,10 @@
                     </div>
                     <div class="input-box small-box">
                         <label>أجهزة (W)</label>
-                        <input type="text" id="equip-watts" value="0" readonly onclick="focusField('equip')">
+                        <div class="equip-trigger" onclick="openEquipModal()">
+                            <input type="text" id="equip-watts" value="0" readonly>
+                            <span class="plus-icon">+</span>
+                        </div>
                     </div>
                 </div>
 
@@ -72,24 +75,32 @@
             <div class="ios-card" style="max-width: 400px; margin: 0 auto; padding: 20px;">
                 <h2 style="text-align:center; color: var(--ios-orange);">Duct Sizer</h2>
                 <div class="ios-input-group" style="margin-bottom:15px;">
-                    <label style="display:block; font-size:0.8rem; color:#8e8e93;">CFM</label>
-                    <input type="number" id="targetCFM" style="width:100%; background:#2c2c2e; border:none; color:white; padding:12px; border-radius:10px;">
+                    <label>CFM</label>
+                    <input type="number" id="targetCFM">
                 </div>
                 <div class="ios-input-group" style="margin-bottom:20px;">
-                    <label style="display:block; font-size:0.8rem; color:#8e8e93;">Fixed Width (Inch)</label>
-                    <input type="number" id="fixWidth" value="12" style="width:100%; background:#2c2c2e; border:none; color:white; padding:12px; border-radius:10px;">
+                    <label>Fixed Width (Inch)</label>
+                    <input type="number" id="fixWidth" value="12">
                 </div>
-                <button class="btn-orange" style="width:100%; height:50px; border-radius:12px; font-weight:bold;" onclick="runDuctCalc()">احسب المقاس</button>
-                <div id="duct-result" style="margin-top:20px; text-align:center; font-size:1.5rem; color:var(--ios-orange);">---</div>
+                <button class="btn-orange" style="width:100%; height:50px; border-radius:12px;" onclick="runDuctCalc()">احسب المقاس</button>
+                <div id="duct-result" class="result-highlight">---</div>
             </div>
         </section>
     </main>
+
+    <div id="equip-modal" class="modal">
+        <div class="modal-content equip-list-content">
+            <h3>اختر الأجهزة الموجودة</h3>
+            <div id="equip-checklist" class="checklist-container"></div>
+            <button class="close-modal-btn" onclick="closeEquipModal()">تأكيد</button>
+        </div>
+    </div>
 
     <div id="contact-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>حول التطبيق</h2>
-                <p>أداة هندسية احترافية لحساب أحمال التبريد وكميات الهواء وفق معايير <strong>ASHRAE 170</strong> و <strong>ASHRAE 62.1</strong>. يهدف التطبيق لتمكين المهندسين من الحصول على نتائج دقيقة وسريعة في الموقع.</p>
+                <p>أداة هندسية لحساب أحمال التبريد وفق معايير <strong>ASHRAE 170</strong> و <strong>ASHRAE 62.1</strong> لدقة عالية في تقدير TR و CFM.</p>
             </div>
             <hr style="border: 0.5px solid #333; margin: 15px 0;">
             <div class="contact-info">
