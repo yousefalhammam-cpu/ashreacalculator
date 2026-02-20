@@ -32,7 +32,7 @@
                     <div class="input-box small-box">
                         <label>أجهزة (W)</label>
                         <div class="equip-trigger" onclick="openEquipModal()">
-                            <input type="text" id="equip-watts" value="0" readonly>
+                            <input type="text" id="equip-watts" value="0" readonly style="color: #ff9f0a; font-weight: bold;">
                             <span class="plus-icon">+</span>
                         </div>
                     </div>
@@ -90,24 +90,17 @@
 
     <div id="equip-modal" class="modal">
         <div class="modal-content equip-list-content">
-            <h3>اختر الأجهزة الموجودة</h3>
+            <h3>قائمة الأجهزة (تعدد الوحدات)</h3>
             <div id="equip-checklist" class="checklist-container"></div>
-            <button class="close-modal-btn" onclick="closeEquipModal()">تأكيد</button>
+            <button class="close-modal-btn" onclick="closeEquipModal()">حفظ وإغلاق</button>
         </div>
     </div>
 
     <div id="contact-modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>حول التطبيق</h2>
-                <p>أداة هندسية لحساب أحمال التبريد وفق معايير <strong>ASHRAE 170</strong> و <strong>ASHRAE 62.1</strong> لدقة عالية في تقدير TR و CFM.</p>
-            </div>
-            <hr style="border: 0.5px solid #333; margin: 15px 0;">
-            <div class="contact-info">
-                <h3>تواصل مع المطور</h3>
-                <p>📞 0560282701</p>
-                <p>📧 yousef.alhammam@live.com</p>
-            </div>
+            <h2>حول التطبيق</h2>
+            <p>أداة هندسية لحساب أحمال التبريد وفق معايير ASHRAE.</p>
+            <p>📞 0560282701</p>
             <button class="close-modal-btn" onclick="closeContact()">إغلاق</button>
         </div>
     </div>
