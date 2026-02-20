@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-    <title>Air Calc Pro - Engineering Suite</title>
+    <title>Air Calc Pro - Full Suite</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -29,26 +29,26 @@
                     <button class="btn-navy-op" onclick="calculateLoad()">CALC</button>
                     
                     <button onclick="press(7)">7</button><button onclick="press(8)">8</button><button onclick="press(9)">9</button>
-                    <button onclick="press('.')">.</button>
-                    
-                    <button onclick="press(4)">4</button><button onclick="press(5)">5</button><button onclick="press(6)">6</button>
                     <button class="btn-orange" onclick="clearDisplay()">C</button>
                     
+                    <button onclick="press(4)">4</button><button onclick="press(5)">5</button><button onclick="press(6)">6</button>
+                    <button class="btn-num-op" onclick="press('.')">.</button>
+                    
                     <button onclick="press(1)">1</button><button onclick="press(2)">2</button><button onclick="press(3)">3</button>
-                    <button onclick="press(0)" class="btn-zero">0</button>
+                    <button onclick="press(0)">0</button>
                 </div>
             </div>
         </section>
 
         <section id="duct-tab" class="tab-panel">
             <div class="tab-card">
-                <h2 id="txt-duct-title">Duct Sizing</h2>
+                <h2 id="txt-duct-title">مقاسات الدكت (Duct)</h2>
                 <div class="input-row">
-                    <label>CFM:</label>
-                    <input type="number" id="targetCFM">
+                    <label>CFM (Calculated):</label>
+                    <input type="number" id="targetCFM" placeholder="450">
                 </div>
                 <div class="input-row">
-                    <label id="txt-width-label">Width (Inch):</label>
+                    <label id="txt-width-label">العرض الثابت (Inch):</label>
                     <input type="number" id="fixWidth" value="12">
                 </div>
                 <button class="action-btn" onclick="runDuctCalc()">احسب المقاس</button>
@@ -56,18 +56,18 @@
             </div>
         </section>
 
-        <section id="export-tab" class="tab-panel">
-            <div class="tab-card">
-                <h2 id="txt-export-title">تصدير التقرير</h2>
-                <button class="export-btn pdf" onclick="exportPDF()">تصدير PDF 📄</button>
-                <button class="export-btn excel" onclick="exportExcel()">تصدير Excel 📊</button>
-            </div>
-        </section>
-
         <section id="forum-tab" class="tab-panel">
             <div class="tab-card">
                 <h2 id="txt-forum-title">ساحة النقاش</h2>
-                <div id="forum-messages" class="chat-area">... قريباً ...</div>
+                <div class="chat-area">ساحة النقاش المهني - قريباً</div>
+            </div>
+        </section>
+
+        <section id="export-tab" class="tab-panel">
+            <div class="tab-card">
+                <h2 id="txt-export-title">تصدير التقرير</h2>
+                <button class="export-btn pdf" onclick="exportPDF()">حفظ PDF 📄</button>
+                <button class="export-btn excel" onclick="exportExcel()">حفظ Excel 📊</button>
             </div>
         </section>
     </main>
