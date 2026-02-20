@@ -8,7 +8,7 @@
     --text-main: #f1f5f9;
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body { 
     margin: 0; 
@@ -16,10 +16,9 @@ body {
     color: var(--text-main);
     font-family: 'Segoe UI', sans-serif; 
     height: 100vh; 
-    width: 100vw;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* لمنع السكرول المزعج */
+    overflow: hidden; 
 }
 
 .app-header { 
@@ -27,26 +26,24 @@ body {
     padding: 10px; 
     text-align: center; 
     border-bottom: 2px solid var(--sky); 
-    font-weight: bold; 
     color: var(--sky); 
     height: 50px;
+    font-weight: bold;
 }
 
-/* التبويب الرئيسي - يملأ المساحة المتبقية */
+/* محتوى الصفحة مع ترك مساحة للشريط السفلي */
 main {
     flex: 1;
-    position: relative;
-    display: flex;
-    flex-direction: column;
+    overflow-y: auto;
+    padding-bottom: 90px; /* مساحة أمان للشريط السفلي */
 }
 
 .tab-panel { 
     display: none; 
-    flex-direction: column; 
-    height: 100%; /* يأخذ كامل ارتفاع المين */
-    padding: 10px;
+    height: 100%; 
+    padding: 15px;
+    flex-direction: column;
 }
-
 .tab-panel.active { display: flex; }
 
 /* الحاسبة العملاقة */
@@ -54,59 +51,46 @@ main {
     display: flex; 
     flex-direction: column; 
     height: 100%; 
-    gap: 8px;
+    gap: 10px;
 }
 
 .calc-screen { 
     background: #000; 
     color: var(--accent); 
-    padding: 15px; 
+    padding: 20px; 
     border-radius: 15px; 
     text-align: right; 
     border: 1px solid #1e293b;
-    min-height: 120px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 }
-
-#display { font-size: 3.5rem; font-family: monospace; line-height: 1; }
-#unit-label { font-size: 1rem; color: #888; margin-top: 5px; }
+#display { font-size: 3.5rem; font-family: monospace; }
+#unit-label { font-size: 1rem; color: #888; }
 
 .calc-select { 
-    padding: 12px; 
+    padding: 15px; 
     background: var(--card-dark); 
     color: white; 
-    border-radius: 10px; 
+    border-radius: 12px; 
     border: 1px solid #334155; 
     font-size: 1.1rem;
-    width: 100%;
 }
 
-/* شبكة الأزرار العملاقة */
 .calc-grid { 
     display: grid; 
     grid-template-columns: repeat(4, 1fr); 
-    grid-template-rows: repeat(5, 1fr); /* 5 صفوف متساوية الارتفاع */
-    gap: 8px; 
-    flex: 1; /* تتمدد لتملأ كل المساحة الفارغة */
-    margin-bottom: 5px;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 10px; 
+    flex: 1;
 }
 
 .calc-grid button { 
     border: none; 
-    border-radius: 12px; 
-    font-size: 1.6rem; 
+    border-radius: 15px; 
+    font-size: 1.8rem; 
     font-weight: bold; 
     background: var(--card-dark); 
     color: var(--text-main); 
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 3px 0 #000;
+    box-shadow: 0 4px 0 #000;
 }
-
 .calc-grid button:active { transform: translateY(2px); box-shadow: none; }
 
 .btn-blue-op { background: var(--sky) !important; color: #000 !important; }
@@ -114,13 +98,17 @@ main {
 .btn-orange { background: var(--orange) !important; color: #000 !important; }
 .btn-grey { background: #475569 !important; }
 
-/* الشريط السفلي ثابت تماماً بالأسفل */
+/* الشريط السفلي - مثبت بشكل مطلق */
 .bottom-nav { 
-    height: 75px; 
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px; 
     background: var(--navy); 
     display: flex; 
-    border-top: 1px solid #334155;
-    padding-bottom: env(safe-area-inset-bottom); /* لدعم نوتش الآيفون */
+    border-top: 2px solid var(--sky);
+    z-index: 1000;
 }
 
 .nav-item { 
@@ -132,12 +120,12 @@ main {
     flex-direction: column; 
     align-items: center; 
     justify-content: center; 
-    font-size: 0.7rem;
-    cursor: pointer;
+    font-size: 0.75rem;
 }
 
 .nav-item.active { color: var(--sky); }
-.nav-item i { font-size: 1.4rem; margin-bottom: 4px; font-style: normal; }
+.nav-item i { font-size: 1.6rem; margin-bottom: 4px; font-style: normal; }
 
-/* الكروت في التبويبات الأخرى */
-.tab-card { background: var(--card-dark); padding: 15px; border-radius: 15px; }
+/* تنسيق التصدير والدكت */
+.tab-card { background: var(--card-dark); padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+.export-btn { width: 100%; padding: 15px; margin: 5px 0; border: none; border-radius: 10px; color: white; font-weight: bold; }
