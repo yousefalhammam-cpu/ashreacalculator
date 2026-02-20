@@ -8,8 +8,7 @@
 </head>
 <body>
     <header class="simple-header">Air Calc Pro | Professional Suite</header>
-
-    <main id="main-content">
+    <main>
         <section id="calc-tab" class="tab-panel active">
             <div class="ios-calc-wrapper">
                 <div class="calc-screen">
@@ -33,18 +32,15 @@
                     </div>
                     <div class="input-box small-box">
                         <label data-ar="أجهزة" data-en="Equip">أجهزة</label>
-                        <div class="equip-trigger" onclick="openEquipModal()">
-                            <input type="text" id="equip-watts" value="0" readonly>
-                        </div>
+                        <input type="text" id="equip-watts" value="0" readonly onclick="openEquipModal()">
                     </div>
                 </div>
 
                 <div class="ios-grid">
                     <button class="btn-light-grey" onclick="clearActiveField()">AC</button>
                     <button class="btn-light-grey" onclick="deleteLast()">DEL</button>
-                    <button class="btn-orange" onclick="calculateLoad(true)" data-ar="CALC" data-en="CALC">CALC</button>
-                    <button class="btn-orange" onclick="calculateLoad(true)">=</button>
-                    
+                    <button class="btn-orange" onclick="calculateLoad(true)" data-ar="حفظ" data-en="SAVE">SAVE</button>
+                    <button class="btn-orange" onclick="calculateLoad(false)">=</button>
                     <button class="btn-dark-grey" onclick="press(7)">7</button>
                     <button class="btn-dark-grey" onclick="press(8)">8</button>
                     <button class="btn-dark-grey" onclick="press(9)">9</button>
@@ -61,28 +57,26 @@
 
                 <div class="history-section">
                     <div class="history-header">
-                        <span data-ar="نتائج الغرف" data-en="Room Results">نتائج الغرف</span>
-                        <button class="clear-history-btn" onclick="clearHistory()">Clear All</button>
+                        <span data-ar="نتائج الغرف" data-en="History">نتائج الغرف</span>
+                        <button onclick="clearHistory()" class="clear-history-btn">مسح الكل</button>
                     </div>
-                    <div class="history-scroll-container">
-                        <div id="history-list" class="swipe-list"></div>
-                    </div>
+                    <div id="history-list"></div>
                 </div>
             </div>
         </section>
 
         <section id="duct-tab" class="tab-panel">
             <div class="ios-card">
-                <h2 data-ar="حساب مقاسات الدكت" data-en="Duct Sizer">حساب مقاسات الدكت</h2>
+                <h2 data-ar="حساب الدكت" data-en="Duct Sizer">حساب الدكت</h2>
                 <div class="ios-input-group">
                     <label>CFM</label>
-                    <input type="number" id="targetCFM" placeholder="Auto-filled">
+                    <input type="number" id="targetCFM">
                 </div>
                 <div class="ios-input-group">
-                    <label data-ar="العرض الثابت (انش)" data-en="Fixed Width (in)">العرض الثابت (انش)</label>
+                    <label data-ar="العرض (انش)" data-en="Width (in)">العرض (انش)</label>
                     <input type="number" id="fixWidth" value="12">
                 </div>
-                <button class="btn-orange main-btn" onclick="runDuctCalc()" style="width:100%; height:60px; border-radius:15px; font-size:1.2rem; margin-top:20px;">CALC</button>
+                <button class="btn-orange" onclick="runDuctCalc()" style="width:100%; padding:20px; border-radius:15px;">CALC</button>
                 <div id="duct-result" class="result-highlight">---</div>
             </div>
         </section>
@@ -90,9 +84,9 @@
 
     <div id="equip-modal" class="modal">
         <div class="modal-content">
-            <h3 data-ar="قائمة الأجهزة" data-en="Equipment List">قائمة الأجهزة</h3>
-            <div id="equip-checklist" class="checklist-container"></div>
-            <button class="close-modal-btn" onclick="closeEquipModal()">Done</button>
+            <h3 data-ar="الأجهزة" data-en="Equipment">الأجهزة</h3>
+            <div id="equip-checklist"></div>
+            <button class="close-modal-btn" onclick="closeEquipModal()">تم</button>
         </div>
     </div>
 
@@ -101,7 +95,6 @@
         <button class="nav-item" onclick="switchTab('duct-tab', this)"><i>📏</i><span data-ar="الدكت" data-en="Duct">الدكت</span></button>
         <button class="nav-item" onclick="toggleLanguage()"><i>🌐</i><span id="lang-text">English</span></button>
     </nav>
-
     <script src="app.js"></script>
 </body>
 </html>
