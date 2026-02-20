@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Air Calc Pro - Engineering Suite</title>
+    <title>Air Calc Pro - iOS Design</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -21,15 +21,15 @@
                 
                 <div class="horizontal-inputs">
                     <div class="input-box room-box">
-                        <label>الغرفة</label>
+                        <label>نوع الغرفة</label>
                         <select id="room-select" onchange="resetForNewRoom()"></select>
                     </div>
                     <div class="input-box small-box">
-                        <label>👤</label>
+                        <label>أشخاص</label>
                         <input type="number" id="people-count" value="0" min="0">
                     </div>
                     <div class="input-box small-box">
-                        <label>⚡ (W)</label>
+                        <label>أجهزة (W)</label>
                         <input type="number" id="equip-watts" value="0" min="0">
                     </div>
                 </div>
@@ -75,17 +75,17 @@
         </section>
 
         <section id="duct-tab" class="tab-panel">
-            <div class="ios-card">
-                <h2>حساب مقاس الدكت</h2>
+            <div class="ios-card" style="max-width: 400px; margin: 0 auto;">
+                <h2 style="text-align: center;">Duct Design</h2>
                 <div class="ios-input-group">
                     <label>كمية الهواء (CFM)</label>
                     <input type="number" id="targetCFM" placeholder="0">
                 </div>
                 <div class="ios-input-group">
-                    <label>العرض (Inch)</label>
+                    <label>العرض الثابت (Inch)</label>
                     <input type="number" id="fixWidth" value="12">
                 </div>
-                <button class="btn-orange" style="width:100%; height:60px; border-radius:15px; font-size:1.2rem;" onclick="runDuctCalc()">احسب</button>
+                <button class="btn-orange" style="width:100%; height: 60px; border-radius: 15px; font-size: 1.2rem;" onclick="runDuctCalc()">Calculate</button>
                 <div id="duct-result" class="result-highlight">---</div>
             </div>
         </section>
