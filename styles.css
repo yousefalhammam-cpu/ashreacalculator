@@ -1,55 +1,43 @@
 :root {
     --ios-black: #000000;
     --ios-dark-grey: #1c1c1e;
-    --ios-btn-grey: #333333;
-    --ios-light-grey: #a5a5a5;
     --ios-orange: #ff9f0a;
     --ios-text: #ffffff;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { margin: 0; background: var(--ios-black); color: var(--ios-text); font-family: -apple-system, sans-serif; overflow: hidden; height: 100vh; }
+body { margin: 0; background: var(--ios-black); color: var(--ios-text); font-family: -apple-system, sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-.app-header { padding: 5px; text-align: center; color: #444; font-size: 0.7rem; }
-main { flex: 1; overflow-y: auto; padding-bottom: 90px; }
+.simple-header { padding: 10px; text-align: center; color: #444; font-size: 0.8rem; letter-spacing: 1px; }
+
+main { flex: 1; overflow-y: auto; padding-bottom: 70px; }
 .tab-panel { display: none; padding: 10px; }
 .tab-panel.active { display: block; }
-.ios-calc-wrapper { max-width: 400px; margin: 0 auto; width: 100%; }
+.ios-calc-wrapper { max-width: 400px; margin: 0 auto; }
 
-/* شاشة العرض والتعريف */
-.calc-screen { text-align: right; padding: 10px; min-height: 130px; display: flex; flex-direction: column; justify-content: flex-end; }
-#display { font-size: 3.5rem; font-weight: 300; transition: color 0.3s; cursor: pointer; }
-#unit-label { color: var(--ios-orange); font-size: 1.1rem; font-weight: bold; }
-#field-hint { font-size: 0.8rem; color: #8e8e93; margin-top: -5px; }
-
-/* تمييز الحقل النشط */
-.active-field { color: var(--ios-orange) !important; text-shadow: 0 0 10px rgba(255, 159, 10, 0.3); }
-input.active-field { border: 1px solid var(--ios-orange) !important; }
-
-/* شريط المدخلات */
-.horizontal-inputs { display: flex; gap: 6px; margin-bottom: 15px; background: #1c1c1e; padding: 8px; border-radius: 12px; }
-.input-box { display: flex; flex-direction: column; min-width: 0; }
-.room-box { flex: 2; } 
-.small-box { flex: 0.8; }
-.input-box label { font-size: 0.6rem; color: #8e8e93; margin-bottom: 4px; text-align: center; }
-.horizontal-inputs select, .horizontal-inputs input {
-    background: #2c2c2e; color: white; border: 1px solid transparent; padding: 10px 4px; border-radius: 8px; font-size: 0.8rem; outline: none; text-align: center; width: 100%;
-}
-
-/* الأزرار */
-.ios-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.ios-grid button { aspect-ratio: 1/1; border-radius: 50%; border: none; font-size: 1.6rem; cursor: pointer; }
-.ios-grid button:active { opacity: 0.6; }
-.btn-dark-grey { background: var(--ios-btn-grey); color: white; }
-.btn-light-grey { background: var(--ios-light-grey); color: black; }
-.btn-orange { background: var(--ios-orange); color: white; }
-
-/* السجل والقوائم السفلية كما في الكود السابق... */
-.history-container { background: var(--ios-dark-grey); border-radius: 15px; max-height: 100px; overflow-y: auto; margin: 10px 0; border: 1px solid #2c2c2e; }
-.history-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; text-align: center; }
-.history-table td, .history-table th { padding: 8px; border-bottom: 1px solid #2c2c2e; }
-.export-actions { display: flex; gap: 5px; }
-.ios-exp { flex: 1; padding: 10px; border-radius: 20px; border: none; color: white; background: #2c2c2e; font-weight: bold; }
-.bottom-nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: rgba(10,10,10,0.95); display: flex; border-top: 0.5px solid #333; }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8e8e93; font-size: 0.7rem; background: none; border: none; }
+/* القائمة السفلية رشيقة (Compact) */
+.bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: rgba(18,18,18,0.95); display: flex; border-top: 0.5px solid #333; backdrop-filter: blur(10px); }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8e8e93; font-size: 0.6rem; background: none; border: none; }
+.nav-item i { font-size: 1.2rem; margin-bottom: 2px; font-style: normal; }
 .nav-item.active { color: var(--ios-orange); }
+
+/* نافذة التواصل والوصف */
+.modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); }
+.modal-content { background: var(--ios-dark-grey); margin: 20% auto; padding: 25px; border-radius: 25px; width: 85%; max-width: 350px; text-align: center; border: 1px solid #333; }
+.modal-header h2 { color: var(--ios-orange); font-size: 1.3rem; margin-top: 0; }
+.modal-header p { font-size: 0.8rem; color: #ccc; line-height: 1.5; text-align: justify; }
+.contact-info h3 { font-size: 1rem; color: white; margin-bottom: 10px; }
+.contact-info p { font-size: 0.9rem; color: #8e8e93; margin: 5px 0; }
+.close-modal-btn { background: #333; color: white; border: none; padding: 10px 30px; border-radius: 12px; margin-top: 20px; width: 100%; font-weight: bold; }
+
+/* الأزرار والحقول (كما في التعديل السابق) */
+.calc-screen { text-align: right; padding: 10px; min-height: 110px; display: flex; flex-direction: column; justify-content: flex-end; }
+#display { font-size: 3.5rem; font-weight: 300; }
+.active-field { color: var(--ios-orange) !important; }
+.horizontal-inputs { display: flex; gap: 5px; margin-bottom: 15px; background: #1c1c1e; padding: 6px; border-radius: 12px; }
+.ios-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.ios-grid button { aspect-ratio: 1/1; border-radius: 50%; border: none; font-size: 1.5rem; }
+.btn-orange { background: var(--ios-orange); color: white; }
+.btn-dark-grey { background: #333; color: white; }
+.btn-light-grey { background: #a5a5a5; color: black; }
+.ios-exp { flex: 1; padding: 8px; border-radius: 10px; border: none; background: #222; color: white; font-size: 0.7rem; }
+.clear-btn { background: #3d1414; color: #ff3b30; }
