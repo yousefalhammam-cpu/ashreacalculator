@@ -4,14 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
   <title>Air Calc Pro</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="theme-color" content="#0b1220" />
   <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="simple-header">Air Calc Pro | HVAC Engineering Suite</header>
 
   <main>
-    <!-- الحاسبة -->
+    <!-- Calculator -->
     <section id="calc-tab" class="tab-panel active">
       <div class="ios-calc-wrapper">
         <div class="calc-screen">
@@ -20,7 +21,8 @@
             <span class="divider">|</span>
             <span id="cfm-result">0 CFM</span>
           </div>
-          <div id="display" class="active-field" onclick="focusField('display')">0</div>
+
+          <div id="display" class="display-box active-field" onclick="focusField('display')">0</div>
           <div id="field-hint" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
         </div>
 
@@ -29,12 +31,14 @@
             <label data-ar="تصنيف الغرفة" data-en="Room Type">تصنيف الغرفة</label>
             <select id="room-select" onchange="resetAllFields()"></select>
           </div>
+
           <div class="input-box">
             <label data-ar="أشخاص" data-en="People">أشخاص</label>
             <input type="text" id="people-count" value="0" readonly onclick="focusField('people')" />
           </div>
+
           <div class="input-box">
-            <label data-ar="أجهزة (W)" data-en="Equip (W)">أجهزة (W)</label>
+            <label data-ar="أجهزة" data-en="Equip (W)" data-en="Equip (W)">أجهزة</label>
             <input type="text" id="equip-watts" value="0" readonly onclick="openEquipModal()" />
           </div>
         </div>
@@ -42,7 +46,7 @@
         <div class="ios-grid">
           <button class="btn-light-grey" onclick="clearActiveField()">AC</button>
           <button class="btn-light-grey" onclick="deleteLast()">DEL</button>
-          <button class="btn-orange" onclick="calculateLoad(true)" data-ar="حفظ" data-en="SAVE">حفظ</button>
+          <button class="btn-orange" onclick="calculateLoad(true)" data-ar="احسب" data-en="CALC">CALC</button>
           <button class="btn-orange" onclick="calculateLoad(false)">=</button>
 
           <button class="btn-dark-grey" onclick="press(7)">7</button>
@@ -71,59 +75,68 @@
       </div>
     </section>
 
-    <!-- الدكت -->
-    <section id="duct-tab" class="tab-panel">
+    <!-- Contact -->
+    <section id="contact-tab" class="tab-panel">
       <div class="ios-card">
-        <h2 data-ar="مقاسات الدكت" data-en="Duct Sizer">مقاسات الدكت</h2>
+        <h2 data-ar="تواصل معنا" data-en="Contact Us">تواصل معنا</h2>
 
-        <div class="ios-input-group">
-          <label>CFM</label>
-          <input type="number" id="targetCFM" />
+        <p
+          data-ar="Air Calc Pro تطبيق هندسي لحساب الأحمال التبريدية وتدفق الهواء (TR / CFM) بشكل سريع ومناسب للمهندسين والفنيين، مع تصنيفات غرف للمستشفيات والتجاري والسكني."
+          data-en="Air Calc Pro is an engineering app for fast cooling load and airflow calculations (TR / CFM), suitable for engineers and technicians, with room categories for hospitals, commercial, and residential spaces."
+        >
+          Air Calc Pro تطبيق هندسي لحساب الأحمال التبريدية وتدفق الهواء (TR / CFM) بشكل سريع ومناسب للمهندسين والفنيين، مع تصنيفات غرف للمستشفيات والتجاري والسكني.
+        </p>
+
+        <div class="contact-box">
+          <h3 data-ar="مميزات التطبيق" data-en="App Features">مميزات التطبيق</h3>
+          <ul>
+            <li data-ar="حساب TR و CFM بسرعة" data-en="Fast TR & CFM calculations">حساب TR و CFM بسرعة</li>
+            <li data-ar="تصنيفات غرف صحية / تجارية / سكنية" data-en="Hospital / Commercial / Residential room presets">تصنيفات غرف صحية / تجارية / سكنية</li>
+            <li data-ar="إدخال الأحمال البشرية وأحمال الأجهزة" data-en="People and equipment heat load inputs">إدخال الأحمال البشرية وأحمال الأجهزة</li>
+            <li data-ar="سجل نتائج الحسابات" data-en="Calculation history log">سجل نتائج الحسابات</li>
+            <li data-ar="واجهة مناسبة للجوال والتطبيق" data-en="Mobile and app friendly interface">واجهة مناسبة للجوال والتطبيق</li>
+          </ul>
         </div>
 
-        <div class="ios-input-group">
-          <label data-ar="العرض (انش)" data-en="Width (in)">العرض (انش)</label>
-          <input type="number" id="fixWidth" value="12" />
+        <div class="contact-box">
+          <h3 data-ar="بيانات التواصل" data-en="Contact Info">بيانات التواصل</h3>
+          <div class="contact-line">
+            <strong data-ar="الجوال:" data-en="Mobile:">الجوال:</strong>
+            <span>0560282701</span>
+          </div>
+          <div class="contact-line">
+            <strong>Email:</strong>
+            <a href="mailto:Yousef.alhammam@live.com">Yousef.alhammam@live.com</a>
+          </div>
         </div>
-
-        <button class="btn-orange duct-btn" onclick="runDuctCalc()">CALC</button>
-        <div id="duct-result" class="result-highlight">---</div>
       </div>
     </section>
   </main>
 
-  <!-- Modal الأجهزة -->
+  <!-- Equipment Modal -->
   <div id="equip-modal" class="modal">
     <div class="modal-content">
       <h3 data-ar="قائمة الأجهزة الشاملة" data-en="Equipment List">قائمة الأجهزة الشاملة</h3>
       <div id="equip-checklist"></div>
-      <button class="close-modal-btn" onclick="closeEquipModal()" data-ar="تم" data-en="Done">تم</button>
+      <button class="close-modal-btn" onclick="closeEquipModal()">تم</button>
     </div>
   </div>
 
-  <!-- القائمة السفلية -->
+  <!-- Bottom Nav -->
   <nav class="bottom-nav">
-    <button class="nav-item active" data-tab onclick="switchTab('calc-tab', this)">
-      <i>🧮</i>
-      <span data-ar="الحاسبة" data-en="Calc">الحاسبة</span>
+    <button class="nav-item active" onclick="switchTab('calc-tab', this)">
+      <i>🧮</i><span data-ar="الحاسبة" data-en="Calc">الحاسبة</span>
     </button>
 
-    <button class="nav-item" data-tab onclick="switchTab('duct-tab', this)">
-      <i>📏</i>
-      <span data-ar="الدكت" data-en="Duct">الدكت</span>
+    <button class="nav-item" onclick="switchTab('contact-tab', this)">
+      <i>📞</i><span data-ar="تواصل معنا" data-en="Contact">تواصل معنا</span>
     </button>
 
     <button class="nav-item" onclick="toggleLanguage()">
-      <i>🌐</i>
-      <span id="lang-text">English</span>
+      <i>🌐</i><span id="lang-text">English</span>
     </button>
   </nav>
 
   <script src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js').catch(console.error);
-    }
-  </script>
 </body>
 </html>
