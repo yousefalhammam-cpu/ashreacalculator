@@ -9,14 +9,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <header class="app-header">Air Calc Pro | HVAC Engineering</header>
+    <header class="app-header">Air Calc Pro | Engineering Suite</header>
 
     <main id="main-content">
         <section id="calc-tab" class="tab-panel active">
             <div class="ios-calc-wrapper">
                 <div class="calc-screen">
                     <div id="unit-label">0 CFM | 0 TR</div>
-                    <div id="display">0</div>
+                    <div id="display" class="active-field" onclick="focusField('display')">0</div>
+                    <div id="field-hint">حجم الغرفة (m³)</div>
                 </div>
                 
                 <div class="horizontal-inputs">
@@ -25,17 +26,17 @@
                         <select id="room-select" onchange="resetForNewRoom()"></select>
                     </div>
                     <div class="input-box small-box">
-                        <label>أشخاص</label>
-                        <input type="number" id="people-count" value="0" min="0">
+                        <label>الأشخاص</label>
+                        <input type="text" id="people-count" value="0" readonly onclick="focusField('people')">
                     </div>
                     <div class="input-box small-box">
-                        <label>أجهزة (W)</label>
-                        <input type="number" id="equip-watts" value="0" min="0">
+                        <label>الأجهزة (W)</label>
+                        <input type="text" id="equip-watts" value="0" readonly onclick="focusField('equip')">
                     </div>
                 </div>
 
                 <div class="ios-grid">
-                    <button class="btn-light-grey" onclick="clearDisplay()">AC</button>
+                    <button class="btn-light-grey" onclick="clearActiveField()">AC</button>
                     <button class="btn-light-grey" onclick="deleteLast()">DEL</button>
                     <button class="btn-orange" onclick="calculateLoad(true)">CALC</button>
                     <button class="btn-orange" onclick="calculateLoad(true)">=</button>
@@ -43,7 +44,7 @@
                     <button class="btn-dark-grey" onclick="press(7)">7</button>
                     <button class="btn-dark-grey" onclick="press(8)">8</button>
                     <button class="btn-dark-grey" onclick="press(9)">9</button>
-                    <button class="btn-orange" onclick="clearDisplay()">C</button>
+                    <button class="btn-orange" onclick="clearActiveField()">C</button>
 
                     <button class="btn-dark-grey" onclick="press(4)">4</button>
                     <button class="btn-dark-grey" onclick="press(5)">5</button>
@@ -76,7 +77,7 @@
 
         <section id="duct-tab" class="tab-panel">
             <div class="ios-card" style="max-width: 400px; margin: 0 auto;">
-                <h2 style="text-align: center;">Duct Design</h2>
+                <h2 style="text-align: center;">حساب مقاس الدكت</h2>
                 <div class="ios-input-group">
                     <label>كمية الهواء (CFM)</label>
                     <input type="number" id="targetCFM" placeholder="0">
@@ -85,7 +86,7 @@
                     <label>العرض الثابت (Inch)</label>
                     <input type="number" id="fixWidth" value="12">
                 </div>
-                <button class="btn-orange" style="width:100%; height: 60px; border-radius: 15px; font-size: 1.2rem;" onclick="runDuctCalc()">Calculate</button>
+                <button class="btn-orange" style="width:100%; height: 60px; border-radius: 15px;" onclick="runDuctCalc()">احسب</button>
                 <div id="duct-result" class="result-highlight">---</div>
             </div>
         </section>
