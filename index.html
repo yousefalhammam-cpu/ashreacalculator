@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-    <title>Air Calc Pro - Full Edition</title>
+    <title>Air Calc Pro - Engineering Suite</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -21,8 +21,7 @@
                     <div id="display">0</div>
                     <div id="unit-label">0 CFM | 0 TR</div>
                 </div>
-                <select id="room-select" class="calc-select" onchange="calculateLoad()">
-                    </select>
+                <select id="room-select" class="calc-select" onchange="calculateLoad()"></select>
                 <div class="calc-grid">
                     <button class="btn-grey" onclick="clearDisplay()">AC</button>
                     <button class="btn-grey" onclick="deleteLast()">DEL</button>
@@ -30,7 +29,7 @@
                     <button class="btn-navy-op" onclick="calculateLoad()">CALC</button>
                     
                     <button onclick="press(7)">7</button><button onclick="press(8)">8</button><button onclick="press(9)">9</button>
-                    <button class="btn-num-op" onclick="press('.')">.</button>
+                    <button onclick="press('.')">.</button>
                     
                     <button onclick="press(4)">4</button><button onclick="press(5)">5</button><button onclick="press(6)">6</button>
                     <button class="btn-orange" onclick="clearDisplay()">C</button>
@@ -43,13 +42,13 @@
 
         <section id="duct-tab" class="tab-panel">
             <div class="tab-card">
-                <h2 id="txt-duct-title">مقاسات الدكت (Duct)</h2>
+                <h2 id="txt-duct-title">Duct Sizing</h2>
                 <div class="input-row">
-                    <label>CFM (مربوط آلياً):</label>
-                    <input type="number" id="targetCFM" placeholder="450">
+                    <label>CFM:</label>
+                    <input type="number" id="targetCFM">
                 </div>
                 <div class="input-row">
-                    <label id="txt-width-label">العرض الثابت (إنش):</label>
+                    <label id="txt-width-label">Width (Inch):</label>
                     <input type="number" id="fixWidth" value="12">
                 </div>
                 <button class="action-btn" onclick="runDuctCalc()">احسب المقاس</button>
@@ -57,23 +56,18 @@
             </div>
         </section>
 
-        <section id="forum-tab" class="tab-panel">
+        <section id="export-tab" class="tab-panel">
             <div class="tab-card">
-                <h2 id="txt-forum-title">ساحة النقاش الهندسي</h2>
-                <div id="forum-messages" class="chat-area"></div>
-                <div class="chat-controls">
-                    <input type="text" id="chatInput" placeholder="اكتب رسالتك...">
-                    <button class="action-btn" onclick="postMsg()">نشر</button>
-                </div>
+                <h2 id="txt-export-title">تصدير التقرير</h2>
+                <button class="export-btn pdf" onclick="exportPDF()">تصدير PDF 📄</button>
+                <button class="export-btn excel" onclick="exportExcel()">تصدير Excel 📊</button>
             </div>
         </section>
 
-        <section id="export-tab" class="tab-panel">
+        <section id="forum-tab" class="tab-panel">
             <div class="tab-card">
-                <h2 id="txt-export-title">تصدير التقرير الفني</h2>
-                <p>تصدير بيانات الغرفة والحمل الحالي:</p>
-                <button class="export-btn pdf" onclick="exportPDF()">تصدير PDF 📄</button>
-                <button class="export-btn excel" onclick="exportExcel()">تصدير Excel 📊</button>
+                <h2 id="txt-forum-title">ساحة النقاش</h2>
+                <div id="forum-messages" class="chat-area">... قريباً ...</div>
             </div>
         </section>
     </main>
