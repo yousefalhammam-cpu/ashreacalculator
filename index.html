@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Air Calc Pro</title>
+    <title>Air Calc Pro - HVAC Suite</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <header class="simple-header">Air Calc Pro</header>
+    <header class="simple-header">Air Calc Pro | Engineering Tools</header>
 
     <main id="main-content">
         <section id="calc-tab" class="tab-panel active">
@@ -22,7 +22,7 @@
                 
                 <div class="horizontal-inputs">
                     <div class="input-box room-box">
-                        <label>المنشأة</label>
+                        <label>نوع المنشأة (ASHRAE)</label>
                         <select id="room-select" onchange="resetForNewRoom()"></select>
                     </div>
                     <div class="input-box small-box">
@@ -69,14 +69,27 @@
         </section>
 
         <section id="duct-tab" class="tab-panel">
-            </section>
+            <div class="ios-card" style="max-width: 400px; margin: 0 auto; padding: 20px;">
+                <h2 style="text-align:center; color: var(--ios-orange);">Duct Sizer</h2>
+                <div class="ios-input-group" style="margin-bottom:15px;">
+                    <label style="display:block; font-size:0.8rem; color:#8e8e93;">CFM</label>
+                    <input type="number" id="targetCFM" style="width:100%; background:#2c2c2e; border:none; color:white; padding:12px; border-radius:10px;">
+                </div>
+                <div class="ios-input-group" style="margin-bottom:20px;">
+                    <label style="display:block; font-size:0.8rem; color:#8e8e93;">Fixed Width (Inch)</label>
+                    <input type="number" id="fixWidth" value="12" style="width:100%; background:#2c2c2e; border:none; color:white; padding:12px; border-radius:10px;">
+                </div>
+                <button class="btn-orange" style="width:100%; height:50px; border-radius:12px; font-weight:bold;" onclick="runDuctCalc()">احسب المقاس</button>
+                <div id="duct-result" style="margin-top:20px; text-align:center; font-size:1.5rem; color:var(--ios-orange);">---</div>
+            </div>
+        </section>
     </main>
 
     <div id="contact-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>حول التطبيق</h2>
-                <p>Air Calc Pro هي أداة هندسية متطورة مصممة لمساعدة مهندسي التكييف في حساب أحمال التبريد بدقة عالية وفق معايير <strong>ASHRAE 170</strong> الدولية، مع الأخذ في الاعتبار التهوية الضرورية والأحمال الداخلية.</p>
+                <p>أداة هندسية احترافية لحساب أحمال التبريد وكميات الهواء وفق معايير <strong>ASHRAE 170</strong> و <strong>ASHRAE 62.1</strong>. يهدف التطبيق لتمكين المهندسين من الحصول على نتائج دقيقة وسريعة في الموقع.</p>
             </div>
             <hr style="border: 0.5px solid #333; margin: 15px 0;">
             <div class="contact-info">
