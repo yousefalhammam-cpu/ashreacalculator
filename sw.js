@@ -1,39 +1,36 @@
 /* Air Calc Pro - Service Worker for Offline Access */
-const cacheName = 'aircalc-pro-v2';
+const cacheName = 'aircalc-pro-v3';
 const assets = [
   './',
   './index.html',
   './app.js',
   './styles.css',
   './data.json',
-  './manifest.webmanifest',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js'
+  './manifest.webmanifest'
 ];
 
-// Install: Cache all UI and library files
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(cacheName).then(cache => {
-      return cache.addAll(assets);
-    })
+    caches.open(cacheName).then((cache) => cache.addAll(assets))
   );
+  self.skipWaiting();
 });
 
-// Activate: Clean up old caches
-self.addEventListener('activate', event => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(keys.filter(key => key !== cacheName).map(key => caches.delete(key)));
-    })
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== cacheName).map((k) => caches.delete(k)))
+    )
   );
+  self.clients.claim();
 });
 
-// Fetch: Serve from cache if offline
-self.addEventListener('fetch', event => {
+self.addEventListener('fetch', (event) => {
+  // Cache first, then network
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+      return fetch(event.request).catch(() => caches.match('./index.html'));
     })
   );
 });
