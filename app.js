@@ -3,31 +3,26 @@ let inputs = { display: "", people: "", equip: "0" };
 let calcHistory = [];
 
 const rooms = [
-    // الصحية
     { id: 'or_gen', ar: '🏥 غرفة عمليات عامة', ach: 20, factor: 300 },
-    { id: 'or_ortho', ar: '🏥 عمليات عظام/نقل أعضاء', ach: 25, factor: 280 },
     { id: 'icu', ar: '🏥 العناية المركزة ICU', ach: 6, factor: 400 },
-    { id: 'pe_iso', ar: '🏥 عزل ضغط موجب PE', ach: 12, factor: 380 },
-    { id: 'aii_iso', ar: '🏥 عزل ضغط سالب AII', ach: 12, factor: 380 },
-    { id: 'patient', ar: '🏥 غرف تنويم المرضى', ach: 4, factor: 500 },
-    { id: 'lab', ar: '🏥 مختبرات عامة', ach: 8, factor: 400 },
-    // التجارية
     { id: 'office', ar: '🏢 مكاتب مفتوحة', ach: 8, factor: 450 },
-    { id: 'mall', ar: '🏢 مراكز تجارية', ach: 8, factor: 400 },
-    { id: 'gym', ar: '🏢 نادي رياضي', ach: 15, factor: 350 },
-    { id: 'data_ctr', ar: '🏢 غرف سيرفرات', ach: 30, factor: 150 },
-    // السكنية
-    { id: 'living', ar: '🏠 مجلس / صالة معيشة', ach: 4, factor: 500 },
-    { id: 'bedroom', ar: '🏠 غرف نوم', ach: 2, factor: 550 }
+    { id: 'living', ar: '🏠 مجلس / صالة معيشة', ach: 4, factor: 500 }
 ];
 
+// قائمة موسعة للأجهزة (تراكمية)
 const equipmentList = [
-    { id: 'pc', name: 'كمبيوتر مكتبي', watts: 250 },
-    { id: 'laptop', name: 'لاب توب', watts: 65 },
-    { id: 'printer', name: 'طابعة ليزر', watts: 400 },
-    { id: 'server', name: 'خادم (Server)', watts: 1000 },
-    { id: 'fridge', name: 'ثلاجة صغيرة', watts: 150 },
-    { id: 'med_mon', name: 'جهاز طبي', watts: 200 }
+    { id: 'pc', name: 'كمبيوتر مكتبي', watts: 250, count: 0 },
+    { id: 'laptop', name: 'لاب توب', watts: 65, count: 0 },
+    { id: 'screen', name: 'شاشة إضافية', watts: 50, count: 0 },
+    { id: 'printer_l', name: 'طابعة ليزر كبيرة', watts: 500, count: 0 },
+    { id: 'server', name: 'خادم (Server)', watts: 1000, count: 0 },
+    { id: 'fridge', name: 'ثلاجة مكتب', watts: 150, count: 0 },
+    { id: 'coffee', name: 'ماكينة قهوة', watts: 800, count: 0 },
+    { id: 'projector', name: 'جهاز عرض', watts: 300, count: 0 },
+    { id: 'med_mon', name: 'جهاز مراقبة طبي', watts: 150, count: 0 },
+    { id: 'surgical_lt', name: 'كشاف جراحي', watts: 200, count: 0 },
+    { id: 'tv_large', name: 'شاشة تلفزيون كبيرة', watts: 200, count: 0 },
+    { id: 'microwave', name: 'مايكرويف', watts: 1200, count: 0 }
 ];
 
 window.onload = () => {
@@ -38,20 +33,30 @@ window.onload = () => {
 
 function renderEquipChecklist() {
     const container = document.getElementById('equip-checklist');
-    container.innerHTML = equipmentList.map(item => `
-        <div class="check-item">
-            <label>${item.name} <span class="watt-tag">${item.watts}W</span></label>
-            <input type="checkbox" value="${item.watts}" onchange="updateTotalWatts()">
+    container.innerHTML = equipmentList.map((item, index) => `
+        <div class="equip-item-row">
+            <div class="equip-info">
+                <span class="equip-name">${item.name}</span>
+                <span class="equip-watt-label">${item.watts}W لكل وحدة</span>
+            </div>
+            <div class="counter-ctrl">
+                <button class="counter-btn" onclick="changeCount(${index}, -1)">-</button>
+                <span class="counter-val" id="count-${index}">${item.count}</span>
+                <button class="counter-btn" onclick="changeCount(${index}, 1)">+</button>
+            </div>
         </div>
     `).join('');
 }
 
-function updateTotalWatts() {
-    const checkboxes = document.querySelectorAll('#equip-checklist input[type="checkbox"]:checked');
-    let total = Array.from(checkboxes).reduce((sum, cb) => sum + parseInt(cb.value), 0);
-    inputs.equip = total.toString();
+function changeCount(index, delta) {
+    equipmentList[index].count = Math.max(0, equipmentList[index].count + delta);
+    document.getElementById(`count-${index}`).innerText = equipmentList[index].count;
+    
+    // حساب المجموع الكلي
+    let totalWatts = equipmentList.reduce((sum, item) => sum + (item.watts * item.count), 0);
+    inputs.equip = totalWatts.toString();
     document.getElementById('equip-watts').value = inputs.equip;
-    calculateLoad(false);
+    calculateLoad(false); // تحديث النتائج فوراً
 }
 
 function focusField(fieldId) {
@@ -100,14 +105,7 @@ function updateHistoryUI() {
 
 function updateUI() {
     const select = document.getElementById('room-select');
-    let html = '';
-    const cats = [{ l: 'المنشآت الصحية', p: '🏥' }, { l: 'التجارية', p: '🏢' }, { l: 'السكنية', p: '🏠' }];
-    cats.forEach(c => {
-        html += `<optgroup label="${c.l}">`;
-        rooms.filter(r => r.ar.includes(c.p)).forEach(r => html += `<option value="${r.id}">${r.ar}</option>`);
-        html += `</optgroup>`;
-    });
-    select.innerHTML = html;
+    select.innerHTML = rooms.map(r => `<option value="${r.id}">${r.ar}</option>`).join('');
 }
 
 function openEquipModal() { document.getElementById('equip-modal').style.display = 'block'; }
