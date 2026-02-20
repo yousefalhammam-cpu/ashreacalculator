@@ -6,23 +6,25 @@ const roomData = {
     medical: [
         { id: 'or', ar: 'غرفة عمليات - OR', en: 'Operating Room', ach: 20, factor: 350 },
         { id: 'icu', ar: 'عناية مركزة - ICU', en: 'Intensive Care', ach: 6, factor: 400 },
-        { id: 'iso', ar: 'غرفة عزل - Isolation', en: 'Isolation Room', ach: 12, factor: 380 },
-        { id: 'er', ar: 'طوارئ - Emergency', en: 'Emergency Room', ach: 10, factor: 400 },
+        { id: 'iso', ar: 'غرفة عزل - Isolation', en: 'Isolation', ach: 12, factor: 380 },
+        { id: 'er', ar: 'طوارئ - Emergency', en: 'Emergency', ach: 10, factor: 400 },
         { id: 'lab', ar: 'مختبرات - Labs', en: 'Laboratories', ach: 12, factor: 350 },
         { id: 'pharm', ar: 'صيدلية - Pharmacy', en: 'Pharmacy', ach: 4, factor: 450 },
+        { id: 'xray', ar: 'أشعة - X-Ray', en: 'Radiology', ach: 6, factor: 400 },
         { id: 'dent', ar: 'عيادة أسنان', en: 'Dental Clinic', ach: 8, factor: 380 },
-        { id: 'mri', ar: 'رنين مغناطيسي - MRI', en: 'MRI Room', ach: 10, factor: 350 },
-        { id: 'dial', ar: 'غسيل كلى', en: 'Dialysis Unit', ach: 10, factor: 400 }
+        { id: 'mri', ar: 'رنين مغناطيسي', en: 'MRI Room', ach: 10, factor: 350 },
+        { id: 'dial', ar: 'غسيل كلى', en: 'Dialysis', ach: 10, factor: 400 }
     ],
     commercial: [
         { id: 'off', ar: 'مكاتب - Offices', en: 'Offices', ach: 6, factor: 450 },
-        { id: 'mall', ar: 'مول تجاري - Mall', en: 'Shopping Mall', ach: 8, factor: 400 },
+        { id: 'mall', ar: 'مول تجاري', en: 'Mall', ach: 8, factor: 400 },
         { id: 'rest', ar: 'مطعم - Dining', en: 'Restaurant', ach: 15, factor: 300 },
-        { id: 'gym', ar: 'نادي رياضي - Gym', en: 'Gymnasium', ach: 10, factor: 350 },
+        { id: 'gym', ar: 'نادي رياضي', en: 'Gym', ach: 10, factor: 350 },
         { id: 'hotel', ar: 'غرفة فندق', en: 'Hotel Room', ach: 5, factor: 450 },
-        { id: 'cinema', ar: 'سينما / مسرح', en: 'Cinema/Theater', ach: 10, factor: 320 },
+        { id: 'cinema', ar: 'سينما / مسرح', en: 'Cinema', ach: 10, factor: 320 },
         { id: 'pray', ar: 'مسجد / مصلى', en: 'Prayer Room', ach: 8, factor: 400 },
-        { id: 'salon', ar: 'صالون حلاقة', en: 'Beauty Salon', ach: 10, factor: 350 }
+        { id: 'salon', ar: 'صالون حلاقة', en: 'Salon', ach: 10, factor: 350 },
+        { id: 'kitchen_c', ar: 'مطبخ تجاري', en: 'Com. Kitchen', ach: 30, factor: 250 }
     ],
     residential: [
         { id: 'bed', ar: 'غرفة نوم', en: 'Bedroom', ach: 4, factor: 500 },
@@ -33,7 +35,8 @@ const roomData = {
     ],
     industrial: [
         { id: 'server', ar: 'غرفة سيرفرات', en: 'Data Center', ach: 15, factor: 250 },
-        { id: 'ware', ar: 'مستودع مخازن', en: 'Warehouse', ach: 4, factor: 550 }
+        { id: 'ware', ar: 'مستودع مخازن', en: 'Warehouse', ach: 4, factor: 550 },
+        { id: 'fact', ar: 'مصنع خفيف', en: 'Light Factory', ach: 8, factor: 400 }
     ]
 };
 
@@ -44,9 +47,9 @@ const translations = {
 
 window.onload = () => updateUI();
 
-function press(n) { if (currentInput.length < 12) { currentInput += n; document.getElementById('display').innerText = currentInput; } }
+function press(n) { currentInput += n; document.getElementById('display').innerText = currentInput; calculateLoad(); }
 function clearDisplay() { currentInput = ""; document.getElementById('display').innerText = "0"; document.getElementById('unit-label').innerText = "0 CFM | 0 TR"; }
-function deleteLast() { currentInput = currentInput.slice(0, -1); document.getElementById('display').innerText = currentInput || "0"; }
+function deleteLast() { currentInput = currentInput.slice(0, -1); document.getElementById('display').innerText = currentInput || "0"; calculateLoad(); }
 
 function calculateLoad() {
     const vol = parseFloat(currentInput);
@@ -59,9 +62,9 @@ function calculateLoad() {
     const tr = cfm / spec.factor;
 
     lastResult = { tr: tr.toFixed(2), cfm: Math.round(cfm), room: currentLang==='ar'?spec.ar:spec.en, vol: vol };
-    document.getElementById('display').innerText = tr.toFixed(2);
+    document.getElementById('display').innerText = currentInput;
     document.getElementById('unit-label').innerText = `${Math.round(cfm)} CFM | ${tr.toFixed(2)} TR`;
-    document.getElementById('targetCFM').value = Math.round(cfm);
+    if(document.getElementById('targetCFM')) document.getElementById('targetCFM').value = Math.round(cfm);
 }
 
 function switchTab(tabId, btn) {
@@ -90,6 +93,7 @@ function updateUI() {
         <optgroup label="${t.cat_res}">${roomData.residential.map(r=>`<option value="${r.id}">${currentLang==='ar'?r.ar:r.en}</option>`).join('')}</optgroup>
         <optgroup label="${t.cat_ind}">${roomData.industrial.map(r=>`<option value="${r.id}">${currentLang==='ar'?r.ar:r.en}</option>`).join('')}</optgroup>
     `;
+    calculateLoad();
 }
 
 function runDuctCalc() {
@@ -98,22 +102,4 @@ function runDuctCalc() {
     if(!q || !w) return;
     const h = Math.ceil(((q / 1000) * 144) / w);
     document.getElementById('duct-result').innerText = `${w}" x ${h}" Inch`;
-}
-
-function exportPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text(`HVAC Technical Report`, 10, 10);
-    doc.text(`Room Type: ${lastResult.room}`, 10, 20);
-    doc.text(`Volume: ${lastResult.vol} m3`, 10, 30);
-    doc.text(`Cooling Load: ${lastResult.tr} TR`, 10, 40);
-    doc.text(`Airflow Required: ${lastResult.cfm} CFM`, 10, 50);
-    doc.save("Report.pdf");
-}
-
-function exportExcel() {
-    const ws = XLSX.utils.json_to_sheet([lastResult]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Calculation");
-    XLSX.writeFile(wb, "Report.xlsx");
 }
