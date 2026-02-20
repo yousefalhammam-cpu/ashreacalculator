@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Air Calc Pro | ASHRAE</title>
+    <title>Air Calc Pro | Professional</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,7 +20,7 @@
                 
                 <div class="horizontal-inputs">
                     <div class="input-box room-box">
-                        <label data-ar="الغرفة" data-en="Room Type">الغرفة</label>
+                        <label data-ar="الغرفة" data-en="Room">الغرفة</label>
                         <select id="room-select" onchange="resetAllFields()"></select>
                     </div>
                     <div class="input-box small-box">
@@ -58,7 +58,7 @@
 
                 <div class="history-section">
                     <div class="history-header">
-                        <span data-ar="السجل التراكمي" data-en="Cumulative History">السجل التراكمي</span>
+                        <span data-ar="السجل المحفوظ" data-en="Saved History">السجل المحفوظ</span>
                         <button class="clear-history-btn" onclick="clearHistory()">Clear</button>
                     </div>
                     <div class="history-scroll-container">
@@ -71,21 +71,17 @@
         </section>
 
         <section id="duct-tab" class="tab-panel">
-            <div class="ios-card duct-page">
+            <div class="ios-card">
                 <h2 data-ar="حساب مقاسات الدكت" data-en="Duct Sizer">حساب مقاسات الدكت</h2>
                 <div class="ios-input-group">
-                    <label>CFM (Linked from Calc)</label>
-                    <input type="number" id="targetCFM" placeholder="Enter CFM">
+                    <label>CFM</label>
+                    <input type="number" id="targetCFM" placeholder="Auto-filled from calc">
                 </div>
                 <div class="ios-input-group">
                     <label data-ar="العرض الثابت (انش)" data-en="Fixed Width (in)">العرض الثابت (انش)</label>
                     <input type="number" id="fixWidth" value="12">
                 </div>
-                <div class="ios-input-group">
-                    <label data-ar="معدل الاحتكاك" data-en="Friction Rate">معدل الاحتكاك</label>
-                    <input type="text" value="0.1" disabled>
-                </div>
-                <button class="btn-orange main-btn" onclick="runDuctCalc()" style="width:100%; height:55px; border-radius:12px; font-size:1.1rem;">احسب المقاس</button>
+                <button class="btn-orange main-btn" onclick="runDuctCalc()" style="width:100%; height:60px; border-radius:15px; font-size:1.2rem; margin-top:20px;">احسب المقاس</button>
                 <div id="duct-result" class="result-highlight">---</div>
             </div>
         </section>
@@ -93,9 +89,9 @@
 
     <div id="equip-modal" class="modal">
         <div class="modal-content">
-            <h3 data-ar="إضافة الأجهزة" data-en="Add Equipment">إضافة الأجهزة</h3>
+            <h3 data-ar="إضافة الأجهزة (صحي/تجاري/سكني)" data-en="Add Equipment">إضافة الأجهزة</h3>
             <div id="equip-checklist" class="checklist-container"></div>
-            <button class="close-modal-btn" onclick="closeEquipModal()">Done / تم</button>
+            <button class="close-modal-btn" onclick="closeEquipModal()">تم / Done</button>
         </div>
     </div>
 
