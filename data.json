@@ -1,51 +1,50 @@
 {
-  "version": 3,
   "categories": [
     {
       "name_ar": "المستشفيات (ASHRAE 170)",
       "name_en": "Hospitals (ASHRAE 170)",
       "items": [
-        { "id": "h1", "ar": "غرفة عمليات (OR)", "en": "Operating Room (OR)", "ach": 20, "med": true, "factor": 280 },
-        { "id": "h2", "ar": "عزل ضغط موجب (PE)", "en": "Positive Pressure (PE)", "ach": 12, "med": true, "factor": 320 },
-        { "id": "h3", "ar": "عزل ضغط سالب (AII)", "en": "Negative Pressure (AII)", "ach": 12, "med": true, "factor": 320 },
-        { "id": "h4", "ar": "العناية المركزة (ICU)", "en": "Critical Care (ICU)", "ach": 6, "med": true, "factor": 340 },
-        { "id": "h5", "ar": "غرفة الطوارئ (ترياج)", "en": "Emergency (Triage)", "ach": 12, "med": true, "factor": 340 },
-        { "id": "h6", "ar": "مختبر عام", "en": "General Laboratory", "ach": 6, "med": true, "factor": 380 },
-        { "id": "h7", "ar": "غرفة تنويم مريض", "en": "Patient Room", "ach": 6, "med": true, "factor": 320 },
-        { "id": "h8", "ar": "الأشعة التشخيصية", "en": "Diagnostic X-Ray", "ach": 6, "med": true, "factor": 450 },
-        { "id": "h9", "ar": "غرفة المناظير", "en": "Endoscopy Room", "ach": 15, "med": true, "factor": 320 },
-        { "id": "h10", "ar": "التعقيم المركزي (CSSD)", "en": "Sterile Storage (CSSD)", "ach": 10, "med": true, "factor": 300 },
-        { "id": "h11", "ar": "الصيدلية", "en": "Pharmacy", "ach": 4, "med": true, "factor": 320 },
-        { "id": "h12", "ar": "غرفة الولادة (LDR)", "en": "Delivery Room (LDR)", "ach": 15, "med": true, "factor": 320 },
-        { "id": "h13", "ar": "العلاج الطبيعي", "en": "Physical Therapy", "ach": 6, "med": true, "factor": 350 },
-        { "id": "h14", "ar": "غرفة فحص عامة", "en": "Examination Room", "ach": 6, "med": true, "factor": 340 }
+        { "id": "h1", "ar": "غرفة عمليات (OR)", "en": "Operating Room (OR)", "ach": 20, "med": true, "pressure": "positive" },
+        { "id": "h2", "ar": "عزل ضغط موجب (PE)", "en": "Positive Pressure (PE)", "ach": 12, "med": true, "pressure": "positive" },
+        { "id": "h3", "ar": "عزل ضغط سالب (AII)", "en": "Negative Pressure (AII)", "ach": 12, "med": true, "pressure": "negative" },
+        { "id": "h4", "ar": "العناية المركزة (ICU)", "en": "Critical Care (ICU)", "ach": 6, "med": true, "pressure": "neutral" },
+        { "id": "h5", "ar": "غرفة الطوارئ (ترياج)", "en": "Emergency (Triage)", "ach": 12, "med": true, "pressure": "neutral" },
+        { "id": "h6", "ar": "مختبر عام", "en": "General Laboratory", "ach": 6, "med": true, "pressure": "neutral" },
+        { "id": "h7", "ar": "غرفة تنويم مريض", "en": "Patient Room", "ach": 6, "med": true, "pressure": "neutral" },
+        { "id": "h8", "ar": "الأشعة التشخيصية", "en": "Diagnostic X-Ray", "ach": 6, "med": true, "pressure": "neutral" },
+        { "id": "h9", "ar": "غرفة المناظير", "en": "Endoscopy Room", "ach": 15, "med": true, "pressure": "neutral" },
+        { "id": "h10", "ar": "التعقيم المركزي (CSSD)", "en": "Sterile Storage (CSSD)", "ach": 10, "med": true, "pressure": "positive" },
+        { "id": "h11", "ar": "الصيدلية", "en": "Pharmacy", "ach": 4, "med": true, "pressure": "neutral" },
+        { "id": "h12", "ar": "غرفة الولادة (LDR)", "en": "Delivery Room (LDR)", "ach": 15, "med": true, "pressure": "positive" },
+        { "id": "h13", "ar": "العلاج الطبيعي", "en": "Physical Therapy", "ach": 6, "med": true, "pressure": "neutral" },
+        { "id": "h14", "ar": "غرفة فحص عامة", "en": "Examination Room", "ach": 6, "med": true, "pressure": "neutral" }
       ]
     },
     {
-      "name_ar": "التجاري (طريقة شائعة بالسعودية)",
-      "name_en": "Commercial (Saudi Common Practice)",
+      "name_ar": "التجاري (ممارسة محلية)",
+      "name_en": "Commercial (Saudi Practice)",
       "items": [
-        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 4, "med": false, "factor": 420 },
-        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Conference Room", "ach": 10, "med": false, "factor": 380 },
-        { "id": "c3", "ar": "صالة مطعم", "en": "Dining Area", "ach": 10, "med": false, "factor": 340 },
-        { "id": "c4", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 30, "med": false, "factor": 520 },
-        { "id": "c5", "ar": "نادي رياضي", "en": "Gym / Fitness Area", "ach": 8, "med": false, "factor": 300 },
-        { "id": "c6", "ar": "قاعة سينما/مسرح", "en": "Auditorium", "ach": 15, "med": false, "factor": 340 },
-        { "id": "c7", "ar": "مكتبة عامة", "en": "Library", "ach": 4, "med": false, "factor": 380 },
-        { "id": "c8", "ar": "ردهة استقبال", "en": "Lobby / Reception", "ach": 4, "med": false, "factor": 360 },
-        { "id": "c9", "ar": "محلات تجارية", "en": "Retail Store", "ach": 6, "med": false, "factor": 400 }
+        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 4, "med": false, "factor": 450 },
+        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Conference Room", "ach": 10, "med": false, "factor": 500 },
+        { "id": "c3", "ar": "صالة مطعم", "en": "Dining Area", "ach": 10, "med": false, "factor": 550 },
+        { "id": "c4", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 30, "med": false, "factor": 900 },
+        { "id": "c5", "ar": "نادي رياضي", "en": "Gym / Fitness Area", "ach": 8, "med": false, "factor": 650 },
+        { "id": "c6", "ar": "قاعة سينما/مسرح", "en": "Auditorium", "ach": 15, "med": false, "factor": 500 },
+        { "id": "c7", "ar": "مكتبة عامة", "en": "Library", "ach": 4, "med": false, "factor": 400 },
+        { "id": "c8", "ar": "ردهة استقبال", "en": "Lobby / Reception", "ach": 4, "med": false, "factor": 420 },
+        { "id": "c9", "ar": "محلات تجارية", "en": "Retail Store", "ach": 6, "med": false, "factor": 500 }
       ]
     },
     {
-      "name_ar": "المباني السكنية (طريقة شائعة بالسعودية)",
-      "name_en": "Residential Buildings (Saudi Common Practice)",
+      "name_ar": "المباني السكنية (ممارسة محلية)",
+      "name_en": "Residential Buildings (Saudi Practice)",
       "items": [
-        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "med": false, "factor": 350 },
+        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "med": false, "factor": 380 },
         { "id": "r2", "ar": "غرفة نوم", "en": "Bedroom", "ach": 2, "med": false, "factor": 320 },
-        { "id": "r3", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "ach": 6, "med": false, "factor": 450 },
-        { "id": "r4", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "med": false, "factor": 250 },
+        { "id": "r3", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "ach": 6, "med": false, "factor": 550 },
+        { "id": "r4", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "med": false, "factor": 450 },
         { "id": "r5", "ar": "ممر داخلي", "en": "Corridor", "ach": 2, "med": false, "factor": 220 },
-        { "id": "r6", "ar": "مجلس ضيوف", "en": "Majlis", "ach": 5, "med": false, "factor": 400 }
+        { "id": "r6", "ar": "مجلس ضيوف", "en": "Majlis", "ach": 5, "med": false, "factor": 450 }
       ]
     }
   ]
