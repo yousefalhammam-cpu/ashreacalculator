@@ -13,7 +13,7 @@
 
 body { 
     margin: 0; background: var(--bg-dark); color: var(--text-main);
-    font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; 
+    font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; 
 }
 
 .app-header { background: var(--navy); padding: 10px; text-align: center; border-bottom: 2px solid var(--sky); color: var(--sky); font-weight: bold; }
@@ -27,18 +27,22 @@ main { flex: 1; overflow-y: auto; padding-bottom: 85px; }
 #display { font-size: 3rem; font-weight: bold; font-family: monospace; }
 #unit-label { font-size: 0.9rem; color: var(--text-dim); }
 
+.calc-select { padding: 15px; background: var(--card-dark); color: white; border-radius: 12px; border: 1px solid #334155; font-size: 1.1rem; width: 100%; margin-bottom: 10px; }
+
 .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
 .calc-grid button { padding: 14px 0; border: none; border-radius: 10px; font-size: 1.4rem; background: var(--card-dark); color: white; box-shadow: 0 3px 0 #000; font-weight: bold; }
 .calc-grid button:active { transform: translateY(2px); box-shadow: none; }
 
 .alert-info { background: rgba(56, 189, 248, 0.1); border: 1px solid var(--sky); color: var(--sky); padding: 8px; border-radius: 8px; font-size: 0.75rem; text-align: center; margin-bottom: 8px; }
 
-.history-container { background: var(--card-dark); border-radius: 10px; border: 1px solid #334155; max-height: 180px; overflow-y: auto; margin-bottom: 10px; }
+.history-container { background: var(--card-dark); border-radius: 10px; border: 1px solid #334155; max-height: 200px; overflow-y: auto; margin-bottom: 10px; }
 .history-table { width: 100%; border-collapse: collapse; }
 .history-table th { background: var(--navy); color: var(--sky); padding: 10px; font-size: 0.8rem; position: sticky; top: 0; }
 .history-table td { padding: 10px; text-align: center; border-bottom: 1px solid #334155; font-size: 0.85rem; }
 
-.export-actions { display: flex; gap: 8px; }
+.btn-delete-row { background: #e74c3c; color: white; border: none; border-radius: 5px; padding: 5px 8px; cursor: pointer; }
+
+.export-actions { display: flex; gap: 8px; margin-bottom: 10px; }
 .exp-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; }
 .pdf { background: #e74c3c; } .excel { background: #27ae60; } .clear { background: #475569; }
 
