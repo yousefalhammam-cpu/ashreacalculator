@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Air Calc Pro - iOS Design</title>
+    <title>Air Calc Pro</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    <header class="app-header">Air Calc Pro | Engineering Suite</header>
+    <header class="simple-header">Air Calc Pro</header>
 
     <main id="main-content">
         <section id="calc-tab" class="tab-panel active">
@@ -22,15 +22,15 @@
                 
                 <div class="horizontal-inputs">
                     <div class="input-box room-box">
-                        <label>نوع الغرفة</label>
+                        <label>المنشأة</label>
                         <select id="room-select" onchange="resetForNewRoom()"></select>
                     </div>
                     <div class="input-box small-box">
-                        <label>الأشخاص</label>
+                        <label>أشخاص</label>
                         <input type="text" id="people-count" value="0" readonly onclick="focusField('people')">
                     </div>
                     <div class="input-box small-box">
-                        <label>الأجهزة (W)</label>
+                        <label>أجهزة (W)</label>
                         <input type="text" id="equip-watts" value="0" readonly onclick="focusField('equip')">
                     </div>
                 </div>
@@ -45,12 +45,10 @@
                     <button class="btn-dark-grey" onclick="press(8)">8</button>
                     <button class="btn-dark-grey" onclick="press(9)">9</button>
                     <button class="btn-orange" onclick="clearActiveField()">C</button>
-
                     <button class="btn-dark-grey" onclick="press(4)">4</button>
                     <button class="btn-dark-grey" onclick="press(5)">5</button>
                     <button class="btn-dark-grey" onclick="press(6)">6</button>
                     <button class="btn-dark-grey" onclick="press('.')">.</button>
-
                     <button class="btn-dark-grey" onclick="press(1)">1</button>
                     <button class="btn-dark-grey" onclick="press(2)">2</button>
                     <button class="btn-dark-grey" onclick="press(3)">3</button>
@@ -59,43 +57,42 @@
 
                 <div class="history-section">
                     <div class="history-container">
-                        <table class="history-table">
-                            <thead>
-                                <tr><th>الغرفة</th><th>TR</th><th>CFM</th><th></th></tr>
-                            </thead>
-                            <tbody id="history-body"></tbody>
-                        </table>
+                        <table class="history-table"><tbody id="history-body"></tbody></table>
                     </div>
                     <div class="export-actions">
-                        <button class="ios-exp pdf" onclick="exportPDF()">PDF</button>
-                        <button class="ios-exp excel" onclick="exportExcel()">Excel</button>
-                        <button class="ios-exp clear" onclick="clearHistory()">مسح</button>
+                        <button class="ios-exp" onclick="exportPDF()">PDF</button>
+                        <button class="ios-exp" onclick="exportExcel()">Excel</button>
+                        <button class="ios-exp clear-btn" onclick="clearHistory()">مسح</button>
                     </div>
                 </div>
             </div>
         </section>
 
         <section id="duct-tab" class="tab-panel">
-            <div class="ios-card" style="max-width: 400px; margin: 0 auto;">
-                <h2 style="text-align: center;">حساب مقاس الدكت</h2>
-                <div class="ios-input-group">
-                    <label>كمية الهواء (CFM)</label>
-                    <input type="number" id="targetCFM" placeholder="0">
-                </div>
-                <div class="ios-input-group">
-                    <label>العرض الثابت (Inch)</label>
-                    <input type="number" id="fixWidth" value="12">
-                </div>
-                <button class="btn-orange" style="width:100%; height: 60px; border-radius: 15px;" onclick="runDuctCalc()">احسب</button>
-                <div id="duct-result" class="result-highlight">---</div>
-            </div>
-        </section>
+            </section>
     </main>
+
+    <div id="contact-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>حول التطبيق</h2>
+                <p>Air Calc Pro هي أداة هندسية متطورة مصممة لمساعدة مهندسي التكييف في حساب أحمال التبريد بدقة عالية وفق معايير <strong>ASHRAE 170</strong> الدولية، مع الأخذ في الاعتبار التهوية الضرورية والأحمال الداخلية.</p>
+            </div>
+            <hr style="border: 0.5px solid #333; margin: 15px 0;">
+            <div class="contact-info">
+                <h3>تواصل مع المطور</h3>
+                <p>📞 0560282701</p>
+                <p>📧 yousef.alhammam@live.com</p>
+            </div>
+            <button class="close-modal-btn" onclick="closeContact()">إغلاق</button>
+        </div>
+    </div>
 
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchTab('calc-tab', this)"><i>🧮</i><span>الحاسبة</span></button>
         <button class="nav-item" onclick="switchTab('duct-tab', this)"><i>📏</i><span>الدكت</span></button>
-        <button class="nav-item" onclick="toggleLanguage()"><i>🌐</i><span id="txt-lang-btn">English</span></button>
+        <button class="nav-item" onclick="openContact()"><i>👤</i><span>تواصل</span></button>
+        <button class="nav-item" onclick="toggleLanguage()"><i>🌐</i><span>English</span></button>
     </nav>
 
     <script src="app.js"></script>
