@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Air Calc Pro</title>
+    <title>Air Calc Pro | Professional</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header class="simple-header">Air Calc Pro | HVAC Suite</header>
+    <header class="simple-header">Air Calc Pro | Professional Suite</header>
 
     <main id="main-content">
         <section id="calc-tab" class="tab-panel active">
             <div class="ios-calc-wrapper">
                 <div class="calc-screen">
-                    <div id="unit-label">0 CFM | 0 TR</div>
+                    <div id="unit-label" class="result-label">
+                        <span id="tr-result">0 TR</span>
+                        <span class="divider">|</span>
+                        <span id="cfm-result">0 CFM</span>
+                    </div>
                     <div id="display" class="active-field" onclick="focusField('display')">0</div>
                     <div id="field-hint" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
                 </div>
@@ -58,12 +62,10 @@
                 <div class="history-section">
                     <div class="history-header">
                         <span data-ar="نتائج الغرف" data-en="Room Results">نتائج الغرف</span>
-                        <button class="clear-history-btn" onclick="clearHistory()">Clear</button>
+                        <button class="clear-history-btn" onclick="clearHistory()">Clear All</button>
                     </div>
                     <div class="history-scroll-container">
-                        <table class="history-table">
-                            <tbody id="history-body"></tbody>
-                        </table>
+                        <div id="history-list" class="swipe-list"></div>
                     </div>
                 </div>
             </div>
@@ -74,7 +76,7 @@
                 <h2 data-ar="حساب مقاسات الدكت" data-en="Duct Sizer">حساب مقاسات الدكت</h2>
                 <div class="ios-input-group">
                     <label>CFM</label>
-                    <input type="number" id="targetCFM" placeholder="Auto-filled from calc">
+                    <input type="number" id="targetCFM" placeholder="Auto-filled">
                 </div>
                 <div class="ios-input-group">
                     <label data-ar="العرض الثابت (انش)" data-en="Fixed Width (in)">العرض الثابت (انش)</label>
@@ -88,7 +90,7 @@
 
     <div id="equip-modal" class="modal">
         <div class="modal-content">
-            <h3 data-ar="إضافة الأجهزة" data-en="Add Equipment">إضافة الأجهزة</h3>
+            <h3 data-ar="قائمة الأجهزة الشاملة" data-en="Equipment List">قائمة الأجهزة الشاملة</h3>
             <div id="equip-checklist" class="checklist-container"></div>
             <button class="close-modal-btn" onclick="closeEquipModal()">تم / Done</button>
         </div>
