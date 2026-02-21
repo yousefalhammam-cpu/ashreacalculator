@@ -2,294 +2,431 @@ let currentLang = 'ar';
 let activeField = 'display';
 let inputs = { display: "0", people: "0", equip: "0" };
 let calcHistory = [];
+let roomCatalog = null;
+let currentRoomMeta = null;
+let currentSector = 'common';
 
-// قاعدة الغرف (صحي = ASHRAE 170 / تجاري + سكني = سعودي شائع)
-const roomCategories = [
-  {
-    key: 'hospital',
-    name_ar: 'المستشفيات (ASHRAE 170)',
-    name_en: 'Hospitals (ASHRAE 170)',
-    calcMode: 'ashrae170',
-    items: [
-      { id: "h1", ar: "غرفة عمليات (OR)", en: "Operating Room (OR)", ach: 20, factor: 280, minCfmPerPerson: 20 },
-      { id: "h2", ar: "عزل ضغط موجب (PE)", en: "Positive Pressure (PE)", ach: 12, factor: 320, minCfmPerPerson: 15 },
-      { id: "h3", ar: "عزل ضغط سالب (AII)", en: "Negative Pressure (AII)", ach: 12, factor: 320, minCfmPerPerson: 15 },
-      { id: "h4", ar: "العناية المركزة (ICU)", en: "Critical Care (ICU)", ach: 6, factor: 350, minCfmPerPerson: 15 },
-      { id: "h5", ar: "غرفة الطوارئ (ترياج)", en: "Emergency (Triage)", ach: 12, factor: 330, minCfmPerPerson: 15 },
-      { id: "h6", ar: "مختبر عام", en: "General Laboratory", ach: 6, factor: 380, minCfmPerPerson: 10 },
-      { id: "h7", ar: "غرفة تنويم مريض", en: "Patient Room", ach: 6, factor: 340, minCfmPerPerson: 15 },
-      { id: "h8", ar: "الأشعة التشخيصية", en: "Diagnostic X-Ray", ach: 6, factor: 420, minCfmPerPerson: 10 },
-      { id: "h9", ar: "غرفة المناظير", en: "Endoscopy Room", ach: 15, factor: 320, minCfmPerPerson: 15 },
-      { id: "h10", ar: "التعقيم المركزي (CSSD)", en: "Sterile Storage (CSSD)", ach: 10, factor: 300, minCfmPerPerson: 10 },
-      { id: "h11", ar: "الصيدلية", en: "Pharmacy", ach: 4, factor: 360, minCfmPerPerson: 10 },
-      { id: "h12", ar: "غرفة الولادة (LDR)", en: "Delivery Room (LDR)", ach: 15, factor: 300, minCfmPerPerson: 15 },
-      { id: "h13", ar: "العلاج الطبيعي", en: "Physical Therapy", ach: 6, factor: 340, minCfmPerPerson: 15 },
-      { id: "h14", ar: "غرفة فحص عامة", en: "Examination Room", ach: 6, factor: 360, minCfmPerPerson: 10 }
-    ]
-  },
-  {
-    key: 'commercial',
-    name_ar: 'التجاري (سعودي)',
-    name_en: 'Commercial (Saudi Practice)',
-    calcMode: 'saudi_rot',
-    items: [
-      { id: "c1", ar: "مكاتب مفتوحة", en: "Open Offices", ach: 4, factor: 420, minCfmPerPerson: 10 },
-      { id: "c2", ar: "غرفة اجتماعات", en: "Conference Room", ach: 10, factor: 350, minCfmPerPerson: 15 },
-      { id: "c3", ar: "صالة مطعم", en: "Dining Area", ach: 10, factor: 330, minCfmPerPerson: 15 },
-      { id: "c4", ar: "مطبخ تجاري", en: "Commercial Kitchen", ach: 30, factor: 500, minCfmPerPerson: 20 },
-      { id: "c5", ar: "نادي رياضي", en: "Gym / Fitness Area", ach: 8, factor: 300, minCfmPerPerson: 20 },
-      { id: "c6", ar: "قاعة سينما/مسرح", en: "Auditorium", ach: 15, factor: 320, minCfmPerPerson: 15 },
-      { id: "c7", ar: "مكتبة عامة", en: "Library", ach: 4, factor: 380, minCfmPerPerson: 10 },
-      { id: "c8", ar: "ردهة استقبال", en: "Lobby / Reception", ach: 4, factor: 380, minCfmPerPerson: 10 },
-      { id: "c9", ar: "محلات تجارية", en: "Retail Store", ach: 6, factor: 380, minCfmPerPerson: 10 }
-    ]
-  },
-  {
-    key: 'residential',
-    name_ar: 'المباني السكنية',
-    name_en: 'Residential Buildings',
-    calcMode: 'saudi_rot',
-    items: [
-      { id: "r1", ar: "غرفة معيشة", en: "Living Room", ach: 4, factor: 350, minCfmPerPerson: 10 },
-      { id: "r2", ar: "غرفة نوم", en: "Bedroom", ach: 2, factor: 320, minCfmPerPerson: 8 },
-      { id: "r3", ar: "مطبخ منزلي", en: "Domestic Kitchen", ach: 6, factor: 450, minCfmPerPerson: 10 },
-      { id: "r4", ar: "دورة مياه", en: "Bathroom", ach: 10, factor: 300, minCfmPerPerson: 5 },
-      { id: "r5", ar: "ممر داخلي", en: "Corridor", ach: 2, factor: 300, minCfmPerPerson: 5 },
-      { id: "r6", ar: "مجلس ضيوف", en: "Majlis", ach: 5, factor: 400, minCfmPerPerson: 12 }
-    ]
-  }
-];
+// ===============================
+// 1) الأجهزة (فلترة ذكية حسب القطاع)
+// ===============================
+const equipmentCatalog = {
+  common: [
+    { id: 'pc', ar: '💻 كمبيوتر مكتبي', en: 'Desktop PC', watts: 250, count: 0 },
+    { id: 'laptop', ar: '💻 لابتوب', en: 'Laptop', watts: 90, count: 0 },
+    { id: 'monitor24', ar: '🖥️ شاشة 24"', en: '24" Monitor', watts: 35, count: 0 },
+    { id: 'monitor32', ar: '🖥️ شاشة 32"', en: '32" Monitor', watts: 65, count: 0 },
+    { id: 'tv', ar: '📺 شاشة عرض كبيرة', en: 'Large Display / TV', watts: 200, count: 0 },
+    { id: 'printer', ar: '🖨️ طابعة مكتبية', en: 'Office Printer', watts: 120, count: 0 },
+    { id: 'copier', ar: '🖨️ ماكينة تصوير', en: 'Copier', watts: 800, count: 0 },
+    { id: 'router', ar: '📡 راوتر/سويتش', en: 'Router / Network Switch', watts: 40, count: 0 },
+    { id: 'fridge_small', ar: '🧊 ثلاجة صغيرة', en: 'Small Fridge', watts: 180, count: 0 },
+    { id: 'water_dispenser', ar: '💧 برادة ماء', en: 'Water Dispenser', watts: 120, count: 0 }
+  ],
 
-// الأجهزة
-const equipmentList = [
-  { id: 'pc',  ar: '💻 كمبيوتر مكتب',      en: 'Desktop PC',      watts: 250,  count: 0 },
-  { id: 'srv', ar: '🖥️ سيرفر',             en: 'Server',          watts: 1200, count: 0 },
-  { id: 'med', ar: '🩺 جهاز طبي',          en: 'Medical Device',  watts: 400,  count: 0 },
-  { id: 'mri', ar: '🧬 جهاز أشعة/رنين',    en: 'Imaging Device',  watts: 2500, count: 0 },
-  { id: 'frg', ar: '🧊 ثلاجة',             en: 'Fridge',          watts: 600,  count: 0 },
-  { id: 'tv',  ar: '📺 شاشة',              en: 'Screen',          watts: 200,  count: 0 },
-  { id: 'cop', ar: '🖨️ طابعة/تصوير',       en: 'Copier',          watts: 800,  count: 0 }
-];
+  hospital: [
+    { id: 'patient_monitor', ar: '🩺 شاشة مراقبة مريض', en: 'Patient Monitor', watts: 120, count: 0 },
+    { id: 'ventilator', ar: '🫁 جهاز تنفس صناعي', en: 'Ventilator', watts: 300, count: 0 },
+    { id: 'infusion_pump', ar: '💉 مضخة محاليل', en: 'Infusion Pump', watts: 30, count: 0 },
+    { id: 'syringe_pump', ar: '💉 مضخة حقن', en: 'Syringe Pump', watts: 20, count: 0 },
+    { id: 'defibrillator', ar: '⚡ جهاز صدمات قلب', en: 'Defibrillator', watts: 250, count: 0 },
+    { id: 'anesthesia_machine', ar: '😷 جهاز تخدير', en: 'Anesthesia Machine', watts: 500, count: 0 },
+    { id: 'electrosurgical_unit', ar: '🔪 جهاز كي جراحي', en: 'Electrosurgical Unit', watts: 400, count: 0 },
+    { id: 'surgical_light', ar: '💡 إضاءة جراحية (LED)', en: 'Surgical Light (LED)', watts: 160, count: 0 },
+    { id: 'portable_xray', ar: '🩻 جهاز أشعة متنقل', en: 'Portable X-Ray', watts: 1500, count: 0 },
+    { id: 'ultrasound_unit', ar: '📈 جهاز موجات فوق صوتية', en: 'Ultrasound Unit', watts: 300, count: 0 },
+    { id: 'xray_console', ar: '🖥️ كونسول أشعة', en: 'X-Ray Console', watts: 500, count: 0 },
+    { id: 'lab_analyzer', ar: '🧪 محلل مختبر', en: 'Lab Analyzer', watts: 700, count: 0 },
+    { id: 'centrifuge', ar: '🧪 جهاز طرد مركزي', en: 'Centrifuge', watts: 400, count: 0 },
+    { id: 'biosafety_cabinet', ar: '🧫 كابينة أمان حيوي', en: 'Biosafety Cabinet', watts: 800, count: 0 },
+    { id: 'autoclave_small', ar: '♨️ أوتوكليف صغير', en: 'Small Autoclave', watts: 2000, count: 0 },
+    { id: 'autoclave_large', ar: '♨️ أوتوكليف كبير', en: 'Large Autoclave', watts: 4500, count: 0 },
+    { id: 'pharmacy_fridge', ar: '💊 ثلاجة أدوية/لقاحات', en: 'Pharmacy / Vaccine Fridge', watts: 300, count: 0 },
+    { id: 'med_refrigerator', ar: '🧊 ثلاجة مختبر', en: 'Lab Refrigerator', watts: 450, count: 0 },
+    { id: 'warmers', ar: '🍼 جهاز تدفئة أطفال', en: 'Infant Warmer', watts: 700, count: 0 },
+    { id: 'dialysis_machine', ar: '🩸 جهاز غسيل كلى', en: 'Dialysis Machine', watts: 1500, count: 0 }
+  ],
 
-window.onload = () => {
-  updateRoomSelect();
-  renderEquipChecklist();
-  renderStandardsList();
-  updateDisplayValues();
-  focusField('display');
-  syncLanguageUI();
-  registerSW();
+  commercial: [
+    { id: 'pos', ar: '💳 جهاز كاشير POS', en: 'POS Terminal', watts: 60, count: 0 },
+    { id: 'barcode', ar: '🔎 قارئ باركود', en: 'Barcode Scanner', watts: 10, count: 0 },
+    { id: 'receipt_printer', ar: '🧾 طابعة فواتير', en: 'Receipt Printer', watts: 45, count: 0 },
+    { id: 'display_fridge', ar: '🧊 ثلاجة عرض', en: 'Display Refrigerator', watts: 600, count: 0 },
+    { id: 'freezer', ar: '🧊 فريزر تجاري', en: 'Commercial Freezer', watts: 900, count: 0 },
+    { id: 'coffee_machine', ar: '☕ ماكينة قهوة', en: 'Coffee Machine', watts: 1500, count: 0 },
+    { id: 'oven_small', ar: '🔥 فرن صغير', en: 'Small Oven', watts: 2500, count: 0 },
+    { id: 'oven_large', ar: '🔥 فرن تجاري', en: 'Commercial Oven', watts: 5000, count: 0 },
+    { id: 'grill', ar: '🍔 شواية', en: 'Grill', watts: 3500, count: 0 },
+    { id: 'fryer', ar: '🍟 قلاية', en: 'Deep Fryer', watts: 3000, count: 0 },
+    { id: 'dishwasher', ar: '🍽️ غسالة صحون تجارية', en: 'Commercial Dishwasher', watts: 1800, count: 0 },
+    { id: 'treadmill', ar: '🏃 جهاز سير', en: 'Treadmill', watts: 900, count: 0 },
+    { id: 'bike', ar: '🚴 دراجة رياضية', en: 'Exercise Bike', watts: 150, count: 0 },
+    { id: 'elliptical', ar: '🏋️ جهاز إليبتكال', en: 'Elliptical Trainer', watts: 250, count: 0 },
+    { id: 'speaker_amp', ar: '🔊 أمبليفاير صوت', en: 'Audio Amplifier', watts: 400, count: 0 }
+  ],
+
+  residential: [
+    { id: 'tv_home', ar: '📺 تلفزيون منزلي', en: 'Home TV', watts: 120, count: 0 },
+    { id: 'fridge_home', ar: '🧊 ثلاجة منزلية', en: 'Home Refrigerator', watts: 250, count: 0 },
+    { id: 'deep_freezer_home', ar: '🧊 فريزر منزلي', en: 'Home Freezer', watts: 220, count: 0 },
+    { id: 'washing_machine', ar: '🧺 غسالة ملابس', en: 'Washing Machine', watts: 600, count: 0 },
+    { id: 'dryer', ar: '🧺 نشافة ملابس', en: 'Clothes Dryer', watts: 2500, count: 0 },
+    { id: 'microwave', ar: '📡 مايكرويف', en: 'Microwave', watts: 1200, count: 0 },
+    { id: 'electric_oven_home', ar: '🔥 فرن كهربائي', en: 'Electric Oven', watts: 2400, count: 0 },
+    { id: 'dishwasher_home', ar: '🍽️ غسالة صحون', en: 'Dishwasher', watts: 1400, count: 0 },
+    { id: 'water_heater', ar: '🚿 سخان ماء', en: 'Water Heater', watts: 2000, count: 0 },
+    { id: 'vacuum', ar: '🧹 مكنسة كهربائية', en: 'Vacuum Cleaner', watts: 900, count: 0 },
+    { id: 'gaming_console', ar: '🎮 جهاز ألعاب', en: 'Gaming Console', watts: 220, count: 0 },
+    { id: 'desktop_home', ar: '💻 كمبيوتر منزلي', en: 'Home PC', watts: 250, count: 0 }
+  ]
 };
 
-function registerSW() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+// ===============================
+// 2) تشغيل التطبيق
+// ===============================
+window.onload = async () => {
+  await loadRoomData();
+  updateRoomSelect();
+  detectCurrentSector();
+  renderEquipChecklist();
+  focusField('display');
+  updateDisplayValues();
+  calculateLoad(false);
+
+  const modal = document.getElementById('equip-modal');
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target.id === 'equip-modal') closeEquipModal();
+    });
+  }
+};
+
+// ===============================
+// 3) تحميل data.json
+// ===============================
+async function loadRoomData() {
+  try {
+    const resp = await fetch(`./data.json?v=${Date.now()}`, { cache: 'no-store' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const text = await resp.text();
+    const cleaned = text.replace(/\bNaN\b/g, 'null');
+    roomCatalog = JSON.parse(cleaned);
+
+    if (!roomCatalog || !Array.isArray(roomCatalog.categories)) {
+      throw new Error('Invalid data.json structure');
+    }
+  } catch (e) {
+    console.warn('data.json load failed', e);
+    roomCatalog = {
+      categories: [
+        {
+          name_ar: "المستشفيات (ASHRAE 170)",
+          name_en: "Hospitals (ASHRAE 170)",
+          items: [
+            { id: "h1", ar: "غرفة عمليات (OR)", en: "Operating Room (OR)", ach: 20, med: true, factor: 280, pressure: "P", temp_c: "20-23", rh: "30-60", oa_ach: 4 },
+            { id: "h3", ar: "عزل ضغط سالب (AII)", en: "Negative Pressure (AII)", ach: 12, med: true, factor: 350, pressure: "N", temp_c: "21-24", rh: "30-60", oa_ach: 2 }
+          ]
+        },
+        {
+          name_ar: "التجاري",
+          name_en: "Commercial",
+          items: [
+            { id: "c1", ar: "مكاتب مفتوحة", en: "Open Offices", ach: 4, med: false, factor: 400 }
+          ]
+        },
+        {
+          name_ar: "السكني",
+          name_en: "Residential",
+          items: [
+            { id: "r1", ar: "غرفة معيشة", en: "Living Room", ach: 4, med: false, factor: 330 }
+          ]
+        }
+      ]
+    };
   }
 }
 
+// ===============================
+// 4) تعبئة الغرف
+// ===============================
 function updateRoomSelect() {
   const select = document.getElementById('room-select');
-  if (!select) return;
+  if (!select || !roomCatalog) return;
+
   select.innerHTML = '';
 
-  roomCategories.forEach(cat => {
+  roomCatalog.categories.forEach((cat) => {
     const group = document.createElement('optgroup');
-    group.label = currentLang === 'ar' ? cat.name_ar : cat.name_en;
+    group.label = currentLang === 'ar' ? (cat.name_ar || cat.name_en) : (cat.name_en || cat.name_ar);
 
-    cat.items.forEach(item => {
+    (cat.items || []).forEach((room) => {
       const opt = document.createElement('option');
-      opt.value = item.id;
-      opt.dataset.cat = cat.key;
-      opt.textContent = currentLang === 'ar' ? item.ar : item.en;
+      opt.value = room.id;
+      opt.textContent = currentLang === 'ar' ? (room.ar || room.en) : (room.en || room.ar);
+      opt.dataset.med = room.med ? '1' : '0';
       group.appendChild(opt);
     });
 
     select.appendChild(group);
   });
 
-  updateMethodNote();
+  if (select.options.length > 0) select.selectedIndex = 0;
+  detectCurrentSector();
 }
 
 function getSelectedRoom() {
   const select = document.getElementById('room-select');
-  if (!select || !select.selectedOptions.length) return null;
+  if (!select || !roomCatalog) return null;
+  const id = select.value;
 
-  const selected = select.selectedOptions[0];
-  const catKey = selected.dataset.cat;
-  const category = roomCategories.find(c => c.key === catKey);
-  if (!category) return null;
-
-  const room = category.items.find(i => i.id === selected.value);
-  if (!room) return null;
-
-  return { category, room };
+  for (const cat of roomCatalog.categories) {
+    const found = (cat.items || []).find(i => i.id === id);
+    if (found) return found;
+  }
+  return null;
 }
 
-function calculateLoad(save = false) {
-  const selected = getSelectedRoom();
-  if (!selected) return;
+function detectCurrentSector() {
+  const room = getSelectedRoom();
+  if (!room) {
+    currentSector = 'common';
+    return;
+  }
 
-  const { category, room } = selected;
-  const volM3 = parseFloat(inputs.display) || 0;
+  if (room.med === true) {
+    currentSector = 'hospital';
+    return;
+  }
+
+  const id = String(room.id || '').toLowerCase();
+  if (id.startsWith('r')) currentSector = 'residential';
+  else currentSector = 'commercial';
+}
+
+// ===============================
+// 5) الحساب الرئيسي (TR + CFM)
+// ===============================
+function calculateLoad(save = false) {
+  const vol = parseFloat(inputs.display) || 0;
   const people = parseInt(inputs.people) || 0;
   const watts = parseFloat(inputs.equip) || 0;
 
-  // CFM من ACH
-  const cfmFromACH = (volM3 * 35.3147 * room.ach) / 60;
+  const room = getSelectedRoom();
+  if (!room) return;
 
-  // تهوية الأشخاص
-  const cfmPeople = people * (room.minCfmPerPerson || 10);
+  currentRoomMeta = room;
+  detectCurrentSector();
 
-  // نحسب CFM النهائي
-  let cfm = Math.round(cfmFromACH + cfmPeople);
-  if (cfm < 0 || !isFinite(cfm)) cfm = 0;
+  const ach = Number(room.ach) || 0;
+  const factor = Number(room.factor) || getDefaultFactorBySector(currentSector);
 
-  // طن تبريد (تقريبي)
-  // السعودي/العملي: نعتمد factor أعلى قليلاً
-  // الصحي: نراعي ACH كمرجعية ونستخدم factor طبي
-  let totalBTU =
-    (cfm * room.factor) +
-    (people * 450) +
-    (watts * 3.412);
+  // CFM = ACH + أشخاص
+  const cfmAch = ((vol * 35.3147) * ach) / 60;
+  const cfmPeople = people * 15;
+  const cfm = Math.round(cfmAch + cfmPeople);
 
-  let tr = totalBTU / 12000;
-  if (!isFinite(tr) || tr < 0) tr = 0;
+  // حمل تقريبي
+  const sensibleFromAir = cfm * factor;
+  const peopleLoad = people * 450;
+  const equipLoad = watts * 3.412;
+  const totalBTU = sensibleFromAir + peopleLoad + equipLoad;
+  const tr = (totalBTU / 12000).toFixed(2);
 
-  document.getElementById('cfm-result').textContent = `CFM ${cfm}`;
-  document.getElementById('tr-result').textContent = `TR ${tr.toFixed(2)}`;
+  setText('tr-result', `${tr} TR`);
+  setText('cfm-result', `${formatNum(cfm)} CFM`);
+
+  updateFieldHint(room);
 
   if (save) {
-    calcHistory.unshift({
+    const duct = calcDuctSizeQuick(cfm, 800, 12);
+    calcHistory.push({
       id: Date.now(),
-      roomLabel: currentLang === 'ar' ? room.ar : room.en,
-      categoryLabel: currentLang === 'ar' ? category.name_ar : category.name_en,
+      room: currentLang === 'ar' ? (room.ar || room.en) : (room.en || room.ar),
+      tr,
       cfm,
-      tr: tr.toFixed(2),
-      ach: room.ach,
-      mode: category.calcMode
+      duct
     });
     updateHistoryUI();
   }
 }
 
-function updateMethodNote() {
-  const note = document.getElementById('method-note');
-  const selected = getSelectedRoom();
-  if (!note || !selected) return;
+function getDefaultFactorBySector(sector) {
+  if (sector === 'hospital') return 350;
+  if (sector === 'commercial') return 400;
+  return 330;
+}
 
-  const { category, room } = selected;
+function updateFieldHint(room) {
+  const hint = document.getElementById('field-hint');
+  if (!hint) return;
 
-  if (currentLang === 'ar') {
-    if (category.calcMode === 'ashrae170') {
-      note.textContent = `الوضع: صحي — ASHRAE 170 + ACH (${room.ach})`;
-    } else {
-      note.textContent = `الوضع: ${category.key === 'commercial' ? 'تجاري' : 'سكني'} — Rule of Thumb سعودي + ACH (${room.ach})`;
-    }
+  const ach = room?.ach ?? '-';
+
+  if (room?.med) {
+    const p = room.pressure || '-';
+    const t = room.temp_c || '-';
+    const rh = room.rh || '-';
+    hint.textContent = currentLang === 'ar'
+      ? `حجم الغرفة (m³) | ACH: ${ach} | ضغط: ${p} | حرارة: ${t}°C | RH: ${rh}%`
+      : `Room Volume (m³) | ACH: ${ach} | Pressure: ${p} | Temp: ${t}°C | RH: ${rh}%`;
   } else {
-    if (category.calcMode === 'ashrae170') {
-      note.textContent = `Mode: Healthcare — ASHRAE 170 + ACH (${room.ach})`;
-    } else {
-      note.textContent = `Mode: ${category.key === 'commercial' ? 'Commercial' : 'Residential'} — Saudi Rule of Thumb + ACH (${room.ach})`;
-    }
+    hint.textContent = currentLang === 'ar'
+      ? `حجم الغرفة (m³) | ACH: ${ach}`
+      : `Room Volume (m³) | ACH: ${ach}`;
   }
+}
+
+// ===============================
+// 6) الأجهزة (فلترة حسب القطاع)
+// ===============================
+function getVisibleEquipmentList() {
+  const common = equipmentCatalog.common.map(i => ({ ...i }));
+  const sectorItems = (equipmentCatalog[currentSector] || []).map(i => ({ ...i }));
+  const merged = [...common, ...sectorItems];
+
+  const allSources = [
+    ...equipmentCatalog.common,
+    ...equipmentCatalog.hospital,
+    ...equipmentCatalog.commercial,
+    ...equipmentCatalog.residential
+  ];
+  const countMap = new Map(allSources.map(i => [i.id, i.count || 0]));
+  merged.forEach(i => i.count = countMap.get(i.id) || 0);
+
+  return merged;
 }
 
 function renderEquipChecklist() {
   const container = document.getElementById('equip-checklist');
   if (!container) return;
 
-  container.innerHTML = equipmentList.map((item, idx) => `
-    <div class="equip-item-row">
-      <div>
-        ${currentLang === 'ar' ? item.ar : item.en}
-        <br><small style="color:#9ca3af">${item.watts} W</small>
+  const list = getVisibleEquipmentList();
+
+  const sectorTitle = currentLang === 'ar'
+    ? (currentSector === 'hospital' ? 'أجهزة صحية + مشتركة'
+      : currentSector === 'commercial' ? 'أجهزة تجارية + مشتركة'
+      : currentSector === 'residential' ? 'أجهزة منزلية + مشتركة'
+      : 'أجهزة مشتركة')
+    : (currentSector === 'hospital' ? 'Hospital + Common Equipment'
+      : currentSector === 'commercial' ? 'Commercial + Common Equipment'
+      : currentSector === 'residential' ? 'Residential + Common Equipment'
+      : 'Common Equipment');
+
+  container.innerHTML = `
+    <div style="margin-bottom:10px;color:#ff9f0a;font-weight:700;">${sectorTitle}</div>
+    ${list.map(item => `
+      <div class="equip-item-row">
+        <div>
+          ${currentLang === 'ar' ? item.ar : item.en}
+          <br><small>${item.watts} W</small>
+        </div>
+        <div class="counter-ctrl">
+          <button class="counter-btn" onclick="changeCount('${item.id}', -1)">-</button>
+          <span id="cnt-${item.id}" style="margin:0 10px">${item.count}</span>
+          <button class="counter-btn" onclick="changeCount('${item.id}', 1)">+</button>
+        </div>
       </div>
-      <div class="counter-ctrl">
-        <button class="counter-btn" onclick="changeCount(${idx}, -1)">−</button>
-        <span id="cnt-${idx}" style="min-width:24px;text-align:center;display:inline-block;margin:0 8px;">${item.count}</span>
-        <button class="counter-btn" onclick="changeCount(${idx}, 1)">+</button>
-      </div>
-    </div>
-  `).join('');
+    `).join('')}
+  `;
 }
 
-function changeCount(idx, delta) {
-  equipmentList[idx].count = Math.max(0, equipmentList[idx].count + delta);
-  document.getElementById(`cnt-${idx}`).textContent = equipmentList[idx].count;
+function findEquipmentById(id) {
+  const all = [
+    ...equipmentCatalog.common,
+    ...equipmentCatalog.hospital,
+    ...equipmentCatalog.commercial,
+    ...equipmentCatalog.residential
+  ];
+  return all.find(i => i.id === id);
+}
 
-  const totalWatts = equipmentList.reduce((sum, item) => sum + item.watts * item.count, 0);
-  inputs.equip = String(totalWatts);
+function changeCount(itemId, delta) {
+  const item = findEquipmentById(itemId);
+  if (!item) return;
 
+  item.count = Math.max(0, (item.count || 0) + delta);
+
+  const cntEl = document.getElementById(`cnt-${itemId}`);
+  if (cntEl) cntEl.innerText = item.count;
+
+  const visibleIds = new Set(getVisibleEquipmentList().map(i => i.id));
+  let total = 0;
+
+  const allSources = [
+    ...equipmentCatalog.common,
+    ...equipmentCatalog.hospital,
+    ...equipmentCatalog.commercial,
+    ...equipmentCatalog.residential
+  ];
+
+  for (const eq of allSources) {
+    if (visibleIds.has(eq.id)) total += (eq.watts * (eq.count || 0));
+  }
+
+  inputs.equip = String(total);
   updateDisplayValues();
   calculateLoad(false);
 }
 
+// ===============================
+// 7) سجل العمليات
+// ===============================
 function updateHistoryUI() {
-  const mini = document.getElementById('history-list');
-  const page = document.getElementById('history-list-page');
+  const container = document.getElementById('history-list');
+  if (!container) return;
 
-  const html = calcHistory.length
-    ? calcHistory.map((item, index) => `
-      <div class="swipe-item" onclick="deleteItem(${item.id})">
-        <div class="info">
-          <span style="color:#9ca3af;font-size:.72rem">#${calcHistory.length - index}</span>
-          <span>${item.roomLabel}</span>
-          <span style="color:#9ca3af;font-size:.72rem">${item.categoryLabel} • ACH ${item.ach}</span>
-        </div>
-        <div class="vals">
-          <span class="tr-val">${item.tr} TR</span><br>
-          <span>${item.cfm} CFM</span>
+  if (!calcHistory.length) {
+    container.innerHTML = `<div style="color:#8e8e93;padding:8px 0;">${currentLang === 'ar' ? 'لا يوجد سجل بعد' : 'No saved calculations yet'}</div>`;
+    return;
+  }
+
+  container.innerHTML = calcHistory.map((item, index) => `
+    <div class="swipe-item" onclick="deleteItem(${item.id})">
+      <div class="info">
+        <span style="color:#666; font-size:0.7rem">#${calcHistory.length - index}</span><br>
+        <span>${item.room}</span>
+        <div style="color:#8e8e93;font-size:0.75rem;margin-top:4px;">
+          ${currentLang === 'ar' ? 'الدكت المقترح:' : 'Suggested duct:'} ${item.duct}
         </div>
       </div>
-    `).join('')
-    : `<div style="color:#9ca3af;padding:8px 0;">${currentLang === 'ar' ? 'لا يوجد سجل بعد' : 'No history yet'}</div>`;
-
-  if (mini) mini.innerHTML = html;
-  if (page) page.innerHTML = html;
+      <div class="vals" style="text-align:left">
+        <span class="tr-val">${item.tr} TR</span><br>
+        <span class="cfm-val">${formatNum(item.cfm)} CFM</span>
+      </div>
+    </div>
+  `).reverse().join('');
 }
 
 function deleteItem(id) {
-  const msg = currentLang === 'ar' ? 'حذف العملية؟' : 'Delete item?';
-  if (confirm(msg)) {
+  if (confirm(currentLang === 'ar' ? 'حذف العملية؟' : 'Delete this entry?')) {
     calcHistory = calcHistory.filter(i => i.id !== id);
     updateHistoryUI();
   }
 }
 
 function clearHistory() {
-  const msg = currentLang === 'ar' ? 'مسح السجل بالكامل؟' : 'Clear all history?';
-  if (confirm(msg)) {
+  if (confirm(currentLang === 'ar' ? 'مسح كل السجل؟' : 'Clear all history?')) {
     calcHistory = [];
     updateHistoryUI();
   }
 }
 
+// ===============================
+// 8) لوحة الأرقام والإدخال
+// ===============================
 function press(n) {
-  const v = String(n);
-
-  if (activeField === 'people') {
-    if (v === '.') return; // الأشخاص أعداد صحيحة
-  }
-
-  if (inputs[activeField] === "0" && v !== ".") {
-    inputs[activeField] = v;
+  if (inputs[activeField] === "0" && n !== '.') {
+    inputs[activeField] = n.toString();
   } else {
-    // منع تكرار النقطة
-    if (v === "." && inputs[activeField].includes(".")) return;
-    inputs[activeField] += v;
+    if (n === '.' && inputs[activeField].includes('.')) return;
+    inputs[activeField] += n.toString();
   }
-
   updateDisplayValues();
-  if (activeField === 'display' || activeField === 'people') calculateLoad(false);
 }
 
 function deleteLast() {
-  let val = inputs[activeField] || "0";
-  val = val.slice(0, -1);
-  if (!val || val === "-") val = "0";
-  inputs[activeField] = val;
+  inputs[activeField] = inputs[activeField].slice(0, -1) || "0";
   updateDisplayValues();
-  calculateLoad(false);
+  if (activeField !== 'equip') calculateLoad(false);
 }
 
 function clearActiveField() {
@@ -298,46 +435,53 @@ function clearActiveField() {
   calculateLoad(false);
 }
 
-function resetAllFields() {
-  inputs = { display: "0", people: "0", equip: String(getEquipTotalWatts()) };
-  updateDisplayValues();
-  updateMethodNote();
-  calculateLoad(false);
-}
-
-function getEquipTotalWatts() {
-  return equipmentList.reduce((sum, item) => sum + (item.watts * item.count), 0);
-}
-
-function updateDisplayValues() {
-  const d = document.getElementById('display');
-  const peopleInput = document.getElementById('people-count');
-  const equipInput = document.getElementById('equip-watts');
-
-  if (d) d.textContent = inputs.display || "0";
-  if (peopleInput) peopleInput.value = inputs.people || "0";
-  if (equipInput) equipInput.value = inputs.equip || "0";
-}
-
-function focusField(field) {
-  activeField = field;
-
-  // تلوين التركيز
+function focusField(f) {
+  activeField = f;
   document.getElementById('display')?.classList.remove('active-field');
   document.getElementById('people-count')?.classList.remove('active-field');
   document.getElementById('equip-watts')?.classList.remove('active-field');
 
-  if (field === 'display') document.getElementById('display')?.classList.add('active-field');
-  if (field === 'people') document.getElementById('people-count')?.classList.add('active-field');
-  if (field === 'equip') document.getElementById('equip-watts')?.classList.add('active-field');
+  if (f === 'display') document.getElementById('display')?.classList.add('active-field');
+  if (f === 'people') document.getElementById('people-count')?.classList.add('active-field');
+  if (f === 'equip') document.getElementById('equip-watts')?.classList.add('active-field');
 }
 
-function openEquipModal() {
-  document.getElementById('equip-modal').style.display = 'block';
-  focusField('equip');
+function updateDisplayValues() {
+  setText('display', inputs.display || "0");
+
+  const peopleInput = document.getElementById('people-count');
+  const equipInput = document.getElementById('equip-watts');
+
+  if (peopleInput) peopleInput.value = inputs.people || "0";
+  if (equipInput) equipInput.value = inputs.equip || "0";
 }
+
+function resetAllFields() {
+  inputs = { display: "0", people: "0", equip: "0" };
+
+  for (const key of Object.keys(equipmentCatalog)) {
+    equipmentCatalog[key].forEach(i => i.count = 0);
+  }
+
+  detectCurrentSector();
+  renderEquipChecklist();
+  updateDisplayValues();
+  calculateLoad(false);
+}
+
+// ===============================
+// 9) المودال + التبويبات + اللغة
+// ===============================
+function openEquipModal() {
+  detectCurrentSector();
+  renderEquipChecklist();
+  const modal = document.getElementById('equip-modal');
+  if (modal) modal.style.display = 'block';
+}
+
 function closeEquipModal() {
-  document.getElementById('equip-modal').style.display = 'none';
+  const modal = document.getElementById('equip-modal');
+  if (modal) modal.style.display = 'none';
 }
 
 function switchTab(id, btn) {
@@ -350,44 +494,54 @@ function switchTab(id, btn) {
 
 function toggleLanguage() {
   currentLang = currentLang === 'ar' ? 'en' : 'ar';
+
   const html = document.getElementById('html-tag');
-  html.lang = currentLang;
-  html.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  if (html) {
+    html.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+    html.lang = currentLang;
+  }
 
-  // العناصر النصية data-ar/data-en
   document.querySelectorAll('[data-ar]').forEach(el => {
-    el.textContent = el.getAttribute(currentLang === 'ar' ? 'data-ar' : 'data-en');
+    const txt = el.getAttribute(`data-${currentLang}`);
+    if (txt) el.textContent = txt;
   });
 
-  syncLanguageUI();
+  const langText = document.getElementById('lang-text');
+  if (langText) langText.textContent = currentLang === 'ar' ? 'English' : 'العربية';
+
   updateRoomSelect();
+  detectCurrentSector();
   renderEquipChecklist();
-  renderStandardsList();
   updateHistoryUI();
-  updateMethodNote();
+  updateFieldHint(getSelectedRoom());
+
+  // تحديث نص زر مسح السجل لو ما اعتمد data- attributes على الزر
+  const clearBtn = document.querySelector('.clear-history-btn');
+  if (clearBtn) clearBtn.textContent = currentLang === 'ar' ? 'مسح' : 'Clear';
 }
 
-function syncLanguageUI() {
-  const langBtn = document.getElementById('lang-text');
-  if (langBtn) langBtn.textContent = currentLang === 'ar' ? 'English' : 'العربية';
+// ===============================
+// 10) دكت مقترح سريع (يظهر في السجل)
+// ===============================
+function calcDuctSizeQuick(cfm, velocityFPM = 800, fixedWidthIn = 12) {
+  if (!cfm || cfm <= 0) return '--';
+  const areaIn2 = (cfm / velocityFPM) * 144;
+  const h = Math.max(4, Math.round(areaIn2 / fixedWidthIn));
+  return `${fixedWidthIn}" x ${h}"`;
 }
 
-function renderStandardsList() {
-  const box = document.getElementById('standards-list');
-  if (!box) return;
+// ===============================
+// 11) Helpers
+// ===============================
+function setText(id, txt) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = txt;
+}
 
-  const rows = [];
-
-  roomCategories.forEach(cat => {
-    cat.items.forEach(item => {
-      rows.push(`
-        <div class="std-row">
-          <div>${currentLang === 'ar' ? item.ar : item.en}</div>
-          <div style="color:#f2a53a;font-weight:700;">ACH ${item.ach}</div>
-        </div>
-      `);
-    });
-  });
-
-  box.innerHTML = rows.join('');
+function formatNum(n) {
+  try {
+    return Number(n || 0).toLocaleString(currentLang === 'ar' ? 'ar-SA' : 'en-US');
+  } catch {
+    return String(n || 0);
+  }
 }
