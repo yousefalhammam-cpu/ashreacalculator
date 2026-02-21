@@ -21,29 +21,30 @@
       ]
     },
     {
-      "name_ar": "التجاري (معمول به بالسعودية)",
-      "name_en": "Commercial (Saudi Practice)",
+      "name_ar": "التجاري (عملي)",
+      "name_en": "Commercial (Practical)",
       "items": [
-        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 4, "med": false, "btu_m3": 320 },
-        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Conference Room", "ach": 10, "med": false, "btu_m3": 380 },
-        { "id": "c3", "ar": "صالة مطعم", "en": "Dining Area", "ach": 10, "med": false, "btu_m3": 400 },
-        { "id": "c4", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 30, "med": false, "btu_m3": 700 },
-        { "id": "c5", "ar": "نادي رياضي", "en": "Gym / Fitness Area", "ach": 8, "med": false, "btu_m3": 450 },
-        { "id": "c6", "ar": "قاعة سينما/مسرح", "en": "Auditorium", "ach": 15, "med": false, "btu_m3": 420 },
-        { "id": "c7", "ar": "مكتبة عامة", "en": "Library", "ach": 4, "med": false, "btu_m3": 300 },
-        { "id": "c8", "ar": "ردهة استقبال", "en": "Lobby / Reception", "ach": 4, "med": false, "btu_m3": 320 },
-        { "id": "c9", "ar": "محلات تجارية", "en": "Retail Store", "ach": 6, "med": false, "btu_m3": 360 }
+        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 4, "med": false },
+        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Conference Room", "ach": 10, "med": false },
+        { "id": "c3", "ar": "صالة مطعم", "en": "Dining Area", "ach": 10, "med": false },
+        { "id": "c4", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 30, "med": false },
+        { "id": "c5", "ar": "نادي رياضي", "en": "Gym / Fitness Area", "ach": 8, "med": false },
+        { "id": "c6", "ar": "قاعة سينما/مسرح", "en": "Auditorium", "ach": 15, "med": false },
+        { "id": "c7", "ar": "مكتبة عامة", "en": "Library", "ach": 4, "med": false },
+        { "id": "c8", "ar": "ردهة استقبال", "en": "Lobby / Reception", "ach": 4, "med": false },
+        { "id": "c9", "ar": "محلات تجارية", "en": "Retail Store", "ach": 6, "med": false }
       ]
     },
     {
       "name_ar": "المباني السكنية",
       "name_en": "Residential Buildings",
       "items": [
-        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "med": false, "btu_m3": 300 },
-        { "id": "r2", "ar": "غرفة نوم", "en": "Bedroom", "ach": 2, "med": false, "btu_m3": 260 },
-        { "id": "r3", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "ach": 6, "med": false, "btu_m3": 420 },
-        { "id": "r4", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "med": false, "btu_m3": 220 },
-        { "id": "r5", "ar": "ممر داخلي", "en": "Corridor", "ach": 2, "med": false, "btu_m3": 180 }
+        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "med": false },
+        { "id": "r2", "ar": "غرفة نوم", "en": "Bedroom", "ach": 2, "med": false },
+        { "id": "r3", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "ach": 6, "med": false },
+        { "id": "r4", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "med": false },
+        { "id": "r5", "ar": "ممر داخلي", "en": "Corridor", "ach": 2, "med": false },
+        { "id": "r6", "ar": "مجلس", "en": "Majlis", "ach": 4, "med": false }
       ]
     }
   ]
