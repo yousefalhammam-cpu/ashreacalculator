@@ -1,682 +1,623 @@
-/* Air Calc Pro - Stable Core Build (v1) */
-/* Numbers are always English digits */
+/* Air Calc Pro - Stable build (no assistant tab) */
+let currentLang = 'ar';
+let activeField = 'display';
+let inputs = { display: '0', people: '0', equip: '0' };
+let calcHistory = [];
+let roomData = null;
 
-let currentLang = localStorage.getItem("aircalc_lang") || "ar";
-let activeField = "display";
-let roomData = { categories: [] };
+// الأرقام بالإنجليزي دائمًا
+const nfInt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+const nf2 = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-let inputs = {
-  display: "0", // volume m3
-  people: "0",
-  equip: "0"
+// common market BTU steps
+const MARKET_BTU_STEPS = [9000, 12000, 18000, 24000, 30000, 36000, 48000, 60000, 72000, 90000, 120000, 144000, 180000, 240000];
+
+// إعدادات
+const settings = {
+  ductVelocityFpm: 800
 };
 
-let calcHistory = JSON.parse(localStorage.getItem("aircalc_history") || "[]");
+// معدات حسب نوع القطاع + مشتركة
+const equipmentLibrary = {
+  common: [
+    { id: 'pc', ar: 'كمبيوتر مكتبي', en: 'Desktop PC', w: 250 },
+    { id: 'laptop', ar: 'لابتوب', en: 'Laptop', w: 90 },
+    { id: 'monitor', ar: 'شاشة', en: 'Monitor', w: 45 },
+    { id: 'tv', ar: 'شاشة عرض كبيرة', en: 'Large Display', w: 180 },
+    { id: 'printer', ar: 'طابعة/تصوير', en: 'Printer/Copier', w: 800 },
+    { id: 'router', ar: 'راوتر/سويتش', en: 'Router/Switch', w: 35 },
+    { id: 'fridge_small', ar: 'ثلاجة صغيرة', en: 'Mini Fridge', w: 150 }
+  ],
+  healthcare: [
+    { id: 'patient_monitor', ar: 'مونيتر مريض', en: 'Patient Monitor', w: 120 },
+    { id: 'ventilator', ar: 'جهاز تنفس صناعي', en: 'Ventilator', w: 300 },
+    { id: 'infusion_pump', ar: 'مضخة محاليل', en: 'Infusion Pump', w: 45 },
+    { id: 'suction', ar: 'جهاز شفط', en: 'Suction Unit', w: 180 },
+    { id: 'anesthesia', ar: 'جهاز تخدير', en: 'Anesthesia Machine', w: 1200 },
+    { id: 'or_light', ar: 'إضاءة عمليات', en: 'OR Light', w: 160 },
+    { id: 'autoclave', ar: 'أوتوكليف تعقيم', en: 'Autoclave', w: 3000 },
+    { id: 'xray_unit', ar: 'جهاز أشعة تشخيصية', en: 'X-Ray Unit', w: 2500 },
+    { id: 'ultrasound', ar: 'ألتراساوند', en: 'Ultrasound', w: 350 },
+    { id: 'endoscopy_tower', ar: 'برج مناظير', en: 'Endoscopy Tower', w: 1200 },
+    { id: 'lab_analyzer', ar: 'جهاز تحليل مختبر', en: 'Lab Analyzer', w: 700 },
+    { id: 'medical_fridge', ar: 'ثلاجة طبية', en: 'Medical Fridge', w: 400 }
+  ],
+  commercial: [
+    { id: 'pos', ar: 'نقطة بيع POS', en: 'POS Terminal', w: 80 },
+    { id: 'display_sign', ar: 'لوحة/شاشة إعلانية', en: 'Signage Display', w: 250 },
+    { id: 'coffee', ar: 'ماكينة قهوة', en: 'Coffee Machine', w: 1400 },
+    { id: 'freezer_shop', ar: 'فريزر عرض', en: 'Display Freezer', w: 900 },
+    { id: 'fridge_shop', ar: 'ثلاجة عرض', en: 'Display Fridge', w: 700 },
+    { id: 'oven_small', ar: 'فرن تجاري صغير', en: 'Commercial Oven', w: 3500 },
+    { id: 'fryer', ar: 'قلاية تجارية', en: 'Commercial Fryer', w: 5000 },
+    { id: 'hood_fan', ar: 'مروحة هود', en: 'Hood Fan', w: 600 },
+    { id: 'treadmill', ar: 'سير رياضي', en: 'Treadmill', w: 900 },
+    { id: 'gym_bike', ar: 'دراجة رياضية', en: 'Gym Bike', w: 150 }
+  ],
+  residential: [
+    { id: 'fridge_home', ar: 'ثلاجة منزلية', en: 'Home Fridge', w: 250 },
+    { id: 'microwave', ar: 'مايكرويف', en: 'Microwave', w: 1200 },
+    { id: 'oven_home', ar: 'فرن منزلي', en: 'Home Oven', w: 2500 },
+    { id: 'washer', ar: 'غسالة', en: 'Washing Machine', w: 500 },
+    { id: 'dryer', ar: 'نشافة', en: 'Dryer', w: 3000 },
+    { id: 'dishwasher', ar: 'غسالة صحون', en: 'Dishwasher', w: 1800 },
+    { id: 'water_heater', ar: 'سخان ماء', en: 'Water Heater', w: 2000 },
+    { id: 'vacuum', ar: 'مكنسة كهربائية', en: 'Vacuum Cleaner', w: 1200 }
+  ]
+};
 
-let selectedEquipCounts = {}; // {equipId: count}
-let lastCalc = null;
+// Counts
+let equipmentCounts = {}; // key=id, value=count
 
-// Equipment catalog with profiles (filtered by room type)
-const EQUIPMENT_CATALOG = [
-  // Common
-  { id: "pc", ar: "كمبيوتر مكتبي", en: "Desktop PC", watts: 200, profiles: ["common", "commercial", "medical"] },
-  { id: "laptop", ar: "لابتوب", en: "Laptop", watts: 90, profiles: ["common", "commercial", "medical", "home"] },
-  { id: "monitor", ar: "شاشة", en: "Monitor", watts: 35, profiles: ["common", "commercial", "medical", "home"] },
-  { id: "printer", ar: "طابعة", en: "Printer", watts: 600, profiles: ["common", "commercial", "medical"] },
-  { id: "fridge_small", ar: "ثلاجة صغيرة", en: "Small Fridge", watts: 180, profiles: ["common", "commercial", "home"] },
+document.addEventListener('DOMContentLoaded', initApp);
 
-  // Medical
-  { id: "anesthesia", ar: "جهاز تخدير", en: "Anesthesia Machine", watts: 1200, profiles: ["medical"] },
-  { id: "or_light", ar: "إضاءة عمليات جراحية", en: "OR Surgical Light", watts: 300, profiles: ["medical"] },
-  { id: "cautery", ar: "جهاز كي جراحي", en: "Electrosurgical Unit", watts: 400, profiles: ["medical"] },
-  { id: "monitor_patient", ar: "شاشة مراقبة مريض", en: "Patient Monitor", watts: 80, profiles: ["medical"] },
-  { id: "ventilator", ar: "جهاز تنفس صناعي", en: "Ventilator", watts: 350, profiles: ["medical"] },
-  { id: "infusion", ar: "مضخة محاليل", en: "Infusion Pump", watts: 50, profiles: ["medical"] },
-  { id: "defib", ar: "جهاز صدمات قلبية", en: "Defibrillator", watts: 250, profiles: ["medical"] },
-  { id: "ultrasound", ar: "جهاز ألتراساوند", en: "Ultrasound System", watts: 500, profiles: ["medical"] },
-  { id: "xray_mobile", ar: "أشعة متنقلة", en: "Mobile X-ray", watts: 1500, profiles: ["medical"] },
-  { id: "endoscopy_tower", ar: "برج مناظير", en: "Endoscopy Tower", watts: 1200, profiles: ["medical"] },
-  { id: "centrifuge", ar: "جهاز طرد مركزي", en: "Centrifuge", watts: 350, profiles: ["medical"] },
-  { id: "lab_analyzer", ar: "محلل مختبري", en: "Lab Analyzer", watts: 700, profiles: ["medical"] },
-  { id: "biosafety", ar: "خزانة سلامة حيوية", en: "Biosafety Cabinet", watts: 900, profiles: ["medical"] },
-  { id: "autoclave", ar: "أوتوكلاف تعقيم", en: "Autoclave", watts: 3000, profiles: ["medical"] },
-  { id: "cssd_washer", ar: "غسالة أدوات CSSD", en: "Instrument Washer", watts: 2500, profiles: ["medical"] },
-  { id: "med_fridge", ar: "ثلاجة أدوية/مختبر", en: "Medical Fridge", watts: 350, profiles: ["medical"] },
+async function initApp() {
+  loadSettings();
+  loadHistory();
 
-  // Commercial
-  { id: "pos", ar: "جهاز كاشير", en: "POS System", watts: 120, profiles: ["commercial"] },
-  { id: "display_sign", ar: "شاشة إعلانية", en: "Display Sign", watts: 150, profiles: ["commercial"] },
-  { id: "coffee", ar: "ماكينة قهوة", en: "Coffee Machine", watts: 1500, profiles: ["commercial"] },
-  { id: "freezer", ar: "فريزر تجاري", en: "Commercial Freezer", watts: 800, profiles: ["commercial"] },
-  { id: "oven_small", ar: "فرن تجاري صغير", en: "Commercial Oven", watts: 2500, profiles: ["commercial"] },
-  { id: "mixer", ar: "خلاط/عجانة", en: "Mixer", watts: 700, profiles: ["commercial"] },
-  { id: "gym_treadmill", ar: "سير رياضي", en: "Treadmill", watts: 900, profiles: ["commercial"] },
-  { id: "gym_bike", ar: "دراجة رياضية", en: "Exercise Bike", watts: 200, profiles: ["commercial"] },
-
-  // Home
-  { id: "tv", ar: "تلفزيون", en: "TV", watts: 120, profiles: ["home"] },
-  { id: "washer", ar: "غسالة", en: "Washing Machine", watts: 600, profiles: ["home"] },
-  { id: "dryer", ar: "نشافة", en: "Dryer", watts: 2000, profiles: ["home"] },
-  { id: "microwave", ar: "مايكروويف", en: "Microwave", watts: 1200, profiles: ["home"] },
-  { id: "air_fryer", ar: "قلاية هوائية", en: "Air Fryer", watts: 1500, profiles: ["home"] },
-  { id: "vacuum", ar: "مكنسة كهربائية", en: "Vacuum Cleaner", watts: 800, profiles: ["home"] },
-  { id: "router", ar: "راوتر", en: "Router", watts: 15, profiles: ["home", "common", "commercial"] }
-];
-
-// ---------- INIT ----------
-window.addEventListener("DOMContentLoaded", async () => {
-  applyLanguageDirection();
-  await loadRoomData();
-  populateRoomSelect();
-  restoreState();
-  bindEvents();
-  updateInputsUI();
-  updateRoomMeta();
-  renderEquipmentModal();
-  renderHistory();
-  calculateNow(false);
-  registerSW();
-});
-
-function bindEvents() {
-  document.getElementById("room-select").addEventListener("change", onRoomChanged);
-}
-
-// ---------- DATA ----------
-async function loadRoomData() {
   try {
-    const res = await fetch("./data.json");
+    const res = await fetch('data.json');
     roomData = await res.json();
   } catch (e) {
-    console.error("Failed to load data.json", e);
-    roomData = { categories: [] };
+    console.error('data.json load failed', e);
+    alert('Failed to load data.json');
+    return;
+  }
+
+  buildRoomSelect();
+  onRoomChanged();
+  updateDisplayValues();
+  updateLanguageUI();
+  updateHistoryUI();
+  registerSW();
+}
+
+function registerSW() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 }
 
-function populateRoomSelect() {
-  const select = document.getElementById("room-select");
-  select.innerHTML = "";
+function loadSettings() {
+  const saved = localStorage.getItem('aircalc_settings_v1');
+  if (saved) {
+    try {
+      Object.assign(settings, JSON.parse(saved));
+    } catch (_) {}
+  }
+  const v = document.getElementById('duct-velocity');
+  if (v) v.value = String(settings.ductVelocityFpm);
+}
+
+function saveSettings() {
+  const v = parseInt(document.getElementById('duct-velocity').value, 10);
+  settings.ductVelocityFpm = Number.isFinite(v) ? Math.max(400, Math.min(2000, v)) : 800;
+  document.getElementById('duct-velocity').value = String(settings.ductVelocityFpm);
+  localStorage.setItem('aircalc_settings_v1', JSON.stringify(settings));
+  updateDuctChip();
+}
+
+function loadHistory() {
+  const raw = localStorage.getItem('aircalc_history_v1');
+  if (!raw) return;
+  try {
+    calcHistory = JSON.parse(raw);
+  } catch (_) {
+    calcHistory = [];
+  }
+}
+
+function persistHistory() {
+  localStorage.setItem('aircalc_history_v1', JSON.stringify(calcHistory));
+}
+
+function buildRoomSelect() {
+  const select = document.getElementById('room-select');
+  select.innerHTML = '';
 
   roomData.categories.forEach(cat => {
-    const og = document.createElement("optgroup");
-    og.label = currentLang === "ar" ? cat.name_ar : cat.name_en;
-
+    const group = document.createElement('optgroup');
+    group.label = currentLang === 'ar' ? cat.name_ar : cat.name_en;
     cat.items.forEach(item => {
-      const opt = document.createElement("option");
+      const opt = document.createElement('option');
       opt.value = item.id;
-      opt.textContent = currentLang === "ar" ? item.ar : item.en;
-      opt.dataset.catId = cat.id;
-      og.appendChild(opt);
+      opt.textContent = currentLang === 'ar' ? item.ar : item.en;
+      opt.dataset.catNameAr = cat.name_ar;
+      opt.dataset.catNameEn = cat.name_en;
+      group.appendChild(opt);
     });
-
-    select.appendChild(og);
+    select.appendChild(group);
   });
-
-  if (!select.value && select.options.length) {
-    select.selectedIndex = 0;
-  }
 }
 
-// ---------- LANGUAGE ----------
-function toggleLanguage() {
-  currentLang = currentLang === "ar" ? "en" : "ar";
-  localStorage.setItem("aircalc_lang", currentLang);
-
-  applyLanguageDirection();
-
-  document.querySelectorAll("[data-ar]").forEach(el => {
-    el.textContent = currentLang === "ar" ? el.getAttribute("data-ar") : el.getAttribute("data-en");
-  });
-
-  document.getElementById("lang-btn").textContent = currentLang === "ar" ? "English" : "العربية";
-
-  const currentRoomId = getCurrentRoom()?.id;
-  populateRoomSelect();
-  if (currentRoomId) {
-    const select = document.getElementById("room-select");
-    const found = Array.from(select.options).find(o => o.value === currentRoomId);
-    if (found) select.value = currentRoomId;
-  }
-
-  updateRoomMeta();
-  renderEquipmentModal();
-  renderHistory();
-  updateInputsUI();
-  updateResultsUI(lastCalc || getEmptyCalc());
-}
-
-function applyLanguageDirection() {
-  const html = document.getElementById("html-tag");
-  html.setAttribute("lang", currentLang);
-  html.setAttribute("dir", currentLang === "ar" ? "rtl" : "ltr");
-
-  const langBtn = document.getElementById("lang-btn");
-  if (langBtn) langBtn.textContent = currentLang === "ar" ? "English" : "العربية";
-}
-
-// ---------- INPUTS ----------
-function focusField(field) {
-  activeField = field;
-  document.getElementById("display").classList.remove("active-field");
-  document.getElementById("people-input").classList.remove("active-field");
-  document.getElementById("equip-input").classList.remove("active-field");
-
-  if (field === "display") document.getElementById("display").classList.add("active-field");
-  if (field === "people") document.getElementById("people-input").classList.add("active-field");
-  if (field === "equip") document.getElementById("equip-input").classList.add("active-field");
-}
-
-function press(val) {
-  const key = activeField === "display" ? "display" : (activeField === "people" ? "people" : "equip");
-
-  // equip field is driven by modal only
-  if (key === "equip") return;
-
-  let current = inputs[key];
-
-  if (val === "." && current.includes(".")) return;
-
-  if (current === "0" && val !== ".") current = val;
-  else if (current === "0" && val === ".") current = "0.";
-  else current += val;
-
-  inputs[key] = sanitizeNumericString(current, key === "people");
-  updateInputsUI();
-}
-
-function deleteLast() {
-  const key = activeField === "display" ? "display" : (activeField === "people" ? "people" : "equip");
-  if (key === "equip") return;
-  let s = inputs[key];
-  s = s.slice(0, -1);
-  if (!s || s === "-" || s === ".") s = "0";
-  inputs[key] = sanitizeNumericString(s, key === "people");
-  updateInputsUI();
-}
-
-function clearAllInputs() {
-  inputs.display = "0";
-  inputs.people = "0";
-  selectedEquipCounts = {};
-  recalcEquipWatts();
-  updateInputsUI();
-  calculateNow(false);
-}
-
-function sanitizeNumericString(v, integerOnly = false) {
-  v = String(v).replace(/[^\d.]/g, "");
-  if (integerOnly) v = v.replace(/\./g, "");
-  const parts = v.split(".");
-  if (parts.length > 2) v = parts[0] + "." + parts.slice(1).join("");
-  if (v === "") v = "0";
-  return v;
-}
-
-function updateInputsUI() {
-  document.getElementById("display").textContent = toEnglishDigits(inputs.display || "0");
-  document.getElementById("people-input").value = toEnglishDigits(inputs.people || "0");
-  document.getElementById("equip-input").value = toEnglishDigits(inputs.equip || "0");
-}
-
-function onRoomChanged() {
-  // Keep values, just refresh equipment filtering/meta/calculation
-  renderEquipmentModal();
-  updateRoomMeta();
-  calculateNow(false);
-  saveState();
-}
-
-// ---------- ROOM HELPERS ----------
-function getCurrentRoom() {
-  const select = document.getElementById("room-select");
-  const roomId = select.value;
-
+function getSelectedRoom() {
+  const select = document.getElementById('room-select');
+  const id = select.value;
   for (const cat of roomData.categories) {
-    const found = cat.items.find(i => i.id === roomId);
-    if (found) {
-      return { ...found, category: cat };
+    const item = cat.items.find(x => x.id === id);
+    if (item) {
+      return { ...item, category: cat };
     }
   }
   return null;
 }
 
-function updateRoomMeta() {
-  const room = getCurrentRoom();
-  if (!room) return;
-
-  const basisLabel = currentLang === "ar" ? room.basis_ar : room.basis_en;
-  const roomLabel = currentLang === "ar" ? room.ar : room.en;
-
-  document.getElementById("room-meta").textContent = `${basisLabel} • ACH: ${formatNum(room.ach)} • ${roomLabel}`;
-  document.getElementById("chip-standard").textContent = basisLabel;
-  document.getElementById("chip-ach").textContent = `ACH: ${formatNum(room.ach)}`;
+function onRoomChanged() {
+  // ما نمسح الحجم/الأشخاص إلا إذا المستخدم يبغى، نخلي المعدات فقط تتفلتر مع إعادة احتساب الواط
+  resetEquipmentForCurrentRoom();
+  renderEquipmentList();
+  updateRoomMetaChips();
+  calculateLoad(false);
 }
 
-// ---------- CALC CORE (STABLE) ----------
-function calculateNow(saveToHistory = false) {
-  const room = getCurrentRoom();
+function getRoomSector(item) {
+  // يعتمد على اسم القسم أو med flag
+  if (item.med === true) return 'healthcare';
+  if (item.id.startsWith('c')) return 'commercial';
+  if (item.id.startsWith('r')) return 'residential';
+  return 'commercial';
+}
+
+function getStandardLabel(item) {
+  const sector = getRoomSector(item);
+  if (sector === 'healthcare') return currentLang === 'ar' ? 'ASHRAE 170 (صحي)' : 'ASHRAE 170 (Healthcare)';
+  if (sector === 'commercial') return currentLang === 'ar' ? 'ASHRAE 62.1 / عملي (سعودي)' : 'ASHRAE 62.1 / Practical';
+  return currentLang === 'ar' ? 'ASHRAE 62.2 / عملي (سكني)' : 'ASHRAE 62.2 / Practical';
+}
+
+function getBtuFactor(item) {
+  // BTU/h per m³ (practical tuned)
+  const sector = getRoomSector(item);
+  // صحي
+  if (sector === 'healthcare') {
+    const map = {
+      h1: 700,  // OR
+      h2: 650,  // PE
+      h3: 650,  // AII
+      h4: 520,  // ICU
+      h5: 600,  // Triage
+      h6: 560,  // Lab
+      h7: 450,  // Patient room
+      h8: 600,  // X-ray
+      h9: 650,  // Endoscopy
+      h10: 520, // CSSD
+      h11: 420, // Pharmacy
+      h12: 650, // LDR
+      h13: 450, // Physio
+      h14: 430  // Exam room
+    };
+    return map[item.id] || 500;
+  }
+
+  // تجاري (سعودي عملي)
+  if (sector === 'commercial') {
+    const map = {
+      c1: 450, // Open offices
+      c2: 520, // Conference
+      c3: 550, // Dining
+      c4: 850, // Comm kitchen
+      c5: 600, // Gym
+      c6: 500, // Auditorium
+      c7: 420, // Library
+      c8: 430, // Lobby
+      c9: 500  // Retail
+    };
+    return map[item.id] || 500;
+  }
+
+  // سكني
+  const map = {
+    r1: 400, // living
+    r2: 320, // bedroom
+    r3: 550, // kitchen
+    r4: 350, // bathroom
+    r5: 220  // corridor
+  };
+  return map[item.id] || 350;
+}
+
+function getPeopleLoadPerPerson(item) {
+  const sector = getRoomSector(item);
+  if (sector === 'healthcare') return 500;
+  if (sector === 'commercial') return 550;
+  return 400;
+}
+
+function computeCFM(volumeM3, ach, people) {
+  const baseVent = (volumeM3 * 35.3147 * ach) / 60;
+  const peopleVent = people * 15;
+  return Math.round(baseVent + peopleVent);
+}
+
+function computeBTU(volumeM3, item, cfm, people, equipW) {
+  const factor = getBtuFactor(item);
+  const byVolume = volumeM3 * factor;
+  const byVentOnly = cfm * 1.08 * 20; // ΔT 20°F
+  const peopleLoad = people * getPeopleLoadPerPerson(item);
+  const equipLoad = equipW * 3.412;
+
+  // نستخدم الأكبر بين الحجم والتهوية كأساس + أحمال إضافية
+  return Math.round(Math.max(byVolume, byVentOnly) + peopleLoad + equipLoad);
+}
+
+function nearestMarketBTU(actualBTU) {
+  if (!actualBTU || actualBTU <= 0) return 0;
+  for (const s of MARKET_BTU_STEPS) {
+    if (actualBTU <= s) return s;
+  }
+  return MARKET_BTU_STEPS[MARKET_BTU_STEPS.length - 1];
+}
+
+function calcTR(btu) {
+  return btu / 12000;
+}
+
+function calcDuctSize(cfm) {
+  const vel = settings.ductVelocityFpm || 800;
+  const width = 12; // ثابت مبدئي
+  if (!cfm || cfm <= 0) return { width, height: 0 };
+  // area ft² = cfm / vel ; in² = *144 ; height = area/width
+  const areaIn2 = (cfm / vel) * 144;
+  const h = Math.max(4, Math.round(areaIn2 / width));
+  return { width, height: h };
+}
+
+function calculateLoad(saveToHistory = false) {
+  const room = getSelectedRoom();
   if (!room) return;
 
   const volumeM3 = parseFloat(inputs.display) || 0;
-  const people = parseInt(inputs.people || "0", 10) || 0;
+  const people = parseInt(inputs.people, 10) || 0;
   const equipW = parseFloat(inputs.equip) || 0;
 
-  // 1) CFM from ACH + people OA (simple practical add)
-  const baseCFM = (volumeM3 * 35.3147 * room.ach) / 60;
-  const peopleCFM = people * (room.people_cfm || 15);
-  const totalCFM = Math.max(0, Math.round(baseCFM + peopleCFM));
+  const cfm = computeCFM(volumeM3, room.ach, people);
+  const actualBTU = computeBTU(volumeM3, room, cfm, people, equipW);
+  const marketBTU = nearestMarketBTU(actualBTU);
+  const tr = calcTR(actualBTU);
+  const duct = calcDuctSize(cfm);
 
-  // 2) BTU from airflow + people sensible/latent + equipment
-  //    DeltaT chosen by category/use to keep realistic practical values.
-  const deltaT = room.deltaT_F ?? 18;
-  const airBtu = 1.08 * totalCFM * deltaT;
-  const peopleBtu = people * (room.people_btu || 450);
-  const equipBtu = equipW * 3.412;
+  // النتائج (بدون سطر "المقترح" الإضافي)
+  document.getElementById('res-cfm').textContent = `CFM ${nfInt.format(cfm)}`;
+  document.getElementById('res-tr').textContent = `TR ${nf2.format(tr)}`;
+  document.getElementById('res-btu').textContent = `BTU/h ${nfInt.format(actualBTU)}`;
 
-  let totalBTU = airBtu + peopleBtu + equipBtu;
-
-  // Safety / diversity factor
-  const sf = room.safety_factor ?? 1.10;
-  totalBTU *= sf;
-
-  // 3) TR
-  const tr = totalBTU / 12000;
-
-  // 4) Market BTU suggestion (nearest common market size)
-  const marketBTU = nearestMarketBTU(totalBTU);
-
-  // 5) Duct suggestion (using default velocity by room)
-  const vel = room.duct_fpm || 800;
-  const duct = suggestDuct(totalCFM, 12, vel); // fixed width 12"
-
-  lastCalc = {
-    roomId: room.id,
-    roomNameAr: room.ar,
-    roomNameEn: room.en,
-    standardAr: room.basis_ar,
-    standardEn: room.basis_en,
-    ach: room.ach,
-    volumeM3,
-    people,
-    equipW,
-    cfm: totalCFM,
-    btu: Math.round(totalBTU),
-    tr: Number(tr.toFixed(2)),
-    marketBtu: marketBTU,
-    duct,
-    ts: new Date().toISOString()
-  };
-
-  updateResultsUI(lastCalc);
+  // chips
+  document.getElementById('chip-ach').textContent = `ACH: ${nfInt.format(room.ach)}`;
+  document.getElementById('chip-standard').textContent = getStandardLabel(room);
+  document.getElementById('chip-duct').textContent = `Duct: ${duct.width}" x ${duct.height}"`;
 
   if (saveToHistory) {
-    calcHistory.unshift({
+    const entry = {
       id: Date.now(),
-      ...lastCalc
-    });
-    if (calcHistory.length > 50) calcHistory = calcHistory.slice(0, 50);
-    renderHistory();
+      ts: new Date().toISOString(),
+      roomId: room.id,
+      roomAr: room.ar,
+      roomEn: room.en,
+      standard: getStandardLabel(room),
+      ach: room.ach,
+      volumeM3,
+      people,
+      equipW,
+      cfm,
+      btuActual: actualBTU,
+      btuMarket: marketBTU,
+      tr: +tr.toFixed(2),
+      ductW: duct.width,
+      ductH: duct.height
+    };
+    calcHistory.unshift(entry);
+    if (calcHistory.length > 100) calcHistory = calcHistory.slice(0, 100);
     persistHistory();
+    updateHistoryUI();
   }
-
-  saveState();
 }
 
-function updateResultsUI(r) {
-  document.getElementById("res-cfm").textContent = `CFM ${formatNum(r.cfm)}`;
-  document.getElementById("res-tr").textContent = `TR ${formatNum(r.tr, 2)}`;
-  document.getElementById("res-btu").textContent = `BTU/h ${formatNum(r.btu)}`;
-  document.getElementById("res-market-btu").textContent = `BTU ${formatNum(r.marketBtu)}`;
-  document.getElementById("chip-duct").textContent = `Duct: ${r.duct}`;
-}
-
-function getEmptyCalc() {
-  return {
-    cfm: 0,
-    tr: 0,
-    btu: 0,
-    marketBtu: 0,
-    duct: `12" x 0"`
-  };
-}
-
-function nearestMarketBTU(btu) {
-  const standardSizes = [
-    9000, 12000, 18000, 24000, 30000, 36000, 42000, 48000, 54000, 60000,
-    72000, 84000, 96000, 120000, 144000, 180000, 240000, 300000
-  ];
-
-  if (btu <= 0) return 0;
-
-  // pick nearest but avoid undersizing harshly for critical spaces
-  let nearest = standardSizes[0];
-  let minDiff = Infinity;
-
-  for (const s of standardSizes) {
-    const diff = Math.abs(s - btu);
-    if (diff < minDiff) {
-      minDiff = diff;
-      nearest = s;
-    }
-  }
-
-  // if nearest is below actual by >7%, move up one size
-  if (nearest < btu && ((btu - nearest) / btu) > 0.07) {
-    const higher = standardSizes.find(s => s >= btu);
-    if (higher) nearest = higher;
-  }
-
-  return nearest;
-}
-
-function suggestDuct(cfm, widthIn = 12, velocityFpm = 800) {
-  if (!cfm || !widthIn) return `12" x 0"`;
-  const areaFt2 = cfm / velocityFpm;
-  const areaIn2 = areaFt2 * 144;
-  let height = Math.round(areaIn2 / widthIn);
-  if (height < 4) height = 4;
-  return `${widthIn}" x ${height}"`;
-}
-
-// ---------- EQUIPMENT FILTERING ----------
-function getRoomEquipProfile(room) {
-  // category ids in data.json: healthcare/commercial/residential
-  if (!room || !room.category) return ["common"];
-
-  if (room.category.id === "healthcare") return ["medical", "common"];
-  if (room.category.id === "commercial") return ["commercial", "common"];
-  if (room.category.id === "residential") return ["home", "common"];
-  return ["common"];
-}
-
-function renderEquipmentModal() {
-  const room = getCurrentRoom();
-  const profiles = getRoomEquipProfile(room);
-
-  const filtered = EQUIPMENT_CATALOG.filter(eq => eq.profiles.some(p => profiles.includes(p)));
-  const container = document.getElementById("equip-list");
-
-  container.innerHTML = "";
-
-  filtered.forEach(eq => {
-    const count = selectedEquipCounts[eq.id] || 0;
-
-    const row = document.createElement("div");
-    row.className = "equip-row";
-
-    const left = document.createElement("div");
-    left.innerHTML = `
-      <div class="equip-name">${currentLang === "ar" ? eq.ar : eq.en}</div>
-      <div class="equip-sub">${formatNum(eq.watts)} W</div>
-    `;
-
-    const ctr = document.createElement("div");
-    ctr.className = "equip-ctr";
-    ctr.innerHTML = `
-      <button class="ctr-btn" type="button">-</button>
-      <span class="ctr-val">${formatNum(count)}</span>
-      <button class="ctr-btn" type="button">+</button>
-    `;
-
-    const [minusBtn, , plusBtn] = ctr.children;
-    minusBtn.addEventListener("click", () => changeEquipCount(eq.id, -1));
-    plusBtn.addEventListener("click", () => changeEquipCount(eq.id, +1));
-
-    row.appendChild(left);
-    row.appendChild(ctr);
-    container.appendChild(row);
-  });
-}
-
-function changeEquipCount(equipId, delta) {
-  const current = selectedEquipCounts[equipId] || 0;
-  const next = Math.max(0, current + delta);
-  selectedEquipCounts[equipId] = next;
-  recalcEquipWatts();
-  renderEquipmentModal();
-  calculateNow(false);
-  saveState();
-}
-
-function recalcEquipWatts() {
-  let sum = 0;
-  for (const eq of EQUIPMENT_CATALOG) {
-    const c = selectedEquipCounts[eq.id] || 0;
-    sum += c * eq.watts;
-  }
-  inputs.equip = String(Math.round(sum));
-  updateInputsUI();
-}
-
-function openEquipModal() {
-  focusField("equip");
-  renderEquipmentModal();
-  document.getElementById("equip-modal").classList.add("show");
-}
-
-function closeEquipModal() {
-  document.getElementById("equip-modal").classList.remove("show");
-}
-
-// ---------- HISTORY ----------
-function renderHistory() {
-  const box = document.getElementById("history-list");
-  box.innerHTML = "";
+function updateHistoryUI() {
+  const list = document.getElementById('history-list');
+  if (!list) return;
 
   if (!calcHistory.length) {
-    const empty = document.createElement("div");
-    empty.className = "history-item";
-    empty.textContent = currentLang === "ar" ? "لا يوجد سجل بعد" : "No history yet";
-    box.appendChild(empty);
+    list.innerHTML = `<div class="hist-meta">${currentLang === 'ar' ? 'لا يوجد سجل بعد' : 'No history yet'}</div>`;
     return;
   }
 
-  calcHistory.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "history-item";
-
-    const roomName = currentLang === "ar" ? item.roomNameAr : item.roomNameEn;
-    const standard = currentLang === "ar" ? item.standardAr : item.standardEn;
-
-    card.innerHTML = `
-      <div class="history-row-top">
-        <div>
-          <div class="history-room">${roomName}</div>
-          <div class="history-standard">${standard} • ACH ${formatNum(item.ach)} • ${formatNum(item.volumeM3)} m³ • ${formatNum(item.people)} P • ${formatNum(item.equipW)} W</div>
+  list.innerHTML = calcHistory.map(item => {
+    const title = currentLang === 'ar' ? item.roomAr : item.roomEn;
+    const dt = new Date(item.ts);
+    const dateStr = `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
+    return `
+      <div class="history-item">
+        <div class="hist-top">
+          <div>
+            <div class="hist-room">${escapeHtml(title)}</div>
+            <div class="hist-meta">${escapeHtml(item.standard)} • ${dateStr}</div>
+          </div>
+          <button class="small-btn" onclick="deleteHistoryItem(${item.id})">${currentLang === 'ar' ? 'حذف' : 'Delete'}</button>
         </div>
-        <button class="small-btn" data-id="${item.id}">${currentLang === "ar" ? "حذف" : "Delete"}</button>
-      </div>
-      <div class="history-values">
-        <div class="tr">TR ${formatNum(item.tr, 2)}</div>
-        <div>CFM ${formatNum(item.cfm)}</div>
-        <div>BTU ${formatNum(item.marketBtu)}</div>
-        <div>${item.duct}</div>
+        <div class="hist-grid">
+          <div class="kv"><div class="k">TR</div><div class="v">${nf2.format(item.tr)}</div></div>
+          <div class="kv"><div class="k">CFM</div><div class="v">${nfInt.format(item.cfm)}</div></div>
+          <div class="kv"><div class="k">BTU/h</div><div class="v">${nfInt.format(item.btuActual)}</div></div>
+          <div class="kv"><div class="k">Duct</div><div class="v">${item.ductW}"x${item.ductH}"</div></div>
+        </div>
       </div>
     `;
-
-    card.querySelector("button").addEventListener("click", () => deleteHistoryItem(item.id));
-    box.appendChild(card);
-  });
+  }).join('');
 }
 
 function deleteHistoryItem(id) {
   calcHistory = calcHistory.filter(x => x.id !== id);
   persistHistory();
-  renderHistory();
+  updateHistoryUI();
 }
 
 function clearHistory() {
+  if (!confirm(currentLang === 'ar' ? 'مسح سجل الحسابات؟' : 'Clear history?')) return;
   calcHistory = [];
   persistHistory();
-  renderHistory();
-}
-
-function persistHistory() {
-  localStorage.setItem("aircalc_history", JSON.stringify(calcHistory));
-}
-
-// ---------- TABS ----------
-function switchTab(tabId, btn) {
-  document.querySelectorAll(".tab-panel").forEach(s => s.classList.remove("active"));
-  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
-  document.getElementById(tabId).classList.add("active");
-  btn.classList.add("active");
-
-  if (tabId === "tab-export") {
-    fillExportPreview();
-  }
-}
-
-// ---------- EXPORT ----------
-function fillExportPreview() {
-  const preview = document.getElementById("export-preview");
-  preview.value = JSON.stringify(calcHistory, null, 2);
+  updateHistoryUI();
 }
 
 function exportHistoryJSON() {
-  const data = JSON.stringify(calcHistory, null, 2);
-  const blob = new Blob([data], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "aircalc-history.json";
-  a.click();
-  URL.revokeObjectURL(url);
-  fillExportPreview();
+  const blob = new Blob([JSON.stringify(calcHistory, null, 2)], { type: 'application/json' });
+  downloadBlob(blob, `aircalc-history-${dateFile()}.json`);
 }
 
-async function copyHistoryText() {
-  const lines = calcHistory.map((h, i) => {
-    const room = currentLang === "ar" ? h.roomNameAr : h.roomNameEn;
-    return `${i + 1}) ${room} | CFM ${h.cfm} | TR ${h.tr} | BTU ${h.marketBtu} | ${h.duct}`;
-  }).join("\n");
+function exportHistoryTXT() {
+  const lines = calcHistory.map((x, i) => {
+    const room = currentLang === 'ar' ? x.roomAr : x.roomEn;
+    return [
+      `#${i + 1} - ${room}`,
+      `TR: ${x.tr}`,
+      `CFM: ${x.cfm}`,
+      `BTU/h: ${x.btuActual}`,
+      `Duct: ${x.ductW}" x ${x.ductH}"`,
+      `ACH: ${x.ach}`,
+      `Vol: ${x.volumeM3} m3 | P: ${x.people} | W: ${x.equipW}`,
+      `---`
+    ].join('\n');
+  }).join('\n');
+  const blob = new Blob([lines || 'No history'], { type: 'text/plain;charset=utf-8' });
+  downloadBlob(blob, `aircalc-history-${dateFile()}.txt`);
+}
 
+async function copyHistory() {
   try {
-    await navigator.clipboard.writeText(lines || "");
-    document.getElementById("export-preview").value = lines || "";
+    const text = calcHistory.map((x, i) =>
+      `#${i + 1} ${currentLang === 'ar' ? x.roomAr : x.roomEn} | TR ${x.tr} | CFM ${x.cfm} | BTU ${x.btuActual}`
+    ).join('\n');
+    await navigator.clipboard.writeText(text || 'No history');
+    alert(currentLang === 'ar' ? 'تم نسخ السجل' : 'History copied');
   } catch {
-    document.getElementById("export-preview").value = lines || "";
+    alert(currentLang === 'ar' ? 'تعذر النسخ' : 'Copy failed');
   }
 }
 
-// ---------- ASSISTANT ----------
-function generateAssistantTip() {
-  const out = document.getElementById("assistant-output");
-  const room = getCurrentRoom();
-  if (!lastCalc || !room) {
-    out.textContent = currentLang === "ar" ? "احسب أولاً ثم اطلب ملاحظة." : "Run a calculation first, then ask for a tip.";
-    return;
-  }
-
-  const tipsAr = [];
-  const tipsEn = [];
-
-  tipsAr.push(`الغرفة الحالية: ${room.ar}`);
-  tipsEn.push(`Current room: ${room.en}`);
-
-  if (room.category.id === "healthcare") {
-    tipsAr.push("هذه غرفة صحية: الأفضل اعتماد التحقق النهائي من جدول الضغط والترشيح (HEPA/ضغط موجب/سالب) ضمن التصميم التفصيلي.");
-    tipsEn.push("Healthcare room: final design should also verify pressure relationship and filtration (HEPA/positive/negative) in detailed design.");
-  }
-
-  if (lastCalc.equipW > 0) {
-    tipsAr.push(`أحمال الأجهزة (${formatNum(lastCalc.equipW)} W) أثّرت على الحمل، راجع الأحمال الفعلية من كتالوج الأجهزة لرفع الدقة.`);
-    tipsEn.push(`Equipment load (${formatNum(lastCalc.equipW)} W) affects cooling load. Use actual equipment datasheets for better accuracy.`);
-  }
-
-  if (lastCalc.people > 0) {
-    tipsAr.push(`تمت إضافة تهوية أشخاص (${formatNum(lastCalc.people)} شخص). تأكد من occupancy الفعلي وقت الذروة.`);
-    tipsEn.push(`People ventilation was added (${formatNum(lastCalc.people)} persons). Verify actual peak occupancy.`);
-  }
-
-  tipsAr.push(`المقترح السوقي الحالي: ${formatNum(lastCalc.marketBtu)} BTU (تقريب).`);
-  tipsEn.push(`Current market suggestion: ${formatNum(lastCalc.marketBtu)} BTU (approx).`);
-
-  out.textContent = currentLang === "ar" ? tipsAr.join(" ") : tipsEn.join(" ");
+function downloadBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
 }
 
-// ---------- SETTINGS ----------
-function resetAppData() {
-  localStorage.removeItem("aircalc_history");
-  localStorage.removeItem("aircalc_state");
-  calcHistory = [];
-  selectedEquipCounts = {};
-  inputs = { display: "0", people: "0", equip: "0" };
-  updateInputsUI();
-  renderHistory();
-  calculateNow(false);
+function dateFile() {
+  const d = new Date();
+  return `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}`;
 }
 
-// ---------- PERSIST STATE ----------
-function saveState() {
-  const state = {
-    currentLang,
-    inputs,
-    selectedRoomId: getCurrentRoom()?.id || null,
-    selectedEquipCounts
-  };
-  localStorage.setItem("aircalc_state", JSON.stringify(state));
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function press(n) {
+  const s = String(n);
+  let val = inputs[activeField];
+
+  if (s === '.' && val.includes('.')) return;
+  if (val === '0' && s !== '.') val = s;
+  else val += s;
+
+  inputs[activeField] = val;
+  updateDisplayValues();
 }
 
-function restoreState() {
-  const raw = localStorage.getItem("aircalc_state");
-  if (!raw) {
-    document.getElementById("lang-btn").textContent = currentLang === "ar" ? "English" : "العربية";
-    return;
-  }
+function deleteLast() {
+  const v = inputs[activeField];
+  inputs[activeField] = (v.length <= 1) ? '0' : v.slice(0, -1);
+  if (inputs[activeField] === '-' || inputs[activeField] === '') inputs[activeField] = '0';
+  updateDisplayValues();
+}
 
-  try {
-    const s = JSON.parse(raw);
-
-    if (s.currentLang && s.currentLang !== currentLang) {
-      currentLang = s.currentLang;
-      localStorage.setItem("aircalc_lang", currentLang);
-      applyLanguageDirection();
-      document.querySelectorAll("[data-ar]").forEach(el => {
-        el.textContent = currentLang === "ar" ? el.getAttribute("data-ar") : el.getAttribute("data-en");
-      });
-    }
-
-    if (s.inputs) {
-      inputs.display = sanitizeNumericString(s.inputs.display || "0");
-      inputs.people = sanitizeNumericString(s.inputs.people || "0", true);
-      inputs.equip = sanitizeNumericString(s.inputs.equip || "0", true);
-    }
-
-    if (s.selectedEquipCounts) {
-      selectedEquipCounts = s.selectedEquipCounts;
-      recalcEquipWatts();
-    }
-
-    if (s.selectedRoomId) {
-      const select = document.getElementById("room-select");
-      const found = Array.from(select.options).find(o => o.value === s.selectedRoomId);
-      if (found) select.value = s.selectedRoomId;
-    }
-
-    document.getElementById("lang-btn").textContent = currentLang === "ar" ? "English" : "العربية";
-  } catch (e) {
-    console.warn("state restore failed", e);
+function clearActiveField() {
+  inputs[activeField] = '0';
+  updateDisplayValues();
+  if (activeField === 'equip') {
+    // لو مسحنا الأجهزة من الحقل، نصفر العدادات
+    Object.keys(equipmentCounts).forEach(k => equipmentCounts[k] = 0);
+    renderEquipmentList();
   }
 }
 
-// ---------- HELPERS ----------
-function formatNum(value, decimals = 0) {
-  const num = Number(value || 0);
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
-  }).format(num);
+function clearAllInputs() {
+  inputs.display = '0';
+  inputs.people = '0';
+  inputs.equip = '0';
+  Object.keys(equipmentCounts).forEach(k => equipmentCounts[k] = 0);
+  renderEquipmentList();
+  updateDisplayValues();
+  calculateLoad(false);
 }
 
-function toEnglishDigits(str) {
-  // Ensures no Arabic digits even if pasted
-  return String(str).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[^\d.]/g, "");
+function updateDisplayValues() {
+  document.getElementById('display').textContent = sanitizeNumString(inputs.display);
+  document.getElementById('people-count').value = sanitizeNumString(inputs.people);
+  document.getElementById('equip-watts').value = sanitizeNumString(inputs.equip);
 }
 
-// ---------- SERVICE WORKER ----------
-function registerSW() {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+function sanitizeNumString(s) {
+  const n = Number(s);
+  if (!Number.isFinite(n)) return '0';
+  // نحافظ على الديسيمل إذا المستخدم كتب نقطة
+  if (String(s).includes('.')) return String(s);
+  return String(Math.trunc(n));
+}
+
+function focusField(f) {
+  activeField = f;
+  document.getElementById('display').classList.remove('active-field');
+  document.getElementById('people-count').classList.remove('active-field');
+  document.getElementById('equip-watts').classList.remove('active-field');
+
+  if (f === 'display') document.getElementById('display').classList.add('active-field');
+  if (f === 'people') document.getElementById('people-count').classList.add('active-field');
+  if (f === 'equip') document.getElementById('equip-watts').classList.add('active-field');
+}
+
+function switchTab(tabId, btnEl) {
+  document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+
+  document.querySelectorAll('.bottom-nav .nav-item').forEach(x => x.classList.remove('active'));
+  btnEl.classList.add('active');
+}
+
+function toggleLanguage() {
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+
+  const html = document.getElementById('html-tag');
+  html.lang = currentLang;
+  html.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+
+  buildRoomSelect();
+  renderEquipmentList();
+  updateLanguageUI();
+  updateRoomMetaChips();
+  updateHistoryUI();
+  calculateLoad(false);
+}
+
+function updateLanguageUI() {
+  document.querySelectorAll('[data-ar]').forEach(el => {
+    const txt = el.getAttribute(`data-${currentLang}`);
+    if (txt) el.textContent = txt;
+  });
+
+  // زر اللغة في الإعدادات
+  const langBtn = document.getElementById('lang-btn');
+  if (langBtn) langBtn.textContent = currentLang === 'ar' ? 'English' : 'العربية';
+}
+
+function updateRoomMetaChips() {
+  const room = getSelectedRoom();
+  if (!room) return;
+  document.getElementById('chip-standard').textContent = getStandardLabel(room);
+  document.getElementById('chip-ach').textContent = `ACH: ${nfInt.format(room.ach)}`;
+  updateDuctChip();
+}
+
+function updateDuctChip() {
+  const cfmText = document.getElementById('res-cfm').textContent || 'CFM 0';
+  const cfm = parseInt(cfmText.replace(/[^\d]/g, ''), 10) || 0;
+  const duct = calcDuctSize(cfm);
+  document.getElementById('chip-duct').textContent = `Duct: ${duct.width}" x ${duct.height}"`;
+}
+
+// EQUIPMENT
+function getEquipmentForCurrentRoom() {
+  const room = getSelectedRoom();
+  if (!room) return [];
+  const sector = getRoomSector(room);
+  return [...equipmentLibrary.common, ...(equipmentLibrary[sector] || [])];
+}
+
+function resetEquipmentForCurrentRoom() {
+  const allowed = new Set(getEquipmentForCurrentRoom().map(x => x.id));
+
+  // حذف أي عدادات لأجهزة غير مسموحة
+  Object.keys(equipmentCounts).forEach(id => {
+    if (!allowed.has(id)) delete equipmentCounts[id];
+  });
+
+  // إنشاء عدادات للأجهزة المتاحة
+  for (const eq of getEquipmentForCurrentRoom()) {
+    if (typeof equipmentCounts[eq.id] !== 'number') equipmentCounts[eq.id] = 0;
   }
+
+  refreshEquipWattsFromCounts();
+}
+
+function refreshEquipWattsFromCounts() {
+  const list = getEquipmentForCurrentRoom();
+  const totalW = list.reduce((sum, e) => sum + ((equipmentCounts[e.id] || 0) * e.w), 0);
+  inputs.equip = String(totalW);
+  updateDisplayValues();
+}
+
+function renderEquipmentList() {
+  const box = document.getElementById('equip-list');
+  if (!box) return;
+  const list = getEquipmentForCurrentRoom();
+
+  box.innerHTML = list.map(eq => {
+    const count = equipmentCounts[eq.id] || 0;
+    return `
+      <div class="equip-item">
+        <div>
+          <div class="eq-name">${escapeHtml(currentLang === 'ar' ? eq.ar : eq.en)}</div>
+          <div class="eq-sub">${nfInt.format(eq.w)} W</div>
+        </div>
+        <div class="eq-controls">
+          <button onclick="changeEquipCount('${eq.id}', -1)">−</button>
+          <div class="eq-count">${nfInt.format(count)}</div>
+          <button onclick="changeEquipCount('${eq.id}', 1)">+</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function changeEquipCount(id, delta) {
+  if (typeof equipmentCounts[id] !== 'number') equipmentCounts[id] = 0;
+  equipmentCounts[id] = Math.max(0, equipmentCounts[id] + delta);
+  refreshEquipWattsFromCounts();
+  renderEquipmentList();
+  calculateLoad(false);
+}
+
+function openEquipModal() {
+  focusField('equip');
+  document.getElementById('equip-modal').classList.add('show');
+}
+
+function closeEquipModal() {
+  document.getElementById('equip-modal').classList.remove('show');
+}
+
+// helpers
+function escapeHtml(str = '') {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
