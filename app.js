@@ -1,370 +1,531 @@
-let currentLang = 'ar';
-let activeField = 'display';
+/* Air Calc Pro - Main App */
+let currentLang = "ar";
+let activeField = "display";
 let inputs = { display: "0", people: "0", equip: "0" };
 let calcHistory = [];
+
 let roomData = { categories: [] };
+let flatRooms = []; // flattened for quick lookup
 
-// ارتفاع سقف افتراضي لتحويل الحجم (m3) إلى مساحة (m2)
-const DEFAULT_CEILING_M = 3.0;
-
-// قائمة أجهزة شاملة + تصنيف (healthcare/commercial/residential/shared)
-const equipmentList = [
-  // Shared
-  { id: 'pc', ar: '💻 كمبيوتر مكتب', en: 'Desktop PC', watts: 200, count: 0, sectors: ['shared'] },
-  { id: 'laptop', ar: '💻 لابتوب', en: 'Laptop', watts: 90, count: 0, sectors: ['shared'] },
-  { id: 'screen', ar: '📺 شاشة', en: 'Monitor / Screen', watts: 80, count: 0, sectors: ['shared'] },
-  { id: 'printer', ar: '🖨️ طابعة', en: 'Printer', watts: 500, count: 0, sectors: ['shared'] },
-  { id: 'fridge_shared', ar: '🧊 ثلاجة صغيرة', en: 'Small Fridge', watts: 180, count: 0, sectors: ['shared'] },
-
-  // Healthcare (أجهزة صحية)
-  { id: 'med_general', ar: '🩺 جهاز طبي عام', en: 'Medical Device', watts: 400, count: 0, sectors: ['healthcare'] },
-  { id: 'patient_monitor', ar: '📈 شاشة مراقبة مريض', en: 'Patient Monitor', watts: 120, count: 0, sectors: ['healthcare'] },
-  { id: 'anesthesia', ar: '💨 جهاز تخدير', en: 'Anesthesia Machine', watts: 1200, count: 0, sectors: ['healthcare'] },
-  { id: 'suction', ar: '🧪 جهاز شفط', en: 'Suction Unit', watts: 250, count: 0, sectors: ['healthcare'] },
-  { id: 'infusion_pump', ar: '💉 مضخة محاليل', en: 'Infusion Pump', watts: 50, count: 0, sectors: ['healthcare'] },
-  { id: 'ventilator', ar: '🫁 جهاز تنفس صناعي', en: 'Ventilator', watts: 300, count: 0, sectors: ['healthcare'] },
-  { id: 'defibrillator', ar: '⚡ جهاز صدمات قلب', en: 'Defibrillator', watts: 200, count: 0, sectors: ['healthcare'] },
-  { id: 'lab_analyzer', ar: '🧫 محلل مخبري', en: 'Lab Analyzer', watts: 900, count: 0, sectors: ['healthcare'] },
-  { id: 'centrifuge', ar: '🧪 جهاز طرد مركزي', en: 'Centrifuge', watts: 600, count: 0, sectors: ['healthcare'] },
-  { id: 'autoclave', ar: '🔥 أوتوكليف تعقيم', en: 'Autoclave', watts: 2000, count: 0, sectors: ['healthcare'] },
-  { id: 'xray_equip', ar: '🩻 جهاز أشعة', en: 'X-Ray Equipment', watts: 2500, count: 0, sectors: ['healthcare'] },
-  { id: 'ultrasound', ar: '🛰️ جهاز ألتراساوند', en: 'Ultrasound Unit', watts: 300, count: 0, sectors: ['healthcare'] },
-
-  // Commercial
-  { id: 'copier', ar: '🖨️ ماكينة تصوير', en: 'Copier', watts: 800, count: 0, sectors: ['commercial'] },
-  { id: 'pos', ar: '🧾 جهاز نقاط بيع', en: 'POS System', watts: 120, count: 0, sectors: ['commercial'] },
-  { id: 'display_light', ar: '💡 إضاءة عرض', en: 'Display Lighting', watts: 350, count: 0, sectors: ['commercial'] },
-  { id: 'coffee_machine', ar: '☕ ماكينة قهوة', en: 'Coffee Machine', watts: 1400, count: 0, sectors: ['commercial'] },
-  { id: 'oven', ar: '🔥 فرن', en: 'Oven', watts: 2500, count: 0, sectors: ['commercial'] },
-  { id: 'freezer', ar: '🧊 فريزر', en: 'Freezer', watts: 500, count: 0, sectors: ['commercial'] },
-  { id: 'grill', ar: '🍖 شواية كهربائية', en: 'Electric Grill', watts: 1800, count: 0, sectors: ['commercial'] },
-  { id: 'showcase_fridge', ar: '🧃 ثلاجة عرض', en: 'Display Fridge', watts: 700, count: 0, sectors: ['commercial'] },
-  { id: 'cash_drawer', ar: '💵 درج كاش', en: 'Cash Drawer', watts: 40, count: 0, sectors: ['commercial'] },
-
-  // Residential
-  { id: 'tv', ar: '📺 تلفزيون', en: 'TV', watts: 150, count: 0, sectors: ['residential'] },
-  { id: 'home_fridge', ar: '🧊 ثلاجة منزلية', en: 'Home Fridge', watts: 250, count: 0, sectors: ['residential'] },
-  { id: 'washing', ar: '🧺 غسالة', en: 'Washing Machine', watts: 700, count: 0, sectors: ['residential'] },
-  { id: 'dryer', ar: '🌬️ نشافة', en: 'Dryer', watts: 1800, count: 0, sectors: ['residential'] },
-  { id: 'microwave', ar: '🍲 مايكرويف', en: 'Microwave', watts: 1200, count: 0, sectors: ['residential'] },
-  { id: 'electric_kettle', ar: '🫖 غلاية', en: 'Electric Kettle', watts: 1500, count: 0, sectors: ['residential'] },
-  { id: 'dishwasher', ar: '🍽️ غسالة صحون', en: 'Dishwasher', watts: 1300, count: 0, sectors: ['residential'] },
-  { id: 'home_oven', ar: '🔥 فرن منزلي', en: 'Home Oven', watts: 2000, count: 0, sectors: ['residential'] },
-  { id: 'misc_house', ar: '🔌 أجهزة منزلية متنوعة', en: 'Misc Household Loads', watts: 300, count: 0, sectors: ['residential'] }
-];
-
-window.onload = async () => {
-  await loadRoomData();
-  updateRoomSelect();
-  renderEquipChecklist();
-  focusField('display');
-  updateDisplayValues();
-  registerServiceWorker();
+// ---- Equipment database (filtered by selected room domain) ----
+const equipmentCatalog = {
+  common: [
+    { id: "pc", ar: "💻 كمبيوتر مكتبي", en: "Desktop PC", watts: 200, count: 0 },
+    { id: "laptop", ar: "💼 لابتوب", en: "Laptop", watts: 90, count: 0 },
+    { id: "monitor", ar: "🖥️ شاشة", en: "Monitor", watts: 60, count: 0 },
+    { id: "tv", ar: "📺 شاشة عرض كبيرة", en: "Large Display", watts: 180, count: 0 },
+    { id: "printer", ar: "🖨️ طابعة", en: "Printer", watts: 500, count: 0 },
+    { id: "fridge_small", ar: "🧊 ثلاجة صغيرة", en: "Small Fridge", watts: 180, count: 0 }
+  ],
+  medical: [
+    { id: "patient_monitor", ar: "🫀 شاشة مراقبة مريض", en: "Patient Monitor", watts: 120, count: 0 },
+    { id: "ventilator", ar: "🫁 جهاز تنفس صناعي", en: "Ventilator", watts: 300, count: 0 },
+    { id: "infusion_pump", ar: "💉 مضخة محاليل", en: "Infusion Pump", watts: 60, count: 0 },
+    { id: "anesthesia", ar: "😷 جهاز تخدير", en: "Anesthesia Machine", watts: 500, count: 0 },
+    { id: "surgical_light", ar: "💡 إضاءة جراحية", en: "Surgical Light", watts: 180, count: 0 },
+    { id: "autoclave", ar: "♨️ أوتوكلاف تعقيم", en: "Autoclave", watts: 2000, count: 0 },
+    { id: "lab_analyzer", ar: "🧪 جهاز تحليل مخبري", en: "Lab Analyzer", watts: 700, count: 0 },
+    { id: "xray_unit", ar: "🩻 جهاز أشعة", en: "X-Ray Unit", watts: 2200, count: 0 },
+    { id: "ultrasound", ar: "🔊 جهاز ألتراساوند", en: "Ultrasound", watts: 250, count: 0 },
+    { id: "med_fridge", ar: "🧊 ثلاجة أدوية", en: "Medical Fridge", watts: 350, count: 0 }
+  ],
+  commercial: [
+    { id: "pos", ar: "💳 جهاز كاشير (POS)", en: "POS Terminal", watts: 80, count: 0 },
+    { id: "display_sign", ar: "🔆 شاشة إعلانية", en: "Digital Signage", watts: 220, count: 0 },
+    { id: "espresso", ar: "☕ ماكينة قهوة", en: "Coffee Machine", watts: 1500, count: 0 },
+    { id: "freezer", ar: "🧊 فريزر عرض", en: "Display Freezer", watts: 700, count: 0 },
+    { id: "fridge_com", ar: "🧊 ثلاجة تجارية", en: "Commercial Fridge", watts: 900, count: 0 },
+    { id: "oven", ar: "🔥 فرن تجاري", en: "Commercial Oven", watts: 3000, count: 0 },
+    { id: "mixer", ar: "🥣 خلاط/عجان", en: "Mixer", watts: 800, count: 0 },
+    { id: "treadmill", ar: "🏃 سير رياضي", en: "Treadmill", watts: 1200, count: 0 },
+    { id: "sound_amp", ar: "🔊 مضخم صوت", en: "Audio Amplifier", watts: 400, count: 0 }
+  ],
+  residential: [
+    { id: "split_ac_aux", ar: "❄️ سبليت إضافي (مروحة/داخلي)", en: "Split Indoor Aux", watts: 250, count: 0 },
+    { id: "tv_home", ar: "📺 تلفزيون", en: "TV", watts: 150, count: 0 },
+    { id: "router", ar: "📶 راوتر", en: "WiFi Router", watts: 20, count: 0 },
+    { id: "microwave", ar: "🍽️ مايكرويف", en: "Microwave", watts: 1200, count: 0 },
+    { id: "fridge_home", ar: "🧊 ثلاجة منزلية", en: "Home Fridge", watts: 250, count: 0 },
+    { id: "washing_machine", ar: "🧺 غسالة", en: "Washing Machine", watts: 600, count: 0 },
+    { id: "dryer", ar: "🌀 نشافة", en: "Dryer", watts: 1800, count: 0 },
+    { id: "dishwasher", ar: "🍽️ غسالة صحون", en: "Dishwasher", watts: 1400, count: 0 },
+    { id: "water_heater", ar: "🚿 سخان ماء", en: "Water Heater", watts: 1500, count: 0 }
+  ]
 };
 
-async function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    try {
-      await navigator.serviceWorker.register('./sw.js');
-      console.log('SW registered');
-    } catch (e) {
-      console.warn('SW failed:', e);
-    }
+window.onload = async () => {
+  await loadRooms();
+  populateRoomSelect();
+  onRoomChange();
+  focusField("display");
+  updateDisplayValues();
+  calculateLoad(false);
+  registerSW();
+};
+
+// ---------- PWA ----------
+function registerSW() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
   }
 }
 
-async function loadRoomData() {
+// ---------- Data loading ----------
+async function loadRooms() {
+  const fallback = {
+    categories: [
+      {
+        name_ar: "المستشفيات (ASHRAE 170)",
+        name_en: "Hospitals (ASHRAE 170)",
+        domain: "medical",
+        method: "ashrae170_ach",
+        items: [
+          { id: "h_or", ar: "غرفة عمليات", en: "Operating Room", ach: 15, factor: 280 },
+          { id: "h_aii", ar: "عزل سلبي AII", en: "AII Room", ach: 12, factor: 300 },
+          { id: "h_patient", ar: "غرفة مريض", en: "Patient Room", ach: 6, factor: 350 }
+        ]
+      },
+      {
+        name_ar: "السكني",
+        name_en: "Residential",
+        domain: "residential",
+        method: "saudi_practical",
+        items: [{ id: "r_living", ar: "غرفة معيشة", en: "Living Room", ach: 4, factor: 350 }]
+      }
+    ]
+  };
+
   try {
-    const res = await fetch(`data.json?v=${Date.now()}`, { cache: 'no-store' });
-    const txt = await res.text();
-    const cleaned = txt.replace(/\bNaN\b/g, "null");
-    const parsed = JSON.parse(cleaned);
-
-    if (!parsed.categories || !Array.isArray(parsed.categories)) {
-      throw new Error('Invalid data.json format');
-    }
-
-    roomData = parsed;
-    console.log('Loaded data.json:', roomData.categories.length, 'categories');
+    const r = await fetch(`./data.json?v=${Date.now()}`, { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const txt = await r.text();
+    roomData = JSON.parse(txt.replace(/\bNaN\b/g, "null"));
   } catch (e) {
-    console.error('Error loading data.json:', e);
-    alert('Error loading data.json');
-    roomData = { categories: [] };
+    console.warn("Using fallback room data", e);
+    roomData = fallback;
   }
+
+  flatRooms = [];
+  (roomData.categories || []).forEach(cat => {
+    (cat.items || []).forEach(item => {
+      flatRooms.push({ ...item, _cat: cat });
+    });
+  });
 }
 
-function updateRoomSelect() {
-  const select = document.getElementById('room-select');
+function populateRoomSelect() {
+  const select = document.getElementById("room-select");
   if (!select) return;
+  select.innerHTML = "";
 
-  select.innerHTML = '';
+  (roomData.categories || []).forEach(cat => {
+    const group = document.createElement("optgroup");
+    group.label = currentLang === "ar" ? cat.name_ar : cat.name_en;
 
-  roomData.categories.forEach((cat, cIdx) => {
-    const group = document.createElement('optgroup');
-    group.label = currentLang === 'ar' ? cat.name_ar : cat.name_en;
-
-    cat.items.forEach((room, rIdx) => {
-      const opt = document.createElement('option');
+    (cat.items || []).forEach(room => {
+      const opt = document.createElement("option");
       opt.value = room.id;
-      opt.dataset.catIndex = cIdx;
-      opt.dataset.roomIndex = rIdx;
-      opt.innerText = currentLang === 'ar' ? room.ar : room.en;
+      opt.textContent = currentLang === "ar" ? room.ar : room.en;
+      opt.dataset.domain = cat.domain || "";
+      opt.dataset.method = cat.method || "";
+      opt.dataset.ach = room.ach ?? "";
       group.appendChild(opt);
     });
 
     select.appendChild(group);
   });
-
-  if (select.options.length > 0) select.selectedIndex = 0;
 }
 
 function getSelectedRoom() {
-  const select = document.getElementById('room-select');
-  if (!select || select.selectedIndex < 0) return null;
-
-  const opt = select.options[select.selectedIndex];
-  const catIndex = Number(opt.dataset.catIndex);
-  const roomIndex = Number(opt.dataset.roomIndex);
-
-  const category = roomData.categories[catIndex];
-  const room = category?.items?.[roomIndex];
-
-  if (!category || !room) return null;
-  return { category, room };
+  const select = document.getElementById("room-select");
+  if (!select || !select.value) return null;
+  return flatRooms.find(r => r.id === select.value) || null;
 }
 
-function detectSector(category) {
-  const txt = ((category.name_en || '') + ' ' + (category.name_ar || '')).toLowerCase();
-  if (txt.includes('hospital') || txt.includes('مستشفى')) return 'healthcare';
-  if (txt.includes('commercial') || txt.includes('تجاري')) return 'commercial';
-  if (txt.includes('residential') || txt.includes('سكن')) return 'residential';
-  return 'commercial';
+// ---------- Room / equipment handling ----------
+function onRoomChange() {
+  // reset equipment only (keep volume/people if you want, but user asked safe behavior => reset all is okay)
+  resetAllFields();
+  renderEquipChecklist();
+  updateBadges();
+  calculateLoad(false);
 }
 
+function getCurrentDomain() {
+  const room = getSelectedRoom();
+  return room?._cat?.domain || "common";
+}
+
+function getCurrentMethod() {
+  const room = getSelectedRoom();
+  return room?._cat?.method || "saudi_practical";
+}
+
+function getEquipmentPool() {
+  const domain = getCurrentDomain();
+  const commonClone = equipmentCatalog.common.map(x => ({ ...x }));
+  const domainClone = (equipmentCatalog[domain] || []).map(x => ({ ...x }));
+
+  // restore previous counts if same item IDs already existed in old rendered list
+  const oldMap = {};
+  [...equipmentCatalog.common, ...equipmentCatalog.medical, ...equipmentCatalog.commercial, ...equipmentCatalog.residential]
+    .forEach(i => { oldMap[i.id] = i.count || 0; });
+
+  const merged = [...commonClone, ...domainClone];
+  merged.forEach(i => { i.count = oldMap[i.id] || 0; });
+  return merged;
+}
+
+function renderEquipChecklist() {
+  const wrap = document.getElementById("equip-checklist");
+  const badge = document.getElementById("equip-category-badge");
+  if (!wrap) return;
+
+  const domain = getCurrentDomain();
+  const domainName = {
+    medical: currentLang === "ar" ? "طبي" : "Medical",
+    commercial: currentLang === "ar" ? "تجاري" : "Commercial",
+    residential: currentLang === "ar" ? "سكني" : "Residential"
+  };
+  if (badge) badge.textContent = `${currentLang === "ar" ? "الفئة" : "Type"}: ${domainName[domain] || domain}`;
+
+  // build active pool and sync counts into source catalogs
+  window._activeEquipList = getEquipmentPool();
+
+  wrap.innerHTML = window._activeEquipList.map((item, idx) => `
+    <div class="equip-item-row">
+      <div>
+        <div class="title">${currentLang === "ar" ? item.ar : item.en}</div>
+        <div class="sub">${item.watts} W</div>
+      </div>
+      <div class="counter-ctrl">
+        <button class="counter-btn" onclick="changeCount(${idx}, -1)">−</button>
+        <span id="cnt-${idx}" style="margin:0 10px;min-width:16px;display:inline-block;text-align:center">${item.count}</span>
+        <button class="counter-btn" onclick="changeCount(${idx}, 1)">+</button>
+      </div>
+    </div>
+  `).join("");
+
+  recalcEquipWattsFromActiveList();
+}
+
+function changeCount(idx, delta) {
+  if (!window._activeEquipList) return;
+  const item = window._activeEquipList[idx];
+  if (!item) return;
+  item.count = Math.max(0, (item.count || 0) + delta);
+  const cnt = document.getElementById(`cnt-${idx}`);
+  if (cnt) cnt.textContent = item.count;
+
+  // sync back to master catalogs
+  [equipmentCatalog.common, equipmentCatalog.medical, equipmentCatalog.commercial, equipmentCatalog.residential].forEach(arr => {
+    const found = arr.find(x => x.id === item.id);
+    if (found) found.count = item.count;
+  });
+
+  recalcEquipWattsFromActiveList();
+  calculateLoad(false);
+}
+
+function recalcEquipWattsFromActiveList() {
+  const total = (window._activeEquipList || []).reduce((sum, x) => sum + (x.watts * (x.count || 0)), 0);
+  inputs.equip = String(total);
+  updateDisplayValues();
+}
+
+// ---------- Calculator ----------
 function calculateLoad(save = false) {
-  const volM3 = parseFloat(inputs.display) || 0;
-  const people = parseInt(inputs.people) || 0;
+  const room = getSelectedRoom();
+  if (!room) return;
+
+  const volumeM3 = parseFloat(inputs.display) || 0;
+  const people = parseInt(inputs.people || "0", 10) || 0;
   const equipWatts = parseFloat(inputs.equip) || 0;
 
-  const sel = getSelectedRoom();
-  if (!sel) return;
+  const ach = Number(room.ach || 0);
+  const factor = Number(room.factor || 350);
+  const method = getCurrentMethod();
+  const isHospital = method === "ashrae170_ach";
 
-  const { category, room } = sel;
-  const sector = detectSector(category);
+  // 1) Ventilation CFM from ACH
+  const cfmFromAch = ach > 0 ? ((volumeM3 * 35.3147 * ach) / 60) : 0;
 
-  const ceilingM = Number(room.ceiling_m || DEFAULT_CEILING_M);
-  const areaM2 = ceilingM > 0 ? volM3 / ceilingM : 0;
-  const areaFt2 = areaM2 * 10.7639;
+  // 2) Extra air for people (practical allowance)
+  // medical lower, others normal
+  const peopleCfmEach = isHospital ? 10 : 15;
+  const cfmPeople = people * peopleCfmEach;
 
-  let cfm = 0;
-  let methodLabel = '';
-  let achShown = room.ach || 0;
+  // 3) CFM result
+  let cfm = Math.round(cfmFromAch + cfmPeople);
 
-  // 1) Healthcare (ASHRAE 170 - ACH)
-  if (room.method === 'ashrae170_ach' || sector === 'healthcare') {
-    cfm = ((volM3 * 35.3147 * (Number(room.ach) || 0)) / 60) + (people * 15);
-    methodLabel = 'ASHRAE 170 (ACH)';
+  // 4) BTU/TR
+  // Hospital: air-dominant basis + internal gains
+  // Non-hospital: practical Saudi factor basis + internal gains
+  let btu;
+  if (isHospital) {
+    // sensible-ish approximation from airflow + internal loads
+    // factor here is room-specific temp/load intensity indicator
+    btu = (cfm * factor) + (people * 450) + (equipWatts * 3.412);
+  } else {
+    // practical factor method (volume-based) + people + equipment
+    btu = ((volumeM3 * 35.3147) * factor) + (people * 450) + (equipWatts * 3.412);
+    // sanity cap: ensure ventilation cfm not absurdly low compared to load-derived rough cfm
+    const cfmFromLoadSanity = btu / 400; // rough field sanity
+    cfm = Math.round(Math.max(cfm, cfmFromLoadSanity * 0.8));
   }
 
-  // 2) Commercial (ASHRAE 62.1 VRP) => Rp*P + Ra*A
-  else if (room.method === 'ashrae62_1_vrp') {
-    const rp = Number(room.rp || 0); // cfm/person
-    const ra = Number(room.ra || 0); // cfm/ft²
-    cfm = (rp * people) + (ra * areaFt2);
+  // round carefully
+  btu = Math.round(btu);
+  const tr = btu / 12000;
+  const trFixed = tr.toFixed(2);
 
-    // fallback لو ما فيه أشخاص
-    if (cfm <= 0 && room.ach) {
-      cfm = (volM3 * 35.3147 * Number(room.ach)) / 60;
-    }
+  const marketBtu = getNearestMarketBTU(btu);
 
-    methodLabel = 'ASHRAE 62.1 (VRP)';
-  }
+  // Duct sizing quick helper
+  document.getElementById("targetCFM").value = cfm;
 
-  // 3) Residential (ASHRAE 62.2 Approx)
-  else if (room.method === 'ashrae62_2_res') {
-    const occ = Math.max(1, people || 1);
-    cfm = (0.03 * areaFt2) + (7.5 * occ);
+  // UI update
+  document.getElementById("tr-result").innerText = `${trFixed} TR`;
+  document.getElementById("cfm-result").innerText = `${formatNum(cfm)} CFM`;
+  document.getElementById("btu-result").innerText = `${formatNum(btu)} BTU/h`;
+  document.getElementById("btu-market-result").innerText = `${currentLang === "ar" ? "المقترح" : "Suggested"}: ${formatNum(marketBtu)} BTU`;
 
-    if (room.exhaust_boost_cfm) {
-      cfm += Number(room.exhaust_boost_cfm);
-    }
-
-    if (!room.ach && volM3 > 0) {
-      achShown = Math.round((((cfm * 60) / (volM3 * 35.3147)) * 10)) / 10;
-    }
-
-    methodLabel = 'ASHRAE 62.2 (Approx)';
-  }
-
-  // fallback
-  else {
-    cfm = ((volM3 * 35.3147 * (Number(room.ach) || 0)) / 60) + (people * 15);
-    methodLabel = currentLang === 'ar' ? 'طريقة ACH' : 'ACH Method';
-  }
-
-  cfm = Math.max(0, Math.round(cfm));
-
-  // عامل حراري (تقريبي عملي)
-  const factor = Number(
-    room.factor ||
-    (sector === 'healthcare' ? 350 :
-      sector === 'commercial' ? 400 : 350)
-  );
-
-  // TR تقريبي
-  const tr = (((cfm * factor) + (people * 450) + (equipWatts * 3.41)) / 12000).toFixed(2);
-
-  // Update UI
-  const trEl = document.getElementById('tr-result');
-  const cfmEl = document.getElementById('cfm-result');
-  const targetCFM = document.getElementById('targetCFM');
-  const hint = document.getElementById('field-hint');
-
-  if (trEl) trEl.innerText = `${tr} TR`;
-  if (cfmEl) cfmEl.innerText = `${cfm} CFM`;
-  if (targetCFM) targetCFM.value = cfm;
-
-  if (hint) {
-    const roomName = currentLang === 'ar' ? room.ar : room.en;
-    const achText = achShown ? ` • ACH: ${achShown}` : '';
-    hint.innerText = `${roomName} • ${methodLabel}${achText}`;
-  }
+  updateBadges();
 
   if (save) {
-    const duct = calcDuctQuick(cfm);
+    const ductRec = quickDuctFromCFM(cfm, 12); // assume 12" width for quick history note
     calcHistory.push({
       id: Date.now(),
-      room: currentLang === 'ar' ? room.ar : room.en,
-      tr,
+      roomAr: room.ar,
+      roomEn: room.en,
+      method,
+      ach,
+      volumeM3,
+      people,
+      equipWatts,
       cfm,
-      method: methodLabel,
-      duct
+      btu,
+      marketBtu,
+      tr: Number(trFixed),
+      duct: ductRec
     });
     updateHistoryUI();
   }
 }
 
-function calcDuctQuick(cfm) {
-  // سرعة تقريبية 800 fpm وعرض ثابت 12"
-  const width = 12;
-  const h = Math.max(4, Math.round(((cfm / 800) * 144) / width));
-  return `${width}" x ${h}"`;
-}
+function updateBadges() {
+  const room = getSelectedRoom();
+  if (!room) return;
 
-function runDuctCalc() {
-  const cfm = parseFloat(document.getElementById('targetCFM')?.value || 0);
-  const w = parseFloat(document.getElementById('fixWidth')?.value || 12);
+  const basisBadge = document.getElementById("basis-badge");
+  const achBadge = document.getElementById("ach-badge");
+  const methodBadge = document.getElementById("method-badge");
 
-  if (cfm > 0 && w > 0) {
-    const h = Math.round((cfm / 800 * 144) / w);
-    const out = document.getElementById('duct-result');
-    if (out) out.innerText = `${w}" x ${Math.max(4, h)}"`;
+  const method = getCurrentMethod();
+  const basisTextAr = room?._cat?.domain === "medical" ? "المرجع: ASHRAE 170" : "مرجع عملي (السعودية)";
+  const basisTextEn = room?._cat?.domain === "medical" ? "Ref: ASHRAE 170" : "Practical Ref (Saudi)";
+
+  if (basisBadge) basisBadge.textContent = currentLang === "ar" ? basisTextAr : basisTextEn;
+  if (achBadge) achBadge.textContent = `ACH: ${room.ach ?? "—"}`;
+
+  if (methodBadge) {
+    const text = method === "ashrae170_ach"
+      ? (currentLang === "ar" ? "الطريقة: ACH" : "Method: ACH")
+      : (currentLang === "ar" ? "الطريقة: عامل + أحمال" : "Method: Factor + Loads");
+    methodBadge.textContent = text;
   }
 }
 
-// ---------- Equipment ----------
-function renderEquipChecklist() {
-  const wrap = document.getElementById('equip-checklist');
-  if (!wrap) return;
-
-  const sel = getSelectedRoom();
-  const sector = sel ? detectSector(sel.category) : 'commercial';
-
-  const filtered = equipmentList.filter(item =>
-    item.sectors.includes('shared') || item.sectors.includes(sector)
-  );
-
-  wrap.innerHTML = filtered.map((item) => {
-    const idx = equipmentList.findIndex(x => x.id === item.id);
-    return `
-      <div class="equip-item-row">
-        <div>
-          ${currentLang === 'ar' ? item.ar : item.en}
-          <br><small>${item.watts}W</small>
-        </div>
-        <div class="counter-ctrl">
-          <button class="counter-btn" onclick="changeCount(${idx}, -1)">-</button>
-          <span id="cnt-${idx}" style="margin:0 10px">${item.count}</span>
-          <button class="counter-btn" onclick="changeCount(${idx}, 1)">+</button>
-        </div>
-      </div>
-    `;
-  }).join('');
+function getNearestMarketBTU(btu) {
+  // common market sizes in Saudi/GCC
+  const sizes = [9000,12000,18000,24000,30000,36000,48000,60000,72000,96000,120000];
+  let nearest = sizes[0];
+  let minDiff = Math.abs(btu - nearest);
+  for (const s of sizes) {
+    const d = Math.abs(btu - s);
+    if (d < minDiff) { minDiff = d; nearest = s; }
+  }
+  return nearest;
 }
 
-function changeCount(idx, delta) {
-  equipmentList[idx].count = Math.max(0, equipmentList[idx].count + delta);
+function quickDuctFromCFM(cfm, widthIn = 12) {
+  // approximate rectangular duct at ~800 fpm
+  if (!cfm || !widthIn) return "-";
+  const areaIn2 = (cfm / 800) * 144;
+  const h = Math.max(6, Math.round(areaIn2 / widthIn));
+  return `${widthIn}" x ${h}"`;
+}
 
-  const countEl = document.getElementById(`cnt-${idx}`);
-  if (countEl) countEl.innerText = equipmentList[idx].count;
-
-  inputs.equip = equipmentList.reduce((sum, item) => sum + (item.watts * item.count), 0).toString();
-  updateDisplayValues();
-  calculateLoad(false);
+function runDuctCalc() {
+  const cfm = parseFloat(document.getElementById("targetCFM").value);
+  const w = parseFloat(document.getElementById("fixWidth").value);
+  if (cfm > 0 && w > 0) {
+    const duct = quickDuctFromCFM(cfm, w);
+    document.getElementById("duct-result").innerText = duct;
+  } else {
+    document.getElementById("duct-result").innerText = "---";
+  }
 }
 
 // ---------- History ----------
 function updateHistoryUI() {
-  const container = document.getElementById('history-list');
+  const container = document.getElementById("history-list");
   if (!container) return;
 
-  const rows = [...calcHistory].reverse().map((item, index) => `
-    <div class="swipe-item" onclick="deleteItem(${item.id})" title="${currentLang === 'ar' ? 'اضغط للحذف' : 'Tap to delete'}">
-      <div class="info">
-        <span style="color:#666;font-size:.72rem;">#${calcHistory.length - index}</span><br>
-        <span>${item.room}</span><br>
-        <small>${item.method}</small><br>
-        <small>${currentLang === 'ar' ? 'الدكت' : 'Duct'}: ${item.duct}</small>
-      </div>
-      <div class="vals">
-        <span class="tr-val">${item.tr} TR</span><br>
-        <span class="cfm-val">${item.cfm} CFM</span>
-      </div>
-    </div>
-  `).join('');
+  if (!calcHistory.length) {
+    container.innerHTML = `<div class="sub" style="color:#8e8e93;padding:8px 0;">
+      ${currentLang === "ar" ? "لا يوجد عمليات محفوظة" : "No saved calculations"}
+    </div>`;
+    return;
+  }
 
-  container.innerHTML = rows;
+  const list = [...calcHistory].reverse();
+
+  container.innerHTML = list.map((item, idx) => {
+    const roomName = currentLang === "ar" ? item.roomAr : item.roomEn;
+    const methodText = item.method === "ashrae170_ach"
+      ? (currentLang === "ar" ? "ACH طبي" : "Medical ACH")
+      : (currentLang === "ar" ? "عملي" : "Practical");
+
+    return `
+      <div class="swipe-item">
+        <div class="info">
+          <div class="room">#${calcHistory.length - idx} — ${roomName}</div>
+          <div class="sub">
+            ${currentLang === "ar" ? "الحجم" : "Vol"}: ${formatNum(item.volumeM3)} m³ •
+            ${currentLang === "ar" ? "أشخاص" : "People"}: ${item.people} •
+            ${methodText}
+          </div>
+          <div class="sub">
+            CFM ${formatNum(item.cfm)} • BTU ${formatNum(item.marketBtu)} •
+            ${currentLang === "ar" ? "دكت تقريبي" : "Duct"} ${item.duct}
+          </div>
+          <button class="del-mini" onclick="deleteItem(${item.id})">
+            ${currentLang === "ar" ? "حذف" : "Delete"}
+          </button>
+        </div>
+        <div class="vals">
+          <div class="tr-val">${item.tr.toFixed(2)} TR</div>
+          <div class="btu-val">${formatNum(item.btu)} BTU/h</div>
+          <div>${formatNum(item.cfm)} CFM</div>
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 function deleteItem(id) {
-  const ok = confirm(currentLang === 'ar' ? 'حذف العملية؟' : 'Delete this calculation?');
-  if (!ok) return;
-
-  calcHistory = calcHistory.filter(item => item.id !== id);
-  updateHistoryUI();
+  const msg = currentLang === "ar" ? "حذف العملية؟" : "Delete this record?";
+  if (confirm(msg)) {
+    calcHistory = calcHistory.filter(i => i.id !== id);
+    updateHistoryUI();
+  }
 }
 
 function clearHistory() {
-  if (calcHistory.length === 0) return;
-  const ok = confirm(currentLang === 'ar' ? 'مسح السجل بالكامل؟' : 'Clear all history?');
-  if (!ok) return;
-  calcHistory = [];
-  updateHistoryUI();
+  const msg = currentLang === "ar" ? "مسح كل السجل؟" : "Clear all history?";
+  if (confirm(msg)) {
+    calcHistory = [];
+    updateHistoryUI();
+  }
 }
 
-// ---------- Input / Keypad ----------
+function exportHistoryCsv() {
+  if (!calcHistory.length) {
+    alert(currentLang === "ar" ? "لا يوجد سجل للتصدير" : "No history to export");
+    return;
+  }
+
+  const headers = [
+    "Room","Method","Volume_m3","People","Equip_W","ACH","CFM","BTU_h","Market_BTU","TR","Duct"
+  ];
+
+  const rows = calcHistory.map(i => [
+    `"${(currentLang === "ar" ? i.roomAr : i.roomEn).replace(/"/g, '""')}"`,
+    i.method,
+    i.volumeM3,
+    i.people,
+    i.equipWatts,
+    i.ach,
+    i.cfm,
+    i.btu,
+    i.marketBtu,
+    i.tr,
+    `"${i.duct}"`
+  ]);
+
+  const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "aircalc_history.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ---------- UI helpers ----------
 function press(n) {
-  if (inputs[activeField] === "0") inputs[activeField] = n.toString();
-  else inputs[activeField] += n.toString();
+  const v = String(n);
+
+  if (activeField === "equip") {
+    // equip field is modal-driven, ignore keypad
+    return;
+  }
+
+  if (activeField === "people") {
+    // people integer only
+    if (v === ".") return;
+    if (inputs.people === "0") inputs.people = v;
+    else inputs.people += v;
+  } else {
+    // display volume field can accept decimal
+    if (v === "." && (inputs.display || "").includes(".")) return;
+    if (inputs.display === "0" && v !== ".") inputs.display = v;
+    else if (inputs.display === "0" && v === ".") inputs.display = "0.";
+    else inputs.display += v;
+  }
 
   updateDisplayValues();
+  calculateLoad(false);
 }
 
 function deleteLast() {
-  inputs[activeField] = inputs[activeField].slice(0, -1) || "0";
+  if (activeField === "equip") return;
+  const key = activeField;
+  inputs[key] = (inputs[key] || "").slice(0, -1);
+  if (!inputs[key]) inputs[key] = "0";
   updateDisplayValues();
+  calculateLoad(false);
 }
 
 function clearActiveField() {
-  inputs[activeField] = "0";
+  if (activeField === "equip") {
+    // clear all equipment counts
+    [equipmentCatalog.common, equipmentCatalog.medical, equipmentCatalog.commercial, equipmentCatalog.residential].forEach(arr => {
+      arr.forEach(i => i.count = 0);
+    });
+    if (window._activeEquipList) window._activeEquipList.forEach(i => i.count = 0);
+    renderEquipChecklist();
+  } else {
+    inputs[activeField] = "0";
+  }
+  updateDisplayValues();
+  calculateLoad(false);
+}
+
+function resetAllFields() {
+  inputs = { display: "0", people: "0", equip: "0" };
+  [equipmentCatalog.common, equipmentCatalog.medical, equipmentCatalog.commercial, equipmentCatalog.residential].forEach(arr => {
+    arr.forEach(i => i.count = 0);
+  });
+  renderEquipChecklist();
   updateDisplayValues();
 }
 
 function updateDisplayValues() {
-  const d = document.getElementById('display');
-  const p = document.getElementById('people-count');
-  const e = document.getElementById('equip-watts');
-
+  const d = document.getElementById("display");
+  const p = document.getElementById("people-count");
+  const e = document.getElementById("equip-watts");
   if (d) d.innerText = inputs.display || "0";
   if (p) p.value = inputs.people || "0";
   if (e) e.value = inputs.equip || "0";
@@ -372,73 +533,56 @@ function updateDisplayValues() {
 
 function focusField(f) {
   activeField = f;
+  document.getElementById("display")?.classList.remove("active-field");
+  document.getElementById("people-count")?.classList.remove("active-field");
+  document.getElementById("equip-watts")?.classList.remove("active-field");
 
-  document.getElementById('display')?.classList.remove('active-field');
-  document.getElementById('people-count')?.classList.remove('active-field');
-  document.getElementById('equip-watts')?.classList.remove('active-field');
-
-  if (f === 'display') document.getElementById('display')?.classList.add('active-field');
-  if (f === 'people') document.getElementById('people-count')?.classList.add('active-field');
-  if (f === 'equip') document.getElementById('equip-watts')?.classList.add('active-field');
+  if (f === "display") document.getElementById("display")?.classList.add("active-field");
+  if (f === "people") document.getElementById("people-count")?.classList.add("active-field");
+  if (f === "equip") document.getElementById("equip-watts")?.classList.add("active-field");
 }
 
-function resetAllFields() {
-  inputs = { display: "0", people: "0", equip: "0" };
-
-  equipmentList.forEach(item => item.count = 0);
-
-  updateDisplayValues();
-  renderEquipChecklist();
-
-  const trEl = document.getElementById('tr-result');
-  const cfmEl = document.getElementById('cfm-result');
-  if (trEl) trEl.innerText = '0 TR';
-  if (cfmEl) cfmEl.innerText = '0 CFM';
-
-  calculateLoad(false);
-}
-
-// ---------- Modal ----------
 function openEquipModal() {
-  renderEquipChecklist(); // فلترة حسب نوع الغرفة الحالي
-  const modal = document.getElementById('equip-modal');
-  if (modal) modal.style.display = 'block';
+  document.getElementById("equip-modal").style.display = "block";
+  focusField("equip");
 }
 function closeEquipModal() {
-  const modal = document.getElementById('equip-modal');
-  if (modal) modal.style.display = 'none';
+  document.getElementById("equip-modal").style.display = "none";
+  focusField("display");
 }
 
-// ---------- Tabs ----------
 function switchTab(id, btn) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-  document.getElementById(id)?.classList.add('active');
-  btn?.classList.add('active');
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  document.getElementById(id)?.classList.add("active");
+  btn?.classList.add("active");
 }
 
-// ---------- Language ----------
 function toggleLanguage() {
-  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  currentLang = currentLang === "ar" ? "en" : "ar";
 
-  const html = document.getElementById('html-tag');
-  if (html) {
-    html.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-    html.lang = currentLang;
-  }
+  const html = document.getElementById("html-tag");
+  html.lang = currentLang;
+  html.dir = currentLang === "ar" ? "rtl" : "ltr";
 
-  document.querySelectorAll('[data-ar]').forEach(el => {
-    const val = el.getAttribute(`data-${currentLang}`);
-    if (val !== null) el.innerText = val;
+  // translate static labels
+  document.querySelectorAll("[data-ar]").forEach(el => {
+    const text = el.getAttribute(`data-${currentLang}`);
+    if (text) el.textContent = text;
   });
 
-  const langText = document.getElementById('lang-text');
-  if (langText) langText.innerText = currentLang === 'ar' ? 'English' : 'العربية';
+  // repopulate room names and equipment names
+  const selectedId = document.getElementById("room-select")?.value;
+  populateRoomSelect();
+  if (selectedId) document.getElementById("room-select").value = selectedId;
 
-  // تحديث نص زر الإغلاق في المودال (لأنه data-attrs)
-  updateRoomSelect();
   renderEquipChecklist();
   updateHistoryUI();
+  updateBadges();
   calculateLoad(false);
+}
+
+function formatNum(n) {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return "0";
+  return Number(n).toLocaleString(currentLang === "ar" ? "ar-SA" : "en-US");
 }
