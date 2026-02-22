@@ -1,48 +1,41 @@
-const CACHE_NAME = "aircalc-pro-cache-v1";
+const CACHE_NAME = 'aircalc-pro-v3';
 const ASSETS = [
-  "./",
-  "./index.html",
-  "./styles.css",
-  "./app.js",
-  "./data.json",
-  "./manifest.webmanifest"
+  './',
+  './index.html',
+  './styles.css',
+  './app.js',
+  './data.json',
+  './manifest.webmanifest'
 ];
 
-self.addEventListener("install", (event) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
 
-  // Network-first for data.json (so you can update rooms easily)
-  if (req.url.includes("data.json")) {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req))
-    );
-    return;
-  }
-
-  // Cache-first for app shell
   event.respondWith(
-    caches.match(req).then((cached) => cached || fetch(req))
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+
+      return fetch(event.request).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        return res;
+      }).catch(() => caches.match('./index.html'));
+    })
   );
 });
