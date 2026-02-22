@@ -3,72 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0b1220" />
   <title>Air Calc Pro</title>
-  <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="simple-header">Air Calc Pro | HVAC Engineering Suite</header>
 
   <main>
-    <!-- الحاسبة -->
+    <!-- Calculator Tab -->
     <section id="calc-tab" class="tab-panel active">
       <div class="ios-calc-wrapper">
-
         <div class="calc-screen">
           <div id="unit-label" class="result-label">
             <span id="tr-result">0.00 TR</span>
             <span class="divider">|</span>
-            <span id="btu-result">0 BTU/h</span>
-            <span class="divider">|</span>
             <span id="cfm-result">0 CFM</span>
           </div>
 
-          <div id="display" class="active-field calc-main-display" onclick="focusField('display')">0</div>
+          <div class="result-subline">
+            <span id="btu-result">0 BTU/h</span>
+            <span class="divider">|</span>
+            <span id="btu-market-result">0 BTU (Market)</span>
+          </div>
+
+          <div id="display" class="active-field display-box" onclick="focusField('display')">0</div>
           <div id="field-hint" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
         </div>
 
-        <!-- صف واحد: الغرفة + الأشخاص + الأجهزة -->
-        <div class="horizontal-inputs one-line-row">
+        <!-- one-line controls -->
+        <div class="horizontal-inputs one-line">
           <div class="input-box room-box">
             <label data-ar="تصنيف الغرفة" data-en="Room Type">تصنيف الغرفة</label>
-            <select id="room-select" onchange="onRoomChange()"></select>
+            <select id="room-select" onchange="handleRoomChange()"></select>
           </div>
 
-          <div class="input-box compact-box">
+          <div class="input-box compact">
             <label data-ar="أشخاص" data-en="People">أشخاص</label>
             <input type="text" id="people-count" value="0" readonly onclick="focusField('people')" />
           </div>
 
-          <div class="input-box compact-box">
+          <div class="input-box compact">
             <label data-ar="أجهزة" data-en="Equip">أجهزة</label>
             <input type="text" id="equip-watts" value="0" readonly onclick="openEquipModal()" />
           </div>
         </div>
 
-        <div class="ios-grid">
+        <!-- Keypad (square buttons) -->
+        <div class="ios-grid squares">
           <button class="btn-light-grey" onclick="clearActiveField()">AC</button>
           <button class="btn-light-grey" onclick="deleteLast()">DEL</button>
-          <button class="btn-orange" onclick="calculateLoad(true)" data-ar="احسب" data-en="CALC">CALC</button>
-          <button class="btn-orange" onclick="calculateLoad(false)">=</button>
+          <button class="btn-orange" onclick="calculateLoad(true)" data-ar="احسب" data-en="CALC">احسب</button>
+          <button class="btn-orange" onclick="resetAllFields()" data-ar="مسح" data-en="RESET">مسح</button>
 
           <button class="btn-dark-grey" onclick="press(7)">7</button>
           <button class="btn-dark-grey" onclick="press(8)">8</button>
           <button class="btn-dark-grey" onclick="press(9)">9</button>
-          <button class="btn-orange" onclick="clearActiveField()">C</button>
+          <button class="btn-dark-grey" onclick="focusField('people')">👤</button>
 
           <button class="btn-dark-grey" onclick="press(4)">4</button>
           <button class="btn-dark-grey" onclick="press(5)">5</button>
           <button class="btn-dark-grey" onclick="press(6)">6</button>
-          <button class="btn-dark-grey" onclick="press('.')">.</button>
+          <button class="btn-dark-grey" onclick="openEquipModal()">⚡</button>
 
           <button class="btn-dark-grey" onclick="press(1)">1</button>
           <button class="btn-dark-grey" onclick="press(2)">2</button>
           <button class="btn-dark-grey" onclick="press(3)">3</button>
-          <button class="btn-dark-grey" onclick="press(0)">0</button>
+          <button class="btn-dark-grey" onclick="press('.')">.</button>
+
+          <button class="btn-dark-grey zero-btn" onclick="press(0)">0</button>
         </div>
 
-        <!-- سجل العمليات تحت الحاسبة -->
+        <!-- History under calculator -->
         <div class="history-section">
           <div class="history-header">
             <span data-ar="سجل الحسابات" data-en="History">سجل الحسابات</span>
@@ -79,27 +86,68 @@
       </div>
     </section>
 
-    <!-- تواصل معنا -->
+    <!-- Export Tab -->
+    <section id="export-tab" class="tab-panel">
+      <div class="ios-card">
+        <h2 data-ar="تصدير النتائج" data-en="Export Results">تصدير النتائج</h2>
+        <p class="muted" data-ar="يمكنك تصدير سجل الحسابات بصيغة CSV وفتحه في Excel."
+           data-en="Export calculation history as CSV and open it in Excel.">
+          يمكنك تصدير سجل الحسابات بصيغة CSV وفتحه في Excel.
+        </p>
+        <button class="wide-btn btn-orange" onclick="exportHistoryCSV()">Export CSV</button>
+        <div id="export-status" class="result-highlight">---</div>
+      </div>
+    </section>
+
+    <!-- Contact Tab -->
     <section id="contact-tab" class="tab-panel">
       <div class="ios-card">
         <h2 data-ar="تواصل معنا" data-en="Contact Us">تواصل معنا</h2>
-        <p data-ar="تطبيق Air Calc Pro يساعد في حسابات التكييف والتهوية بشكل سريع وعملي، مع دعم الغرف الصحية (ASHRAE) والغرف السكنية والتجارية." 
-           data-en="Air Calc Pro helps with fast and practical HVAC/ventilation calculations, with support for healthcare (ASHRAE), residential, and commercial room types.">
-          تطبيق Air Calc Pro يساعد في حسابات التكييف والتهوية بشكل سريع وعملي، مع دعم الغرف الصحية (ASHRAE) والغرف السكنية والتجارية.
+        <p class="muted"
+           data-ar="Air Calc Pro أداة هندسية لحساب الأحمال الهوائية والتبريدية بشكل سريع، مع تصنيفات غرف للمستشفيات (مرجع ASHRAE)، والقطاع التجاري والسكني، وسجل حسابات وتصدير نتائج."
+           data-en="Air Calc Pro is an engineering tool for fast airflow and cooling-load estimates, with hospital room classifications (ASHRAE reference), commercial and residential categories, calculation history, and export.">
+          Air Calc Pro أداة هندسية لحساب الأحمال الهوائية والتبريدية بشكل سريع...
         </p>
 
-        <div class="contact-box">
-          <div><strong data-ar="م. يوسف ال همام" data-en="Eng. Yousif Alhammam">م. يوسف ال همام</strong></div>
-          <div>0560282701</div>
-          <div>Yousef.alhammam@live.com</div>
+        <div class="contact-list">
+          <div><strong data-ar="الاسم:" data-en="Name:">الاسم:</strong> م.يوسف ال همام</div>
+          <div><strong data-ar="الجوال:" data-en="Mobile:">الجوال:</strong> 0560282701</div>
+          <div><strong>Email:</strong> yousef.alhammam@live.com</div>
         </div>
 
-        <div class="made-sa" data-ar="صنع في السعودية 🇸🇦" data-en="Made in Saudi Arabia 🇸🇦">صنع في السعودية 🇸🇦</div>
+        <div class="saudi-made">صنع في السعودية 🇸🇦</div>
+      </div>
+    </section>
+
+    <!-- Settings Tab -->
+    <section id="settings-tab" class="tab-panel">
+      <div class="ios-card">
+        <h2 data-ar="الإعدادات" data-en="Settings">الإعدادات</h2>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-title" data-ar="اللغة" data-en="Language">اللغة</div>
+            <div class="setting-sub" data-ar="تبديل كامل للواجهة بما فيها القائمة السفلية" data-en="Switches all UI including bottom navigation">
+              تبديل كامل للواجهة بما فيها القائمة السفلية
+            </div>
+          </div>
+          <button class="mini-btn" onclick="toggleLanguage()" id="lang-text">English</button>
+        </div>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-title" data-ar="أرقام إنجليزية" data-en="English Numerals">أرقام إنجليزية</div>
+            <div class="setting-sub" data-ar="النتائج والمدخلات تظهر دائمًا بالإنجليزية" data-en="Inputs and results always use English digits">
+              النتائج والمدخلات تظهر دائمًا بالإنجليزية
+            </div>
+          </div>
+          <span class="badge-on">ON</span>
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- مودال الأجهزة -->
+  <!-- Equipment Modal -->
   <div id="equip-modal" class="modal">
     <div class="modal-content">
       <h3 data-ar="قائمة الأجهزة" data-en="Equipment List">قائمة الأجهزة</h3>
@@ -108,24 +156,22 @@
     </div>
   </div>
 
-  <!-- الشريط السفلي -->
+  <!-- Bottom Nav -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchTab('calc-tab', this)">
       <i>🧮</i><span data-ar="الحاسبة" data-en="Calc">الحاسبة</span>
     </button>
-    <button class="nav-item" onclick="switchTab('contact-tab', this)">
-      <i>☎️</i><span data-ar="تواصل" data-en="Contact">تواصل</span>
+    <button class="nav-item" onclick="switchTab('export-tab', this)">
+      <i>📤</i><span data-ar="التصدير" data-en="Export">التصدير</span>
     </button>
-    <button class="nav-item" onclick="toggleLanguage()">
-      <i>🌐</i><span id="lang-text">English</span>
+    <button class="nav-item" onclick="switchTab('contact-tab', this)">
+      <i>☎️</i><span data-ar="تواصل معنا" data-en="Contact">تواصل معنا</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('settings-tab', this)">
+      <i>⚙️</i><span data-ar="الإعدادات" data-en="Settings">الإعدادات</span>
     </button>
   </nav>
 
   <script src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
-    }
-  </script>
 </body>
 </html>
