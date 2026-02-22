@@ -1,7 +1,7 @@
 {
   "name": "Air Calc Pro HVAC",
   "short_name": "AirCalc",
-  "description": "Professional HVAC airflow and cooling load calculator",
+  "description": "Professional HVAC & ASHRAE-based Airflow Calculator",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0b1220",
