@@ -3,162 +3,180 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-  <title>Air Calc Pro</title>
+  <meta name="theme-color" content="#070b14" />
   <link rel="manifest" href="manifest.webmanifest" />
+  <title>Air Calc Pro</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
-    <div class="app-title">Air Calc Pro</div>
-    <div class="app-subtitle">HVAC Engineering Suite</div>
+    <div class="app-header-inner">
+      <div class="app-title">Air Calc Pro</div>
+      <div class="app-subtitle">HVAC Engineering Suite</div>
+    </div>
   </header>
 
   <main id="main-content">
-    <!-- Calculator Tab -->
-    <section id="calc-tab" class="tab-panel active">
+    <!-- CALCULATOR TAB -->
+    <section id="tab-calc" class="tab-panel active">
       <div class="calc-shell">
+
         <!-- Results -->
-        <div class="results-line" id="results-line">
-          <span id="cfm-result">CFM 0</span>
+        <div class="result-strip">
+          <span id="res-cfm">CFM 0</span>
           <span class="sep">|</span>
-          <span id="tr-result">TR 0.00</span>
+          <span id="res-tr">TR 0.00</span>
           <span class="sep">|</span>
-          <span id="btu-result">BTU/h 0</span>
+          <span id="res-btu">BTU/h 0</span>
         </div>
 
         <div class="market-btu-line">
           <span data-ar="المقترح:" data-en="Suggested:">المقترح:</span>
-          <span id="market-btu">BTU 0</span>
+          <span id="res-market-btu">BTU 0</span>
         </div>
 
         <!-- Display -->
-        <div class="display-wrap">
-          <div id="display" class="display-box active-field" onclick="focusField('display')">0</div>
-          <div class="display-label" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
+        <div class="display-card">
+          <div id="display" class="display-value active-field" onclick="focusField('display')">0</div>
         </div>
+        <div class="display-hint" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
 
-        <!-- Meta line -->
-        <div class="meta-line" id="meta-line">
-          <span id="meta-room-name">غرفة عمليات (OR)</span>
-          <span class="dot">•</span>
-          <span id="meta-standard">ASHRAE 170</span>
-          <span class="dot">•</span>
-          <span id="meta-ach">ACH: 20</span>
+        <!-- Room meta -->
+        <div class="meta-chip" id="room-meta">
+          ASHRAE 170 • ACH: 20 • غرفة عمليات (OR)
         </div>
 
         <!-- Inputs row (same line) -->
         <div class="inputs-row">
-          <div class="field field-room">
+          <div class="input-col room-col">
             <label data-ar="تصنيف الغرفة" data-en="Room Type">تصنيف الغرفة</label>
-            <select id="room-select" onchange="onRoomChange()"></select>
+            <select id="room-select"></select>
           </div>
-          <div class="field">
+
+          <div class="input-col">
             <label data-ar="أشخاص" data-en="People">أشخاص</label>
-            <input id="people-count" type="text" readonly value="0" onclick="focusField('people')" />
+            <input id="people-input" type="text" value="0" readonly onclick="focusField('people')" />
           </div>
-          <div class="field">
-            <label data-ar="أجهزة (W)" data-en="Equipment (W)">أجهزة (W)</label>
-            <input id="equip-watts" type="text" readonly value="0" onclick="openEquipModal()" />
+
+          <div class="input-col">
+            <label data-ar="أجهزة (W)" data-en="Equip (W)">أجهزة (W)</label>
+            <input id="equip-input" type="text" value="0" readonly onclick="openEquipModal()" />
           </div>
         </div>
 
-        <!-- Chips -->
-        <div class="chips-row">
-          <div class="chip" id="chip-standard">ASHRAE 170</div>
-          <div class="chip" id="chip-ach">ACH: 20</div>
-          <div class="chip" id="chip-duct">Duct: --</div>
+        <!-- Quick chips -->
+        <div class="quick-chips">
+          <span class="chip" id="chip-standard">ASHRAE 170</span>
+          <span class="chip" id="chip-ach">ACH: 0</span>
+          <span class="chip" id="chip-duct">Duct: 12" x 8"</span>
         </div>
 
-        <!-- Keypad (square layout old style) -->
+        <!-- Keypad (previous square style / old layout feel) -->
         <div class="keypad-grid">
-          <button class="key key-ac" onclick="clearActiveField()">AC</button>
-          <button class="key key-del" onclick="deleteLast()">DEL</button>
-          <button class="key key-action" onclick="calculateLoad(true)">احسب</button>
-          <button class="key key-action" onclick="calculateLoad(true)">=</button>
+          <button class="key key-fn" onclick="calculateNow()">=</button>
+          <button class="key key-fn" onclick="calculateNow(true)" data-ar="احسب" data-en="CALC">احسب</button>
+          <button class="key key-light" onclick="deleteLast()">DEL</button>
+          <button class="key key-light" onclick="clearAllInputs()">AC</button>
 
-          <button class="key key-num" onclick="press(7)">7</button>
-          <button class="key key-num" onclick="press(8)">8</button>
-          <button class="key key-num" onclick="press(9)">9</button>
-          <button class="key key-side" onclick="focusField('people')" data-ar="أشخاص" data-en="People">أشخاص</button>
+          <button class="key key-fn" onclick="focusField('people')" data-ar="أشخاص" data-en="People">أشخاص</button>
+          <button class="key key-dark" onclick="press('9')">9</button>
+          <button class="key key-dark" onclick="press('8')">8</button>
+          <button class="key key-dark" onclick="press('7')">7</button>
 
-          <button class="key key-num" onclick="press(4)">4</button>
-          <button class="key key-num" onclick="press(5)">5</button>
-          <button class="key key-num" onclick="press(6)">6</button>
-          <button class="key key-side" onclick="openEquipModal()" data-ar="أجهزة" data-en="Equip">أجهزة</button>
+          <button class="key key-fn" onclick="openEquipModal()" data-ar="أجهزة" data-en="Equip">أجهزة</button>
+          <button class="key key-dark" onclick="press('6')">6</button>
+          <button class="key key-dark" onclick="press('5')">5</button>
+          <button class="key key-dark" onclick="press('4')">4</button>
 
-          <button class="key key-num" onclick="press(1)">1</button>
-          <button class="key key-num" onclick="press(2)">2</button>
-          <button class="key key-num" onclick="press(3)">3</button>
-          <button class="key key-num" onclick="press('.')">.</button>
+          <button class="key key-dark" onclick="press('.')">.</button>
+          <button class="key key-dark" onclick="press('3')">3</button>
+          <button class="key key-dark" onclick="press('2')">2</button>
+          <button class="key key-dark" onclick="press('1')">1</button>
 
-          <button class="key key-num key-zero" onclick="press(0)">0</button>
+          <button class="key key-dark key-zero" onclick="press('0')">0</button>
         </div>
 
         <!-- History -->
         <div class="history-card">
-          <div class="history-header">
+          <div class="history-head">
             <span data-ar="سجل الحسابات" data-en="Calculation History">سجل الحسابات</span>
-            <button class="small-btn" onclick="clearHistory()" data-ar="مسح" data-en="Clear">مسح</button>
+            <div class="history-actions">
+              <button class="small-btn" onclick="clearHistory()" data-ar="مسح" data-en="Clear">مسح</button>
+            </div>
           </div>
           <div id="history-list" class="history-list"></div>
         </div>
       </div>
     </section>
 
-    <!-- Export Tab -->
-    <section id="export-tab" class="tab-panel">
-      <div class="panel-card">
+    <!-- EXPORT TAB -->
+    <section id="tab-export" class="tab-panel">
+      <div class="page-card">
         <h2 data-ar="التصدير" data-en="Export">التصدير</h2>
-        <p data-ar="تصدير سجل الحسابات بصيغة PDF." data-en="Export calculation history as PDF.">تصدير سجل الحسابات بصيغة PDF.</p>
-        <button class="wide-btn" onclick="exportHistoryPDF()" data-ar="تصدير PDF" data-en="Export PDF">تصدير PDF</button>
+        <p data-ar="يمكنك نسخ سجل الحسابات كملف JSON أو نسخه كنص." data-en="You can export your calculation history as JSON or copy it as text.">
+          يمكنك نسخ سجل الحسابات كملف JSON أو نسخه كنص.
+        </p>
+        <div class="stack-btns">
+          <button class="wide-btn accent" onclick="exportHistoryJSON()" data-ar="تنزيل JSON" data-en="Download JSON">تنزيل JSON</button>
+          <button class="wide-btn" onclick="copyHistoryText()" data-ar="نسخ السجل كنص" data-en="Copy History Text">نسخ السجل كنص</button>
+        </div>
+        <textarea id="export-preview" class="export-box" readonly></textarea>
       </div>
     </section>
 
-    <!-- Assistant Tab -->
-    <section id="assistant-tab" class="tab-panel">
-      <div class="panel-card">
+    <!-- AI ASSISTANT TAB (placeholder local helper) -->
+    <section id="tab-assistant" class="tab-panel">
+      <div class="page-card">
         <h2 data-ar="المساعد" data-en="Assistant">المساعد</h2>
-        <p data-ar="هذه صفحة مساعد ذكي داخل التطبيق (واجهة جاهزة). لاحقًا نربطها مع AI API لاقتراح نوع المكيف المناسب والسعة والسعر." 
-           data-en="This is the in-app assistant page (UI ready). Later it can be connected to an AI API to suggest AC type, capacity, and best price.">
-          هذه صفحة مساعد ذكي داخل التطبيق (واجهة جاهزة). لاحقًا نربطها مع AI API لاقتراح نوع المكيف المناسب والسعة والسعر.
+        <p data-ar="مساعد سريع داخل التطبيق يعطيك ملاحظات هندسية مبسطة بناءً على آخر نتيجة." data-en="A quick in-app helper that provides simple engineering hints based on your latest result.">
+          مساعد سريع داخل التطبيق يعطيك ملاحظات هندسية مبسطة بناءً على آخر نتيجة.
         </p>
-        <div class="assistant-box">
-          <textarea id="assistant-input" rows="4" placeholder="اكتب سؤالك..."></textarea>
-          <button class="wide-btn" onclick="assistantDemoReply()" data-ar="إرسال" data-en="Send">إرسال</button>
-          <div id="assistant-reply" class="assistant-reply"></div>
-        </div>
+        <button class="wide-btn accent" onclick="generateAssistantTip()" data-ar="اعطني ملاحظة" data-en="Give me a tip">اعطني ملاحظة</button>
+        <div id="assistant-output" class="assistant-box">...</div>
       </div>
     </section>
 
-    <!-- Contact Tab -->
-    <section id="contact-tab" class="tab-panel">
-      <div class="panel-card">
+    <!-- CONTACT TAB -->
+    <section id="tab-contact" class="tab-panel">
+      <div class="page-card">
         <h2 data-ar="تواصل معنا" data-en="Contact Us">تواصل معنا</h2>
-        <p data-ar="Air Calc Pro أداة هندسية تساعد في حسابات التكييف والتهوية بسرعة، مع مراعاة معايير ASHRAE للغرف الطبية، وتقديرات عملية مناسبة للسكني والتجاري."
-           data-en="Air Calc Pro is an engineering tool for fast HVAC and ventilation calculations, with ASHRAE-based handling for medical rooms and practical estimates for residential and commercial spaces.">
-          Air Calc Pro أداة هندسية تساعد في حسابات التكييف والتهوية بسرعة، مع مراعاة معايير ASHRAE للغرف الطبية، وتقديرات عملية مناسبة للسكني والتجاري.
+        <p data-ar="Air Calc Pro أداة هندسية عملية لحساب متطلبات التهوية والتبريد بسرعة، مع فصل واضح بين غرف المستشفيات (ASHRAE 170) والغرف التجارية والسكنية، وإظهار CFM وTR وBTU ومقاس دكت مقترح وسجل حسابات مفيد للمراجعة." data-en="Air Calc Pro is a practical engineering tool for fast ventilation and cooling calculations, with clear separation between hospital rooms (ASHRAE 170) and commercial/residential spaces, plus CFM, TR, BTU, suggested duct size, and a helpful calculation history.">
+          Air Calc Pro أداة هندسية عملية لحساب متطلبات التهوية والتبريد بسرعة، مع فصل واضح بين غرف المستشفيات (ASHRAE 170) والغرف التجارية والسكنية، وإظهار CFM وTR وBTU ومقاس دكت مقترح وسجل حسابات مفيد للمراجعة.
         </p>
-        <div class="contact-list">
-          <div><strong>Phone:</strong> 0560282701</div>
-          <div><strong>Email:</strong> Yousef.alhammam@live.com</div>
+
+        <div class="contact-lines">
+          <div><strong>Yousef Alhammam</strong></div>
+          <div>0560282701</div>
+          <div>Yousef.alhammam@live.com</div>
         </div>
-        <div class="made-sa">صنع في السعودية 🇸🇦</div>
+
+        <div class="saudi-made">صنع في السعودية 🇸🇦</div>
       </div>
     </section>
 
-    <!-- Settings Tab -->
-    <section id="settings-tab" class="tab-panel">
-      <div class="panel-card">
+    <!-- SETTINGS TAB -->
+    <section id="tab-settings" class="tab-panel">
+      <div class="page-card">
         <h2 data-ar="الإعدادات" data-en="Settings">الإعدادات</h2>
-        <div class="settings-row">
-          <span data-ar="اللغة" data-en="Language">اللغة</span>
-          <button class="small-btn" onclick="toggleLanguage()">
-            <span id="lang-text">English</span>
-          </button>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-title" data-ar="اللغة" data-en="Language">اللغة</div>
+            <div class="setting-sub" data-ar="تغيير لغة الواجهة فقط (الأرقام تظل إنجليزية)" data-en="Change UI language only (numbers stay English)">
+              تغيير لغة الواجهة فقط (الأرقام تظل إنجليزية)
+            </div>
+          </div>
+          <button class="small-btn accent" onclick="toggleLanguage()" id="lang-btn">English</button>
         </div>
-        <div class="settings-row">
-          <span data-ar="إعادة ضبط الكل" data-en="Reset All">إعادة ضبط الكل</span>
-          <button class="small-btn" onclick="resetAllFields()" data-ar="تنفيذ" data-en="Run">تنفيذ</button>
+
+        <div class="setting-row">
+          <div>
+            <div class="setting-title" data-ar="التخزين المحلي" data-en="Local Storage">التخزين المحلي</div>
+            <div class="setting-sub" data-ar="حفظ تلقائي لسجل الحسابات والإعدادات" data-en="Auto-save history and settings">
+              حفظ تلقائي لسجل الحسابات والإعدادات
+            </div>
+          </div>
+          <button class="small-btn" onclick="resetAppData()" data-ar="إعادة ضبط" data-en="Reset">إعادة ضبط</button>
         </div>
       </div>
     </section>
@@ -168,35 +186,37 @@
   <div id="equip-modal" class="modal">
     <div class="modal-content">
       <div class="modal-head">
-        <h3 data-ar="قائمة الأجهزة" data-en="Equipment List">قائمة الأجهزة</h3>
-        <button class="small-btn" onclick="closeEquipModal()">✕</button>
+        <h3 data-ar="الأجهزة" data-en="Equipment">الأجهزة</h3>
+        <button class="small-btn" onclick="closeEquipModal()" data-ar="تم" data-en="Done">تم</button>
       </div>
-      <div id="equip-checklist" class="equip-list"></div>
-      <button class="wide-btn" onclick="closeEquipModal()" data-ar="تم" data-en="Done">تم</button>
+      <div id="equip-list" class="equip-list"></div>
     </div>
   </div>
 
-  <!-- Bottom nav -->
+  <!-- Bottom Nav -->
   <nav class="bottom-nav">
-    <button class="nav-item active" onclick="switchTab('calc-tab', this)">
-      <i>🧮</i><span data-ar="الحاسبة" data-en="Calculator">الحاسبة</span>
+    <button class="nav-item active" data-tab="tab-calc" onclick="switchTab('tab-calc', this)">
+      <span class="nav-ic">🧮</span>
+      <span data-ar="الحاسبة" data-en="Calculator">الحاسبة</span>
     </button>
-    <button class="nav-item" onclick="switchTab('export-tab', this)">
-      <i>📤</i><span data-ar="التصدير" data-en="Export">التصدير</span>
+    <button class="nav-item" data-tab="tab-export" onclick="switchTab('tab-export', this)">
+      <span class="nav-ic">📤</span>
+      <span data-ar="التصدير" data-en="Export">التصدير</span>
     </button>
-    <button class="nav-item" onclick="switchTab('assistant-tab', this)">
-      <i>🤖</i><span data-ar="المساعد" data-en="Assistant">المساعد</span>
+    <button class="nav-item" data-tab="tab-assistant" onclick="switchTab('tab-assistant', this)">
+      <span class="nav-ic">🤖</span>
+      <span data-ar="المساعد" data-en="Assistant">المساعد</span>
     </button>
-    <button class="nav-item" onclick="switchTab('contact-tab', this)">
-      <i>📞</i><span data-ar="تواصل" data-en="Contact">تواصل</span>
+    <button class="nav-item" data-tab="tab-contact" onclick="switchTab('tab-contact', this)">
+      <span class="nav-ic">📞</span>
+      <span data-ar="تواصل" data-en="Contact">تواصل</span>
     </button>
-    <button class="nav-item" onclick="switchTab('settings-tab', this)">
-      <i>⚙️</i><span data-ar="الإعدادات" data-en="Settings">الإعدادات</span>
+    <button class="nav-item" data-tab="tab-settings" onclick="switchTab('tab-settings', this)">
+      <span class="nav-ic">⚙️</span>
+      <span data-ar="الإعدادات" data-en="Settings">الإعدادات</span>
     </button>
   </nav>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
