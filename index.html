@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#0b1220" />
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css" />
   <title>Air Calc Pro</title>
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0b1220" />
+
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="simple-header">Air Calc Pro | HVAC Engineering Suite</header>
@@ -33,41 +35,40 @@
 
           <div class="input-box">
             <label data-ar="أشخاص" data-en="People">أشخاص</label>
-            <input type="text" id="people-count" value="0" readonly onclick="focusField('people')">
+            <input type="text" id="people-count" value="0" readonly onclick="focusField('people')" />
           </div>
 
           <div class="input-box">
-            <label data-ar="أجهزة" data-en="Equip">أجهزة</label>
-            <input type="text" id="equip-watts" value="0" readonly onclick="openEquipModal()">
+            <label data-ar="أجهزة (W)" data-en="Equip (W)">أجهزة (W)</label>
+            <input type="text" id="equip-watts" value="0" readonly onclick="openEquipModal()" />
           </div>
         </div>
 
         <div class="ios-grid">
           <button class="btn-light-grey" onclick="clearActiveField()">AC</button>
           <button class="btn-light-grey" onclick="deleteLast()">DEL</button>
-          <button class="btn-orange" onclick="calculateLoad(true)" data-ar="احسب" data-en="CALC">احسب</button>
+          <button class="btn-orange" onclick="calculateLoad(true)" data-ar="احسب" data-en="CALC">CALC</button>
           <button class="btn-orange" onclick="calculateLoad(false)">=</button>
 
           <button class="btn-dark-grey" onclick="press(7)">7</button>
           <button class="btn-dark-grey" onclick="press(8)">8</button>
           <button class="btn-dark-grey" onclick="press(9)">9</button>
-          <button class="btn-orange" onclick="clearActiveField()">C</button>
+          <button class="btn-dark-grey" onclick="press('.')">.</button>
 
           <button class="btn-dark-grey" onclick="press(4)">4</button>
           <button class="btn-dark-grey" onclick="press(5)">5</button>
           <button class="btn-dark-grey" onclick="press(6)">6</button>
-          <button class="btn-dark-grey" onclick="press('.')">.</button>
+          <button class="btn-dark-grey" onclick="press(0)">0</button>
 
           <button class="btn-dark-grey" onclick="press(1)">1</button>
           <button class="btn-dark-grey" onclick="press(2)">2</button>
           <button class="btn-dark-grey" onclick="press(3)">3</button>
-          <button class="btn-dark-grey" onclick="press(0)">0</button>
+          <button class="btn-light-grey" onclick="clearHistory()" data-ar="مسح" data-en="CLR">مسح</button>
         </div>
 
         <div class="history-section">
           <div class="history-header">
             <span data-ar="سجل الحسابات" data-en="History">سجل الحسابات</span>
-            <button onclick="clearHistory()" class="clear-history-btn" data-ar="مسح" data-en="Clear">مسح</button>
           </div>
           <div id="history-list"></div>
         </div>
@@ -76,36 +77,27 @@
 
     <!-- Contact Tab -->
     <section id="contact-tab" class="tab-panel">
-      <div class="ios-card contact-card">
+      <div class="ios-card">
         <h2 data-ar="تواصل معنا" data-en="Contact Us">تواصل معنا</h2>
 
-        <p data-ar="Air Calc Pro تطبيق هندسي لحساب الأحمال التبريدية ومعدلات الهواء (CFM) مع دعم غرف المستشفيات حسب ASHRAE 170، بالإضافة إلى الاستخدامات التجارية والسكنية بطريقة عملية مناسبة للتصميم الأولي."
-           data-en="Air Calc Pro is an engineering app for cooling load and airflow (CFM) calculations, with hospital room support based on ASHRAE 170, plus practical commercial and residential calculations for early design stages.">
-          Air Calc Pro تطبيق هندسي لحساب الأحمال التبريدية ومعدلات الهواء (CFM)...
+        <p class="contact-text" data-ar="Air Calc Pro تطبيق هندسي لحسابات التهوية والأحمال التقديرية (TR/CFM) للمستشفيات والتجاري والسكني، مع اعتماد منهجية ASHRAE للقطاعات المناسبة، وسجل للحسابات ومقاس دكت سريع." data-en="Air Calc Pro is an engineering calculator for ventilation and estimated cooling load (TR/CFM) for hospitals, commercial, and residential spaces, using ASHRAE-based methods with history and quick duct sizing.">
+          Air Calc Pro تطبيق هندسي لحسابات التهوية والأحمال التقديرية (TR/CFM) للمستشفيات والتجاري والسكني، مع اعتماد منهجية ASHRAE للقطاعات المناسبة، وسجل للحسابات ومقاس دكت سريع.
         </p>
 
-        <div class="contact-list">
-          <div class="contact-row">
-            <div class="contact-label" data-ar="المطور" data-en="Developer">المطور</div>
-            <div class="contact-value">م. يوسف آل همام</div>
-          </div>
-
-          <div class="contact-row">
-            <div class="contact-label" data-ar="الجوال" data-en="Mobile">الجوال</div>
-            <div class="contact-value dir-ltr">0560282701</div>
-          </div>
-
-          <div class="contact-row">
-            <div class="contact-label" data-ar="البريد" data-en="Email">البريد</div>
-            <div class="contact-value dir-ltr">Yousef.alhammam@live.com</div>
-          </div>
+        <div class="contact-box">
+          <div><strong data-ar="الاسم:" data-en="Name:">الاسم:</strong> <span>م. يوسف آل همام</span></div>
+          <div><strong data-ar="الجوال:" data-en="Mobile:">الجوال:</strong> <span dir="ltr">0560282701</span></div>
+          <div><strong data-ar="البريد:" data-en="Email:">البريد:</strong> <span dir="ltr">Yousef.alhammam@live.com</span></div>
         </div>
 
-        <div class="made-sa" data-ar="صنع في السعودية 🇸🇦" data-en="Made in Saudi Arabia 🇸🇦">
-          صنع في السعودية 🇸🇦
-        </div>
+        <div class="made-sa" data-ar="صنع في السعودية 🇸🇦" data-en="Made in Saudi Arabia 🇸🇦">صنع في السعودية 🇸🇦</div>
       </div>
     </section>
+
+    <!-- Duct helper hidden but kept functional -->
+    <input type="hidden" id="targetCFM" />
+    <input type="hidden" id="fixWidth" value="12" />
+    <div id="duct-result" style="display:none;"></div>
   </main>
 
   <!-- Equipment Modal -->
@@ -120,29 +112,16 @@
   <!-- Bottom Nav -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchTab('calc-tab', this)">
-      <i>🧮</i>
-      <span data-ar="الحاسبة" data-en="Calc">الحاسبة</span>
+      <i>🧮</i><span data-ar="الحاسبة" data-en="Calc">الحاسبة</span>
     </button>
-
     <button class="nav-item" onclick="switchTab('contact-tab', this)">
-      <i>📞</i>
-      <span data-ar="تواصل" data-en="Contact">تواصل</span>
+      <i>📞</i><span data-ar="تواصل" data-en="Contact">تواصل</span>
     </button>
-
     <button class="nav-item" onclick="toggleLanguage()">
-      <i>🌐</i>
-      <span id="lang-text">English</span>
+      <i>🌐</i><span id="lang-text">English</span>
     </button>
   </nav>
 
   <script src="app.js"></script>
-  <script>
-    // Service worker registration
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(console.warn);
-      });
-    }
-  </script>
 </body>
 </html>
