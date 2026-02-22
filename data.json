@@ -1,57 +1,113 @@
 {
-  "version": 3,
   "categories": [
     {
-      "key": "healthcare",
       "name_ar": "المستشفيات (ASHRAE 170)",
       "name_en": "Hospitals (ASHRAE 170)",
-      "method": "ashrae170",
       "items": [
-        { "id": "h_or", "ar": "غرفة عمليات (OR)", "en": "Operating Room (Class A)", "ach": 20, "peopleCfm": 20, "factor": 280, "pressure": "P" },
-        { "id": "h_aii", "ar": "عزل ضغط سالب (AII)", "en": "Airborne Infection Isolation (AII)", "ach": 12, "peopleCfm": 15, "factor": 350, "pressure": "N" },
-        { "id": "h_pe", "ar": "عزل ضغط موجب (PE)", "en": "Protective Environment", "ach": 12, "peopleCfm": 15, "factor": 340, "pressure": "P" },
-        { "id": "h_icu", "ar": "العناية المركزة (ICU)", "en": "ICU", "ach": 6, "peopleCfm": 15, "factor": 350, "pressure": "N" },
-        { "id": "h_exam", "ar": "غرفة فحص", "en": "Examination Room", "ach": 6, "peopleCfm": 15, "factor": 360, "pressure": "N" },
-        { "id": "h_lab", "ar": "مختبر عام", "en": "Laboratory (General)", "ach": 6, "peopleCfm": 15, "factor": 400, "pressure": "N" },
-        { "id": "h_pharmacy", "ar": "الصيدلية", "en": "Pharmacy", "ach": 4, "peopleCfm": 12, "factor": 360, "pressure": "P" },
-        { "id": "h_patient", "ar": "غرفة مريض", "en": "Patient Room", "ach": 6, "peopleCfm": 15, "factor": 340, "pressure": "N" },
-        { "id": "h_xray", "ar": "أشعة تشخيصية", "en": "Diagnostic X-Ray", "ach": 6, "peopleCfm": 12, "factor": 500, "pressure": "N" },
-        { "id": "h_endoscopy", "ar": "غرفة مناظير", "en": "Endoscopy / Procedure", "ach": 10, "peopleCfm": 15, "factor": 340, "pressure": "N" },
-        { "id": "h_cssd_sterile", "ar": "تعقيم مركزي (مستودع معقم)", "en": "Sterile Storage (CSSD)", "ach": 4, "peopleCfm": 10, "factor": 320, "pressure": "P" },
-        { "id": "h_delivery", "ar": "غرفة ولادة (LDR)", "en": "Labor/Delivery Room", "ach": 6, "peopleCfm": 15, "factor": 350, "pressure": "N" },
-        { "id": "h_physio", "ar": "العلاج الطبيعي", "en": "Physical Therapy", "ach": 6, "peopleCfm": 15, "factor": 360, "pressure": "N" },
-        { "id": "h_toilet", "ar": "دورة مياه (مستشفى)", "en": "Toilet Room (Hospital)", "ach": 10, "peopleCfm": 0, "factor": 280, "pressure": "N" }
+        { "id":"h_er_decon", "ar":"طوارئ إزالة تلوث", "en":"ER Decontamination", "ach":12, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":320, "peopleCfm":15, "exhaustBias":10 },
+        { "id":"h_radiology_wait", "ar":"انتظار الأشعة", "en":"Radiology Waiting Room", "ach":12, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":340, "peopleCfm":15, "exhaustBias":0 },
+        { "id":"h_or_class_a", "ar":"غرفة عمليات/إجراءات Class A", "en":"Operating / Procedure Room (Class A)", "ach":15, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":280, "peopleCfm":15, "exhaustBias":-10 },
+        { "id":"h_patient_room", "ar":"غرفة مريض", "en":"Patient Room", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":320, "peopleCfm":15, "exhaustBias":0 },
+        { "id":"h_toilet", "ar":"دورة مياه (مستشفى)", "en":"Toilet Room", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":300, "peopleCfm":10, "exhaustBias":10 },
+        { "id":"h_nursery", "ar":"جناح حضانة مواليد", "en":"Newborn Nursery Suite", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":320, "peopleCfm":12, "exhaustBias":0 },
+        { "id":"h_pe_room", "ar":"غرفة عزل إيجابي PE", "en":"Protective Environment Room", "ach":12, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":280, "peopleCfm":15, "exhaustBias":-10 },
+        { "id":"h_aii_room", "ar":"غرفة عزل هوائي AII", "en":"Airborne Infection Isolation Room (AII)", "ach":12, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":300, "peopleCfm":15, "exhaustBias":10 },
+        { "id":"h_aii_anteroom", "ar":"غرفة أمامية للعزل", "en":"AII Isolation Alcove / Anteroom", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":300, "peopleCfm":10, "exhaustBias":10 },
+        { "id":"h_ldrp", "ar":"ولادة/تعافي LDRP", "en":"Labor / Delivery / Recovery / Postpartum (LDRP)", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":320, "peopleCfm":12, "exhaustBias":0 },
+        { "id":"h_corridor", "ar":"ممر (مستشفى)", "en":"Corridor", "ach":2, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":280, "peopleCfm":5, "exhaustBias":0 },
+
+        { "id":"h_skilled_resident", "ar":"غرفة نزيل تمريض", "en":"Resident Room (Skilled Nursing)", "ach":2, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":320, "peopleCfm":10, "exhaustBias":0 },
+        { "id":"h_resident_dining", "ar":"نشاط/تجمع/طعام", "en":"Resident Gathering / Activity / Dining", "ach":4, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":340, "peopleCfm":12, "exhaustBias":0 },
+
+        { "id":"h_physical_therapy", "ar":"علاج طبيعي", "en":"Physical Therapy", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":350, "peopleCfm":15, "exhaustBias":0 },
+        { "id":"h_occup_therapy", "ar":"علاج وظيفي", "en":"Occupational Therapy", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":350, "peopleCfm":15, "exhaustBias":0 },
+        { "id":"h_bathing_room", "ar":"غرفة استحمام", "en":"Bathing Room", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":320, "peopleCfm":10, "exhaustBias":10 },
+
+        { "id":"h_xray_diag", "ar":"أشعة X-ray تشخيصية", "en":"X-ray (Diagnostic and Treatment)", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":420, "peopleCfm":10, "exhaustBias":0 },
+        { "id":"h_xray_surg", "ar":"أشعة عمليات/عناية حرجة", "en":"X-ray (Surgery/Critical Care/Cath)", "ach":15, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":300, "peopleCfm":12, "exhaustBias":-10 },
+        { "id":"h_darkroom", "ar":"غرفة تحميض", "en":"Darkroom", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":330, "peopleCfm":8, "exhaustBias":10 },
+
+        { "id":"h_lab_general", "ar":"مختبر عام", "en":"Laboratory, General", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":400, "peopleCfm":12, "exhaustBias":10 },
+        { "id":"h_lab_bacteriology", "ar":"مختبر بكتريولوجي", "en":"Laboratory, Bacteriology", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":400, "peopleCfm":12, "exhaustBias":10 },
+        { "id":"h_lab_biochem", "ar":"مختبر كيمياء حيوية", "en":"Laboratory, Biochemistry", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":390, "peopleCfm":12, "exhaustBias":0 },
+        { "id":"h_lab_cytology", "ar":"مختبر خلايا", "en":"Laboratory, Cytology", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":400, "peopleCfm":12, "exhaustBias":10 },
+        { "id":"h_lab_glasswash", "ar":"غسيل زجاجيات مختبر", "en":"Laboratory, Glasswashing", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":420, "peopleCfm":8, "exhaustBias":10 },
+        { "id":"h_lab_histology", "ar":"مختبر هستولوجي", "en":"Laboratory, Histology", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":400, "peopleCfm":12, "exhaustBias":10 },
+        { "id":"h_lab_micro", "ar":"مختبر أحياء دقيقة", "en":"Laboratory, Microbiology", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":410, "peopleCfm":12, "exhaustBias":10 },
+        { "id":"h_lab_nuclear", "ar":"مختبر طب نووي", "en":"Laboratory, Nuclear Medicine", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":430, "peopleCfm":12, "exhaustBias":10 },
+        { "id":"h_lab_path", "ar":"مختبر باثولوجي", "en":"Laboratory, Pathology", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":400, "peopleCfm":12, "exhaustBias":10 },
+        { "id":"h_lab_serology", "ar":"مختبر سيرولوجي", "en":"Laboratory, Serology", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":390, "peopleCfm":12, "exhaustBias":10 },
+        { "id":"h_lab_sterilizing", "ar":"مختبر تعقيم", "en":"Laboratory, Sterilizing", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":420, "peopleCfm":8, "exhaustBias":10 },
+        { "id":"h_lab_media", "ar":"نقل وسائط مختبر", "en":"Laboratory, Media Transfer", "ach":4, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":360, "peopleCfm":8, "exhaustBias":0 },
+
+        { "id":"h_autopsy", "ar":"غرفة تشريح", "en":"Autopsy Room", "ach":12, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":420, "peopleCfm":10, "exhaustBias":10 },
+        { "id":"h_body_hold", "ar":"حفظ جثامين غير مبرد", "en":"Nonrefrigerated Body-Holding Room", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":360, "peopleCfm":6, "exhaustBias":10 },
+
+        { "id":"h_pharmacy", "ar":"صيدلية", "en":"Pharmacy", "ach":4, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":340, "peopleCfm":10, "exhaustBias":0 },
+        { "id":"h_broncho", "ar":"منظار/جمع بلغم", "en":"Bronchoscopy / Sputum Collection", "ach":12, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":350, "peopleCfm":12, "exhaustBias":10 },
+        { "id":"h_exam", "ar":"غرفة فحص", "en":"Examination Room", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":330, "peopleCfm":12, "exhaustBias":0 },
+        { "id":"h_med_room", "ar":"غرفة أدوية", "en":"Medication Room", "ach":4, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":330, "peopleCfm":8, "exhaustBias":0 },
+        { "id":"h_treatment", "ar":"غرفة علاج", "en":"Treatment Room", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":330, "peopleCfm":12, "exhaustBias":0 },
+
+        { "id":"h_pt_hydro", "ar":"علاج طبيعي/مائي", "en":"Physical Therapy and Hydrotherapy", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":360, "peopleCfm":15, "exhaustBias":0 },
+        { "id":"h_sterilizer_equip", "ar":"غرفة أجهزة تعقيم", "en":"Sterilizer Equipment Room", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":420, "peopleCfm":8, "exhaustBias":10 },
+
+        { "id":"h_cssd_soiled", "ar":"تعقيم مركزي - متسخ", "en":"Soiled / Decontamination (CSSD)", "ach":6, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":380, "peopleCfm":10, "exhaustBias":10 },
+        { "id":"h_cssd_clean", "ar":"تعقيم مركزي - نظيف", "en":"Clean Workroom (CSSD)", "ach":4, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":340, "peopleCfm":10, "exhaustBias":-5 },
+        { "id":"h_cssd_sterile", "ar":"تعقيم مركزي - تخزين معقم", "en":"Sterile Storage (CSSD)", "ach":4, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":330, "peopleCfm":5, "exhaustBias":0 },
+
+        { "id":"h_food_prep", "ar":"تحضير أغذية", "en":"Food Preparation Center", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":450, "peopleCfm":15, "exhaustBias":10 },
+        { "id":"h_warewash", "ar":"غسيل أواني", "en":"Warewashing", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":450, "peopleCfm":10, "exhaustBias":10 },
+        { "id":"h_diet_storage", "ar":"مخزن تغذية", "en":"Dietary Storage", "ach":2, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":320, "peopleCfm":5, "exhaustBias":0 },
+
+        { "id":"h_laundry_general", "ar":"مغسلة عامة", "en":"Laundry, General", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":430, "peopleCfm":10, "exhaustBias":10 },
+        { "id":"h_soiled_linen", "ar":"فرز/تخزين مفروشات متسخة", "en":"Soiled Linen Sorting & Storage", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":420, "peopleCfm":8, "exhaustBias":10 },
+        { "id":"h_clean_linen", "ar":"تخزين مفروشات نظيفة", "en":"Clean Linen Storage", "ach":2, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":320, "peopleCfm":5, "exhaustBias":0 },
+        { "id":"h_chute_room", "ar":"غرفة شوتة نفايات/مفروشات", "en":"Linen and Trash Chute Room", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":410, "peopleCfm":6, "exhaustBias":10 },
+        { "id":"h_bedpan", "ar":"غرفة Bedpan", "en":"Bedpan Room", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":390, "peopleCfm":6, "exhaustBias":10 },
+        { "id":"h_bathroom", "ar":"حمام", "en":"Bathroom", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":320, "peopleCfm":8, "exhaustBias":10 },
+        { "id":"h_janitor", "ar":"غرفة نظافة (Janitor)", "en":"Janitor Closet", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":380, "peopleCfm":5, "exhaustBias":10 },
+
+        { "id":"h_soiled_work", "ar":"غرفة متسخة/Soiled Holding", "en":"Soiled Workroom or Soiled Holding", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":380, "peopleCfm":8, "exhaustBias":10 },
+        { "id":"h_clean_work", "ar":"غرفة نظيفة/Clean Holding", "en":"Clean Workroom or Clean Holding", "ach":4, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":330, "peopleCfm":8, "exhaustBias":-5 },
+        { "id":"h_endoscope_clean", "ar":"تنظيف مناظير", "en":"Endoscope Cleaning", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":400, "peopleCfm":8, "exhaustBias":10 },
+        { "id":"h_hazard_store", "ar":"تخزين مواد خطرة", "en":"Hazardous Material Storage", "ach":10, "med":true, "sector":"hospital", "standard":"ASHRAE 170", "method":"ACH+People+Equip", "factor":380, "peopleCfm":4, "exhaustBias":10 }
       ]
     },
+
     {
-      "key": "commercial",
-      "name_ar": "التجاري (ممارسة شائعة بالسعودية)",
-      "name_en": "Commercial (KSA Practice)",
-      "method": "ksa_practice",
+      "name_ar": "التجاري (الممارسة الشائعة في السعودية)",
+      "name_en": "Commercial (Saudi common practice)",
       "items": [
-        { "id": "c_office", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 4, "peopleCfm": 15, "factor": 420, "pressure": "N" },
-        { "id": "c_meeting", "ar": "غرفة اجتماعات", "en": "Conference Room", "ach": 8, "peopleCfm": 20, "factor": 380, "pressure": "N" },
-        { "id": "c_retail", "ar": "محل تجاري", "en": "Retail Store", "ach": 6, "peopleCfm": 12, "factor": 380, "pressure": "N" },
-        { "id": "c_restaurant", "ar": "صالة مطعم", "en": "Restaurant Dining", "ach": 10, "peopleCfm": 20, "factor": 360, "pressure": "N" },
-        { "id": "c_kitchen", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 20, "peopleCfm": 15, "factor": 520, "pressure": "N" },
-        { "id": "c_gym", "ar": "نادي رياضي", "en": "Gym", "ach": 8, "peopleCfm": 20, "factor": 320, "pressure": "N" },
-        { "id": "c_lobby", "ar": "ردهة استقبال", "en": "Lobby / Reception", "ach": 4, "peopleCfm": 10, "factor": 350, "pressure": "N" },
-        { "id": "c_auditorium", "ar": "قاعة محاضرات", "en": "Auditorium", "ach": 8, "peopleCfm": 15, "factor": 360, "pressure": "N" }
+        { "id":"c_open_office", "ar":"مكاتب مفتوحة", "en":"Open Office", "ach":4, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":360, "peopleCfm":12, "exhaustBias":0 },
+        { "id":"c_private_office", "ar":"مكتب خاص", "en":"Private Office", "ach":4, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":350, "peopleCfm":10, "exhaustBias":0 },
+        { "id":"c_meeting", "ar":"غرفة اجتماعات", "en":"Meeting / Conference Room", "ach":10, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":340, "peopleCfm":15, "exhaustBias":0 },
+        { "id":"c_retail", "ar":"محل تجاري", "en":"Retail Store", "ach":6, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":380, "peopleCfm":10, "exhaustBias":0 },
+        { "id":"c_lobby", "ar":"ردهة استقبال", "en":"Lobby / Reception", "ach":4, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":350, "peopleCfm":12, "exhaustBias":0 },
+        { "id":"c_restaurant_dining", "ar":"صالة مطعم", "en":"Restaurant Dining", "ach":10, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":370, "peopleCfm":15, "exhaustBias":0 },
+        { "id":"c_kitchen", "ar":"مطبخ تجاري", "en":"Commercial Kitchen", "ach":20, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":450, "peopleCfm":10, "exhaustBias":15 },
+        { "id":"c_gym", "ar":"نادي رياضي", "en":"Gym / Fitness", "ach":8, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":390, "peopleCfm":20, "exhaustBias":0 },
+        { "id":"c_auditorium", "ar":"قاعة / مسرح", "en":"Auditorium", "ach":8, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":340, "peopleCfm":15, "exhaustBias":0 },
+        { "id":"c_classroom", "ar":"فصل / تدريب", "en":"Classroom / Training", "ach":6, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":340, "peopleCfm":15, "exhaustBias":0 },
+        { "id":"c_server_room", "ar":"غرفة سيرفر", "en":"Server Room", "ach":8, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":420, "peopleCfm":5, "exhaustBias":0 },
+        { "id":"c_store", "ar":"مستودع", "en":"Storage", "ach":2, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":320, "peopleCfm":4, "exhaustBias":0 },
+        { "id":"c_toilet", "ar":"دورة مياه", "en":"Toilet", "ach":10, "med":false, "sector":"commercial", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":320, "peopleCfm":10, "exhaustBias":10 }
       ]
     },
+
     {
-      "key": "residential",
-      "name_ar": "السكني (ممارسة شائعة بالسعودية)",
-      "name_en": "Residential (KSA Practice)",
-      "method": "ksa_practice",
+      "name_ar": "السكني (الممارسة الشائعة في السعودية)",
+      "name_en": "Residential (Saudi common practice)",
       "items": [
-        { "id": "r_living", "ar": "غرفة معيشة", "en": "Living Room", "ach": 2, "peopleCfm": 10, "factor": 350, "pressure": "N" },
-        { "id": "r_bedroom", "ar": "غرفة نوم", "en": "Bedroom", "ach": 2, "peopleCfm": 8, "factor": 320, "pressure": "N" },
-        { "id": "r_majlis", "ar": "مجلس", "en": "Majlis", "ach": 3, "peopleCfm": 12, "factor": 380, "pressure": "N" },
-        { "id": "r_dining", "ar": "غرفة طعام", "en": "Dining Room", "ach": 2, "peopleCfm": 10, "factor": 340, "pressure": "N" },
-        { "id": "r_kitchen", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "ach": 6, "peopleCfm": 10, "factor": 450, "pressure": "N" },
-        { "id": "r_bath", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "peopleCfm": 0, "factor": 280, "pressure": "N" },
-        { "id": "r_corridor", "ar": "ممر", "en": "Corridor", "ach": 2, "peopleCfm": 0, "factor": 260, "pressure": "N" }
+        { "id":"r_living", "ar":"غرفة معيشة", "en":"Living Room", "ach":4, "med":false, "sector":"residential", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":340, "peopleCfm":10, "exhaustBias":0 },
+        { "id":"r_majlis", "ar":"مجلس", "en":"Majlis", "ach":4, "med":false, "sector":"residential", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":360, "peopleCfm":12, "exhaustBias":0 },
+        { "id":"r_bedroom", "ar":"غرفة نوم", "en":"Bedroom", "ach":2, "med":false, "sector":"residential", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":330, "peopleCfm":8, "exhaustBias":0 },
+        { "id":"r_dining", "ar":"غرفة طعام", "en":"Dining Room", "ach":4, "med":false, "sector":"residential", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":340, "peopleCfm":10, "exhaustBias":0 },
+        { "id":"r_kitchen", "ar":"مطبخ منزلي", "en":"Domestic Kitchen", "ach":6, "med":false, "sector":"residential", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":420, "peopleCfm":8, "exhaustBias":10 },
+        { "id":"r_bath", "ar":"دورة مياه", "en":"Bathroom", "ach":10, "med":false, "sector":"residential", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":320, "peopleCfm":6, "exhaustBias":10 },
+        { "id":"r_laundry", "ar":"غرفة غسيل", "en":"Laundry Room", "ach":4, "med":false, "sector":"residential", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":360, "peopleCfm":6, "exhaustBias":5 },
+        { "id":"r_corridor", "ar":"ممر", "en":"Corridor", "ach":2, "med":false, "sector":"residential", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":300, "peopleCfm":4, "exhaustBias":0 },
+        { "id":"r_store", "ar":"مخزن", "en":"Store / Closet", "ach":1, "med":false, "sector":"residential", "standard":"Saudi Practice", "method":"Airflow+Occupancy", "factor":300, "peopleCfm":2, "exhaustBias":0 }
       ]
     }
   ]
