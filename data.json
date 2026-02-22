@@ -1,49 +1,62 @@
 {
+  "version": 4,
   "categories": [
     {
       "name_ar": "المستشفيات (ASHRAE 170)",
       "name_en": "Hospitals (ASHRAE 170)",
+      "domain": "medical",
+      "method": "ashrae170_ach",
       "items": [
-        { "id": "h1", "ar": "غرفة عمليات (OR)", "en": "Operating Room (OR)", "ach": 20, "factor": 280, "method": "ashrae170_ach" },
-        { "id": "h2", "ar": "عزل ضغط موجب (PE)", "en": "Protective Environment (PE)", "ach": 12, "factor": 350, "method": "ashrae170_ach" },
-        { "id": "h3", "ar": "عزل ضغط سالب (AII)", "en": "Airborne Infection Isolation (AII)", "ach": 12, "factor": 350, "method": "ashrae170_ach" },
-        { "id": "h4", "ar": "العناية المركزة (ICU)", "en": "Critical Care (ICU)", "ach": 6, "factor": 350, "method": "ashrae170_ach" },
-        { "id": "h5", "ar": "غرفة الطوارئ (ترياج)", "en": "Emergency (Triage)", "ach": 12, "factor": 350, "method": "ashrae170_ach" },
-        { "id": "h6", "ar": "مختبر عام", "en": "General Laboratory", "ach": 6, "factor": 400, "method": "ashrae170_ach" },
-        { "id": "h7", "ar": "غرفة تنويم مريض", "en": "Patient Room", "ach": 6, "factor": 350, "method": "ashrae170_ach" },
-        { "id": "h8", "ar": "الأشعة التشخيصية", "en": "Diagnostic X-Ray", "ach": 6, "factor": 500, "method": "ashrae170_ach" },
-        { "id": "h9", "ar": "غرفة المناظير", "en": "Endoscopy Room", "ach": 15, "factor": 320, "method": "ashrae170_ach" },
-        { "id": "h10", "ar": "التعقيم المركزي (CSSD)", "en": "Sterile Storage (CSSD)", "ach": 10, "factor": 350, "method": "ashrae170_ach" },
-        { "id": "h11", "ar": "الصيدلية", "en": "Pharmacy", "ach": 4, "factor": 350, "method": "ashrae170_ach" },
-        { "id": "h12", "ar": "غرفة الولادة (LDR)", "en": "Delivery Room (LDR)", "ach": 15, "factor": 320, "method": "ashrae170_ach" },
-        { "id": "h13", "ar": "العلاج الطبيعي", "en": "Physical Therapy", "ach": 6, "factor": 350, "method": "ashrae170_ach" },
-        { "id": "h14", "ar": "غرفة فحص عامة", "en": "Examination Room", "ach": 6, "factor": 350, "method": "ashrae170_ach" }
+        { "id": "h_or", "ar": "غرفة عمليات (Class A OR)", "en": "Operating Room (Class A)", "ach": 15, "factor": 280, "notes": "ASHRAE 170" },
+        { "id": "h_aii", "ar": "غرفة عزل سلبي (AII)", "en": "Airborne Infection Isolation (AII)", "ach": 12, "factor": 300, "notes": "ASHRAE 170" },
+        { "id": "h_pe", "ar": "غرفة حماية إيجابية (PE)", "en": "Protective Environment", "ach": 12, "factor": 300, "notes": "ASHRAE 170" },
+        { "id": "h_patient", "ar": "غرفة مريض", "en": "Patient Room", "ach": 6, "factor": 350, "notes": "ASHRAE 170" },
+        { "id": "h_exam", "ar": "غرفة فحص", "en": "Examination Room", "ach": 6, "factor": 350, "notes": "ASHRAE 170" },
+        { "id": "h_er", "ar": "غرفة طوارئ/إنعاش", "en": "ER Treatment / Trauma", "ach": 12, "factor": 330, "notes": "ASHRAE 170" },
+        { "id": "h_icu", "ar": "العناية المركزة ICU", "en": "ICU", "ach": 6, "factor": 330, "notes": "ASHRAE 170" },
+        { "id": "h_xray", "ar": "أشعة تشخيصية", "en": "Diagnostic X-Ray", "ach": 6, "factor": 420, "notes": "ASHRAE 170" },
+        { "id": "h_laboratory", "ar": "مختبر عام", "en": "General Laboratory", "ach": 6, "factor": 400, "notes": "ASHRAE 170" },
+        { "id": "h_histology", "ar": "مختبر هستولوجي", "en": "Laboratory - Histology", "ach": 6, "factor": 400, "notes": "ASHRAE 170" },
+        { "id": "h_pharmacy", "ar": "صيدلية", "en": "Pharmacy", "ach": 4, "factor": 360, "notes": "ASHRAE 170" },
+        { "id": "h_delivery", "ar": "غرفة ولادة (LDR)", "en": "Delivery Room (LDR)", "ach": 6, "factor": 320, "notes": "ASHRAE 170" },
+        { "id": "h_physical_therapy", "ar": "العلاج الطبيعي", "en": "Physical Therapy", "ach": 6, "factor": 340, "notes": "ASHRAE 170" },
+        { "id": "h_toilet", "ar": "دورة مياه (مستشفى)", "en": "Toilet Room (Hospital)", "ach": 10, "factor": 380, "notes": "ASHRAE 170" },
+        { "id": "h_corridor", "ar": "ممر (مستشفى)", "en": "Corridor (Hospital)", "ach": 2, "factor": 420, "notes": "ASHRAE 170" }
       ]
     },
     {
-      "name_ar": "التجاري (ASHRAE 62.1)",
-      "name_en": "Commercial (ASHRAE 62.1)",
+      "name_ar": "التجاري (ممارسة شائعة بالسعودية)",
+      "name_en": "Commercial (Saudi Practice)",
+      "domain": "commercial",
+      "method": "saudi_practical",
       "items": [
-        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "rp": 5, "ra": 0.06, "factor": 420, "method": "ashrae62_1_vrp" },
-        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Conference Room", "rp": 5, "ra": 0.06, "factor": 350, "method": "ashrae62_1_vrp" },
-        { "id": "c3", "ar": "صالة مطعم", "en": "Dining Area", "rp": 7.5, "ra": 0.18, "factor": 320, "method": "ashrae62_1_vrp" },
-        { "id": "c4", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "rp": 7.5, "ra": 0.12, "factor": 300, "method": "ashrae62_1_vrp" },
-        { "id": "c5", "ar": "نادي رياضي", "en": "Gym / Fitness Area", "rp": 20, "ra": 0.18, "factor": 300, "method": "ashrae62_1_vrp" },
-        { "id": "c6", "ar": "قاعة سينما/مسرح", "en": "Auditorium", "rp": 5, "ra": 0.06, "factor": 350, "method": "ashrae62_1_vrp" },
-        { "id": "c7", "ar": "مكتبة عامة", "en": "Library", "rp": 5, "ra": 0.06, "factor": 380, "method": "ashrae62_1_vrp" },
-        { "id": "c8", "ar": "ردهة استقبال", "en": "Lobby / Reception", "rp": 5, "ra": 0.06, "factor": 380, "method": "ashrae62_1_vrp" },
-        { "id": "c9", "ar": "محلات تجارية", "en": "Retail Store", "rp": 7.5, "ra": 0.12, "factor": 380, "method": "ashrae62_1_vrp" }
+        { "id": "c_office", "ar": "مكاتب إدارية", "en": "Offices", "ach": 6, "factor": 420 },
+        { "id": "c_open_office", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 6, "factor": 420 },
+        { "id": "c_meeting", "ar": "غرفة اجتماعات", "en": "Conference Room", "ach": 10, "factor": 350 },
+        { "id": "c_retail", "ar": "محل تجاري", "en": "Retail Store", "ach": 6, "factor": 380 },
+        { "id": "c_lobby", "ar": "ردهة استقبال", "en": "Lobby / Reception", "ach": 4, "factor": 400 },
+        { "id": "c_restaurant", "ar": "صالة مطعم", "en": "Restaurant Dining", "ach": 10, "factor": 320 },
+        { "id": "c_com_kitchen", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 20, "factor": 280 },
+        { "id": "c_gym", "ar": "نادي رياضي", "en": "Gym", "ach": 10, "factor": 300 },
+        { "id": "c_auditorium", "ar": "قاعة / مسرح", "en": "Auditorium", "ach": 8, "factor": 320 },
+        { "id": "c_clinic_waiting", "ar": "انتظار عيادات", "en": "Clinic Waiting Area", "ach": 4, "factor": 360 }
       ]
     },
     {
-      "name_ar": "المباني السكنية (ASHRAE 62.2)",
-      "name_en": "Residential Buildings (ASHRAE 62.2)",
+      "name_ar": "السكني (ممارسة شائعة بالسعودية)",
+      "name_en": "Residential (Saudi Practice)",
+      "domain": "residential",
+      "method": "saudi_practical",
       "items": [
-        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "factor": 350, "method": "ashrae62_2_res" },
-        { "id": "r2", "ar": "غرفة نوم", "en": "Bedroom", "factor": 320, "method": "ashrae62_2_res" },
-        { "id": "r3", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "factor": 450, "method": "ashrae62_2_res", "exhaust_boost_cfm": 50 },
-        { "id": "r4", "ar": "دورة مياه", "en": "Bathroom", "factor": 350, "method": "ashrae62_2_res", "exhaust_boost_cfm": 50 },
-        { "id": "r5", "ar": "ممر داخلي", "en": "Corridor", "factor": 300, "method": "ashrae62_2_res" }
+        { "id": "r_living", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "factor": 350 },
+        { "id": "r_bedroom", "ar": "غرفة نوم", "en": "Bedroom", "ach": 2, "factor": 320 },
+        { "id": "r_majlis", "ar": "مجلس", "en": "Majlis", "ach": 4, "factor": 380 },
+        { "id": "r_dining", "ar": "غرفة طعام", "en": "Dining Room", "ach": 4, "factor": 350 },
+        { "id": "r_kitchen", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "ach": 6, "factor": 420 },
+        { "id": "r_bath", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "factor": 380 },
+        { "id": "r_corridor", "ar": "ممر", "en": "Corridor", "ach": 2, "factor": 420 },
+        { "id": "r_laundry", "ar": "غرفة غسيل", "en": "Laundry", "ach": 4, "factor": 380 },
+        { "id": "r_store", "ar": "مخزن", "en": "Store", "ach": 2, "factor": 450 }
       ]
     }
   ]
