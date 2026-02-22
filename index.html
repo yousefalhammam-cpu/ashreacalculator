@@ -3,175 +3,165 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#0b1220" />
   <title>Air Calc Pro</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
-    <div class="app-title">Air Calc Pro</div>
-    <div class="app-subtitle">HVAC Engineering Suite</div>
+    <div class="app-header-inner">
+      <h1>Air Calc Pro</h1>
+      <p>HVAC Engineering Suite</p>
+    </div>
   </header>
 
-  <main>
-    <!-- CALC TAB -->
+  <main id="app-main">
+    <!-- Calculator Tab -->
     <section id="calc-tab" class="tab-panel active">
       <div class="calc-card">
-        <div class="result-row" id="result-row">
-          <span id="res-btu">BTU/h 0</span>
+        <div class="result-strip" id="result-strip">
+          <span id="btu-result">BTU/h 0</span>
           <span class="sep">|</span>
-          <span id="res-tr">TR 0.00</span>
+          <span id="tr-result">TR 0.00</span>
           <span class="sep">|</span>
-          <span id="res-cfm">CFM 0</span>
+          <span id="cfm-result">CFM 0</span>
         </div>
 
-        <div class="volume-wrap" onclick="focusField('display')">
-          <div id="display" class="display-value active-field">0</div>
-        </div>
-        <div class="field-hint" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
+        <div class="display-box" id="display" onclick="focusField('display')">0</div>
+        <div class="display-label" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
 
-        <!-- المطلوب: على خط واحد -->
-        <div class="inputs-row">
+        <div class="input-row">
           <div class="input-col room-col">
             <label data-ar="تصنيف الغرفة" data-en="Room Type">تصنيف الغرفة</label>
-            <select id="room-select" onchange="onRoomChanged()"></select>
+            <select id="room-select" onchange="onRoomChange()"></select>
           </div>
+
           <div class="input-col">
             <label data-ar="أشخاص" data-en="People">أشخاص</label>
             <input id="people-count" type="text" value="0" readonly onclick="focusField('people')" />
           </div>
+
           <div class="input-col">
             <label data-ar="أجهزة (W)" data-en="Equip (W)">أجهزة (W)</label>
             <input id="equip-watts" type="text" value="0" readonly onclick="openEquipModal()" />
           </div>
         </div>
 
-        <!-- Chips صغيرة فقط (بدون الشريط الكبير اللي عليه X) -->
         <div class="chips-row">
-          <span class="chip" id="chip-standard">-</span>
-          <span class="chip" id="chip-ach">ACH: 0</span>
-          <span class="chip" id="chip-duct">Duct: 12" x 0"</span>
+          <div class="chip" id="duct-chip">Duct: 12" x 0</div>
+          <div class="chip" id="ach-chip">ACH: 0</div>
+          <div class="chip" id="std-chip">—</div>
         </div>
 
-        <!-- شكل الحاسبة مربعات -->
-        <div class="keypad-grid">
-          <button class="btn light" onclick="clearActiveField()">AC</button>
-          <button class="btn light" onclick="deleteLast()">DEL</button>
-          <button class="btn orange" onclick="calculateLoad(false)" data-ar="احسب" data-en="CALC">احسب</button>
-          <button class="btn orange" onclick="calculateLoad(true)">=</button>
+        <div class="keypad">
+          <button class="k light" onclick="clearAllFields()">AC</button>
+          <button class="k light" onclick="deleteLast()">DEL</button>
+          <button class="k orange" onclick="calculateLoad(true)" data-ar="احسب" data-en="CALC">احسب</button>
+          <button class="k orange" onclick="calculateLoad(false)">=</button>
 
-          <button class="btn dark" onclick="press(7)">7</button>
-          <button class="btn dark" onclick="press(8)">8</button>
-          <button class="btn dark" onclick="press(9)">9</button>
-          <button class="btn orange" onclick="focusField('people')" data-ar="أشخاص" data-en="People">أشخاص</button>
+          <button class="k orange" onclick="focusField('people')" data-ar="أشخاص" data-en="People">أشخاص</button>
+          <button class="k dark" onclick="press(9)">9</button>
+          <button class="k dark" onclick="press(8)">8</button>
+          <button class="k dark" onclick="press(7)">7</button>
 
-          <button class="btn dark" onclick="press(4)">4</button>
-          <button class="btn dark" onclick="press(5)">5</button>
-          <button class="btn dark" onclick="press(6)">6</button>
-          <button class="btn orange" onclick="openEquipModal()" data-ar="أجهزة" data-en="Equip">أجهزة</button>
+          <button class="k orange" onclick="openEquipModal()" data-ar="أجهزة" data-en="Equip">أجهزة</button>
+          <button class="k dark" onclick="press(6)">6</button>
+          <button class="k dark" onclick="press(5)">5</button>
+          <button class="k dark" onclick="press(4)">4</button>
 
-          <button class="btn dark" onclick="press(1)">1</button>
-          <button class="btn dark" onclick="press(2)">2</button>
-          <button class="btn dark" onclick="press(3)">3</button>
-          <button class="btn dark" onclick="press('.')">.</button>
+          <button class="k dark" onclick="press('.')">.</button>
+          <button class="k dark" onclick="press(3)">3</button>
+          <button class="k dark" onclick="press(2)">2</button>
+          <button class="k dark" onclick="press(1)">1</button>
 
-          <button class="btn dark wide" onclick="press(0)">0</button>
-          <button class="btn dark" onclick="clearAllInputs()" data-ar="C" data-en="C">C</button>
-          <button class="btn dark" onclick="focusField('display')" data-ar="حجم" data-en="Vol">حجم</button>
-        </div>
-
-        <div class="history-box">
-          <div class="history-head">
-            <span data-ar="سجل الحسابات" data-en="History">سجل الحسابات</span>
-            <button class="small-btn" onclick="clearHistory()" data-ar="مسح" data-en="Clear">مسح</button>
-          </div>
-          <div id="history-list"></div>
+          <button class="k dark wide" onclick="press(0)">0</button>
         </div>
       </div>
     </section>
 
-    <!-- EXPORT TAB -->
+    <!-- History Tab -->
+    <section id="history-tab" class="tab-panel">
+      <div class="page-card">
+        <div class="page-card-header">
+          <h2 data-ar="سجل العمليات" data-en="History">سجل العمليات</h2>
+          <button class="small-btn" onclick="clearHistory()" data-ar="مسح" data-en="Clear">مسح</button>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </div>
+    </section>
+
+    <!-- Export Tab -->
     <section id="export-tab" class="tab-panel">
       <div class="page-card">
         <h2 data-ar="التصدير" data-en="Export">التصدير</h2>
-        <p data-ar="تصدير سجل الحسابات كملف JSON أو نص." data-en="Export calculation history as JSON or text.">
-          تصدير سجل الحسابات كملف JSON أو نص.
+        <p data-ar="تصدير سجل العمليات بصيغة CSV." data-en="Export the calculation history as CSV.">
+          تصدير سجل العمليات بصيغة CSV.
         </p>
-
-        <div class="stack">
-          <button class="full-btn" onclick="exportHistoryJSON()" data-ar="تصدير JSON" data-en="Export JSON">تصدير JSON</button>
-          <button class="full-btn" onclick="exportHistoryTXT()" data-ar="تصدير TXT" data-en="Export TXT">تصدير TXT</button>
-          <button class="full-btn" onclick="copyHistory()" data-ar="نسخ السجل" data-en="Copy History">نسخ السجل</button>
-        </div>
+        <button class="primary-btn" onclick="exportCSV()" data-ar="تصدير CSV" data-en="Export CSV">تصدير CSV</button>
       </div>
     </section>
 
-    <!-- CONTACT TAB -->
+    <!-- Contact Tab -->
     <section id="contact-tab" class="tab-panel">
       <div class="page-card">
         <h2 data-ar="تواصل معنا" data-en="Contact Us">تواصل معنا</h2>
-        <p data-ar="Air Calc Pro تطبيق هندسي لحساب الأحمال الهوائية والتبريدية بسرعة، مع تصنيفات غرف متنوعة (صحي، تجاري، سكني) وسجل نتائج وتصدير."
-           data-en="Air Calc Pro is an HVAC engineering calculator for fast airflow and cooling load estimation across healthcare, commercial, and residential rooms, with history and export.">
-          Air Calc Pro تطبيق هندسي لحساب الأحمال الهوائية والتبريدية بسرعة، مع تصنيفات غرف متنوعة (صحي، تجاري، سكني) وسجل نتائج وتصدير.
+        <p data-ar="Air Calc Pro أداة هندسية لحساب الأحمال الهوائية والتبريدية بشكل سريع، مع تصنيف غرف صحي/تجاري/سكني، وربط تقريبي لمقاسات الدكت وسجل عمليات للتوثيق."
+           data-en="Air Calc Pro is a practical HVAC engineering calculator for quick airflow and cooling load estimation across healthcare, commercial, and residential rooms, with duct sizing hints and calculation history.">
+          Air Calc Pro أداة هندسية لحساب الأحمال الهوائية والتبريدية بشكل سريع، مع تصنيف غرف صحي/تجاري/سكني، وربط تقريبي لمقاسات الدكت وسجل عمليات للتوثيق.
         </p>
 
         <div class="contact-list">
-          <div><strong data-ar="الاسم:" data-en="Name:">الاسم:</strong> م. يوسف ال همام</div>
-          <div><strong data-ar="الجوال:" data-en="Phone:">الجوال:</strong> 0560282701</div>
-          <div><strong>Email:</strong> Yousef.alhammam@live.com</div>
+          <div><strong>Phone:</strong> <span>0560282701</span></div>
+          <div><strong>Email:</strong> <span>Yousef.alhammam@live.com</span></div>
         </div>
 
         <div class="made-ksa">صنع في السعودية 🇸🇦</div>
       </div>
     </section>
 
-    <!-- SETTINGS TAB -->
+    <!-- Settings Tab -->
     <section id="settings-tab" class="tab-panel">
       <div class="page-card">
         <h2 data-ar="الإعدادات" data-en="Settings">الإعدادات</h2>
 
-        <div class="setting-item">
-          <div>
-            <div class="setting-title" data-ar="اللغة" data-en="Language">اللغة</div>
-            <div class="setting-sub" data-ar="تغيير لغة الواجهة فقط" data-en="Interface language only">تغيير لغة الواجهة فقط</div>
-          </div>
-          <button class="small-btn" onclick="toggleLanguage()" id="lang-btn">English</button>
+        <div class="setting-row">
+          <span data-ar="اللغة" data-en="Language">اللغة</span>
+          <button class="primary-btn small" onclick="toggleLanguage()" id="lang-toggle-btn">English</button>
         </div>
 
-        <div class="setting-item">
-          <div>
-            <div class="setting-title" data-ar="سرعة الدكت الافتراضية" data-en="Default Duct Velocity">سرعة الدكت الافتراضية</div>
-            <div class="setting-sub" data-ar="تُستخدم لحساب مقاس الدكت" data-en="Used for duct sizing">تُستخدم لحساب مقاس الدكت</div>
-          </div>
-          <input id="duct-velocity" type="number" min="400" max="2000" step="50" value="800" onchange="saveSettings()" />
+        <div class="setting-row">
+          <span data-ar="عرض الأرقام" data-en="Number display">عرض الأرقام</span>
+          <span class="muted" data-ar="إنجليزي دائمًا" data-en="Always English">إنجليزي دائمًا</span>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- معدات -->
+  <!-- Equipment Modal -->
   <div id="equip-modal" class="modal">
-    <div class="modal-card">
-      <div class="modal-head">
+    <div class="modal-panel">
+      <div class="modal-header">
         <h3 data-ar="قائمة الأجهزة" data-en="Equipment List">قائمة الأجهزة</h3>
-        <button class="small-btn" onclick="closeEquipModal()">✕</button>
+        <button class="small-btn" onclick="closeEquipModal()">×</button>
       </div>
-      <div id="equip-list"></div>
-      <button class="full-btn" onclick="closeEquipModal()" data-ar="تم" data-en="Done">تم</button>
+      <div id="equip-checklist" class="equip-list"></div>
+      <button class="primary-btn" onclick="closeEquipModal()" data-ar="تم" data-en="Done">تم</button>
     </div>
   </div>
 
-  <!-- القائمة السفلية (بدون المساعد) -->
+  <!-- Bottom Nav -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchTab('calc-tab', this)">
-      <i>🧮</i><span data-ar="الحاسبة" data-en="Calc">الحاسبة</span>
+      <i>🧮</i><span data-ar="الحاسبة" data-en="Calculator">الحاسبة</span>
     </button>
     <button class="nav-item" onclick="switchTab('export-tab', this)">
       <i>📤</i><span data-ar="التصدير" data-en="Export">التصدير</span>
     </button>
     <button class="nav-item" onclick="switchTab('contact-tab', this)">
       <i>📞</i><span data-ar="تواصل" data-en="Contact">تواصل</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('history-tab', this)">
+      <i>🕘</i><span data-ar="السجل" data-en="History">السجل</span>
     </button>
     <button class="nav-item" onclick="switchTab('settings-tab', this)">
       <i>⚙️</i><span data-ar="الإعدادات" data-en="Settings">الإعدادات</span>
