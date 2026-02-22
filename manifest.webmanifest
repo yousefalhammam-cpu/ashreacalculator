@@ -1,11 +1,11 @@
 {
   "name": "Air Calc Pro HVAC",
   "short_name": "AirCalc",
-  "description": "Professional HVAC Airflow & Cooling Calculator",
+  "description": "Professional HVAC airflow and cooling calculator (CFM / TR / BTU)",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#000000",
+  "theme_color": "#07132a",
   "icons": [
     {
       "src": "icons/icon-192.png",
