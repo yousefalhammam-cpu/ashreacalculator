@@ -4,41 +4,40 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
   <title>Air Calc Pro</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#07132a">
+  <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Header (أصغر ومتمركز) -->
   <header class="app-header">
-    <div class="app-title">Air Calc Pro</div>
-    <div class="app-subtitle" data-ar="HVAC Engineering Suite" data-en="HVAC Engineering Suite">HVAC Engineering Suite</div>
+    <div class="app-header-inner">
+      <div class="app-title">Air Calc Pro</div>
+      <div class="app-subtitle">HVAC Engineering Suite</div>
+    </div>
   </header>
 
-  <main id="app-main">
+  <main class="app-shell">
     <!-- Calculator Tab -->
     <section id="calc-tab" class="tab-panel active">
       <div class="calc-card">
-        <div class="results-line" id="results-line">
+        <div class="result-strip">
           <span id="tr-result">TR 0.00</span>
-          <span class="sep">|</span>
+          <span class="divider">|</span>
           <span id="cfm-result">CFM 0</span>
-          <span class="sep">|</span>
+          <span class="divider">|</span>
           <span id="btu-result">BTU/h 0</span>
         </div>
 
-        <div class="market-btu-line">
-          <span id="market-btu-label" data-ar="المقترح:" data-en="Suggested:">المقترح:</span>
-          <span id="market-btu-text">BTU 0</span>
-        </div>
+        <div id="suggested-btu" class="sub-result">المقترح: 0 BTU</div>
 
         <div id="display-wrap" class="display-wrap" onclick="focusField('display')">
-          <div id="display">0</div>
+          <div id="display" class="display-value active-field">0</div>
         </div>
-        <div class="field-caption" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
+        <div class="display-label" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
 
-        <div class="rule-chip" id="rule-chip">-</div>
+        <div id="mode-badge" class="mode-badge">---</div>
 
-        <div class="top-inputs">
+        <div class="inputs-row">
           <div class="input-col room-col">
             <label data-ar="تصنيف الغرفة" data-en="Room Type">تصنيف الغرفة</label>
             <select id="room-select" onchange="onRoomChange()"></select>
@@ -53,46 +52,41 @@
           </div>
         </div>
 
-        <div class="mini-chips">
-          <span id="chip-standard" class="mini-chip">-</span>
-          <span id="chip-ach" class="mini-chip">ACH: -</span>
-          <span id="chip-duct" class="mini-chip">Duct: -</span>
+        <div class="chips-row">
+          <span id="chip-standard" class="chip">---</span>
+          <span id="chip-ach" class="chip">ACH: 0</span>
+          <span id="chip-duct" class="chip">Duct: --</span>
         </div>
 
-        <div class="keypad">
-          <!-- row 1 -->
-          <button class="btn btn-op" onclick="calculateLoad(false)">=</button>
-          <button class="btn btn-op" onclick="calculateLoad(true)" id="calc-save-btn" data-ar="احسب" data-en="CALC">احسب</button>
-          <button class="btn btn-light" onclick="deleteLast()">DEL</button>
+        <!-- Keypad (مربعات مثل الشكل السابق) -->
+        <div class="keypad-grid">
           <button class="btn btn-light" onclick="clearActiveField()">AC</button>
+          <button class="btn btn-light" onclick="deleteLast()">DEL</button>
+          <button class="btn btn-accent" onclick="calculateLoad(false)" data-ar="احسب" data-en="CALC">احسب</button>
+          <button class="btn btn-accent" onclick="calculateLoad(true)">=</button>
 
-          <!-- row 2 -->
-          <button class="btn btn-op" onclick="focusField('people')" id="people-btn" data-ar="أشخاص" data-en="People">أشخاص</button>
-          <button class="btn btn-num" onclick="press(9)">9</button>
-          <button class="btn btn-num" onclick="press(8)">8</button>
-          <button class="btn btn-num" onclick="press(7)">7</button>
+          <button class="btn btn-dark" onclick="press(7)">7</button>
+          <button class="btn btn-dark" onclick="press(8)">8</button>
+          <button class="btn btn-dark" onclick="press(9)">9</button>
+          <button class="btn btn-accent" onclick="focusField('people')" data-ar="أشخاص" data-en="People">أشخاص</button>
 
-          <!-- row 3 -->
-          <button class="btn btn-op" onclick="openEquipModal()" id="equip-btn" data-ar="أجهزة" data-en="Equip">أجهزة</button>
-          <button class="btn btn-num" onclick="press(6)">6</button>
-          <button class="btn btn-num" onclick="press(5)">5</button>
-          <button class="btn btn-num" onclick="press(4)">4</button>
+          <button class="btn btn-dark" onclick="press(4)">4</button>
+          <button class="btn btn-dark" onclick="press(5)">5</button>
+          <button class="btn btn-dark" onclick="press(6)">6</button>
+          <button class="btn btn-accent" onclick="openEquipModal()" data-ar="أجهزة" data-en="Equip">أجهزة</button>
 
-          <!-- row 4 -->
-          <button class="btn btn-num" onclick="press('.')">.</button>
-          <button class="btn btn-num" onclick="press(3)">3</button>
-          <button class="btn btn-num" onclick="press(2)">2</button>
-          <button class="btn btn-num" onclick="press(1)">1</button>
+          <button class="btn btn-dark" onclick="press(1)">1</button>
+          <button class="btn btn-dark" onclick="press(2)">2</button>
+          <button class="btn btn-dark" onclick="press(3)">3</button>
+          <button class="btn btn-dark" onclick="press('.')">.</button>
 
-          <!-- row 5 -->
-          <button class="btn btn-wide" onclick="press(0)">0</button>
-          <button class="btn btn-light" onclick="resetAllFields()" data-ar="مسح الكل" data-en="Reset">مسح الكل</button>
+          <button class="btn btn-dark wide" onclick="press(0)">0</button>
         </div>
 
         <div class="history-box">
           <div class="history-head">
-            <span data-ar="سجل الحسابات" data-en="History">سجل الحسابات</span>
-            <button class="ghost-btn" onclick="clearHistory()" data-ar="مسح" data-en="Clear">مسح</button>
+            <span data-ar="سجل الحسابات" data-en="Calculation History">سجل الحسابات</span>
+            <button class="mini-btn" onclick="clearHistory()" data-ar="مسح" data-en="Clear">مسح</button>
           </div>
           <div id="history-list"></div>
         </div>
@@ -101,71 +95,69 @@
 
     <!-- Export Tab -->
     <section id="export-tab" class="tab-panel">
-      <div class="panel-card">
+      <div class="page-card">
         <h2 data-ar="التصدير" data-en="Export">التصدير</h2>
-        <p data-ar="تصدير نتائج آخر الحسابات بصيغة JSON أو CSV." data-en="Export your recent calculations as JSON or CSV.">
-          تصدير نتائج آخر الحسابات بصيغة JSON أو CSV.
+        <p data-ar="تصدير سجل الحسابات بصيغة CSV أو JSON." data-en="Export calculation history as CSV or JSON.">
+          تصدير سجل الحسابات بصيغة CSV أو JSON.
         </p>
-        <div class="stack-btns">
-          <button class="full-btn" onclick="exportHistoryJSON()">Export JSON</button>
-          <button class="full-btn" onclick="exportHistoryCSV()">Export CSV</button>
+        <div class="stack-actions">
+          <button class="full-btn" onclick="exportCSV()" data-ar="تصدير CSV" data-en="Export CSV">تصدير CSV</button>
+          <button class="full-btn" onclick="exportJSON()" data-ar="تصدير JSON" data-en="Export JSON">تصدير JSON</button>
         </div>
       </div>
     </section>
 
     <!-- AI Assistant Tab -->
     <section id="assistant-tab" class="tab-panel">
-      <div class="panel-card">
-        <h2 data-ar="المساعد الذكي" data-en="AI Assistant">المساعد الذكي</h2>
-        <p class="muted" data-ar="تحليل إرشادي مبني على نتائج الحاسبة الحالية (لا يغني عن التصميم الميكانيكي التفصيلي)." data-en="Guidance based on current calculator results (not a replacement for detailed mechanical design).">
-          تحليل إرشادي مبني على نتائج الحاسبة الحالية (لا يغني عن التصميم الميكانيكي التفصيلي).
+      <div class="page-card">
+        <h2 data-ar="المساعد" data-en="Assistant">المساعد</h2>
+        <p data-ar="هذه صفحة المساعد الذكي داخل التطبيق. تقدر لاحقًا تربطها بـ API لتوصيات الأنظمة والتجهيزات والأسعار."
+           data-en="This is the in-app AI assistant page. Later you can connect it to an API for system, equipment, and pricing recommendations.">
+          هذه صفحة المساعد الذكي داخل التطبيق. تقدر لاحقًا تربطها بـ API لتوصيات الأنظمة والتجهيزات والأسعار.
         </p>
-
-        <div class="ai-summary" id="ai-summary-box">-</div>
-
-        <textarea id="ai-user-note" class="ai-input" rows="3"
-          data-ar-placeholder="اكتب سؤالك: هل النتيجة مناسبة؟ ماذا أقترح كنظام تكييف؟"
-          data-en-placeholder="Ask: Is this result reasonable? What HVAC system do you suggest?"
-          placeholder="اكتب سؤالك: هل النتيجة مناسبة؟ ماذا أقترح كنظام تكييف؟"></textarea>
-
-        <div class="stack-btns">
-          <button class="full-btn" onclick="generateAiAdvice()" data-ar="حلّل الحالة" data-en="Analyze">حلّل الحالة</button>
-          <button class="full-btn secondary" onclick="copyAiPrompt()" data-ar="نسخ مدخلات التحليل" data-en="Copy Prompt">نسخ مدخلات التحليل</button>
+        <div class="ai-box">
+          <div class="ai-label" data-ar="اقتراحات مستقبلية" data-en="Future ideas">اقتراحات مستقبلية</div>
+          <ul>
+            <li data-ar="اقتراح نوع المكيف المناسب حسب الحمل" data-en="Suggest AC type based on load">اقتراح نوع المكيف المناسب حسب الحمل</li>
+            <li data-ar="اقتراح BTU / TR التجارية القريبة من السوق" data-en="Suggest market BTU/TR sizes">اقتراح BTU / TR التجارية القريبة من السوق</li>
+            <li data-ar="ربط قراءة حساسات (حرارة/رطوبة)" data-en="Integrate sensor readings (Temp/RH)">ربط قراءة حساسات (حرارة/رطوبة)</li>
+          </ul>
         </div>
-
-        <div id="ai-output" class="ai-output"></div>
       </div>
     </section>
 
     <!-- Contact Tab -->
     <section id="contact-tab" class="tab-panel">
-      <div class="panel-card">
+      <div class="page-card">
         <h2 data-ar="تواصل معنا" data-en="Contact Us">تواصل معنا</h2>
-        <p data-ar="Air Calc Pro تطبيق هندسي لمساعدة المهندسين والفنيين في الحسابات الأولية للهواء والتبريد (CFM / TR / BTU) مع تصنيفات غرف تشمل المستشفيات والتجاري والسكني، مع دعم مبادئ ASHRAE بطريقة عملية." data-en="Air Calc Pro is an engineering calculator for preliminary airflow and cooling calculations (CFM / TR / BTU), with room categories for healthcare, commercial, and residential spaces, using practical ASHRAE-based logic.">
-          Air Calc Pro تطبيق هندسي لمساعدة المهندسين والفنيين في الحسابات الأولية للهواء والتبريد.
+        <p data-ar="Air Calc Pro تطبيق هندسي يساعد على تقدير الأحمال الهوائية والتبريدية بسرعة، مع تصنيف غرف صحي/تجاري/سكني، ودعم ACH و CFM و TR وBTU بطريقة عملية."
+           data-en="Air Calc Pro is an engineering app that helps estimate airflow and cooling loads quickly, with healthcare/commercial/residential room categories and practical ACH, CFM, TR, and BTU support.">
+          Air Calc Pro تطبيق هندسي يساعد على تقدير الأحمال الهوائية والتبريدية بسرعة، مع تصنيف غرف صحي/تجاري/سكني، ودعم ACH و CFM و TR وBTU بطريقة عملية.
         </p>
 
         <div class="contact-list">
-          <div><strong data-ar="الاسم:" data-en="Name:">الاسم:</strong> م. يوسف ال همام</div>
-          <div><strong data-ar="الجوال:" data-en="Phone:">الجوال:</strong> 0560282701</div>
-          <div><strong>Email:</strong> Yousef.alhammam@live.com</div>
+          <div class="contact-item"><strong data-ar="الاسم:" data-en="Name:">الاسم:</strong> م. يوسف ال همام</div>
+          <div class="contact-item"><strong data-ar="الجوال:" data-en="Mobile:">الجوال:</strong> 0560282701</div>
+          <div class="contact-item"><strong data-ar="البريد:" data-en="Email:">البريد:</strong> Yousef.alhammam@live.com</div>
         </div>
 
-        <div class="made-saudi">صنع في السعودية 🇸🇦</div>
+        <div class="made-in-sa" data-ar="صنع في السعودية 🇸🇦" data-en="Made in Saudi Arabia 🇸🇦">صنع في السعودية 🇸🇦</div>
       </div>
     </section>
 
     <!-- Settings Tab -->
     <section id="settings-tab" class="tab-panel">
-      <div class="panel-card">
+      <div class="page-card">
         <h2 data-ar="الإعدادات" data-en="Settings">الإعدادات</h2>
         <div class="settings-row">
           <span data-ar="اللغة" data-en="Language">اللغة</span>
-          <button class="full-btn" onclick="toggleLanguage()" id="lang-toggle-btn">English</button>
+          <button class="small-action" onclick="toggleLanguage()">
+            <span id="lang-text">English</span>
+          </button>
         </div>
         <div class="settings-row">
-          <span data-ar="إعادة ضبط كل البيانات" data-en="Reset all data">إعادة ضبط كل البيانات</span>
-          <button class="full-btn secondary" onclick="resetAppData()" data-ar="إعادة ضبط" data-en="Reset">إعادة ضبط</button>
+          <span data-ar="تصفير كل المدخلات" data-en="Reset all inputs">تصفير كل المدخلات</span>
+          <button class="small-action danger" onclick="resetAllFields()" data-ar="تصفير" data-en="Reset">تصفير</button>
         </div>
       </div>
     </section>
@@ -174,10 +166,10 @@
   <!-- Equipment Modal -->
   <div id="equip-modal" class="modal">
     <div class="modal-content">
-      <h3 data-ar="قائمة الأجهزة" data-en="Equipment List">قائمة الأجهزة</h3>
-      <p class="muted" data-ar="تظهر الأجهزة المناسبة حسب نوع الغرفة المختار." data-en="Equipment is filtered based on selected room type.">
-        تظهر الأجهزة المناسبة حسب نوع الغرفة المختار.
-      </p>
+      <div class="modal-head">
+        <h3 data-ar="قائمة الأجهزة" data-en="Equipment List">قائمة الأجهزة</h3>
+        <button class="mini-btn" onclick="closeEquipModal()" data-ar="إغلاق" data-en="Close">إغلاق</button>
+      </div>
       <div id="equip-checklist"></div>
       <button class="full-btn" onclick="closeEquipModal()" data-ar="تم" data-en="Done">تم</button>
     </div>
