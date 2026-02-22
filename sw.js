@@ -1,12 +1,14 @@
-/* Air Calc Pro - Service Worker */
-const CACHE_NAME = 'aircalc-pro-v3';
+/* Air Calc Pro - Service Worker (Stable v4) */
+const CACHE_NAME = 'aircalc-pro-v4';
 const ASSETS = [
   './',
   './index.html',
-  './app.js',
   './styles.css',
-  './data.json',
-  './manifest.webmanifest'
+  './app.js',
+  './manifest.webmanifest',
+  './sw.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js'
 ];
 
 self.addEventListener('install', event => {
@@ -27,8 +29,6 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request).catch(() => caches.match('./index.html'));
-    })
+    caches.match(event.request).then(cached => cached || fetch(event.request))
   );
 });
