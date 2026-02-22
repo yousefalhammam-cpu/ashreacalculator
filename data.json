@@ -1,52 +1,49 @@
 {
-  "version": 3,
   "categories": [
     {
       "name_ar": "المستشفيات (ASHRAE 170)",
       "name_en": "Hospitals (ASHRAE 170)",
       "items": [
-        { "id": "h1", "ar": "غرفة عمليات (OR)", "en": "Operating Room (OR)", "ach": 20, "med": true, "factor": 280, "pressure": "P", "oa_ach": 4, "temp_c": "20-23", "rh": "30-60" },
-        { "id": "h2", "ar": "غرفة عمليات صغرى", "en": "Minor Procedure Room", "ach": 15, "med": true, "factor": 300, "pressure": "P", "oa_ach": 3, "temp_c": "20-23", "rh": "30-60" },
-        { "id": "h3", "ar": "عزل ضغط سالب (AII)", "en": "Airborne Infection Isolation (AII)", "ach": 12, "med": true, "factor": 350, "pressure": "N", "oa_ach": 2, "temp_c": "21-24", "rh": "30-60" },
-        { "id": "h4", "ar": "عزل ضغط موجب (PE)", "en": "Protective Environment (PE)", "ach": 12, "med": true, "factor": 350, "pressure": "P", "oa_ach": 2, "temp_c": "21-24", "rh": "30-60" },
-        { "id": "h5", "ar": "العناية المركزة (ICU)", "en": "ICU", "ach": 12, "med": true, "factor": 350, "pressure": "N", "oa_ach": 2, "temp_c": "21-24", "rh": "30-60" },
-        { "id": "h6", "ar": "غرفة مريض", "en": "Patient Room", "ach": 6, "med": true, "factor": 360, "pressure": "N", "oa_ach": 2, "temp_c": "21-24", "rh": "30-60" },
-        { "id": "h7", "ar": "غرفة فحص", "en": "Examination Room", "ach": 6, "med": true, "factor": 380, "pressure": "N", "oa_ach": 2, "temp_c": "21-24", "rh": "30-60" },
-        { "id": "h8", "ar": "الطوارئ / ترياج", "en": "Emergency / Triage", "ach": 12, "med": true, "factor": 350, "pressure": "N", "oa_ach": 2, "temp_c": "21-24", "rh": "30-60" },
-        { "id": "h9", "ar": "مختبر عام", "en": "General Laboratory", "ach": 6, "med": true, "factor": 400, "pressure": "N", "oa_ach": 2, "temp_c": "21-24", "rh": "30-60" },
-        { "id": "h10", "ar": "غرفة مناظير", "en": "Endoscopy Room", "ach": 15, "med": true, "factor": 320, "pressure": "P", "oa_ach": 3, "temp_c": "20-23", "rh": "30-60" },
-        { "id": "h11", "ar": "غرفة أشعة تشخيصية", "en": "Diagnostic X-Ray", "ach": 6, "med": true, "factor": 500, "pressure": "N", "oa_ach": 2, "temp_c": "21-24", "rh": "30-60" },
-        { "id": "h12", "ar": "صيدلية", "en": "Pharmacy", "ach": 4, "med": true, "factor": 380, "pressure": "P", "oa_ach": 2, "temp_c": "21-24", "rh": "30-60" },
-        { "id": "h13", "ar": "التعقيم المركزي (CSSD)", "en": "CSSD / Sterile Storage", "ach": 10, "med": true, "factor": 360, "pressure": "P", "oa_ach": 2, "temp_c": "20-24", "rh": "30-60" },
-        { "id": "h14", "ar": "غرفة ولادة (LDR)", "en": "Delivery Room (LDR)", "ach": 15, "med": true, "factor": 320, "pressure": "P", "oa_ach": 3, "temp_c": "20-24", "rh": "30-60" }
+        { "id": "h1", "ar": "غرفة عمليات (OR)", "en": "Operating Room (OR)", "ach": 20, "factor": 280, "method": "ashrae170_ach" },
+        { "id": "h2", "ar": "عزل ضغط موجب (PE)", "en": "Protective Environment (PE)", "ach": 12, "factor": 350, "method": "ashrae170_ach" },
+        { "id": "h3", "ar": "عزل ضغط سالب (AII)", "en": "Airborne Infection Isolation (AII)", "ach": 12, "factor": 350, "method": "ashrae170_ach" },
+        { "id": "h4", "ar": "العناية المركزة (ICU)", "en": "Critical Care (ICU)", "ach": 6, "factor": 350, "method": "ashrae170_ach" },
+        { "id": "h5", "ar": "غرفة الطوارئ (ترياج)", "en": "Emergency (Triage)", "ach": 12, "factor": 350, "method": "ashrae170_ach" },
+        { "id": "h6", "ar": "مختبر عام", "en": "General Laboratory", "ach": 6, "factor": 400, "method": "ashrae170_ach" },
+        { "id": "h7", "ar": "غرفة تنويم مريض", "en": "Patient Room", "ach": 6, "factor": 350, "method": "ashrae170_ach" },
+        { "id": "h8", "ar": "الأشعة التشخيصية", "en": "Diagnostic X-Ray", "ach": 6, "factor": 500, "method": "ashrae170_ach" },
+        { "id": "h9", "ar": "غرفة المناظير", "en": "Endoscopy Room", "ach": 15, "factor": 320, "method": "ashrae170_ach" },
+        { "id": "h10", "ar": "التعقيم المركزي (CSSD)", "en": "Sterile Storage (CSSD)", "ach": 10, "factor": 350, "method": "ashrae170_ach" },
+        { "id": "h11", "ar": "الصيدلية", "en": "Pharmacy", "ach": 4, "factor": 350, "method": "ashrae170_ach" },
+        { "id": "h12", "ar": "غرفة الولادة (LDR)", "en": "Delivery Room (LDR)", "ach": 15, "factor": 320, "method": "ashrae170_ach" },
+        { "id": "h13", "ar": "العلاج الطبيعي", "en": "Physical Therapy", "ach": 6, "factor": 350, "method": "ashrae170_ach" },
+        { "id": "h14", "ar": "غرفة فحص عامة", "en": "Examination Room", "ach": 6, "factor": 350, "method": "ashrae170_ach" }
       ]
     },
     {
-      "name_ar": "التجاري (عملي)",
-      "name_en": "Commercial (Practical)",
+      "name_ar": "التجاري (ASHRAE 62.1)",
+      "name_en": "Commercial (ASHRAE 62.1)",
       "items": [
-        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 4, "med": false, "factor": 400 },
-        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Conference Room", "ach": 8, "med": false, "factor": 380 },
-        { "id": "c3", "ar": "محل تجاري", "en": "Retail Store", "ach": 6, "med": false, "factor": 420 },
-        { "id": "c4", "ar": "مطعم / صالة طعام", "en": "Restaurant Dining", "ach": 10, "med": false, "factor": 340 },
-        { "id": "c5", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 20, "med": false, "factor": 300 },
-        { "id": "c6", "ar": "صالة رياضية", "en": "Gym / Fitness", "ach": 8, "med": false, "factor": 320 },
-        { "id": "c7", "ar": "استقبال/لوبي", "en": "Lobby / Reception", "ach": 4, "med": false, "factor": 400 },
-        { "id": "c8", "ar": "مكتبة", "en": "Library", "ach": 4, "med": false, "factor": 390 }
+        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "rp": 5, "ra": 0.06, "factor": 420, "method": "ashrae62_1_vrp" },
+        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Conference Room", "rp": 5, "ra": 0.06, "factor": 350, "method": "ashrae62_1_vrp" },
+        { "id": "c3", "ar": "صالة مطعم", "en": "Dining Area", "rp": 7.5, "ra": 0.18, "factor": 320, "method": "ashrae62_1_vrp" },
+        { "id": "c4", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "rp": 7.5, "ra": 0.12, "factor": 300, "method": "ashrae62_1_vrp" },
+        { "id": "c5", "ar": "نادي رياضي", "en": "Gym / Fitness Area", "rp": 20, "ra": 0.18, "factor": 300, "method": "ashrae62_1_vrp" },
+        { "id": "c6", "ar": "قاعة سينما/مسرح", "en": "Auditorium", "rp": 5, "ra": 0.06, "factor": 350, "method": "ashrae62_1_vrp" },
+        { "id": "c7", "ar": "مكتبة عامة", "en": "Library", "rp": 5, "ra": 0.06, "factor": 380, "method": "ashrae62_1_vrp" },
+        { "id": "c8", "ar": "ردهة استقبال", "en": "Lobby / Reception", "rp": 5, "ra": 0.06, "factor": 380, "method": "ashrae62_1_vrp" },
+        { "id": "c9", "ar": "محلات تجارية", "en": "Retail Store", "rp": 7.5, "ra": 0.12, "factor": 380, "method": "ashrae62_1_vrp" }
       ]
     },
     {
-      "name_ar": "السكني",
-      "name_en": "Residential",
+      "name_ar": "المباني السكنية (ASHRAE 62.2)",
+      "name_en": "Residential Buildings (ASHRAE 62.2)",
       "items": [
-        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "med": false, "factor": 350 },
-        { "id": "r2", "ar": "غرفة نوم", "en": "Bedroom", "ach": 2, "med": false, "factor": 320 },
-        { "id": "r3", "ar": "مجلس", "en": "Majlis", "ach": 5, "med": false, "factor": 380 },
-        { "id": "r4", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "ach": 6, "med": false, "factor": 400 },
-        { "id": "r5", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "med": false, "factor": 300 },
-        { "id": "r6", "ar": "ممر داخلي", "en": "Corridor", "ach": 2, "med": false, "factor": 300 },
-        { "id": "r7", "ar": "غرفة طعام", "en": "Dining Room", "ach": 4, "med": false, "factor": 340 },
-        { "id": "r8", "ar": "غرفة غسيل", "en": "Laundry Room", "ach": 4, "med": false, "factor": 360 }
+        { "id": "r1", "ar": "غرفة معيشة", "en": "Living Room", "factor": 350, "method": "ashrae62_2_res" },
+        { "id": "r2", "ar": "غرفة نوم", "en": "Bedroom", "factor": 320, "method": "ashrae62_2_res" },
+        { "id": "r3", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "factor": 450, "method": "ashrae62_2_res", "exhaust_boost_cfm": 50 },
+        { "id": "r4", "ar": "دورة مياه", "en": "Bathroom", "factor": 350, "method": "ashrae62_2_res", "exhaust_boost_cfm": 50 },
+        { "id": "r5", "ar": "ممر داخلي", "en": "Corridor", "factor": 300, "method": "ashrae62_2_res" }
       ]
     }
   ]
