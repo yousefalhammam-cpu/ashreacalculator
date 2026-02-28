@@ -359,4 +359,182 @@ const CATALOG=[
   {id:'copier',      cat:'office', icon:'📠', ar:'آلة تصوير',              en:'Copier / Scanner',       w:1200},
   {id:'phone',       cat:'office', icon:'📱', ar:'شاحن جوال',              en:'Phone Charger',          w:20},
   // LIGHTING
-  {id:'led',         cat:'light',  icon:'💡', ar:'إضاءة LED',
+  {id:'led',         cat:'light',  icon:'💡', ar:'إضاءة LED',              en:'LED Light',              w:15},
+  {id:'fluor',       cat:'light',  icon:'🔦', ar:'فلورسنت',                en:'Fluorescent',            w:40},
+  {id:'spotlight',   cat:'light',  icon:'🔆', ar:'سبوت لايت',              en:'Spotlight',              w:50},
+  {id:'led_panel',   cat:'light',  icon:'🟦', ar:'لوحة LED 60×60',         en:'LED Panel 60×60',        w:36},
+  // DOMESTIC
+  {id:'tv',          cat:'home',   icon:'📺', ar:'تلفزيون',                en:'TV',                     w:150},
+  {id:'fridge',      cat:'home',   icon:'🧊', ar:'ثلاجة',                  en:'Refrigerator',           w:150},
+  {id:'fridge_lg',   cat:'home',   icon:'🏠', ar:'ثلاجة كبيرة (سايد)',     en:'Side-by-Side Fridge',    w:250},
+  {id:'microwave',   cat:'home',   icon:'📦', ar:'ميكروويف',               en:'Microwave',              w:1000},
+  {id:'coffee',      cat:'home',   icon:'☕', ar:'ماكينة قهوة',            en:'Coffee Machine',         w:1500},
+  {id:'dispenser',   cat:'home',   icon:'🚰', ar:'واتر كولر',              en:'Water Dispenser',        w:500},
+  {id:'oven',        cat:'home',   icon:'🔥', ar:'فرن كهربائي',            en:'Electric Oven',          w:2000},
+  {id:'washer',      cat:'home',   icon:'👕', ar:'غسالة ملابس',            en:'Washing Machine',        w:500},
+  {id:'dryer',       cat:'home',   icon:'🌀', ar:'مجفف ملابس',             en:'Clothes Dryer',          w:5000},
+  {id:'dishwasher',  cat:'home',   icon:'🍽️', ar:'غسالة صحون',             en:'Dishwasher',             w:1800},
+  {id:'iron',        cat:'home',   icon:'♨️', ar:'مكواة',                  en:'Clothes Iron',           w:2200},
+  {id:'vacuum',      cat:'home',   icon:'🌪️', ar:'مكنسة كهربائية',         en:'Vacuum Cleaner',         w:1200},
+  {id:'hairdryer',   cat:'home',   icon:'💨', ar:'مجفف شعر',               en:'Hair Dryer',             w:1800},
+  {id:'kettle',      cat:'home',   icon:'🫖', ar:'غلاية ماء كهربائية',     en:'Electric Kettle',        w:2000},
+  {id:'mixer',       cat:'home',   icon:'🥣', ar:'خلاط كهربائي',           en:'Electric Mixer',         w:300},
+  {id:'pump_home',   cat:'home',   icon:'⚙️', ar:'موتور / ضخة مياه',       en:'Water Pump / Motor',     w:750},
+  // HEALTHCARE
+  {id:'xray',        cat:'health', icon:'🩻', ar:'جهاز أشعة سينية',        en:'X-Ray Machine',          w:5000},
+  {id:'mri',         cat:'health', icon:'🧲', ar:'جهاز MRI',               en:'MRI Machine',            w:35000},
+  {id:'ct',          cat:'health', icon:'🔬', ar:'جهاز CT Scan',           en:'CT Scanner',             w:30000},
+  {id:'ultrasound',  cat:'health', icon:'🩺', ar:'جهاز سونار',             en:'Ultrasound Machine',     w:500},
+  {id:'ventilator',  cat:'health', icon:'🫁', ar:'جهاز تنفس اصطناعي',     en:'Ventilator',             w:150},
+  {id:'ecg',         cat:'health', icon:'💓', ar:'جهاز رسم القلب ECG',     en:'ECG Machine',            w:40},
+  {id:'defib',       cat:'health', icon:'⚡', ar:'جهاز صدمة كهربائية',     en:'Defibrillator',          w:200},
+  {id:'infusion',    cat:'health', icon:'💉', ar:'مضخة تسريب IV',          en:'IV Infusion Pump',       w:12},
+  {id:'syringe_p',   cat:'health', icon:'🩹', ar:'مضخة حقن آلية',          en:'Syringe Pump',           w:10},
+  {id:'monitor_pt',  cat:'health', icon:'📊', ar:'مراقب المريض',           en:'Patient Monitor',        w:150},
+  {id:'sterilizer',  cat:'health', icon:'🧼', ar:'أوتوكلاف / تعقيم',       en:'Autoclave Sterilizer',   w:3000},
+  {id:'incubator',   cat:'health', icon:'🍼', ar:'حاضنة أطفال',            en:'Infant Incubator',       w:500},
+  {id:'blood_bank',  cat:'health', icon:'🩸', ar:'ثلاجة بنك الدم',         en:'Blood Bank Refrigerator',w:800},
+  {id:'anesthesia',  cat:'health', icon:'😷', ar:'جهاز تخدير',             en:'Anesthesia Machine',     w:500},
+  {id:'dental',      cat:'health', icon:'🦷', ar:'كرسي أسنان كامل',        en:'Dental Unit (Full)',      w:750},
+  {id:'lab_centri',  cat:'health', icon:'🧪', ar:'جهاز طرد مركزي',         en:'Centrifuge',             w:300},
+  {id:'lab_pcr',     cat:'health', icon:'🧬', ar:'جهاز PCR',               en:'PCR Machine',            w:1200},
+  {id:'pharmacy_ref',cat:'health', icon:'💊', ar:'ثلاجة أدوية',            en:'Pharmacy Refrigerator',  w:600},
+  {id:'endoscope',   cat:'health', icon:'🔍', ar:'جهاز منظار',             en:'Endoscopy Unit',         w:800},
+  {id:'surgical_lt', cat:'health', icon:'🔦', ar:'لمبة غرفة عمليات',       en:'Surgical Light',         w:300},
+];
+const btu=w=>Math.round(w*3.412);
+const S={lang:'ar',activeInput:0,values:['','',''],roomFactor:400,roomLabel:'المكتب / Office',devices:[],history:JSON.parse(localStorage.getItem('acp_h')||'[]')};
+const TXT={
+  ar:{calc:'احسب ▶',clear:'مسح',histClear:'مسح السجل',exportLabel:'تصدير CSV',navCalc:'الحاسبة',navExport:'التصدير',navContact:'تواصل',navSettings:'الإعدادات',lblVol:'حجم الغرفة (m³)',lblType:'نوع الغرفة',lblPpl:'👤 أشخاص — 400 BTU/h لكل شخص',secRoom:'الغرفة',secDev:'الأجهزة',rlVol:'حجم الغرفة',rlBase:'الحمل الأساسي',rlPpl:'حمل الأشخاص',rlDev:'حمل الأجهزة',rlTotal:'الإجمالي قبل المعامل',rlSafety:'+ معامل أمان 10%',histEmpty:'لا توجد حسابات بعد',addDevLabel:'+ إضافة جهاز',modalTitle:'اختر نوع الجهاز',devTotalLabel:'إجمالي حمل الأجهزة',devEmpty:'لا توجد أجهزة — اضغط + لإضافة',sLang:'اللغة / Language',sLangSub:'تبديل واجهة اللغة',sNums:'أرقام إنجليزية',sNumsSub:'عرض الأرقام بصيغة إنجليزية دائماً',toast:'✅ تم الحساب',toastExp:'✅ تم التصدير',toastClr:'🗑️ تم المسح',noVol:'⚠️ أدخل حجم الغرفة',noData:'⚠️ لا توجد بيانات'},
+  en:{calc:'Calculate ▶',clear:'Clear',histClear:'Clear History',exportLabel:'Export CSV',navCalc:'Calc',navExport:'Export',navContact:'Contact',navSettings:'Settings',lblVol:'Room Volume (m³)',lblType:'Room Type',lblPpl:'👤 Persons — 400 BTU/h each',secRoom:'ROOM',secDev:'DEVICES',rlVol:'Room Volume',rlBase:'Base Load',rlPpl:'People Load',rlDev:'Device Load',rlTotal:'Sub-total',rlSafety:'+ Safety 10%',histEmpty:'No calculations yet',addDevLabel:'+ Add Device',modalTitle:'Select Device Type',devTotalLabel:'Total Device Load',devEmpty:'No devices — tap + to add',sLang:'Language',sLangSub:'Switch interface language',sNums:'English Numbers',sNumsSub:'Always use English numerals',toast:'✅ Calculated',toastExp:'✅ Exported',toastClr:'🗑️ Cleared',noVol:'⚠️ Enter room volume first',noData:'⚠️ No data to export'}
+};
+const t=k=>TXT[S.lang][k];
+const $=id=>document.getElementById(id);
+
+function applyLang(){
+  const l=S.lang;
+  document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';
+  $('langBtn').textContent=l==='ar'?'EN':'ع';
+  $('toggle-lang').className='toggle '+(l==='ar'?'on':'');
+  const map={calcLabel:'calc',clearLabel:'clear',histClear:'histClear',exportLabel:'exportLabel','nav-calc-l':'navCalc','nav-export-l':'navExport','nav-contact-l':'navContact','nav-settings-l':'navSettings','lbl-vol':'lblVol','lbl-type':'lblType','lbl-ppl':'lblPpl','sec-room':'secRoom','sec-dev':'secDev','rl-vol':'rlVol','rl-base':'rlBase','rl-ppl':'rlPpl','rl-dev':'rlDev','rl-total':'rlTotal','rl-safety':'rlSafety',addDevLabel:'addDevLabel','modal-title-txt':'modalTitle','dev-total-label':'devTotalLabel','s-lang':'sLang','s-lang-sub':'sLangSub','s-nums':'sNums','s-nums-sub':'sNumsSub'};
+  for(const[id,k]of Object.entries(map)){const el=$(id);if(el)el.textContent=t(k);}
+  updateDisplays();renderDevices();
+}
+function toggleLang(){S.lang=S.lang==='ar'?'en':'ar';applyLang();}
+function toggleNums(){const tg=$('toggle-nums');tg.className='toggle '+(tg.className.includes('on')?'':'on');}
+
+function setActive(idx){
+  S.activeInput=idx;
+  ['vol','type','ppl'].forEach((id,i)=>{
+    const el=$('field-'+id);if(el){el.className=el.className.replace(/\bactive\b/g,'').trim();if(i===idx)el.className+=' active';}
+    const dot=$('dot-'+i);if(dot)dot.className='ind-dot'+(i===idx?' active':'');
+  });
+  if(idx===1){toggleDD('room-dd');S.activeInput=0;}
+}
+function updateDisplays(){
+  const v=S.values;
+  $('disp-vol').textContent=(v[0]||'0')+' m³';$('disp-vol').className=v[0]?'':'input-placeholder';
+  $('disp-ppl').textContent=(v[2]||'0')+' '+(S.lang==='ar'?'أشخاص':'persons');$('disp-ppl').className=v[2]?'':'input-placeholder';
+}
+function toggleDD(id){
+  const dd=$(id),tr=dd.previousElementSibling,open=dd.classList.contains('open');
+  document.querySelectorAll('.dropdown-menu.open').forEach(d=>{d.classList.remove('open');if(d.previousElementSibling)d.previousElementSibling.classList.remove('active');});
+  if(!open){dd.classList.add('open');if(tr)tr.classList.add('active');}
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.dropdown-wrap'))document.querySelectorAll('.dropdown-menu.open').forEach(d=>{d.classList.remove('open');if(d.previousElementSibling)d.previousElementSibling.classList.remove('active');});});
+function selectRoom(el,factor,label){
+  document.querySelectorAll('#room-dd .dd-option').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');
+  S.roomFactor=factor;S.roomLabel=label;
+  document.querySelectorAll('.dropdown-menu.open').forEach(d=>{d.classList.remove('open');if(d.previousElementSibling)d.previousElementSibling.classList.remove('active');});
+  $('disp-type').textContent=label;
+}
+function pressNum(n){const idx=S.activeInput;if(idx===1)return;const cur=S.values[idx]||'';if(n==='.'&&cur.includes('.'))return;if(cur.length>=7)return;S.values[idx]=cur+n;updateDisplays();}
+function pressDEL(){const idx=S.activeInput;if(idx===1)return;S.values[idx]=(S.values[idx]||'').slice(0,-1);updateDisplays();}
+function pressAC(){S.values=['','',''];updateDisplays();['val-tr','val-cfm','val-btu','val-mkt'].forEach(id=>animV(id,id==='val-tr'?'0.00':'0'));$('result-detail').className='card result-detail';}
+function pressCLEAR(){const idx=S.activeInput;if(idx===1)return;S.values[idx]='';updateDisplays();}
+
+function openModal(){buildCatalog(null);$('modal-overlay').classList.add('open');}
+function filterCat(cat,el){
+  document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  buildCatalog(cat);
+}
+function closeModal(){$('modal-overlay').classList.remove('open');}
+function outsideClose(e){if(e.target===$('modal-overlay'))closeModal();}
+function buildCatalog(filter){
+  const grid=$('catalog-grid');grid.innerHTML='';
+  const catLabels={office:{ar:'مكتب / Office',en:'Office'},light:{ar:'إضاءة / Lighting',en:'Lighting'},home:{ar:'منزلي / Domestic',en:'Domestic'},health:{ar:'صحي / Healthcare',en:'Healthcare'}};
+  const catIcons={office:'🏢',light:'💡',home:'🏠',health:'🏥'};
+  const cats=filter?[filter]:['office','light','home','health'];
+  cats.forEach(cat=>{
+    const items=CATALOG.filter(d=>d.cat===cat);if(!items.length)return;
+    const hdr=document.createElement('div');hdr.className='cat-header';
+    hdr.textContent=catIcons[cat]+' '+(S.lang==='ar'?catLabels[cat].ar:catLabels[cat].en);
+    grid.appendChild(hdr);
+    items.forEach(d=>{
+      const div=document.createElement('div');div.className='catalog-item';
+      div.innerHTML=`<div class="catalog-icon">${d.icon}</div><div class="catalog-name">${S.lang==='ar'?d.ar:d.en}</div><div class="catalog-watt">${d.w>=1000?(d.w/1000).toFixed(1)+'kW':d.w+'W'}</div><div class="catalog-btu">${btu(d.w).toLocaleString()} BTU/h</div>`;
+      div.onclick=()=>addDevice(d.id);grid.appendChild(div);
+    });
+  });
+}
+function addDevice(id){
+  const ex=S.devices.find(d=>d.id===id);if(ex)ex.qty++;else S.devices.push({id,qty:1});
+  closeModal();renderDevices();
+  const cat=CATALOG.find(x=>x.id===id);showToast('✅ '+(S.lang==='ar'?cat.ar:cat.en)+' +1');
+}
+function changeQty(id,delta){
+  const i=S.devices.findIndex(d=>d.id===id);if(i===-1)return;
+  S.devices[i].qty+=delta;if(S.devices[i].qty<=0)S.devices.splice(i,1);renderDevices();
+}
+function removeDevice(id){S.devices=S.devices.filter(d=>d.id!==id);renderDevices();}
+function totalDevBTU(){return S.devices.reduce((s,d)=>{const c=CATALOG.find(x=>x.id===d.id);return s+(c?btu(c.w)*d.qty:0);},0);}
+function renderDevices(){
+  const list=$('devices-list');
+  if(S.devices.length===0){list.innerHTML='';const em=document.createElement('div');em.className='devices-empty';em.id='dev-empty';em.textContent=t('devEmpty');list.appendChild(em);$('dev-total').style.display='none';return;}
+  list.innerHTML='';
+  S.devices.forEach(d=>{
+    const cat=CATALOG.find(x=>x.id===d.id);if(!cat)return;
+    const name=S.lang==='ar'?cat.ar:cat.en;
+    const div=document.createElement('div');div.className='device-row';
+    div.innerHTML=`<div class="device-icon">${cat.icon}</div><div class="device-info"><div class="device-name">${name}</div><div class="device-watt">${cat.w}W × ${d.qty} = ${(cat.w*d.qty).toLocaleString()}W</div></div><div class="device-qty"><div class="qty-btn" onclick="changeQty('${d.id}',-1)">−</div><div class="qty-num">${d.qty}</div><div class="qty-btn" onclick="changeQty('${d.id}',+1)">+</div></div><div class="device-btu-tag">${(btu(cat.w)*d.qty).toLocaleString()} BTU/h</div><div class="device-remove" onclick="removeDevice('${d.id}')">🗑</div>`;
+    list.appendChild(div);
+  });
+  const tot=totalDevBTU();$('dev-total').style.display='flex';$('dev-total-val').textContent=tot.toLocaleString()+' BTU/h';$('dev-total-label').textContent=t('devTotalLabel');
+}
+
+function calculate(){
+  const vol=parseFloat(S.values[0])||0;const ppl=parseInt(S.values[2])||0;
+  if(vol===0){showToast(t('noVol'));return;}
+  const baseBTU=vol*S.roomFactor,pplBTU=ppl*400,devBTU=totalDevBTU();
+  const raw=baseBTU+pplBTU+devBTU,total=raw*1.10,tr=total/12000,cfm=Math.round(tr*400),mkt=Math.ceil(total/9000)*9000;
+  animV('val-tr',tr.toFixed(2));animV('val-cfm',Math.round(cfm).toLocaleString());animV('val-btu',Math.round(total).toLocaleString());animV('val-mkt',mkt.toLocaleString());
+  $('rd-vol').textContent=vol.toLocaleString();$('rd-base').textContent=Math.round(baseBTU).toLocaleString();$('rd-ppl').textContent=Math.round(pplBTU).toLocaleString();$('rd-dev').textContent=Math.round(devBTU).toLocaleString();$('rd-total').textContent=Math.round(raw).toLocaleString();$('rd-safety').textContent=Math.round(total).toLocaleString();
+  $('result-detail').className='card result-detail visible';
+  const devSum=S.devices.map(d=>{const c=CATALOG.find(x=>x.id===d.id);return c?(S.lang==='ar'?c.ar:c.en)+'×'+d.qty:'';}).filter(Boolean).join(' | ');
+  S.history.unshift({time:new Date().toLocaleString('ar-SA'),vol,ppl,devSum,devBTU,type:S.roomLabel,tr:tr.toFixed(2),cfm,btu:Math.round(total),mkt});
+  if(S.history.length>50)S.history.pop();localStorage.setItem('acp_h',JSON.stringify(S.history));renderHistory();showToast(t('toast'));
+}
+function animV(id,val){const el=$(id);el.classList.add('updating');setTimeout(()=>{el.textContent=val;el.classList.remove('updating');},150);}
+
+function renderHistory(){
+  const list=$('history-list');
+  if(!S.history.length){list.innerHTML='';const em=document.createElement('div');em.className='history-empty';em.id='history-empty';em.textContent=t('histEmpty');list.appendChild(em);return;}
+  list.innerHTML='';
+  S.history.forEach(e=>{const div=document.createElement('div');div.className='history-item';div.innerHTML=`<div><div class="history-info">${e.type} · ${e.vol}m³ · ${e.ppl}👤${e.devSum?' · '+e.devSum:''}</div><div class="history-info" style="margin-top:2px">${e.time}</div></div><div class="history-result">${e.tr} TR</div>`;list.appendChild(div);});
+}
+function clearHistory(){S.history=[];localStorage.removeItem('acp_h');renderHistory();showToast(t('toastClr'));}
+function exportCSV(){
+  if(!S.history.length){showToast(t('noData'));return;}
+  const h=['Time','Room Type','Volume(m³)','Persons','Devices','Device BTU/h','TR','CFM','Total BTU/h','Market BTU'];
+  const rows=S.history.map(e=>[e.time,e.type,e.vol,e.ppl,e.devSum||'',e.devBTU||0,e.tr,e.cfm,e.btu,e.mkt]);
+  const csv=[h,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download='aircalc_pro.csv';a.click();showToast(t('toastExp'));
+}
+function switchPanel(name){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));$('panel-'+name).classList.add('active');$('nav-'+name).classList.add('active');}
+function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500);}
+
+applyLang();updateDisplays();renderDevices();renderHistory();setActive(0);
+</script>
+</body>
+</html>
