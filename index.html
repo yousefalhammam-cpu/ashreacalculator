@@ -1,177 +1,946 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" id="html-tag">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#0b1220" />
-  <title>Air Calc Pro</title>
-  <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Air Calc Pro | HVAC Engineering Suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Cairo:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2234;
+    --surface3: #1e2a40;
+    --border: rgba(99,179,237,0.15);
+    --border-bright: rgba(99,179,237,0.4);
+    --accent: #38bdf8;
+    --accent2: #0ea5e9;
+    --accent-glow: rgba(56,189,248,0.25);
+    --accent-dim: rgba(56,189,248,0.1);
+    --green: #34d399;
+    --green-dim: rgba(52,211,153,0.12);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.12);
+    --red: #f87171;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-bright: #f8fafc;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --font-ar: 'Cairo', sans-serif;
+    --font-en: 'Rajdhani', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ar);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    padding-bottom: 100px;
+    min-height: 100vh;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 24px;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+  .logo-text {
+    font-family: var(--font-en);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: 1px;
+  }
+  .logo-text span { color: var(--accent); }
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    font-family: var(--font-en);
+    text-transform: uppercase;
+  }
+  .lang-toggle {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: var(--font-en);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .lang-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  .dashboard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .dashboard::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .metric {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    transition: border-color 0.3s;
+  }
+  .metric.primary {
+    background: linear-gradient(135deg, rgba(14,165,233,0.1), rgba(56,189,248,0.05));
+    border-color: rgba(56,189,248,0.3);
+    box-shadow: inset 0 0 20px rgba(56,189,248,0.05);
+  }
+  .metric.green { background: var(--green-dim); border-color: rgba(52,211,153,0.2); }
+  .metric.amber { background: var(--amber-dim); border-color: rgba(251,191,36,0.2); }
+  .metric-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+    font-family: var(--font-en);
+  }
+  .metric-value {
+    font-family: var(--font-en);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1;
+    transition: opacity 0.15s;
+  }
+  .metric-value.updating { opacity: 0; }
+  .metric.primary .metric-value { color: var(--accent); }
+  .metric.green .metric-value { color: var(--green); }
+  .metric.amber .metric-value { color: var(--amber); }
+  .metric-unit { font-size: 12px; color: var(--text-muted); font-family: var(--font-en); margin-top: 4px; }
+
+  .inputs-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    font-family: var(--font-en);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .input-row:last-child { margin-bottom: 0; }
+  .input-group { display: flex; flex-direction: column; gap: 6px; }
+  .input-label { font-size: 11px; color: var(--text-muted); font-family: var(--font-en); letter-spacing: 0.5px; }
+  .input-field {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    color: var(--text-bright);
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .input-field.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow), inset 0 0 10px rgba(56,189,248,0.05);
+    background: rgba(56,189,248,0.05);
+  }
+  .input-field .cursor {
+    display: none;
+    width: 2px;
+    height: 18px;
+    background: var(--accent);
+    animation: blink 1s infinite;
+    margin-right: 2px;
+  }
+  .input-field.active .cursor { display: inline-block; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  .input-placeholder { color: var(--text-muted); font-size: 13px; font-family: var(--font-ar); }
+
+  .room-type-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    color: var(--text-bright);
+    font-family: var(--font-ar);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .room-type-select.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+  .room-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; right: 0;
+    background: var(--surface3);
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-sm);
+    z-index: 100;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    display: none;
+  }
+  .room-dropdown.open { display: block; }
+  .room-option { padding: 10px 14px; font-size: 13px; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid var(--border); }
+  .room-option:last-child { border-bottom: none; }
+  .room-option:hover, .room-option.selected { background: var(--accent-dim); color: var(--accent); }
+  .room-option-sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; font-family: var(--font-en); }
+
+  .numpad-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .numpad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .key {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 8px;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    user-select: none;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .key:hover { background: var(--surface3); border-color: var(--border-bright); }
+  .key:active { transform: scale(0.95); }
+  .key.key-ac { background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(14,165,233,0.1)); border-color: rgba(56,189,248,0.4); color: var(--accent); font-family: var(--font-en); font-size: 14px; font-weight: 700; letter-spacing: 1px; }
+  .key.key-del { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.3); color: var(--red); font-size: 16px; }
+  .key.key-calc { background: linear-gradient(135deg, var(--accent2), var(--accent)); border-color: transparent; color: #fff; font-family: var(--font-en); font-size: 13px; font-weight: 700; letter-spacing: 1px; box-shadow: 0 4px 16px rgba(56,189,248,0.3); grid-column: span 2; }
+  .key.key-calc:hover { box-shadow: 0 6px 24px rgba(56,189,248,0.5); }
+  .key.key-clear { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.3); color: var(--amber); font-family: var(--font-en); font-size: 13px; letter-spacing: 0.5px; }
+  .key.key-people { font-size: 20px; background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.2); }
+  .key.key-devices { font-size: 20px; background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.2); }
+
+  .active-indicator { display: flex; gap: 6px; margin-bottom: 12px; }
+  .ind-dot { flex: 1; height: 3px; border-radius: 2px; background: var(--border); transition: background 0.2s; }
+  .ind-dot.active { background: var(--accent); }
+
+  .result-detail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .result-detail.visible { display: block; animation: fadeSlide 0.3s ease; }
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .result-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .result-row:last-child { border-bottom: none; }
+  .result-name { font-size: 13px; color: var(--text-muted); }
+  .result-val { font-family: var(--font-mono); font-size: 15px; font-weight: 500; color: var(--text-bright); }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-family: var(--font-en); font-weight: 700; letter-spacing: 1px; }
+  .badge-blue { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(56,189,248,0.2); }
+  .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+  .badge-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(251,191,36,0.2); }
+
+  .history-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+  .history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .history-clear { background: none; border: 1px solid rgba(248,113,113,0.3); color: var(--red); padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: var(--font-ar); transition: all 0.2s; }
+  .history-clear:hover { background: rgba(248,113,113,0.1); }
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; display: flex; align-items: center; justify-content: space-between; animation: fadeSlide 0.25s ease; }
+  .history-info { font-size: 12px; color: var(--text-muted); }
+  .history-result { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--accent); }
+  .history-empty { text-align: center; color: var(--text-muted); padding: 24px; font-size: 13px; }
+
+  .export-btn { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 14px; border-radius: var(--radius-sm); font-family: var(--font-ar); font-size: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
+  .export-btn:hover { background: var(--surface3); border-color: var(--accent); color: var(--accent); }
+
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,14,23,0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-around; padding: 12px 0 max(12px, env(safe-area-inset-bottom)); z-index: 50; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 6px 16px; border-radius: 10px; transition: all 0.2s; color: var(--text-muted); }
+  .nav-item.active { color: var(--accent); }
+  .nav-item .nav-icon { font-size: 20px; }
+  .nav-item .nav-label { font-size: 10px; font-family: var(--font-ar); }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .contact-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; text-align: center; }
+  .contact-avatar { width: 80px; height: 80px; background: linear-gradient(135deg, var(--accent2), var(--accent)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 16px; box-shadow: 0 0 30px var(--accent-glow); }
+  .contact-name { font-size: 20px; font-weight: 700; color: var(--text-bright); margin-bottom: 4px; }
+  .contact-title { font-size: 12px; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 20px; font-family: var(--font-en); text-transform: uppercase; }
+  .contact-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; text-decoration: none; color: var(--text); transition: all 0.2s; }
+  .contact-item:hover { border-color: var(--accent); color: var(--accent); }
+  .contact-item-icon { font-size: 18px; }
+  .contact-item-text { font-size: 13px; }
+  .made-in { margin-top: 20px; font-size: 13px; color: var(--text-muted); }
+
+  .settings-group { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; }
+  .settings-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
+  .settings-item:last-child { border-bottom: none; }
+  .settings-label { font-size: 14px; }
+  .settings-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .toggle { width: 44px; height: 24px; background: var(--surface3); border-radius: 12px; position: relative; cursor: pointer; transition: background 0.2s; border: 1px solid var(--border); flex-shrink: 0; }
+  .toggle.on { background: var(--accent2); border-color: var(--accent); }
+  .toggle::after { content: ''; position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform 0.2s; }
+  .toggle.on::after { transform: translateX(-20px); }
+
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface3); border: 1px solid var(--border-bright); color: var(--text-bright); padding: 12px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: all 0.3s; z-index: 200; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (min-width: 480px) { .app { padding: 24px; padding-bottom: 100px; } }
+</style>
 </head>
 <body>
-  <header class="simple-header">Air Calc Pro | HVAC Engineering Suite</header>
 
-  <main>
-    <!-- Calculator Tab -->
-    <section id="calc-tab" class="tab-panel active">
-      <div class="ios-calc-wrapper">
-        <div class="calc-screen">
-          <div id="unit-label" class="result-label">
-            <span id="tr-result">0.00 TR</span>
-            <span class="divider">|</span>
-            <span id="cfm-result">0 CFM</span>
-          </div>
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">❄️</div>
+      <div>
+        <div class="logo-text">Air<span>Calc</span> Pro</div>
+        <div class="logo-sub">HVAC Engineering Suite</div>
+      </div>
+    </div>
+    <button class="lang-toggle" onclick="toggleLang()" id="langBtn">EN</button>
+  </div>
 
-          <div class="result-subline">
-            <span id="btu-result">0 BTU/h</span>
-            <span class="divider">|</span>
-            <span id="btu-market-result">0 BTU (Market)</span>
-          </div>
+  <!-- CALCULATOR PANEL -->
+  <div class="panel active" id="panel-calc">
 
-          <div id="display" class="active-field display-box" onclick="focusField('display')">0</div>
-          <div id="field-hint" data-ar="حجم الغرفة (m³)" data-en="Room Volume (m³)">حجم الغرفة (m³)</div>
+    <div class="dashboard">
+      <div class="dashboard-grid">
+        <div class="metric primary">
+          <div class="metric-label">Cooling Load</div>
+          <div class="metric-value" id="val-tr">0.00</div>
+          <div class="metric-unit">TON (TR)</div>
         </div>
-
-        <!-- one-line controls -->
-        <div class="horizontal-inputs one-line">
-          <div class="input-box room-box">
-            <label data-ar="تصنيف الغرفة" data-en="Room Type">تصنيف الغرفة</label>
-            <select id="room-select" onchange="handleRoomChange()"></select>
-          </div>
-
-          <div class="input-box compact">
-            <label data-ar="أشخاص" data-en="People">أشخاص</label>
-            <input type="text" id="people-count" value="0" readonly onclick="focusField('people')" />
-          </div>
-
-          <div class="input-box compact">
-            <label data-ar="أجهزة" data-en="Equip">أجهزة</label>
-            <input type="text" id="equip-watts" value="0" readonly onclick="openEquipModal()" />
-          </div>
+        <div class="metric green">
+          <div class="metric-label">Airflow</div>
+          <div class="metric-value" id="val-cfm">0</div>
+          <div class="metric-unit">CFM</div>
         </div>
-
-        <!-- Keypad (square buttons) -->
-        <div class="ios-grid squares">
-          <button class="btn-light-grey" onclick="clearActiveField()">AC</button>
-          <button class="btn-light-grey" onclick="deleteLast()">DEL</button>
-          <button class="btn-orange" onclick="calculateLoad(true)" data-ar="احسب" data-en="CALC">احسب</button>
-          <button class="btn-orange" onclick="resetAllFields()" data-ar="مسح" data-en="RESET">مسح</button>
-
-          <button class="btn-dark-grey" onclick="press(7)">7</button>
-          <button class="btn-dark-grey" onclick="press(8)">8</button>
-          <button class="btn-dark-grey" onclick="press(9)">9</button>
-          <button class="btn-dark-grey" onclick="focusField('people')">👤</button>
-
-          <button class="btn-dark-grey" onclick="press(4)">4</button>
-          <button class="btn-dark-grey" onclick="press(5)">5</button>
-          <button class="btn-dark-grey" onclick="press(6)">6</button>
-          <button class="btn-dark-grey" onclick="openEquipModal()">⚡</button>
-
-          <button class="btn-dark-grey" onclick="press(1)">1</button>
-          <button class="btn-dark-grey" onclick="press(2)">2</button>
-          <button class="btn-dark-grey" onclick="press(3)">3</button>
-          <button class="btn-dark-grey" onclick="press('.')">.</button>
-
-          <button class="btn-dark-grey zero-btn" onclick="press(0)">0</button>
+        <div class="metric amber">
+          <div class="metric-label">Heat Load</div>
+          <div class="metric-value" id="val-btu">0</div>
+          <div class="metric-unit">BTU/h</div>
         </div>
-
-        <!-- History under calculator -->
-        <div class="history-section">
-          <div class="history-header">
-            <span data-ar="سجل الحسابات" data-en="History">سجل الحسابات</span>
-            <button onclick="clearHistory()" class="clear-history-btn" data-ar="مسح" data-en="Clear">مسح</button>
-          </div>
-          <div id="history-list"></div>
+        <div class="metric">
+          <div class="metric-label">Market BTU</div>
+          <div class="metric-value" id="val-mkt">0</div>
+          <div class="metric-unit">BTU (Mkt)</div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Export Tab -->
-    <section id="export-tab" class="tab-panel">
-      <div class="ios-card">
-        <h2 data-ar="تصدير النتائج" data-en="Export Results">تصدير النتائج</h2>
-        <p class="muted" data-ar="يمكنك تصدير سجل الحسابات بصيغة CSV وفتحه في Excel."
-           data-en="Export calculation history as CSV and open it in Excel.">
-          يمكنك تصدير سجل الحسابات بصيغة CSV وفتحه في Excel.
-        </p>
-        <button class="wide-btn btn-orange" onclick="exportHistoryCSV()">Export CSV</button>
-        <div id="export-status" class="result-highlight">---</div>
+    <div class="inputs-section">
+      <div class="section-title">INPUTS</div>
+      <div class="active-indicator">
+        <div class="ind-dot active" id="dot-0"></div>
+        <div class="ind-dot" id="dot-1"></div>
+        <div class="ind-dot" id="dot-2"></div>
+        <div class="ind-dot" id="dot-3"></div>
       </div>
-    </section>
-
-    <!-- Contact Tab -->
-    <section id="contact-tab" class="tab-panel">
-      <div class="ios-card">
-        <h2 data-ar="تواصل معنا" data-en="Contact Us">تواصل معنا</h2>
-        <p class="muted"
-           data-ar="Air Calc Pro أداة هندسية لحساب الأحمال الهوائية والتبريدية بشكل سريع، مع تصنيفات غرف للمستشفيات (مرجع ASHRAE)، والقطاع التجاري والسكني، وسجل حسابات وتصدير نتائج."
-           data-en="Air Calc Pro is an engineering tool for fast airflow and cooling-load estimates, with hospital room classifications (ASHRAE reference), commercial and residential categories, calculation history, and export.">
-          Air Calc Pro أداة هندسية لحساب الأحمال الهوائية والتبريدية بشكل سريع...
-        </p>
-
-        <div class="contact-list">
-          <div><strong data-ar="الاسم:" data-en="Name:">الاسم:</strong> م.يوسف ال همام</div>
-          <div><strong data-ar="الجوال:" data-en="Mobile:">الجوال:</strong> 0560282701</div>
-          <div><strong>Email:</strong> yousef.alhammam@live.com</div>
+      <div class="input-row">
+        <div class="input-group">
+          <div class="input-label" id="lbl-vol">Room Volume</div>
+          <div class="input-field active" id="field-vol" onclick="setActive(0)">
+            <span class="cursor"></span>
+            <span id="disp-vol" class="input-placeholder">0 m³</span>
+          </div>
         </div>
-
-        <div class="saudi-made">صنع في السعودية 🇸🇦</div>
-      </div>
-    </section>
-
-    <!-- Settings Tab -->
-    <section id="settings-tab" class="tab-panel">
-      <div class="ios-card">
-        <h2 data-ar="الإعدادات" data-en="Settings">الإعدادات</h2>
-
-        <div class="setting-row">
-          <div>
-            <div class="setting-title" data-ar="اللغة" data-en="Language">اللغة</div>
-            <div class="setting-sub" data-ar="تبديل كامل للواجهة بما فيها القائمة السفلية" data-en="Switches all UI including bottom navigation">
-              تبديل كامل للواجهة بما فيها القائمة السفلية
+        <div class="input-group" style="position:relative">
+          <div class="input-label" id="lbl-type">Room Type</div>
+          <div class="room-type-select" id="field-type" onclick="toggleDropdown()">
+            <span id="disp-type">—</span>
+            <span style="color:var(--text-muted);font-size:10px">▼</span>
+          </div>
+          <div class="room-dropdown" id="room-dropdown">
+            <div class="room-option selected" onclick="selectRoom(this,'office',400,'المكتب / Office')" data-factor="400">
+              المكتب / Office
+              <div class="room-option-sub">Factor: 400 BTU/m³</div>
+            </div>
+            <div class="room-option" onclick="selectRoom(this,'retail',500,'المحل / Retail')" data-factor="500">
+              المحل / Retail
+              <div class="room-option-sub">Factor: 500 BTU/m³</div>
+            </div>
+            <div class="room-option" onclick="selectRoom(this,'home',350,'سكني / Residential')" data-factor="350">
+              سكني / Residential
+              <div class="room-option-sub">Factor: 350 BTU/m³</div>
+            </div>
+            <div class="room-option" onclick="selectRoom(this,'server',700,'غرفة سيرفر / Server Room')" data-factor="700">
+              غرفة سيرفر / Server Room
+              <div class="room-option-sub">Factor: 700 BTU/m³</div>
+            </div>
+            <div class="room-option" onclick="selectRoom(this,'kitchen',600,'المطبخ / Kitchen')" data-factor="600">
+              المطبخ / Kitchen
+              <div class="room-option-sub">Factor: 600 BTU/m³</div>
+            </div>
+            <div class="room-option" onclick="selectRoom(this,'classroom',450,'قاعة / Classroom')" data-factor="450">
+              قاعة / Classroom
+              <div class="room-option-sub">Factor: 450 BTU/m³</div>
             </div>
           </div>
-          <button class="mini-btn" onclick="toggleLanguage()" id="lang-text">English</button>
-        </div>
-
-        <div class="setting-row">
-          <div>
-            <div class="setting-title" data-ar="أرقام إنجليزية" data-en="English Numerals">أرقام إنجليزية</div>
-            <div class="setting-sub" data-ar="النتائج والمدخلات تظهر دائمًا بالإنجليزية" data-en="Inputs and results always use English digits">
-              النتائج والمدخلات تظهر دائمًا بالإنجليزية
-            </div>
-          </div>
-          <span class="badge-on">ON</span>
         </div>
       </div>
-    </section>
-  </main>
+      <div class="input-row">
+        <div class="input-group">
+          <div class="input-label" id="lbl-ppl">Persons</div>
+          <div class="input-field" id="field-ppl" onclick="setActive(2)">
+            <span class="cursor"></span>
+            <span id="disp-ppl" class="input-placeholder">0 👤</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <div class="input-label" id="lbl-dev">Devices</div>
+          <div class="input-field" id="field-dev" onclick="setActive(3)">
+            <span class="cursor"></span>
+            <span id="disp-dev" class="input-placeholder">0 ⚡</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <!-- Equipment Modal -->
-  <div id="equip-modal" class="modal">
-    <div class="modal-content">
-      <h3 data-ar="قائمة الأجهزة" data-en="Equipment List">قائمة الأجهزة</h3>
-      <div id="equip-checklist"></div>
-      <button class="close-modal-btn" onclick="closeEquipModal()" data-ar="تم" data-en="Done">تم</button>
+    <div class="numpad-section">
+      <div class="section-title">KEYPAD</div>
+      <div class="numpad-grid">
+        <div class="key key-ac" onclick="pressAC()">AC</div>
+        <div class="key key-del" onclick="pressDEL()">⌫</div>
+        <div class="key key-people" onclick="setActive(2)">👤</div>
+        <div class="key key-devices" onclick="setActive(3)">⚡</div>
+        <div class="key" onclick="pressNum('7')">7</div>
+        <div class="key" onclick="pressNum('8')">8</div>
+        <div class="key" onclick="pressNum('9')">9</div>
+        <div class="key" onclick="setActive(0)" style="font-size:14px;color:var(--text-muted)">m³</div>
+        <div class="key" onclick="pressNum('4')">4</div>
+        <div class="key" onclick="pressNum('5')">5</div>
+        <div class="key" onclick="pressNum('6')">6</div>
+        <div class="key" style="color:var(--text-muted);font-size:12px" onclick="setActive(1)">Type</div>
+        <div class="key" onclick="pressNum('1')">1</div>
+        <div class="key" onclick="pressNum('2')">2</div>
+        <div class="key" onclick="pressNum('3')">3</div>
+        <div class="key" onclick="pressNum('.')">.</div>
+        <div class="key" onclick="pressNum('0')">0</div>
+        <div class="key key-clear" onclick="pressCLEAR()" id="clearLabel">مسح</div>
+        <div class="key key-calc" onclick="calculate()" id="calcLabel">احسب ▶</div>
+      </div>
+    </div>
+
+    <div class="result-detail" id="result-detail">
+      <div class="section-title">BREAKDOWN</div>
+      <div class="result-row">
+        <span class="result-name" id="rl-vol">حجم الغرفة</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="result-val" id="rd-vol">—</span>
+          <span class="badge badge-blue">m³</span>
+        </div>
+      </div>
+      <div class="result-row">
+        <span class="result-name" id="rl-base">الحمل الأساسي</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="result-val" id="rd-base">—</span>
+          <span class="badge badge-amber">BTU/h</span>
+        </div>
+      </div>
+      <div class="result-row">
+        <span class="result-name" id="rl-ppl">حمل الأشخاص</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="result-val" id="rd-ppl">—</span>
+          <span class="badge badge-green">BTU/h</span>
+        </div>
+      </div>
+      <div class="result-row">
+        <span class="result-name" id="rl-dev">حمل الأجهزة</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="result-val" id="rd-dev">—</span>
+          <span class="badge badge-amber">BTU/h</span>
+        </div>
+      </div>
+      <div class="result-row">
+        <span class="result-name" id="rl-total">إجمالي BTU/h</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="result-val" id="rd-total">—</span>
+          <span class="badge badge-blue">Total</span>
+        </div>
+      </div>
+      <div class="result-row">
+        <span class="result-name" id="rl-safety">معامل أمان 10%</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="result-val" id="rd-safety">—</span>
+          <span class="badge badge-blue">BTU/h</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- EXPORT PANEL -->
+  <div class="panel" id="panel-export">
+    <div class="history-section">
+      <div class="history-header">
+        <div class="section-title" style="margin-bottom:0">HISTORY</div>
+        <button class="history-clear" onclick="clearHistory()" id="histClear">مسح السجل</button>
+      </div>
+      <div class="history-list" id="history-list">
+        <div class="history-empty" id="history-empty">لا توجد حسابات بعد</div>
+      </div>
+    </div>
+    <button class="export-btn" onclick="exportCSV()">
+      <span>📥</span>
+      <span id="exportLabel">تصدير CSV</span>
+    </button>
+  </div>
+
+  <!-- CONTACT PANEL -->
+  <div class="panel" id="panel-contact">
+    <div class="contact-card">
+      <div class="contact-avatar">👷</div>
+      <div class="contact-name">م. يوسف ال همام</div>
+      <div class="contact-title">HVAC Engineer · Saudi Arabia</div>
+      <a class="contact-item" href="tel:0560282701">
+        <span class="contact-item-icon">📞</span>
+        <span class="contact-item-text">0560282701</span>
+      </a>
+      <a class="contact-item" href="mailto:yousef.alhammam@live.com">
+        <span class="contact-item-icon">✉️</span>
+        <span class="contact-item-text">yousef.alhammam@live.com</span>
+      </a>
+      <div class="made-in">صنع في السعودية 🇸🇦</div>
     </div>
   </div>
 
-  <!-- Bottom Nav -->
-  <nav class="bottom-nav">
-    <button class="nav-item active" onclick="switchTab('calc-tab', this)">
-      <i>🧮</i><span data-ar="الحاسبة" data-en="Calc">الحاسبة</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('export-tab', this)">
-      <i>📤</i><span data-ar="التصدير" data-en="Export">التصدير</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('contact-tab', this)">
-      <i>☎️</i><span data-ar="تواصل معنا" data-en="Contact">تواصل معنا</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('settings-tab', this)">
-      <i>⚙️</i><span data-ar="الإعدادات" data-en="Settings">الإعدادات</span>
-    </button>
-  </nav>
+  <!-- SETTINGS PANEL -->
+  <div class="panel" id="panel-settings">
+    <div class="settings-group">
+      <div class="settings-item">
+        <div>
+          <div class="settings-label" id="s-lang">اللغة / Language</div>
+          <div class="settings-sub" id="s-lang-sub">تبديل واجهة اللغة</div>
+        </div>
+        <div class="toggle on" id="toggle-lang" onclick="toggleLang()"></div>
+      </div>
+      <div class="settings-item">
+        <div>
+          <div class="settings-label" id="s-nums">أرقام إنجليزية</div>
+          <div class="settings-sub" id="s-nums-sub">عرض الأرقام بصيغة إنجليزية دائماً</div>
+        </div>
+        <div class="toggle on" id="toggle-nums" onclick="toggleNums()"></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:var(--text-muted);font-size:12px;padding:16px;font-family:var(--font-en)">
+      Air Calc Pro v2.0 · Built with ❤️ in Saudi Arabia
+    </div>
+  </div>
 
-  <script src="app.js"></script>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-calc" onclick="switchPanel('calc')">
+    <div class="nav-icon">🧮</div>
+    <div class="nav-label" id="nav-calc-l">الحاسبة</div>
+  </div>
+  <div class="nav-item" id="nav-export" onclick="switchPanel('export')">
+    <div class="nav-icon">📤</div>
+    <div class="nav-label" id="nav-export-l">التصدير</div>
+  </div>
+  <div class="nav-item" id="nav-contact" onclick="switchPanel('contact')">
+    <div class="nav-icon">☎️</div>
+    <div class="nav-label" id="nav-contact-l">تواصل</div>
+  </div>
+  <div class="nav-item" id="nav-settings" onclick="switchPanel('settings')">
+    <div class="nav-icon">⚙️</div>
+    <div class="nav-label" id="nav-settings-l">الإعدادات</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const state = {
+  lang: 'ar',
+  englishNums: true,
+  activeInput: 0,
+  values: ['', '', '', ''],
+  roomFactor: 400,
+  roomLabel: 'المكتب / Office',
+  history: JSON.parse(localStorage.getItem('aircalc_history') || '[]')
+};
+
+const txt = {
+  ar: {
+    calc: 'احسب ▶', clear: 'مسح', histClear: 'مسح السجل',
+    exportLabel: 'تصدير CSV', navCalc: 'الحاسبة', navExport: 'التصدير',
+    navContact: 'تواصل', navSettings: 'الإعدادات',
+    lblVol: 'حجم الغرفة (m³)', lblType: 'نوع الغرفة',
+    lblPpl: 'أشخاص', lblDev: 'أجهزة',
+    rlVol: 'حجم الغرفة', rlBase: 'الحمل الأساسي',
+    rlPpl: 'حمل الأشخاص', rlDev: 'حمل الأجهزة',
+    rlTotal: 'إجمالي BTU/h', rlSafety: 'معامل أمان 10%',
+    histEmpty: 'لا توجد حسابات بعد',
+    sLang: 'اللغة / Language', sLangSub: 'تبديل واجهة اللغة',
+    sNums: 'أرقام إنجليزية', sNumsSub: 'عرض الأرقام بصيغة إنجليزية دائماً',
+    toast: '✅ تم الحساب بنجاح', toastExport: '✅ تم التصدير', toastClear: '🗑️ تم مسح السجل'
+  },
+  en: {
+    calc: 'Calculate ▶', clear: 'Clear', histClear: 'Clear History',
+    exportLabel: 'Export CSV', navCalc: 'Calc', navExport: 'Export',
+    navContact: 'Contact', navSettings: 'Settings',
+    lblVol: 'Room Volume (m³)', lblType: 'Room Type',
+    lblPpl: 'Persons', lblDev: 'Devices',
+    rlVol: 'Room Volume', rlBase: 'Base Load',
+    rlPpl: 'People Load', rlDev: 'Device Load',
+    rlTotal: 'Total BTU/h', rlSafety: 'Safety 10%',
+    histEmpty: 'No calculations yet',
+    sLang: 'Language', sLangSub: 'Switch interface language',
+    sNums: 'English Numbers', sNumsSub: 'Always display in English numerals',
+    toast: '✅ Calculation complete', toastExport: '✅ Exported', toastClear: '🗑️ History cleared'
+  }
+};
+
+function t(key) { return txt[state.lang][key]; }
+function $(id) { return document.getElementById(id); }
+
+function applyLang() {
+  const l = state.lang;
+  document.documentElement.lang = l;
+  document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+  $('langBtn').textContent = l === 'ar' ? 'EN' : 'ع';
+  $('toggle-lang').className = 'toggle ' + (l === 'ar' ? 'on' : '');
+  $('calcLabel').textContent = t('calc');
+  $('clearLabel').textContent = t('clear');
+  $('histClear').textContent = t('histClear');
+  $('exportLabel').textContent = t('exportLabel');
+  $('nav-calc-l').textContent = t('navCalc');
+  $('nav-export-l').textContent = t('navExport');
+  $('nav-contact-l').textContent = t('navContact');
+  $('nav-settings-l').textContent = t('navSettings');
+  $('lbl-vol').textContent = t('lblVol');
+  $('lbl-type').textContent = t('lblType');
+  $('lbl-ppl').textContent = t('lblPpl');
+  $('lbl-dev').textContent = t('lblDev');
+  $('rl-vol').textContent = t('rlVol');
+  $('rl-base').textContent = t('rlBase');
+  $('rl-ppl').textContent = t('rlPpl');
+  $('rl-dev').textContent = t('rlDev');
+  $('rl-total').textContent = t('rlTotal');
+  $('rl-safety').textContent = t('rlSafety');
+  $('history-empty').textContent = t('histEmpty');
+  $('s-lang').textContent = t('sLang');
+  $('s-lang-sub').textContent = t('sLangSub');
+  $('s-nums').textContent = t('sNums');
+  $('s-nums-sub').textContent = t('sNumsSub');
+}
+
+function toggleLang() {
+  state.lang = state.lang === 'ar' ? 'en' : 'ar';
+  applyLang();
+  updateDisplays();
+}
+
+function toggleNums() {
+  state.englishNums = !state.englishNums;
+  $('toggle-nums').className = 'toggle ' + (state.englishNums ? 'on' : '');
+  updateDisplays();
+}
+
+function setActive(idx) {
+  state.activeInput = idx;
+  ['vol','type','ppl','dev'].forEach((id, i) => {
+    const el = $('field-' + id);
+    if (el) el.className = el.className.replace(' active', '');
+    if (i === idx && el) el.className += ' active';
+    const dot = $('dot-' + i);
+    if (dot) dot.className = 'ind-dot' + (i === idx ? ' active' : '');
+  });
+  if (idx === 1) { toggleDropdown(); setActive(0); }
+}
+
+function updateDisplays() {
+  const v = state.values;
+  $('disp-vol').textContent = (v[0] || '0') + ' m³';
+  $('disp-vol').className = v[0] ? '' : 'input-placeholder';
+  $('disp-type').textContent = state.roomLabel;
+  $('disp-ppl').textContent = (v[2] || '0') + ' 👤';
+  $('disp-ppl').className = v[2] ? '' : 'input-placeholder';
+  $('disp-dev').textContent = (v[3] || '0') + ' ⚡';
+  $('disp-dev').className = v[3] ? '' : 'input-placeholder';
+}
+
+let dropdownOpen = false;
+function toggleDropdown() {
+  dropdownOpen = !dropdownOpen;
+  $('room-dropdown').className = 'room-dropdown' + (dropdownOpen ? ' open' : '');
+  $('field-type').className = 'room-type-select' + (dropdownOpen ? ' active' : '');
+}
+
+function selectRoom(el, key, factor, label) {
+  document.querySelectorAll('.room-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  state.roomFactor = factor;
+  state.roomLabel = label;
+  dropdownOpen = false;
+  $('room-dropdown').className = 'room-dropdown';
+  $('field-type').className = 'room-type-select';
+  updateDisplays();
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#field-type') && !e.target.closest('#room-dropdown')) {
+    dropdownOpen = false;
+    $('room-dropdown').className = 'room-dropdown';
+    $('field-type').className = 'room-type-select';
+  }
+});
+
+function pressNum(n) {
+  const idx = state.activeInput;
+  if (idx === 1) return;
+  const cur = state.values[idx];
+  if (n === '.' && cur.includes('.')) return;
+  if (cur.length >= 8) return;
+  state.values[idx] = cur + n;
+  updateDisplays();
+}
+
+function pressDEL() {
+  const idx = state.activeInput;
+  if (idx === 1) return;
+  state.values[idx] = state.values[idx].slice(0, -1);
+  updateDisplays();
+}
+
+function pressAC() {
+  state.values = ['', '', '', ''];
+  updateDisplays();
+  animateValue('val-tr', '0.00');
+  animateValue('val-cfm', '0');
+  animateValue('val-btu', '0');
+  animateValue('val-mkt', '0');
+  $('result-detail').className = 'result-detail';
+}
+
+function pressCLEAR() {
+  const idx = state.activeInput;
+  if (idx === 1) return;
+  state.values[idx] = '';
+  updateDisplays();
+}
+
+const PERSON_BTU = 400;
+const DEVICE_BTU = 300;
+const BTU_PER_TR = 12000;
+const CFM_PER_TR = 400;
+const SAFETY = 1.10;
+const MKT_STEP = 9000;
+
+function calculate() {
+  const vol = parseFloat(state.values[0]) || 0;
+  const ppl = parseInt(state.values[2]) || 0;
+  const dev = parseInt(state.values[3]) || 0;
+
+  if (vol === 0) { showToast('⚠️ أدخل حجم الغرفة أولاً'); return; }
+
+  const baseBTU = vol * state.roomFactor;
+  const pplBTU = ppl * PERSON_BTU;
+  const devBTU = dev * DEVICE_BTU;
+  const totalBTU = (baseBTU + pplBTU + devBTU) * SAFETY;
+  const tr = totalBTU / BTU_PER_TR;
+  const cfm = Math.round(tr * CFM_PER_TR);
+  const mkt = Math.ceil(totalBTU / MKT_STEP) * MKT_STEP;
+
+  animateValue('val-tr', tr.toFixed(2));
+  animateValue('val-cfm', Math.round(cfm).toLocaleString());
+  animateValue('val-btu', Math.round(totalBTU).toLocaleString());
+  animateValue('val-mkt', mkt.toLocaleString());
+
+  $('rd-vol').textContent = vol.toLocaleString();
+  $('rd-base').textContent = Math.round(baseBTU).toLocaleString();
+  $('rd-ppl').textContent = Math.round(pplBTU).toLocaleString();
+  $('rd-dev').textContent = Math.round(devBTU).toLocaleString();
+  $('rd-total').textContent = Math.round(baseBTU + pplBTU + devBTU).toLocaleString();
+  $('rd-safety').textContent = Math.round(totalBTU).toLocaleString();
+  $('result-detail').className = 'result-detail visible';
+
+  const entry = {
+    time: new Date().toLocaleString('ar-SA'),
+    vol, ppl, dev,
+    type: state.roomLabel,
+    tr: tr.toFixed(2),
+    cfm, btu: Math.round(totalBTU), mkt
+  };
+  state.history.unshift(entry);
+  if (state.history.length > 50) state.history.pop();
+  localStorage.setItem('aircalc_history', JSON.stringify(state.history));
+  renderHistory();
+  showToast(t('toast'));
+}
+
+function animateValue(id, val) {
+  const el = $(id);
+  el.classList.add('updating');
+  setTimeout(() => { el.textContent = val; el.classList.remove('updating'); }, 150);
+}
+
+function renderHistory() {
+  const list = $('history-list');
+  const empty = $('history-empty');
+  if (state.history.length === 0) {
+    list.innerHTML = '';
+    list.appendChild(empty);
+    return;
+  }
+  list.innerHTML = '';
+  state.history.forEach((e) => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `
+      <div>
+        <div class="history-info">${e.type} · ${e.vol} m³ · ${e.ppl}👤 · ${e.dev}⚡</div>
+        <div class="history-info" style="margin-top:3px">${e.time}</div>
+      </div>
+      <div class="history-result">${e.tr} TR</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function clearHistory() {
+  state.history = [];
+  localStorage.removeItem('aircalc_history');
+  renderHistory();
+  showToast(t('toastClear'));
+}
+
+function exportCSV() {
+  if (state.history.length === 0) { showToast('⚠️ لا توجد بيانات للتصدير'); return; }
+  const headers = ['Time','Room Type','Volume (m³)','Persons','Devices','TR','CFM','BTU/h','Market BTU'];
+  const rows = state.history.map(e => [e.time, e.type, e.vol, e.ppl, e.dev, e.tr, e.cfm, e.btu, e.mkt]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'aircalc_pro.csv'; a.click();
+  showToast(t('toastExport'));
+}
+
+function switchPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  $('panel-' + name).classList.add('active');
+  $('nav-' + name).classList.add('active');
+}
+
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+applyLang();
+updateDisplays();
+renderHistory();
+setActive(0);
+</script>
 </body>
 </html>
