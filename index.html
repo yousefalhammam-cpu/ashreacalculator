@@ -181,7 +181,6 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
     <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
   </div>
 
-  <!-- CALC PANEL -->
   <div class="panel on" id="p-calc">
     <div class="dash">
       <div class="dash-grid">
@@ -212,7 +211,6 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
             <span id="dt" style="font-size:13px">—</span><span class="dd-arr">▼</span>
           </div>
           <div class="dd-menu" id="dd-room">
-
             <div class="dd-cat-hdr">🏗️ General / عام</div>
             <div class="dd-item sel" onclick="pickRoom(this,400,'🏢 Office / مكتب')"><div class="dd-item-info"><div>🏢 Office / مكتب</div><div class="dd-item-sub">أعمال مكتبية</div></div><span class="dd-badge">400</span></div>
             <div class="dd-item" onclick="pickRoom(this,350,'🏠 Residential / سكني')"><div class="dd-item-info"><div>🏠 Residential / سكني</div><div class="dd-item-sub">منازل وشقق</div></div><span class="dd-badge">350</span></div>
@@ -239,7 +237,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
             <div class="dd-item" onclick="pickRoom(this,800,'🏥 Protective Isolation / العزل الوقائي')"><div class="dd-item-info"><div>🏥 Protective Isolation / العزل الوقائي</div><div class="dd-item-sub">ASHRAE 170 — 12 ACH OA · Positive pressure</div></div><span class="dd-badge">800</span></div>
             <div class="dd-item" onclick="pickRoom(this,650,'🍼 NICU / وحدة حديثي الولادة')"><div class="dd-item-info"><div>🍼 NICU / وحدة حديثي الولادة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
             <div class="dd-item" onclick="pickRoom(this,600,'👶 Nursery / حضانة الأطفال')"><div class="dd-item-info"><div>👶 Nursery / حضانة الأطفال</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">600</span></div>
-            <div class="dd-item" onclick="pickRoom(this,650,'🤱 Labor & Delivery / غرفة الولادة')"><div class="dd-item-info"><div>🤱 Labor & Delivery / غرفة الولادة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'🤱 Labor &amp; Delivery / غرفة الولادة')"><div class="dd-item-info"><div>🤱 Labor &amp; Delivery / غرفة الولادة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
             <div class="dd-item" onclick="pickRoom(this,700,'🧪 Laboratory / المختبر')"><div class="dd-item-info"><div>🧪 Laboratory / المختبر</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">700</span></div>
             <div class="dd-item" onclick="pickRoom(this,650,'🧬 Pathology Lab / مختبر الباثولوجيا')"><div class="dd-item-info"><div>🧬 Pathology Lab / مختبر الباثولوجيا</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
             <div class="dd-item" onclick="pickRoom(this,750,'🔬 Autopsy Room / غرفة التشريح')"><div class="dd-item-info"><div>🔬 Autopsy Room / غرفة التشريح</div><div class="dd-item-sub">ASHRAE 170 — 12 ACH OA · Negative pressure</div></div><span class="dd-badge">750</span></div>
@@ -312,7 +310,6 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
     </div>
   </div>
 
-  <!-- HISTORY PANEL -->
   <div class="panel" id="p-hist">
     <div class="card">
       <div class="hist-hdr">
@@ -326,19 +323,17 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
     <button class="exp-btn" onclick="exportCSV()">📥 <span id="lbl-exp">تصدير CSV</span></button>
   </div>
 
-  <!-- CONTACT PANEL -->
   <div class="panel" id="p-contact">
     <div class="con-card">
       <div class="con-av">👷</div>
       <div class="con-name">م. يوسف ال همام</div>
       <div class="con-title">HVAC Engineer · Saudi Arabia</div>
       <a class="con-link" href="tel:0560282701"><span style="font-size:18px">📞</span><span>0560282701</span></a>
-      <a class="con-link" href="/cdn-cgi/l/email-protection#6c1503191f090a420d00040d01010d012c00051a09420f0301"><span style="font-size:18px">✉️</span><span><span class="__cf_email__" data-cfemail="dba2b4aea8bebdf5bab7b3bab6b6bab69bb7b2adbef5b8b4b6">[email&#160;protected]</span></span></a>
+      <a class="con-link" href="mailto:yousef.alhammam@live.com"><span style="font-size:18px">✉️</span><span>yousef.alhammam@live.com</span></a>
       <div class="made-in">صنع في السعودية 🇸🇦</div>
     </div>
   </div>
 
-  <!-- SETTINGS PANEL -->
   <div class="panel" id="p-settings">
     <div class="set-group">
       <div class="set-item">
@@ -376,8 +371,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-// ── CATALOG ──────────────────────────────────────────────────────────────
+<script>
 var CAT = [
   {id:'pc',         g:'office', e:'💻', ar:'كمبيوتر مكتبي',          en:'Desktop PC',              w:300},
   {id:'laptop',     g:'office', e:'💻', ar:'لابتوب',                   en:'Laptop',                  w:65},
@@ -433,17 +427,15 @@ var CAT = [
 
 function w2b(w){ return Math.round(w * 3.412); }
 
-// ── STATE ────────────────────────────────────────────────────────────────
 var lang = 'ar';
-var fi   = 0;       // active field: 0=volume, 2=persons
-var vals = ['','']; // [volume, persons]
+var fi   = 0;
+var vals = ['',''];
 var rFac = 400;
 var rLbl = '🏢 Office / مكتب';
 var devs = [];
 var hist = [];
 try { hist = JSON.parse(localStorage.getItem('acp3') || '[]'); } catch(x){}
 
-// ── TRANSLATIONS ─────────────────────────────────────────────────────────
 var TX = {
   ar:{calc:'احسب ▶',clr:'مسح',hclr:'مسح السجل',exp:'تصدير CSV',
       ncalc:'الحاسبة',nhist:'التصدير',ncontact:'تواصل',nset:'الإعدادات',
@@ -472,7 +464,6 @@ var TX = {
 function tx(k){ return TX[lang][k]||k; }
 function el(id){ return document.getElementById(id); }
 
-// ── LANGUAGE ─────────────────────────────────────────────────────────────
 function applyLang(){
   document.documentElement.lang = lang;
   document.documentElement.dir  = lang==='ar' ? 'rtl' : 'ltr';
@@ -494,12 +485,8 @@ function applyLang(){
   renderHist();
 }
 
-function toggleLang(){
-  lang = lang==='ar' ? 'en' : 'ar';
-  applyLang();
-}
+function toggleLang(){ lang = lang==='ar' ? 'en' : 'ar'; applyLang(); }
 
-// ── DISPLAY ───────────────────────────────────────────────────────────────
 function refreshDisp(){
   el('dv').textContent = (vals[0]||'0') + ' m³';
   el('dv').className   = vals[0] ? '' : 'ph';
@@ -512,38 +499,27 @@ function setF(idx){
   fi = idx;
   var fields = ['f-vol','f-type','f-ppl'];
   fields.forEach(function(fid,i){
-    var e = el(fid);
-    if (!e) return;
-    if (i===idx){ e.classList.add('on'); }
-    else { e.classList.remove('on'); }
-    var d = el('d'+i);
-    if (d){ d.className = 'dot'+(i===idx?' on':''); }
+    var e = el(fid); if (!e) return;
+    if (i===idx){ e.classList.add('on'); } else { e.classList.remove('on'); }
+    var d = el('d'+i); if (d){ d.className = 'dot'+(i===idx?' on':''); }
   });
 }
 
 function flash(id, val){
-  var e = el(id);
-  e.classList.add('fade');
+  var e = el(id); e.classList.add('fade');
   setTimeout(function(){ e.textContent=val; e.classList.remove('fade'); }, 150);
 }
 
 function showToast(msg){
-  var e = el('toast');
-  e.textContent = msg;
-  e.classList.add('on');
+  var e = el('toast'); e.textContent = msg; e.classList.add('on');
   setTimeout(function(){ e.classList.remove('on'); }, 2500);
 }
 
-// ── DROPDOWN ──────────────────────────────────────────────────────────────
 function toggleDD(menuId){
-  var menu = el(menuId);
-  var btn  = menu.previousElementSibling;
+  var menu = el(menuId); var btn = menu.previousElementSibling;
   var open = menu.classList.contains('show');
   closeAllDD();
-  if (!open){
-    menu.classList.add('show');
-    btn.classList.add('open');
-  }
+  if (!open){ menu.classList.add('show'); btn.classList.add('open'); }
 }
 
 function closeAllDD(){
@@ -553,286 +529,124 @@ function closeAllDD(){
   });
 }
 
-document.addEventListener('click', function(e){
-  if (!e.target.closest('.dd-wrap')) closeAllDD();
-});
+document.addEventListener('click', function(e){ if (!e.target.closest('.dd-wrap')) closeAllDD(); });
 
 function pickRoom(el2, factor, label){
   document.querySelectorAll('#dd-room .dd-item').forEach(function(i){ i.classList.remove('sel'); });
-  el2.classList.add('sel');
-  rFac = factor;
-  rLbl = label;
-  closeAllDD();
-  el('dt').textContent = label;
+  el2.classList.add('sel'); rFac = factor; rLbl = label; closeAllDD(); el('dt').textContent = label;
 }
 
-// ── KEYPAD ────────────────────────────────────────────────────────────────
 function kNum(n){
-  var idx = (fi === 2) ? 1 : 0;
-  var cur = vals[idx] || '';
+  var idx = (fi===2) ? 1 : 0; var cur = vals[idx]||'';
   if (n==='.' && cur.indexOf('.')!==-1) return;
   if (cur.length >= 8) return;
-  vals[idx] = cur + n;
-  refreshDisp();
+  vals[idx] = cur + n; refreshDisp();
 }
-
-function kDEL(){
-  var idx = (fi === 2) ? 1 : 0;
-  vals[idx] = (vals[idx]||'').slice(0,-1);
-  refreshDisp();
-}
-
-function kCLR(){
-  var idx = (fi === 2) ? 1 : 0;
-  vals[idx] = '';
-  refreshDisp();
-}
-
+function kDEL(){ var idx=(fi===2)?1:0; vals[idx]=(vals[idx]||'').slice(0,-1); refreshDisp(); }
+function kCLR(){ var idx=(fi===2)?1:0; vals[idx]=''; refreshDisp(); }
 function kAC(){
-  vals = ['',''];
-  refreshDisp();
+  vals=['','']; refreshDisp();
   flash('vtr','0.00'); flash('vcfm','0'); flash('vbtu','0'); flash('vmkt','0');
   el('breakdown').classList.remove('show');
 }
 
-// ── CALCULATE ─────────────────────────────────────────────────────────────
 function totalDevBtu(){
   return devs.reduce(function(sum,d){
-    var c = CAT.filter(function(x){ return x.id===d.id; })[0];
-    return sum + (c ? w2b(c.w)*d.qty : 0);
-  }, 0);
+    var c=CAT.filter(function(x){ return x.id===d.id; })[0];
+    return sum+(c?w2b(c.w)*d.qty:0);
+  },0);
 }
 
 function doCalc(){
-  var vol = parseFloat(vals[0]) || 0;
-  var ppl = parseInt(vals[1])   || 0;
+  var vol=parseFloat(vals[0])||0; var ppl=parseInt(vals[1])||0;
   if (vol===0){ showToast(tx('tnov')); return; }
-
-  var base   = vol * rFac;
-  var pplBtu = ppl * 400;
-  var devBtu = totalDevBtu();
-  var sub    = base + pplBtu + devBtu;
-  var total  = sub * 1.10;
-  var tr     = total / 12000;
-  var cfm    = Math.round(tr * 400);
-  var mkt    = Math.ceil(total / 9000) * 9000;
-
-  flash('vtr',  tr.toFixed(2));
-  flash('vcfm', Math.round(cfm).toLocaleString());
-  flash('vbtu', Math.round(total).toLocaleString());
-  flash('vmkt', mkt.toLocaleString());
-
-  el('brv-vol').textContent  = vol.toLocaleString();
-  el('brv-base').textContent = Math.round(base).toLocaleString();
-  el('brv-ppl').textContent  = Math.round(pplBtu).toLocaleString();
-  el('brv-dev').textContent  = Math.round(devBtu).toLocaleString();
-  el('brv-sub').textContent  = Math.round(sub).toLocaleString();
-  el('brv-sf').textContent   = Math.round(total).toLocaleString();
+  var base=vol*rFac, pplBtu=ppl*400, devBtu=totalDevBtu();
+  var sub=base+pplBtu+devBtu, total=sub*1.10;
+  var tr=total/12000, cfm=Math.round(tr*400), mkt=Math.ceil(total/9000)*9000;
+  flash('vtr',tr.toFixed(2)); flash('vcfm',Math.round(cfm).toLocaleString());
+  flash('vbtu',Math.round(total).toLocaleString()); flash('vmkt',mkt.toLocaleString());
+  el('brv-vol').textContent=vol.toLocaleString(); el('brv-base').textContent=Math.round(base).toLocaleString();
+  el('brv-ppl').textContent=Math.round(pplBtu).toLocaleString(); el('brv-dev').textContent=Math.round(devBtu).toLocaleString();
+  el('brv-sub').textContent=Math.round(sub).toLocaleString(); el('brv-sf').textContent=Math.round(total).toLocaleString();
   el('breakdown').classList.add('show');
-
-  var devSum = devs.map(function(d){
-    var c = CAT.filter(function(x){ return x.id===d.id; })[0];
-    return c ? (lang==='ar'?c.ar:c.en)+'x'+d.qty : '';
-  }).filter(Boolean).join(' | ');
-
-  hist.unshift({
-    time: new Date().toLocaleString('ar-SA'),
-    vol:vol, ppl:ppl, type:rLbl,
-    devSum:devSum, devBtu:devBtu,
-    tr:tr.toFixed(2), cfm:cfm,
-    btu:Math.round(total), mkt:mkt
-  });
+  var devSum=devs.map(function(d){ var c=CAT.filter(function(x){ return x.id===d.id; })[0]; return c?(lang==='ar'?c.ar:c.en)+'x'+d.qty:''; }).filter(Boolean).join(' | ');
+  hist.unshift({time:new Date().toLocaleString('ar-SA'),vol:vol,ppl:ppl,type:rLbl,devSum:devSum,devBtu:devBtu,tr:tr.toFixed(2),cfm:cfm,btu:Math.round(total),mkt:mkt});
   if (hist.length>50) hist.pop();
-  localStorage.setItem('acp3', JSON.stringify(hist));
-  renderHist();
-  showToast(tx('tcalc'));
+  localStorage.setItem('acp3',JSON.stringify(hist)); renderHist(); showToast(tx('tcalc'));
 }
 
-// ── DEVICES ───────────────────────────────────────────────────────────────
 function renderDevs(){
-  var list = el('dev-list');
-  list.innerHTML = '';
-
+  var list=el('dev-list'); list.innerHTML='';
   if (!devs.length){
-    var em = document.createElement('div');
-    em.className = 'dev-empty';
-    em.textContent = tx('dempty');
-    list.appendChild(em);
-    el('dev-total').style.display = 'none';
-    return;
+    var em=document.createElement('div'); em.className='dev-empty'; em.textContent=tx('dempty'); list.appendChild(em);
+    el('dev-total').style.display='none'; return;
   }
-
   devs.forEach(function(d){
-    var c = CAT.filter(function(x){ return x.id===d.id; })[0];
-    if (!c) return;
-    var name = lang==='ar' ? c.ar : c.en;
-    var btu  = w2b(c.w) * d.qty;
-    var row  = document.createElement('div');
-    row.className = 'dev-row';
-    row.innerHTML =
-      '<div class="dev-ico">'+c.e+'</div>'+
-      '<div class="dev-info">'+
-        '<div class="dev-name">'+name+'</div>'+
-        '<div class="dev-watt">'+c.w+'W &times; '+d.qty+' = '+(c.w*d.qty).toLocaleString()+'W</div>'+
-      '</div>'+
-      '<div class="dev-qty">'+
-        '<div class="qbtn" onclick="chgQty(\''+d.id+'\',-1)">&#8722;</div>'+
-        '<div class="qnum">'+d.qty+'</div>'+
-        '<div class="qbtn" onclick="chgQty(\''+d.id+'\',1)">&#43;</div>'+
-      '</div>'+
-      '<div class="dev-btu">'+btu.toLocaleString()+' BTU/h</div>'+
-      '<div class="dev-del" onclick="delDev(\''+d.id+'\')">&#128465;</div>';
+    var c=CAT.filter(function(x){ return x.id===d.id; })[0]; if (!c) return;
+    var name=lang==='ar'?c.ar:c.en; var btu=w2b(c.w)*d.qty;
+    var row=document.createElement('div'); row.className='dev-row';
+    row.innerHTML='<div class="dev-ico">'+c.e+'</div><div class="dev-info"><div class="dev-name">'+name+'</div><div class="dev-watt">'+c.w+'W &times; '+d.qty+' = '+(c.w*d.qty).toLocaleString()+'W</div></div><div class="dev-qty"><div class="qbtn" onclick="chgQty(\''+d.id+'\',-1)">&#8722;</div><div class="qnum">'+d.qty+'</div><div class="qbtn" onclick="chgQty(\''+d.id+'\',1)">&#43;</div></div><div class="dev-btu">'+btu.toLocaleString()+' BTU/h</div><div class="dev-del" onclick="delDev(\''+d.id+'\')">&#128465;</div>';
     list.appendChild(row);
   });
-
-  var tot = totalDevBtu();
-  el('dev-total').style.display = 'flex';
-  el('val-dtot').textContent = tot.toLocaleString() + ' BTU/h';
-  el('lbl-dtot').textContent = tx('ldtot');
+  var tot=totalDevBtu(); el('dev-total').style.display='flex';
+  el('val-dtot').textContent=tot.toLocaleString()+' BTU/h'; el('lbl-dtot').textContent=tx('ldtot');
 }
 
-function chgQty(id, delta){
-  for (var i=0; i<devs.length; i++){
-    if (devs[i].id===id){
-      devs[i].qty += delta;
-      if (devs[i].qty <= 0) devs.splice(i,1);
-      break;
-    }
-  }
+function chgQty(id,delta){
+  for (var i=0;i<devs.length;i++){ if(devs[i].id===id){ devs[i].qty+=delta; if(devs[i].qty<=0) devs.splice(i,1); break; } }
   renderDevs();
 }
+function delDev(id){ devs=devs.filter(function(d){ return d.id!==id; }); renderDevs(); }
 
-function delDev(id){
-  devs = devs.filter(function(d){ return d.id!==id; });
-  renderDevs();
-}
-
-// ── MODAL ─────────────────────────────────────────────────────────────────
 function openModal(){
   buildGrid(null);
   document.querySelectorAll('.ftab').forEach(function(t,i){ t.className='ftab'+(i===0?' on':''); });
   el('overlay').classList.add('on');
 }
+function closeModal(){ el('overlay').classList.remove('on'); }
+function overlayClick(e){ if (e.target===el('overlay')) closeModal(); }
+function filterTab(tabEl,grp){ document.querySelectorAll('.ftab').forEach(function(t){ t.className='ftab'; }); tabEl.className='ftab on'; buildGrid(grp); }
 
-function closeModal(){
-  el('overlay').classList.remove('on');
-}
-
-function overlayClick(e){
-  if (e.target===el('overlay')) closeModal();
-}
-
-function filterTab(tabEl, grp){
-  document.querySelectorAll('.ftab').forEach(function(t){ t.className='ftab'; });
-  tabEl.className = 'ftab on';
-  buildGrid(grp);
-}
-
-var gLabel = {
-  office:{ar:'🏢 مكتب / Office',  en:'🏢 Office'},
-  light: {ar:'💡 إضاءة / Lighting',en:'💡 Lighting'},
-  home:  {ar:'🏠 منزلي / Domestic',en:'🏠 Domestic'},
-  health:{ar:'🏥 صحي / Healthcare',en:'🏥 Healthcare'}
-};
+var gLabel={office:{ar:'🏢 مكتب / Office',en:'🏢 Office'},light:{ar:'💡 إضاءة / Lighting',en:'💡 Lighting'},home:{ar:'🏠 منزلي / Domestic',en:'🏠 Domestic'},health:{ar:'🏥 صحي / Healthcare',en:'🏥 Healthcare'}};
 
 function buildGrid(grp){
-  var grid   = el('cat-grid');
-  grid.innerHTML = '';
-  var groups = grp ? [grp] : ['office','light','home','health'];
-
+  var grid=el('cat-grid'); grid.innerHTML='';
+  var groups=grp?[grp]:['office','light','home','health'];
   groups.forEach(function(gk){
-    var items = CAT.filter(function(d){ return d.g===gk; });
-    if (!items.length) return;
-
-    var hdr = document.createElement('div');
-    hdr.className = 'cat-hdr';
-    hdr.textContent = gLabel[gk][lang];
-    grid.appendChild(hdr);
-
+    var items=CAT.filter(function(d){ return d.g===gk; }); if (!items.length) return;
+    var hdr=document.createElement('div'); hdr.className='cat-hdr'; hdr.textContent=gLabel[gk][lang]; grid.appendChild(hdr);
     items.forEach(function(d){
-      var wl   = d.w>=1000 ? (d.w/1000).toFixed(1)+'kW' : d.w+'W';
-      var btu  = w2b(d.w);
-      var card = document.createElement('div');
-      card.className = 'cat-item';
-      card.innerHTML =
-        '<div class="cat-ico">'+d.e+'</div>'+
-        '<div class="cat-name">'+(lang==='ar'?d.ar:d.en)+'</div>'+
-        '<div class="cat-w">'+wl+'</div>'+
-        '<div class="cat-btu">'+btu.toLocaleString()+' BTU/h</div>';
-
-      // closure to capture correct d
-      (function(did, dname){
-        card.onclick = function(){
-          var found = false;
-          for (var i=0;i<devs.length;i++){
-            if (devs[i].id===did){ devs[i].qty++; found=true; break; }
-          }
-          if (!found) devs.push({id:did, qty:1});
-          closeModal();
-          renderDevs();
-          showToast('✅ '+dname+' +1');
-        };
-      })(d.id, lang==='ar'?d.ar:d.en);
-
+      var wl=d.w>=1000?(d.w/1000).toFixed(1)+'kW':d.w+'W'; var btu=w2b(d.w);
+      var card=document.createElement('div'); card.className='cat-item';
+      card.innerHTML='<div class="cat-ico">'+d.e+'</div><div class="cat-name">'+(lang==='ar'?d.ar:d.en)+'</div><div class="cat-w">'+wl+'</div><div class="cat-btu">'+btu.toLocaleString()+' BTU/h</div>';
+      (function(did,dname){ card.onclick=function(){ var found=false; for(var i=0;i<devs.length;i++){ if(devs[i].id===did){ devs[i].qty++; found=true; break; } } if(!found) devs.push({id:did,qty:1}); closeModal(); renderDevs(); showToast('✅ '+dname+' +1'); }; })(d.id,lang==='ar'?d.ar:d.en);
       grid.appendChild(card);
     });
   });
 }
 
-// ── HISTORY ───────────────────────────────────────────────────────────────
 function renderHist(){
-  var list = el('hist-list');
-  list.innerHTML = '';
-  if (!hist.length){
-    var em = document.createElement('div');
-    em.className = 'hist-empty';
-    em.id = 'hist-empty';
-    em.textContent = tx('hempty');
-    list.appendChild(em);
-    return;
-  }
-  hist.forEach(function(h){
-    var row = document.createElement('div');
-    row.className = 'hist-item';
-    row.innerHTML =
-      '<div>'+
-        '<div class="hist-info">'+h.type+' &middot; '+h.vol+'m&sup3; &middot; '+h.ppl+'&#128100;'+(h.devSum?' &middot; '+h.devSum:'')+'</div>'+
-        '<div class="hist-info" style="margin-top:2px">'+h.time+'</div>'+
-      '</div>'+
-      '<div class="hist-res">'+h.tr+' TR</div>';
-    list.appendChild(row);
-  });
+  var list=el('hist-list'); list.innerHTML='';
+  if (!hist.length){ var em=document.createElement('div'); em.className='hist-empty'; em.id='hist-empty'; em.textContent=tx('hempty'); list.appendChild(em); return; }
+  hist.forEach(function(h){ var row=document.createElement('div'); row.className='hist-item'; row.innerHTML='<div><div class="hist-info">'+h.type+' &middot; '+h.vol+'m&sup3; &middot; '+h.ppl+'&#128100;'+(h.devSum?' &middot; '+h.devSum:'')+'</div><div class="hist-info" style="margin-top:2px">'+h.time+'</div></div><div class="hist-res">'+h.tr+' TR</div>'; list.appendChild(row); });
 }
-
-function clearHist(){
-  hist = [];
-  localStorage.removeItem('acp3');
-  renderHist();
-  showToast(tx('tclr'));
-}
+function clearHist(){ hist=[]; localStorage.removeItem('acp3'); renderHist(); showToast(tx('tclr')); }
 
 function exportCSV(){
   if (!hist.length){ showToast(tx('tnodata')); return; }
-  var h    = ['Time','Room Type','Volume(m3)','Persons','Devices','Device BTU/h','TR','CFM','Total BTU/h','Market BTU'];
-  var rows = hist.map(function(r){
-    return [r.time,r.type,r.vol,r.ppl,r.devSum||'',r.devBtu||0,r.tr,r.cfm,r.btu,r.mkt];
-  });
-  var csv = [h].concat(rows).map(function(r){
-    return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(',');
-  }).join('\n');
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
-  a.download = 'aircalc_pro.csv';
-  a.click();
-  showToast(tx('texp'));
+  var h=['Time','Room Type','Volume(m3)','Persons','Devices','Device BTU/h','TR','CFM','Total BTU/h','Market BTU'];
+  var rows=hist.map(function(r){ return [r.time,r.type,r.vol,r.ppl,r.devSum||'',r.devBtu||0,r.tr,r.cfm,r.btu,r.mkt]; });
+  var csv=[h].concat(rows).map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'})); a.download='aircalc_pro.csv'; a.click(); showToast(tx('texp'));
 }
 
-// ── NAVIGATION ────────────────────────────────────────────────────────────
 function goPanel(name){
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
   document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('on'); });
-  el('p-'+name).classList.add('on');
-  el('ni-'+name).classList.add('on');
+  el('p-'+name).classList.add('on'); el('ni-'+name).classList.add('on');
 }
 
-// ── INIT ───────�
+applyLang(); setF(0); renderDevs(); renderHist();
+</script>
+</body>
+</html>
