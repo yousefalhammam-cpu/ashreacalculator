@@ -72,6 +72,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .dd-item-info{flex:1;}
 .dd-item-sub{font-size:10px;color:var(--tm);margin-top:2px;font-family:var(--fe);}
 .dd-badge{font-size:10px;font-family:var(--fe);background:var(--s2);border:1px solid var(--b);padding:2px 7px;border-radius:4px;color:var(--tm);flex-shrink:0;}
+.dd-cat-hdr{padding:8px 14px 4px;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--a);text-transform:uppercase;font-family:var(--fe);border-bottom:1px solid var(--b);margin-top:4px;background:rgba(56,189,248,0.04);}
 .dd-item.sel .dd-badge{background:var(--ad);color:var(--a);border-color:rgba(56,189,248,.3);}
 .dev-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
 .dev-row{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px 12px;display:flex;align-items:center;gap:8px;}
@@ -211,16 +212,51 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
             <span id="dt" style="font-size:13px">—</span><span class="dd-arr">▼</span>
           </div>
           <div class="dd-menu" id="dd-room">
-            <div class="dd-item sel" onclick="pickRoom(this,400,'🏢 Office / مكتب')"><div class="dd-item-info"><div>🏢 Office / مكتب</div><div class="dd-item-sub">أعمال مكتبية</div></div><span class="dd-badge">400 BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,350,'🏠 Residential / سكني')"><div class="dd-item-info"><div>🏠 Residential / سكني</div><div class="dd-item-sub">منازل وشقق</div></div><span class="dd-badge">350 BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,500,'🛍️ Retail / محل')"><div class="dd-item-info"><div>🛍️ Retail / محل</div><div class="dd-item-sub">تجزئة وأسواق</div></div><span class="dd-badge">500 BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,600,'🍳 Kitchen / مطبخ')"><div class="dd-item-info"><div>🍳 Kitchen / مطبخ</div><div class="dd-item-sub">مطابخ تجارية</div></div><span class="dd-badge">600 BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,700,'🖥️ Server Room / سيرفر')"><div class="dd-item-info"><div>🖥️ Server Room</div><div class="dd-item-sub">مراكز بيانات</div></div><span class="dd-badge">700 BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,450,'📚 Classroom / قاعة')"><div class="dd-item-info"><div>📚 Classroom / قاعة</div><div class="dd-item-sub">فصول ومحاضرات</div></div><span class="dd-badge">450 BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,550,'🏋️ Gym / صالة')"><div class="dd-item-info"><div>🏋️ Gym / صالة</div><div class="dd-item-sub">صالات لياقة</div></div><span class="dd-badge">550 BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,400,'🕌 Mosque / مسجد')"><div class="dd-item-info"><div>🕌 Mosque / مسجد</div><div class="dd-item-sub">مصليات ومساجد</div></div><span class="dd-badge">400 BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,500,'🍽️ Restaurant / مطعم')"><div class="dd-item-info"><div>🍽️ Restaurant / مطعم</div><div class="dd-item-sub">مطاعم وكافيهات</div></div><span class="dd-badge">500 BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,450,'🏥 Clinic / عيادة')"><div class="dd-item-info"><div>🏥 Clinic / عيادة</div><div class="dd-item-sub">عيادات ومستشفيات</div></div><span class="dd-badge">450 BTU/m³</span></div>
+
+            <div class="dd-cat-hdr">🏗️ General / عام</div>
+            <div class="dd-item sel" onclick="pickRoom(this,400,'🏢 Office / مكتب')"><div class="dd-item-info"><div>🏢 Office / مكتب</div><div class="dd-item-sub">أعمال مكتبية</div></div><span class="dd-badge">400</span></div>
+            <div class="dd-item" onclick="pickRoom(this,350,'🏠 Residential / سكني')"><div class="dd-item-info"><div>🏠 Residential / سكني</div><div class="dd-item-sub">منازل وشقق</div></div><span class="dd-badge">350</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'🛍️ Retail / محل')"><div class="dd-item-info"><div>🛍️ Retail / محل</div><div class="dd-item-sub">تجزئة وأسواق</div></div><span class="dd-badge">500</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'🍳 Kitchen / مطبخ')"><div class="dd-item-info"><div>🍳 Kitchen / مطبخ</div><div class="dd-item-sub">مطابخ تجارية</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,700,'🖥️ Server Room / سيرفر')"><div class="dd-item-info"><div>🖥️ Server Room / سيرفر</div><div class="dd-item-sub">مراكز بيانات</div></div><span class="dd-badge">700</span></div>
+            <div class="dd-item" onclick="pickRoom(this,450,'📚 Classroom / قاعة')"><div class="dd-item-info"><div>📚 Classroom / قاعة</div><div class="dd-item-sub">فصول ومحاضرات</div></div><span class="dd-badge">450</span></div>
+            <div class="dd-item" onclick="pickRoom(this,550,'🏋️ Gym / صالة')"><div class="dd-item-info"><div>🏋️ Gym / صالة</div><div class="dd-item-sub">صالات لياقة</div></div><span class="dd-badge">550</span></div>
+            <div class="dd-item" onclick="pickRoom(this,400,'🕌 Mosque / مسجد')"><div class="dd-item-info"><div>🕌 Mosque / مسجد</div><div class="dd-item-sub">مصليات ومساجد</div></div><span class="dd-badge">400</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'🍽️ Restaurant / مطعم')"><div class="dd-item-info"><div>🍽️ Restaurant / مطعم</div><div class="dd-item-sub">مطاعم وكافيهات</div></div><span class="dd-badge">500</span></div>
+            <div class="dd-cat-hdr">🏥 Healthcare — ASHRAE 170 / رعاية صحية</div>
+            <div class="dd-item" onclick="pickRoom(this,480,'🛏️ Patient Room / غرفة المريض')"><div class="dd-item-info"><div>🛏️ Patient Room / غرفة المريض</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">480</span></div>
+            <div class="dd-item" onclick="pickRoom(this,400,'🏥 Patient Corridor / ممر المرضى')"><div class="dd-item-info"><div>🏥 Patient Corridor / ممر المرضى</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH min</div></div><span class="dd-badge">400</span></div>
+            <div class="dd-item" onclick="pickRoom(this,900,'🔪 Operating Room / غرفة العمليات')"><div class="dd-item-info"><div>🔪 Operating Room / غرفة العمليات</div><div class="dd-item-sub">ASHRAE 170 — 20 ACH min · Positive pressure</div></div><span class="dd-badge">900</span></div>
+            <div class="dd-item" onclick="pickRoom(this,850,'🔪 OR Sub-sterile / تعقيم العمليات')"><div class="dd-item-info"><div>🔪 OR Sub-sterile / تعقيم العمليات</div><div class="dd-item-sub">ASHRAE 170 — 20 ACH · Positive pressure</div></div><span class="dd-badge">850</span></div>
+            <div class="dd-item" onclick="pickRoom(this,800,'🫁 ICU / وحدة العناية المركزة')"><div class="dd-item-info"><div>🫁 ICU / وحدة العناية المركزة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">800</span></div>
+            <div class="dd-item" onclick="pickRoom(this,750,'🫀 CCU / وحدة رعاية القلب')"><div class="dd-item-info"><div>🫀 CCU / وحدة رعاية القلب</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">750</span></div>
+            <div class="dd-item" onclick="pickRoom(this,700,'🚨 Emergency / Trauma / الطوارئ')"><div class="dd-item-info"><div>🚨 Emergency / Trauma / الطوارئ</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 12 ACH total</div></div><span class="dd-badge">700</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'🩺 Examination Room / غرفة الفحص')"><div class="dd-item-info"><div>🩺 Examination Room / غرفة الفحص</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'💉 Treatment Room / غرفة العلاج')"><div class="dd-item-info"><div>💉 Treatment Room / غرفة العلاج</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'💊 Medication Room / غرفة الأدوية')"><div class="dd-item-info"><div>💊 Medication Room / غرفة الأدوية</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,800,'😷 Isolation Room / غرفة العزل')"><div class="dd-item-info"><div>😷 Isolation Room / غرفة العزل</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 12 ACH · Negative pressure</div></div><span class="dd-badge">800</span></div>
+            <div class="dd-item" onclick="pickRoom(this,850,'🦠 Airborne Isolation / عزل الهواء')"><div class="dd-item-info"><div>🦠 Airborne Isolation / عزل الهواء</div><div class="dd-item-sub">ASHRAE 170 — 12 ACH OA · Negative pressure</div></div><span class="dd-badge">850</span></div>
+            <div class="dd-item" onclick="pickRoom(this,800,'🏥 Protective Isolation / العزل الوقائي')"><div class="dd-item-info"><div>🏥 Protective Isolation / العزل الوقائي</div><div class="dd-item-sub">ASHRAE 170 — 12 ACH OA · Positive pressure</div></div><span class="dd-badge">800</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'🍼 NICU / وحدة حديثي الولادة')"><div class="dd-item-info"><div>🍼 NICU / وحدة حديثي الولادة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'👶 Nursery / حضانة الأطفال')"><div class="dd-item-info"><div>👶 Nursery / حضانة الأطفال</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'🤱 Labor & Delivery / غرفة الولادة')"><div class="dd-item-info"><div>🤱 Labor & Delivery / غرفة الولادة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,700,'🧪 Laboratory / المختبر')"><div class="dd-item-info"><div>🧪 Laboratory / المختبر</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">700</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'🧬 Pathology Lab / مختبر الباثولوجيا')"><div class="dd-item-info"><div>🧬 Pathology Lab / مختبر الباثولوجيا</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,750,'🔬 Autopsy Room / غرفة التشريح')"><div class="dd-item-info"><div>🔬 Autopsy Room / غرفة التشريح</div><div class="dd-item-sub">ASHRAE 170 — 12 ACH OA · Negative pressure</div></div><span class="dd-badge">750</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'🩻 Radiology / الأشعة')"><div class="dd-item-info"><div>🩻 Radiology / الأشعة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">500</span></div>
+            <div class="dd-item" onclick="pickRoom(this,550,'🧲 MRI Room / غرفة الرنين المغناطيسي')"><div class="dd-item-info"><div>🧲 MRI Room / غرفة الرنين المغناطيسي</div><div class="dd-item-sub">ASHRAE 170 — 3 ACH OA, 6 ACH total</div></div><span class="dd-badge">550</span></div>
+            <div class="dd-item" onclick="pickRoom(this,700,'🩸 Dialysis / غرفة الغسيل الكلوي')"><div class="dd-item-info"><div>🩸 Dialysis / غرفة الغسيل الكلوي</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">700</span></div>
+            <div class="dd-item" onclick="pickRoom(this,900,'🧼 Sterile Processing / التعقيم المركزي')"><div class="dd-item-info"><div>🧼 Sterile Processing / التعقيم المركزي</div><div class="dd-item-sub">ASHRAE 170 — Decontam: neg · Clean: positive</div></div><span class="dd-badge">900</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'🦷 Dental Operatory / كرسي الأسنان')"><div class="dd-item-info"><div>🦷 Dental Operatory / كرسي الأسنان</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 15 ACH total</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'💆 Physical Therapy / العلاج الطبيعي')"><div class="dd-item-info"><div>💆 Physical Therapy / العلاج الطبيعي</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">500</span></div>
+            <div class="dd-item" onclick="pickRoom(this,550,'🏥 Waiting Room / غرفة الانتظار')"><div class="dd-item-info"><div>🏥 Waiting Room / غرفة الانتظار</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 12 ACH total</div></div><span class="dd-badge">550</span></div>
+            <div class="dd-item" onclick="pickRoom(this,450,'📋 Nurse Station / محطة التمريض')"><div class="dd-item-info"><div>📋 Nurse Station / محطة التمريض</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">450</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'💊 Pharmacy / الصيدلية')"><div class="dd-item-info"><div>💊 Pharmacy / الصيدلية</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,800,'🍽️ Hospital Kitchen / مطبخ المستشفى')"><div class="dd-item-info"><div>🍽️ Hospital Kitchen / مطبخ المستشفى</div><div class="dd-item-sub">ASHRAE 170 — 10 ACH total · Exhaust</div></div><span class="dd-badge">800</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'🛁 Soiled Utility / النفايات الملوثة')"><div class="dd-item-info"><div>🛁 Soiled Utility / النفايات الملوثة</div><div class="dd-item-sub">ASHRAE 170 — 10 ACH · Negative pressure</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'🧹 Clean Utility / الخدمات النظيفة')"><div class="dd-item-info"><div>🧹 Clean Utility / الخدمات النظيفة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 4 ACH total</div></div><span class="dd-badge">500</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'🚿 Patient Toilet/Bath / حمام المريض')"><div class="dd-item-info"><div>🚿 Patient Toilet/Bath / حمام المريض</div><div class="dd-item-sub">ASHRAE 170 — 10 ACH · Negative pressure</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'🗄️ Medical Records / السجلات الطبية')"><div class="dd-item-info"><div>🗄️ Medical Records / السجلات الطبية</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">500</span></div>
           </div>
         </div>
       </div>
@@ -297,7 +333,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
       <div class="con-name">م. يوسف ال همام</div>
       <div class="con-title">HVAC Engineer · Saudi Arabia</div>
       <a class="con-link" href="tel:0560282701"><span style="font-size:18px">📞</span><span>0560282701</span></a>
-      <a class="con-link" href="mailto:yousef.alhammam@live.com"><span style="font-size:18px">✉️</span><span>yousef.alhammam@live.com</span></a>
+      <a class="con-link" href="/cdn-cgi/l/email-protection#6c1503191f090a420d00040d01010d012c00051a09420f0301"><span style="font-size:18px">✉️</span><span><span class="__cf_email__" data-cfemail="dba2b4aea8bebdf5bab7b3bab6b6bab69bb7b2adbef5b8b4b6">[email&#160;protected]</span></span></a>
       <div class="made-in">صنع في السعودية 🇸🇦</div>
     </div>
   </div>
@@ -340,7 +376,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── CATALOG ──────────────────────────────────────────────────────────────
 var CAT = [
   {id:'pc',         g:'office', e:'💻', ar:'كمبيوتر مكتبي',          en:'Desktop PC',              w:300},
@@ -799,11 +835,4 @@ function goPanel(name){
   el('ni-'+name).classList.add('on');
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────
-applyLang();
-setF(0);
-renderDevs();
-renderHist();
-</script>
-</body>
-</html>
+// ── INIT ───────�
