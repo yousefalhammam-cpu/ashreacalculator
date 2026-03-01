@@ -1,539 +1,512 @@
-/* Air Calc Pro - Stable Build (No Assistant) */
+var CAT = [
+  {id:'pc',g:'office',e:'💻',ar:'كمبيوتر مكتبي',en:'Desktop PC',w:300},
+  {id:'laptop',g:'office',e:'💻',ar:'لابتوب',en:'Laptop',w:65},
+  {id:'monitor',g:'office',e:'🖥️',ar:'شاشة كمبيوتر',en:'Monitor',w:40},
+  {id:'printer',g:'office',e:'🖨️',ar:'طابعة ليزر',en:'Laser Printer',w:500},
+  {id:'server',g:'office',e:'🗄️',ar:'سيرفر',en:'Server',w:500},
+  {id:'router',g:'office',e:'📡',ar:'راوتر / سويتش',en:'Router / Switch',w:20},
+  {id:'ups',g:'office',e:'🔋',ar:'UPS مزود طاقة',en:'UPS',w:600},
+  {id:'projector',g:'office',e:'📽️',ar:'بروجكتور',en:'Projector',w:300},
+  {id:'copier',g:'office',e:'📠',ar:'آلة تصوير',en:'Copier / Scanner',w:1200},
+  {id:'phone',g:'office',e:'📱',ar:'شاحن جوال',en:'Phone Charger',w:20},
 
-let currentLang = "ar";
-let activeField = "display";
-let inputs = { display: "0", people: "0", equip: "0" };
-let calcHistory = [];
-let roomCatalog = [];
-let allEquipment = [];
+  {id:'led',g:'light',e:'💡',ar:'إضاءة LED',en:'LED Light',w:15},
+  {id:'fluor',g:'light',e:'🔦',ar:'فلورسنت',en:'Fluorescent',w:40},
+  {id:'spot',g:'light',e:'🔆',ar:'سبوت لايت',en:'Spotlight',w:50},
+  {id:'ledpanel',g:'light',e:'🟦',ar:'لوحة LED 60x60',en:'LED Panel 60x60',w:36},
 
-/* ---------- Room Data (Hospital + Commercial + Residential) ---------- */
-/* Hospital: ACH-based (ASHRAE reference style)
-   Commercial/Residential: practical Saudi-style quick estimate using ACH + sensible load model
-*/
-const roomData = {
-  categories: [
-    {
-      key: "hospital",
-      name_ar: "المستشفيات (ASHRAE 170)",
-      name_en: "Hospitals (ASHRAE 170)",
-      med: true,
-      deltaT_F: 18,
-      peopleSensibleBTU: 450,
-      items: [
-        { id: "h1", ar: "غرفة عمليات (OR)", en: "Operating Room (OR)", ach: 20, pressure: "P" },
-        { id: "h2", ar: "عزل ضغط موجب (PE)", en: "Positive Pressure (PE)", ach: 12, pressure: "P" },
-        { id: "h3", ar: "عزل ضغط سالب (AII)", en: "Negative Pressure (AII)", ach: 12, pressure: "N" },
-        { id: "h4", ar: "العناية المركزة (ICU)", en: "Critical Care (ICU)", ach: 6, pressure: "N" },
-        { id: "h5", ar: "غرفة الطوارئ (ترياج)", en: "Emergency (Triage)", ach: 12, pressure: "N" },
-        { id: "h6", ar: "مختبر عام", en: "General Laboratory", ach: 6, pressure: "N" },
-        { id: "h7", ar: "غرفة تنويم مريض", en: "Patient Room", ach: 6, pressure: "N" },
-        { id: "h8", ar: "الأشعة التشخيصية", en: "Diagnostic X-Ray", ach: 6, pressure: "N" },
-        { id: "h9", ar: "غرفة المناظير", en: "Endoscopy Room", ach: 15, pressure: "P" },
-        { id: "h10", ar: "التعقيم المركزي (CSSD)", en: "Sterile Storage (CSSD)", ach: 10, pressure: "P" },
-        { id: "h11", ar: "الصيدلية", en: "Pharmacy", ach: 4, pressure: "N" },
-        { id: "h12", ar: "غرفة الولادة (LDR)", en: "Delivery Room (LDR)", ach: 15, pressure: "P" },
-        { id: "h13", ar: "العلاج الطبيعي", en: "Physical Therapy", ach: 6, pressure: "N" },
-        { id: "h14", ar: "غرفة فحص عامة", en: "Examination Room", ach: 6, pressure: "N" }
-      ]
-    },
-    {
-      key: "commercial",
-      name_ar: "التجاري (ASHRAE 62.1)",
-      name_en: "Commercial (ASHRAE 62.1)",
-      med: false,
-      deltaT_F: 20,
-      peopleSensibleBTU: 500,
-      items: [
-        { id: "c1", ar: "مكاتب مفتوحة", en: "Open Offices", ach: 4, pressure: "N" },
-        { id: "c2", ar: "غرفة اجتماعات", en: "Conference Room", ach: 10, pressure: "N" },
-        { id: "c3", ar: "صالة مطعم", en: "Dining Area", ach: 10, pressure: "N" },
-        { id: "c4", ar: "مطبخ تجاري", en: "Commercial Kitchen", ach: 30, pressure: "N" },
-        { id: "c5", ar: "نادي رياضي", en: "Gym / Fitness Area", ach: 8, pressure: "N" },
-        { id: "c6", ar: "قاعة سينما/مسرح", en: "Auditorium", ach: 15, pressure: "N" },
-        { id: "c7", ar: "مكتبة عامة", en: "Library", ach: 4, pressure: "N" },
-        { id: "c8", ar: "ردهة استقبال", en: "Lobby / Reception", ach: 4, pressure: "N" },
-        { id: "c9", ar: "محلات تجارية", en: "Retail Store", ach: 6, pressure: "N" }
-      ]
-    },
-    {
-      key: "residential",
-      name_ar: "المباني السكنية",
-      name_en: "Residential Buildings",
-      med: false,
-      deltaT_F: 22,
-      peopleSensibleBTU: 400,
-      items: [
-        { id: "r1", ar: "غرفة معيشة", en: "Living Room", ach: 4, pressure: "N" },
-        { id: "r2", ar: "غرفة نوم", en: "Bedroom", ach: 2, pressure: "N" },
-        { id: "r3", ar: "مطبخ منزلي", en: "Domestic Kitchen", ach: 6, pressure: "N" },
-        { id: "r4", ar: "دورة مياه", en: "Bathroom", ach: 10, pressure: "N" },
-        { id: "r5", ar: "ممر داخلي", en: "Corridor", ach: 2, pressure: "N" }
-      ]
-    }
-  ]
-};
+  {id:'tv',g:'home',e:'📺',ar:'تلفزيون',en:'TV',w:150},
+  {id:'fridge',g:'home',e:'🧊',ar:'ثلاجة',en:'Refrigerator',w:150},
+  {id:'fridgelg',g:'home',e:'🏠',ar:'ثلاجة كبيرة سايد',en:'Side-by-Side Fridge',w:250},
+  {id:'microwave',g:'home',e:'📦',ar:'ميكروويف',en:'Microwave',w:1000},
+  {id:'coffee',g:'home',e:'☕',ar:'ماكينة قهوة',en:'Coffee Machine',w:1500},
+  {id:'dispenser',g:'home',e:'🚰',ar:'واتر كولر',en:'Water Dispenser',w:500},
+  {id:'oven',g:'home',e:'🔥',ar:'فرن كهربائي',en:'Electric Oven',w:2000},
+  {id:'washer',g:'home',e:'👕',ar:'غسالة ملابس',en:'Washing Machine',w:500},
+  {id:'dryer',g:'home',e:'🌀',ar:'مجفف ملابس',en:'Clothes Dryer',w:5000},
+  {id:'dishwasher',g:'home',e:'🍽️',ar:'غسالة صحون',en:'Dishwasher',w:1800},
+  {id:'iron',g:'home',e:'♨️',ar:'مكواة',en:'Clothes Iron',w:2200},
+  {id:'vacuum',g:'home',e:'🌪️',ar:'مكنسة كهربائية',en:'Vacuum Cleaner',w:1200},
+  {id:'hairdryer',g:'home',e:'💨',ar:'مجفف شعر',en:'Hair Dryer',w:1800},
+  {id:'kettle',g:'home',e:'🫖',ar:'غلاية ماء كهربائية',en:'Electric Kettle',w:2000},
+  {id:'mixer',g:'home',e:'🥣',ar:'خلاط كهربائي',en:'Electric Mixer',w:300},
+  {id:'pumphome',g:'home',e:'⚙️',ar:'موتور / ضخة مياه',en:'Water Pump',w:750},
 
-/* ---------- Equipment lists by sector (filtered) ---------- */
-const sharedEquip = [
-  { id: "pc", ar: "💻 كمبيوتر", en: "Computer", watts: 200, sectors: ["hospital", "commercial", "residential"] },
-  { id: "screen", ar: "📺 شاشة", en: "Display Screen", watts: 120, sectors: ["hospital", "commercial", "residential"] },
-  { id: "fridge", ar: "🧊 ثلاجة", en: "Refrigerator", watts: 300, sectors: ["hospital", "commercial", "residential"] }
+  {id:'xray',g:'health',e:'🩻',ar:'جهاز أشعة سينية',en:'X-Ray Machine',w:5000},
+  {id:'mri',g:'health',e:'🧲',ar:'جهاز MRI',en:'MRI Machine',w:35000},
+  {id:'ct',g:'health',e:'🔬',ar:'جهاز CT Scan',en:'CT Scanner',w:30000},
+  {id:'ultrasound',g:'health',e:'🩺',ar:'جهاز سونار',en:'Ultrasound Machine',w:500},
+  {id:'ventilator',g:'health',e:'🫁',ar:'جهاز تنفس اصطناعي',en:'Ventilator',w:150},
+  {id:'ecg',g:'health',e:'💓',ar:'جهاز رسم القلب ECG',en:'ECG Machine',w:40},
+  {id:'defib',g:'health',e:'⚡',ar:'جهاز صدمة كهربائية',en:'Defibrillator',w:200},
+  {id:'infusion',g:'health',e:'💉',ar:'مضخة تسريب IV',en:'IV Infusion Pump',w:12},
+  {id:'syringe',g:'health',e:'🩹',ar:'مضخة حقن آلية',en:'Syringe Pump',w:10},
+  {id:'patmon',g:'health',e:'📊',ar:'مراقب المريض',en:'Patient Monitor',w:150},
+  {id:'autoclave',g:'health',e:'🧼',ar:'أوتوكلاف / تعقيم',en:'Autoclave Sterilizer',w:3000},
+  {id:'incubator',g:'health',e:'🍼',ar:'حاضنة أطفال',en:'Infant Incubator',w:500},
+  {id:'bloodbank',g:'health',e:'🩸',ar:'ثلاجة بنك الدم',en:'Blood Bank Fridge',w:800},
+  {id:'anesthesia',g:'health',e:'😷',ar:'جهاز تخدير',en:'Anesthesia Machine',w:500},
+  {id:'dental',g:'health',e:'🦷',ar:'كرسي أسنان كامل',en:'Dental Unit',w:750},
+  {id:'centrifuge',g:'health',e:'🧪',ar:'جهاز طرد مركزي',en:'Centrifuge',w:300},
+  {id:'pcr',g:'health',e:'🧬',ar:'جهاز PCR',en:'PCR Machine',w:1200},
+  {id:'pharmfridge',g:'health',e:'💊',ar:'ثلاجة أدوية',en:'Pharmacy Refrigerator',w:600},
+  {id:'endoscope',g:'health',e:'🔍',ar:'جهاز منظار',en:'Endoscopy Unit',w:800},
+  {id:'surglight',g:'health',e:'🔦',ar:'لمبة غرفة عمليات',en:'Surgical Light',w:300}
 ];
 
-const hospitalEquip = [
-  { id: "patient_monitor", ar: "🩺 شاشة مراقبة مريض", en: "Patient Monitor", watts: 80, sectors: ["hospital"] },
-  { id: "ventilator", ar: "💨 جهاز تنفس صناعي", en: "Ventilator", watts: 300, sectors: ["hospital"] },
-  { id: "anesthesia", ar: "💉 جهاز تخدير", en: "Anesthesia Machine", watts: 150, sectors: ["hospital"] },
-  { id: "infusion_pump", ar: "🧪 مضخة محاليل", en: "Infusion Pump", watts: 50, sectors: ["hospital"] },
-  { id: "suction", ar: "🫧 جهاز شفط", en: "Suction Unit", watts: 200, sectors: ["hospital"] },
-  { id: "xray_unit", ar: "🩻 جهاز أشعة", en: "X-ray Unit", watts: 1500, sectors: ["hospital"] },
-  { id: "ultrasound", ar: "🔊 جهاز ألتراساوند", en: "Ultrasound", watts: 250, sectors: ["hospital"] },
-  { id: "endoscopy_tower", ar: "🔬 برج مناظير", en: "Endoscopy Tower", watts: 600, sectors: ["hospital"] },
-  { id: "lab_analyzer", ar: "🧫 جهاز مختبر", en: "Lab Analyzer", watts: 500, sectors: ["hospital"] },
-  { id: "sterilizer_small", ar: "♨️ معقم صغير", en: "Small Sterilizer", watts: 1800, sectors: ["hospital"] }
-];
+function w2b(w){ return Math.round(w * 3.412); }
+function fmt(n){ return Number(n || 0).toLocaleString('en-US'); }
 
-const commercialEquip = [
-  { id: "copier", ar: "🖨️ آلة تصوير", en: "Copier", watts: 800, sectors: ["commercial"] },
-  { id: "pos", ar: "💳 جهاز كاشير", en: "POS Terminal", watts: 80, sectors: ["commercial"] },
-  { id: "spotlight", ar: "💡 إضاءة سبوت", en: "Spot Lighting Set", watts: 300, sectors: ["commercial"] },
-  { id: "coffee", ar: "☕ ماكينة قهوة", en: "Coffee Machine", watts: 1200, sectors: ["commercial"] },
-  { id: "oven", ar: "🔥 فرن تجاري", en: "Commercial Oven", watts: 3500, sectors: ["commercial"] },
-  { id: "freezer", ar: "🧊 فريزر عرض", en: "Display Freezer", watts: 700, sectors: ["commercial"] },
-  { id: "treadmill", ar: "🏃 سير رياضي", en: "Treadmill", watts: 900, sectors: ["commercial"] },
-  { id: "projector", ar: "📽️ بروجيكتور", en: "Projector", watts: 350, sectors: ["commercial"] }
-];
+var lang = 'ar';
+var fi = 0;
+var vals = ['', ''];
+var rFac = 400;
+var rLbl = '🏢 Office / مكتب';
+var devs = [];
+var hist = [];
 
-const residentialEquip = [
-  { id: "tv_home", ar: "📺 تلفزيون", en: "Television", watts: 150, sectors: ["residential"] },
-  { id: "microwave", ar: "🍲 مايكروويف", en: "Microwave", watts: 1200, sectors: ["residential"] },
-  { id: "washer", ar: "🧺 غسالة", en: "Washing Machine", watts: 500, sectors: ["residential"] },
-  { id: "dryer", ar: "🌀 نشافة", en: "Dryer", watts: 2000, sectors: ["residential"] },
-  { id: "dishwasher", ar: "🍽️ غسالة صحون", en: "Dishwasher", watts: 1400, sectors: ["residential"] },
-  { id: "electric_stove", ar: "🍳 موقد كهربائي", en: "Electric Stove", watts: 2000, sectors: ["residential"] },
-  { id: "water_heater", ar: "🚿 سخان ماء", en: "Water Heater", watts: 1500, sectors: ["residential"] }
-];
+try { hist = JSON.parse(localStorage.getItem('acp3') || '[]'); } catch (x) {}
 
-allEquipment = [...sharedEquip, ...hospitalEquip, ...commercialEquip, ...residentialEquip].map(e => ({ ...e, count: 0 }));
-
-/* ---------- Lifecycle ---------- */
-window.onload = () => {
-  buildRoomCatalog();
-  updateRoomSelect();
-  renderEquipChecklist();
-  focusField("display");
-  updateDisplayValues();
-  calculateLoad(false);
-  registerSW();
-};
-
-/* ---------- Helpers ---------- */
-function enNum(value, decimals = null) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "0";
-  if (decimals !== null) {
-    return n.toLocaleString("en-US", {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals
-    });
+var TX = {
+  ar:{
+    calc:'احسب ▶',clr:'مسح',hclr:'مسح السجل',exp:'تصدير CSV',
+    ncalc:'الحاسبة',nhist:'التصدير',ncontact:'تواصل',nset:'الإعدادات',
+    lvol:'حجم الغرفة (m³)',ltype:'نوع الغرفة',lppl:'👤 أشخاص — 400 BTU/h لكل شخص',
+    ladd:'+ إضافة جهاز',lmodal:'اختر نوع الجهاز',ldtot:'إجمالي حمل الأجهزة',
+    sroom:'الغرفة',sdev:'الأجهزة',
+    bvol:'حجم الغرفة',bbase:'الحمل الأساسي',bppl:'حمل الأشخاص',
+    bdev:'حمل الأجهزة',bsub:'الإجمالي',bsf:'+ معامل أمان 10%',
+    hempty:'لا توجد حسابات بعد',dempty:'لا توجد أجهزة — اضغط + لإضافة',ppu:'أشخاص',
+    tnov:'⚠️ أدخل حجم الغرفة أولاً',tnodata:'⚠️ لا توجد بيانات',
+    tcalc:'✅ تم الحساب',texp:'✅ تم التصدير',tclr:'🗑️ تم المسح',
+    slang:'اللغة / Language',slangsub:'تبديل واجهة اللغة'
+  },
+  en:{
+    calc:'Calculate ▶',clr:'Clear',hclr:'Clear History',exp:'Export CSV',
+    ncalc:'Calc',nhist:'History',ncontact:'Contact',nset:'Settings',
+    lvol:'Room Volume (m³)',ltype:'Room Type',lppl:'👤 Persons — 400 BTU/h each',
+    ladd:'+ Add Device',lmodal:'Select Device Type',ldtot:'Total Device Load',
+    sroom:'ROOM',sdev:'DEVICES',
+    bvol:'Room Volume',bbase:'Base Load',bppl:'People Load',
+    bdev:'Device Load',bsub:'Sub-total',bsf:'+ Safety 10%',
+    hempty:'No calculations yet',dempty:'No devices — tap + to add',ppu:'persons',
+    tnov:'⚠️ Enter room volume first',tnodata:'⚠️ No data to export',
+    tcalc:'✅ Calculated',texp:'✅ Exported',tclr:'🗑️ Cleared',
+    slang:'Language',slangsub:'Switch interface language'
   }
-  return n.toLocaleString("en-US");
+};
+
+function tx(k){ return TX[lang][k] || k; }
+function el(id){ return document.getElementById(id); }
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+  el('langBtn').textContent = lang === 'ar' ? 'EN' : 'ع';
+  el('tog-lang').className = 'tog ' + (lang === 'ar' ? 'on' : '');
+
+  var mp = {
+    'lbl-calc':'calc','lbl-clr':'clr','lbl-hclr':'hclr','lbl-exp':'exp',
+    'nl-calc':'ncalc','nl-hist':'nhist','nl-contact':'ncontact','nl-settings':'nset',
+    'lbl-vol':'lvol','lbl-type':'ltype','lbl-ppl':'lppl',
+    'lbl-add':'ladd','lbl-modal':'lmodal','lbl-dtot':'ldtot',
+    'st-room':'sroom','st-dev':'sdev',
+    'brl-vol':'bvol','brl-base':'bbase','brl-ppl':'bppl',
+    'brl-dev':'bdev','brl-sub':'bsub','brl-sf':'bsf',
+    'hist-empty':'hempty','sl-lang':'slang','sl-langsub':'slangsub'
+  };
+
+  for (var id in mp){
+    var e = el(id);
+    if (e) e.textContent = tx(mp[id]);
+  }
+
+  refreshDisp();
+  renderDevs();
+  renderHist();
 }
 
-function buildRoomCatalog() {
-  roomCatalog = [];
-  roomData.categories.forEach(cat => {
-    cat.items.forEach(item => {
-      roomCatalog.push({
-        ...item,
-        categoryKey: cat.key,
-        category_ar: cat.name_ar,
-        category_en: cat.name_en,
-        med: cat.med,
-        deltaT_F: cat.deltaT_F,
-        peopleSensibleBTU: cat.peopleSensibleBTU
-      });
-    });
+function toggleLang(){
+  lang = lang === 'ar' ? 'en' : 'ar';
+  applyLang();
+}
+
+function refreshDisp(){
+  el('dv').textContent = (vals[0] || '0') + ' m³';
+  el('dv').className = vals[0] ? '' : 'ph';
+
+  el('dp').textContent = (vals[1] || '0') + ' ' + tx('ppu');
+  el('dp').className = vals[1] ? '' : 'ph';
+
+  el('dt').textContent = rLbl;
+}
+
+function setF(idx){
+  fi = idx;
+  var fields = ['f-vol','f-type','f-ppl'];
+  fields.forEach(function(fid,i){
+    var e = el(fid);
+    if (!e) return;
+    if (i === idx) e.classList.add('on');
+    else e.classList.remove('on');
+
+    var d = el('d' + i);
+    if (d) d.className = 'dot' + (i === idx ? ' on' : '');
   });
 }
 
-function getSelectedRoom() {
-  const select = document.getElementById("room-select");
-  const id = select.value;
-  return roomCatalog.find(r => r.id === id) || roomCatalog[0];
+function flash(id, val){
+  var e = el(id);
+  e.classList.add('fade');
+  setTimeout(function(){
+    e.textContent = val;
+    e.classList.remove('fade');
+  },150);
 }
 
-function getActiveSector() {
-  const room = getSelectedRoom();
-  return room?.categoryKey || "residential";
+function showToast(msg){
+  var e = el('toast');
+  e.textContent = msg;
+  e.classList.add('on');
+  setTimeout(function(){ e.classList.remove('on'); },2500);
 }
 
-function roundToMarketBTU(btu) {
-  const sizes = [9000, 12000, 18000, 24000, 30000, 36000, 48000, 60000, 72000];
-  let closest = sizes[0];
-  let minDiff = Math.abs(btu - closest);
-  for (const s of sizes) {
-    const diff = Math.abs(btu - s);
-    if (diff < minDiff) {
-      minDiff = diff;
-      closest = s;
-    }
+function toggleDD(menuId){
+  var menu = el(menuId);
+  var btn = menu.previousElementSibling;
+  var open = menu.classList.contains('show');
+  closeAllDD();
+  if (!open){
+    menu.classList.add('show');
+    btn.classList.add('open');
   }
-  return closest;
 }
 
-function computeDuctSize(cfm) {
-  // quick estimate @ ~800 fpm, fixed width 12"
-  const width = 12;
-  if (!cfm || cfm <= 0) return `${width}" x 0"`;
-  const areaIn2 = (cfm / 800) * 144;
-  const height = Math.max(4, Math.round(areaIn2 / width));
-  return `${width}" x ${height}"`;
-}
-
-/* ---------- UI Population ---------- */
-function updateRoomSelect() {
-  const select = document.getElementById("room-select");
-  select.innerHTML = "";
-
-  roomData.categories.forEach(cat => {
-    const group = document.createElement("optgroup");
-    group.label = currentLang === "ar" ? cat.name_ar : cat.name_en;
-
-    cat.items.forEach(item => {
-      const opt = document.createElement("option");
-      opt.value = item.id;
-      opt.textContent = currentLang === "ar" ? item.ar : item.en;
-      group.appendChild(opt);
-    });
-
-    select.appendChild(group);
+function closeAllDD(){
+  document.querySelectorAll('.dd-menu.show').forEach(function(m){
+    m.classList.remove('show');
+    if (m.previousElementSibling) m.previousElementSibling.classList.remove('open');
   });
-
-  // keep previous if possible
-  if (!select.value && roomCatalog.length) {
-    select.value = roomCatalog[0].id;
-  }
 }
 
-function renderEquipChecklist() {
-  const sector = getActiveSector();
-  const list = allEquipment.filter(e => e.sectors.includes(sector));
+document.addEventListener('click', function(e){
+  if (!e.target.closest('.dd-wrap')) closeAllDD();
+});
 
-  const wrap = document.getElementById("equip-checklist");
-  wrap.innerHTML = list.map(item => {
-    const idx = allEquipment.findIndex(x => x.id === item.id);
-    return `
-      <div class="equip-item-row">
-        <div class="equip-label">
-          <div class="title">${currentLang === "ar" ? item.ar : item.en}</div>
-          <div class="sub">${enNum(item.watts)} W</div>
-        </div>
-        <div class="counter-ctrl">
-          <button class="counter-btn" onclick="changeCount(${idx}, -1)">-</button>
-          <span class="count-pill" id="cnt-${idx}">${enNum(item.count)}</span>
-          <button class="counter-btn" onclick="changeCount(${idx}, 1)">+</button>
-        </div>
-      </div>
-    `;
-  }).join("");
+function pickRoom(el2, factor, label){
+  document.querySelectorAll('#dd-room .dd-item').forEach(function(i){
+    i.classList.remove('sel');
+  });
+  el2.classList.add('sel');
+  rFac = factor;
+  rLbl = label;
+  closeAllDD();
+  el('dt').textContent = label;
 }
 
-/* ---------- Input Handling ---------- */
-function focusField(f) {
-  activeField = f;
+function kNum(n){
+  var idx = (fi === 2) ? 1 : 0;
+  var cur = vals[idx] || '';
 
-  document.getElementById("display").classList.remove("active-field");
-  document.getElementById("people-count").classList.remove("active-field");
-  document.getElementById("equip-watts").classList.remove("active-field");
+  if (n === '.' && cur.indexOf('.') !== -1) return;
+  if (cur.length >= 8) return;
 
-  if (f === "display") document.getElementById("display").classList.add("active-field");
-  if (f === "people") document.getElementById("people-count").classList.add("active-field");
-  if (f === "equip") document.getElementById("equip-watts").classList.add("active-field");
+  vals[idx] = cur + n;
+  refreshDisp();
 }
 
-function press(n) {
-  const key = activeField;
-  if (key === "equip") return; // equipment is modal controlled
-
-  const char = String(n);
-  let val = inputs[key];
-
-  if (char === ".") {
-    if (val.includes(".")) return;
-    if (val === "0") val = "0.";
-    else val += ".";
-  } else {
-    if (val === "0") val = char;
-    else val += char;
-  }
-
-  inputs[key] = val;
-  updateDisplayValues();
+function kDEL(){
+  var idx = (fi === 2) ? 1 : 0;
+  vals[idx] = (vals[idx] || '').slice(0, -1);
+  refreshDisp();
 }
 
-function deleteLast() {
-  const key = activeField;
-  if (key === "equip") return;
-  inputs[key] = inputs[key].slice(0, -1) || "0";
-  updateDisplayValues();
+function kCLR(){
+  var idx = (fi === 2) ? 1 : 0;
+  vals[idx] = '';
+  refreshDisp();
 }
 
-function clearActiveField() {
-  const key = activeField;
-  if (key === "equip") {
-    // clear all equipment counts
-    allEquipment.forEach(e => e.count = 0);
-    inputs.equip = "0";
-    renderEquipChecklist();
-  } else {
-    inputs[key] = "0";
-  }
-  updateDisplayValues();
-  calculateLoad(false);
+function kAC(){
+  vals = ['', ''];
+  refreshDisp();
+  flash('vtr','0.00');
+  flash('vcfm','0');
+  flash('vbtu','0');
+  flash('vmkt','0');
+  el('breakdown').classList.remove('show');
 }
 
-function updateDisplayValues() {
-  document.getElementById("display").textContent = inputs.display || "0";
-  document.getElementById("people-count").value = inputs.people || "0";
-  document.getElementById("equip-watts").value = inputs.equip || "0";
+function totalDevBtu(){
+  return devs.reduce(function(sum,d){
+    var c = CAT.filter(function(x){ return x.id === d.id; })[0];
+    return sum + (c ? w2b(c.w) * d.qty : 0);
+  },0);
 }
 
-function handleRoomChange() {
-  // requirement: reset calculator when room changes
-  resetAllFields();
-  renderEquipChecklist();
-  calculateLoad(false);
-}
+function doCalc(){
+  var vol = parseFloat(vals[0]) || 0;
+  var ppl = parseInt(vals[1]) || 0;
 
-function resetAllFields() {
-  inputs = { display: "0", people: "0", equip: "0" };
-  allEquipment.forEach(e => e.count = 0);
-  updateDisplayValues();
-  focusField("display");
-  renderEquipChecklist();
-
-  document.getElementById("tr-result").textContent = "0.00 TR";
-  document.getElementById("cfm-result").textContent = "0 CFM";
-  document.getElementById("btu-result").textContent = "0 BTU/h";
-  document.getElementById("btu-market-result").textContent = "0 BTU (Market)";
-}
-
-/* ---------- Equipment ---------- */
-function changeCount(idx, delta) {
-  const item = allEquipment[idx];
-  if (!item) return;
-
-  // protect against wrong sector
-  const sector = getActiveSector();
-  if (!item.sectors.includes(sector)) return;
-
-  item.count = Math.max(0, (item.count || 0) + delta);
-
-  const el = document.getElementById(`cnt-${idx}`);
-  if (el) el.textContent = enNum(item.count);
-
-  const totalWatts = allEquipment.reduce((sum, e) => sum + (e.watts * e.count), 0);
-  inputs.equip = String(totalWatts);
-
-  updateDisplayValues();
-  calculateLoad(false);
-}
-
-function openEquipModal() {
-  focusField("equip");
-  renderEquipChecklist();
-  document.getElementById("equip-modal").style.display = "block";
-}
-function closeEquipModal() {
-  document.getElementById("equip-modal").style.display = "none";
-}
-
-/* ---------- Core Calculation ---------- */
-function calculateLoad(save = false) {
-  const room = getSelectedRoom();
-  if (!room) return;
-
-  const volM3 = parseFloat(inputs.display) || 0;
-  const people = parseInt(inputs.people || "0", 10) || 0;
-  const equipWatts = parseFloat(inputs.equip) || 0;
-
-  // CFM from ACH + people ventilation allowance
-  const cfmACH = ((volM3 * 35.3147) * room.ach) / 60;
-  const cfmPeople = people * 15; // quick ventilation allowance
-  const cfm = Math.max(0, Math.round(cfmACH + cfmPeople));
-
-  // Sensible load estimation:
-  // Air sensible: 1.08 * CFM * ΔT(F)
-  const airBTU = 1.08 * cfm * room.deltaT_F;
-  const peopleBTU = people * room.peopleSensibleBTU;
-  const equipBTU = equipWatts * 3.412;
-
-  // Small design allowance for field reality
-  const diversityFactor = room.categoryKey === "hospital" ? 1.08 : 1.12;
-  const totalBTU = (airBTU + peopleBTU + equipBTU) * diversityFactor;
-  const tr = totalBTU / 12000;
-
-  const marketBTU = roundToMarketBTU(totalBTU);
-  const ductSize = computeDuctSize(cfm);
-
-  document.getElementById("tr-result").textContent = `${enNum(tr, 2)} TR`;
-  document.getElementById("cfm-result").textContent = `${enNum(cfm)} CFM`;
-  document.getElementById("btu-result").textContent = `${enNum(Math.round(totalBTU))} BTU/h`;
-  document.getElementById("btu-market-result").textContent = `${enNum(marketBTU)} BTU (Market)`;
-
-  if (save && volM3 > 0) {
-    calcHistory.unshift({
-      id: Date.now(),
-      room_ar: room.ar,
-      room_en: room.en,
-      category: room.categoryKey,
-      volume: volM3,
-      people,
-      equipWatts,
-      ach: room.ach,
-      cfm,
-      tr: Number(tr.toFixed(2)),
-      btu: Math.round(totalBTU),
-      marketBTU,
-      duct: ductSize
-    });
-    updateHistoryUI();
-  }
-}
-
-/* ---------- History ---------- */
-function updateHistoryUI() {
-  const container = document.getElementById("history-list");
-  if (!calcHistory.length) {
-    container.innerHTML = `<div class="muted" style="padding:8px 2px;">${currentLang === "ar" ? "لا يوجد سجل بعد" : "No history yet"}</div>`;
+  if (vol === 0){
+    showToast(tx('tnov'));
     return;
   }
 
-  container.innerHTML = calcHistory.map((item, index) => {
-    const roomName = currentLang === "ar" ? item.room_ar : item.room_en;
-    return `
-      <div class="swipe-item" onclick="deleteItem(${item.id})" title="${currentLang === "ar" ? "اضغط للحذف" : "Tap to delete"}">
-        <div class="info">
-          <div class="room-name">#${enNum(calcHistory.length - index)} • ${roomName}</div>
-          <div class="meta">
-            V: ${enNum(item.volume)} m³ | P: ${enNum(item.people)} | W: ${enNum(item.equipWatts)}<br>
-            ACH: ${enNum(item.ach)} | Duct: ${item.duct}
-          </div>
-        </div>
-        <div class="vals">
-          <div class="tr-val">${enNum(item.tr, 2)} TR</div>
-          <div>${enNum(item.cfm)} CFM</div>
-          <div>${enNum(item.marketBTU)} BTU</div>
-        </div>
-      </div>
-    `;
-  }).join("");
-}
+  var base = vol * rFac;
+  var pplBtu = ppl * 400;
+  var devBtu = totalDevBtu();
+  var sub = base + pplBtu + devBtu;
+  var total = sub * 1.10;
 
-function deleteItem(id) {
-  const msg = currentLang === "ar" ? "حذف السجل؟" : "Delete this record?";
-  if (!confirm(msg)) return;
-  calcHistory = calcHistory.filter(i => i.id !== id);
-  updateHistoryUI();
-}
+  var tr = total / 12000;
+  var cfm = Math.round(tr * 400);
+  var mkt = Math.ceil(total / 9000) * 9000;
 
-function clearHistory() {
-  const msg = currentLang === "ar" ? "مسح سجل الحسابات بالكامل؟" : "Clear calculation history?";
-  if (!confirm(msg)) return;
-  calcHistory = [];
-  updateHistoryUI();
-}
+  flash('vtr', tr.toFixed(2));
+  flash('vcfm', fmt(cfm));
+  flash('vbtu', fmt(Math.round(total)));
+  flash('vmkt', fmt(mkt));
 
-/* ---------- Tabs / Settings ---------- */
-function switchTab(id, btn) {
-  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  if (btn) btn.classList.add("active");
-}
+  el('brv-vol').textContent = fmt(vol);
+  el('brv-base').textContent = fmt(Math.round(base));
+  el('brv-ppl').textContent = fmt(Math.round(pplBtu));
+  el('brv-dev').textContent = fmt(Math.round(devBtu));
+  el('brv-sub').textContent = fmt(Math.round(sub));
+  el('brv-sf').textContent = fmt(Math.round(total));
+  el('breakdown').classList.add('show');
 
-function toggleLanguage() {
-  currentLang = currentLang === "ar" ? "en" : "ar";
+  var devSum = devs.map(function(d){
+    var c = CAT.filter(function(x){ return x.id === d.id; })[0];
+    return c ? ((lang === 'ar' ? c.ar : c.en) + 'x' + d.qty) : '';
+  }).filter(Boolean).join(' | ');
 
-  // keep numbers English, only switch labels/layout
-  const html = document.getElementById("html-tag");
-  html.lang = currentLang;
-  html.dir = currentLang === "ar" ? "rtl" : "ltr";
-
-  document.querySelectorAll("[data-ar]").forEach(el => {
-    const txt = el.getAttribute(`data-${currentLang}`);
-    if (txt !== null) el.textContent = txt;
+  hist.unshift({
+    time: new Date().toLocaleString('en-US'),
+    vol: vol,
+    ppl: ppl,
+    type: rLbl,
+    devSum: devSum,
+    devBtu: devBtu,
+    tr: tr.toFixed(2),
+    cfm: cfm,
+    btu: Math.round(total),
+    mkt: mkt
   });
 
-  // update top language button text
-  const langBtn = document.getElementById("lang-text");
-  if (langBtn) langBtn.textContent = currentLang === "ar" ? "English" : "العربية";
+  if (hist.length > 50) hist.pop();
 
-  // preserve selected room
-  const selectedId = document.getElementById("room-select").value;
-  updateRoomSelect();
-  if (selectedId) document.getElementById("room-select").value = selectedId;
-
-  renderEquipChecklist();
-  updateHistoryUI();
+  localStorage.setItem('acp3', JSON.stringify(hist));
+  renderHist();
+  showToast(tx('tcalc'));
 }
 
-/* ---------- Export ---------- */
-function exportHistoryCSV() {
-  const status = document.getElementById("export-status");
-  if (!calcHistory.length) {
-    status.textContent = currentLang === "ar" ? "لا يوجد بيانات للتصدير" : "No history to export";
+function renderDevs(){
+  var list = el('dev-list');
+  list.innerHTML = '';
+
+  if (!devs.length){
+    var em = document.createElement('div');
+    em.className = 'dev-empty';
+    em.textContent = tx('dempty');
+    list.appendChild(em);
+    el('dev-total').style.display = 'none';
     return;
   }
 
-  const headers = [
-    "Room",
-    "Category",
-    "Volume_m3",
-    "People",
-    "Equipment_W",
-    "ACH",
-    "CFM",
-    "TR",
-    "BTU_h",
-    "Market_BTU",
-    "Duct_Size"
-  ];
+  devs.forEach(function(d){
+    var c = CAT.filter(function(x){ return x.id === d.id; })[0];
+    if (!c) return;
 
-  const rows = calcHistory.map(item => [
-    `"${(currentLang === "ar" ? item.room_ar : item.room_en).replace(/"/g, '""')}"`,
-    item.category,
-    item.volume,
-    item.people,
-    item.equipWatts,
-    item.ach,
-    item.cfm,
-    item.tr,
-    item.btu,
-    item.marketBTU,
-    `"${item.duct}"`
-  ]);
+    var name = lang === 'ar' ? c.ar : c.en;
+    var btu = w2b(c.w) * d.qty;
 
-  const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
+    var row = document.createElement('div');
+    row.className = 'dev-row';
+    row.innerHTML =
+      '<div class="dev-ico">'+c.e+'</div>' +
+      '<div class="dev-info">' +
+        '<div class="dev-name">'+name+'</div>' +
+        '<div class="dev-watt">'+fmt(c.w)+'W &times; '+fmt(d.qty)+' = '+fmt(c.w*d.qty)+'W</div>' +
+      '</div>' +
+      '<div class="dev-qty">' +
+        '<div class="qbtn" onclick="chgQty(\''+d.id+'\',-1)">&#8722;</div>' +
+        '<div class="qnum">'+fmt(d.qty)+'</div>' +
+        '<div class="qbtn" onclick="chgQty(\''+d.id+'\',1)">&#43;</div>' +
+      '</div>' +
+      '<div class="dev-btu">'+fmt(btu)+' BTU/h</div>' +
+      '<div class="dev-del" onclick="delDev(\''+d.id+'\')">&#128465;</div>';
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "aircalcpro_history.csv";
-  document.body.appendChild(a);
+    list.appendChild(row);
+  });
+
+  var tot = totalDevBtu();
+  el('dev-total').style.display = 'flex';
+  el('val-dtot').textContent = fmt(tot) + ' BTU/h';
+  el('lbl-dtot').textContent = tx('ldtot');
+}
+
+function chgQty(id, delta){
+  for (var i = 0; i < devs.length; i++){
+    if (devs[i].id === id){
+      devs[i].qty += delta;
+      if (devs[i].qty <= 0) devs.splice(i,1);
+      break;
+    }
+  }
+  renderDevs();
+}
+
+function delDev(id){
+  devs = devs.filter(function(d){ return d.id !== id; });
+  renderDevs();
+}
+
+function openModal(){
+  buildGrid(null);
+  document.querySelectorAll('.ftab').forEach(function(t,i){
+    t.className = 'ftab' + (i === 0 ? ' on' : '');
+  });
+  el('overlay').classList.add('on');
+}
+
+function closeModal(){
+  el('overlay').classList.remove('on');
+}
+
+function overlayClick(e){
+  if (e.target === el('overlay')) closeModal();
+}
+
+function filterTab(tabEl, grp){
+  document.querySelectorAll('.ftab').forEach(function(t){ t.className = 'ftab'; });
+  tabEl.className = 'ftab on';
+  buildGrid(grp);
+}
+
+var gLabel = {
+  office:{ar:'🏢 مكتب / Office',en:'🏢 Office'},
+  light:{ar:'💡 إضاءة / Lighting',en:'💡 Lighting'},
+  home:{ar:'🏠 منزلي / Domestic',en:'🏠 Domestic'},
+  health:{ar:'🏥 صحي / Healthcare',en:'🏥 Healthcare'}
+};
+
+function buildGrid(grp){
+  var grid = el('cat-grid');
+  grid.innerHTML = '';
+
+  var groups = grp ? [grp] : ['office','light','home','health'];
+
+  groups.forEach(function(gk){
+    var items = CAT.filter(function(d){ return d.g === gk; });
+    if (!items.length) return;
+
+    var hdr = document.createElement('div');
+    hdr.className = 'cat-hdr';
+    hdr.textContent = gLabel[gk][lang];
+    grid.appendChild(hdr);
+
+    items.forEach(function(d){
+      var wl = d.w >= 1000 ? (d.w / 1000).toFixed(1) + 'kW' : d.w + 'W';
+      var btu = w2b(d.w);
+
+      var card = document.createElement('div');
+      card.className = 'cat-item';
+      card.innerHTML =
+        '<div class="cat-ico">'+d.e+'</div>' +
+        '<div class="cat-name">'+(lang === 'ar' ? d.ar : d.en)+'</div>' +
+        '<div class="cat-w">'+wl+'</div>' +
+        '<div class="cat-btu">'+fmt(btu)+' BTU/h</div>';
+
+      (function(did, dname){
+        card.onclick = function(){
+          var found = false;
+          for (var i = 0; i < devs.length; i++){
+            if (devs[i].id === did){
+              devs[i].qty++;
+              found = true;
+              break;
+            }
+          }
+          if (!found) devs.push({id: did, qty: 1});
+          closeModal();
+          renderDevs();
+          showToast('✅ ' + dname + ' +1');
+        };
+      })(d.id, lang === 'ar' ? d.ar : d.en);
+
+      grid.appendChild(card);
+    });
+  });
+}
+
+function renderHist(){
+  var list = el('hist-list');
+  list.innerHTML = '';
+
+  if (!hist.length){
+    var em = document.createElement('div');
+    em.className = 'hist-empty';
+    em.id = 'hist-empty';
+    em.textContent = tx('hempty');
+    list.appendChild(em);
+    return;
+  }
+
+  hist.forEach(function(h){
+    var row = document.createElement('div');
+    row.className = 'hist-item';
+    row.innerHTML =
+      '<div>' +
+        '<div class="hist-info">'+h.type+' &middot; '+fmt(h.vol)+'m&sup3; &middot; '+fmt(h.ppl)+'&#128100;'+(h.devSum ? ' &middot; ' + h.devSum : '')+'</div>' +
+        '<div class="hist-info" style="margin-top:2px">'+h.time+'</div>' +
+      '</div>' +
+      '<div class="hist-res">'+h.tr+' TR</div>';
+    list.appendChild(row);
+  });
+}
+
+function clearHist(){
+  hist = [];
+  localStorage.removeItem('acp3');
+  renderHist();
+  showToast(tx('tclr'));
+}
+
+function exportCSV(){
+  if (!hist.length){
+    showToast(tx('tnodata'));
+    return;
+  }
+
+  var h = ['Time','Room Type','Volume(m3)','Persons','Devices','Device BTU/h','TR','CFM','Total BTU/h','Market BTU'];
+  var rows = hist.map(function(r){
+    return [r.time,r.type,r.vol,r.ppl,r.devSum || '',r.devBtu || 0,r.tr,r.cfm,r.btu,r.mkt];
+  });
+
+  var csv = [h].concat(rows).map(function(r){
+    return r.map(function(v){
+      return '"' + String(v).replace(/"/g,'""') + '"';
+    }).join(',');
+  }).join('\n');
+
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'}));
+  a.download = 'aircalc_pro.csv';
   a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-
-  status.textContent = currentLang === "ar" ? "تم تصدير ملف CSV بنجاح" : "CSV exported successfully";
+  showToast(tx('texp'));
 }
 
-/* ---------- Service Worker ---------- */
-function registerSW() {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-  }
+function goPanel(name){
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('on'); });
+
+  el('p-' + name).classList.add('on');
+  el('ni-' + name).classList.add('on');
 }
+
+applyLang();
+setF(0);
+renderDevs();
+renderHist();
