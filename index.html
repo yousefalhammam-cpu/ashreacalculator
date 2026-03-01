@@ -1,639 +1,652 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Air Calc Pro | HVAC Engineering Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#8d8d8d;
-  --bg2:#6f6f6f;
-  --shell:#9b9b9b;
-  --shell2:#7d7d7d;
-  --panel:#b6b6b6;
-  --panel2:#8d8d8d;
-  --dark:#2a2a2d;
-  --dark2:#151518;
-  --dark3:#3a3a3f;
-  --line:rgba(255,255,255,.22);
-  --line2:rgba(0,0,0,.28);
-  --a:#f28a1e;
-  --a2:#d96f06;
-  --ag:rgba(242,138,30,.25);
-  --g:#34d399;
-  --am:#fbbf24;
-  --r:#f87171;
-  --t:#f4f4f5;
-  --tm:#d4d4d8;
-  --tb:#ffffff;
-  --rad:14px;
-  --rads:10px;
-  --fa:'Cairo',sans-serif;
-  --fe:'Rajdhani',sans-serif;
-  --fm:'JetBrains Mono',monospace;
+  --bg:#0a0e17;--s1:#111827;--s2:#1a2234;--s3:#1e2a40;
+  --b:rgba(99,179,237,.15);--bb:rgba(99,179,237,.4);
+  --a:#38bdf8;--a2:#0ea5e9;--ag:rgba(56,189,248,.25);--ad:rgba(56,189,248,.1);
+  --g:#34d399;--gd:rgba(52,211,153,.12);
+  --am:#fbbf24;--amd:rgba(251,191,36,.12);
+  --r:#f87171;--rd:rgba(248,113,113,.1);
+  --t:#e2e8f0;--tm:#64748b;--tb:#f8fafc;
+  --rad:12px;--rads:8px;
+  --fa:'Cairo',sans-serif;--fe:'Rajdhani',sans-serif;--fm:'JetBrains Mono',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{min-height:100%;}
-body{
-  background:
-    radial-gradient(circle at top left, rgba(255,255,255,.12), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(0,0,0,.14), transparent 26%),
-    linear-gradient(180deg,var(--bg),var(--bg2));
-  color:#111;
-  font-family:var(--fa);
-  overflow-x:hidden;
-}
-body::before,
-body::after{display:none;}
-
-.app{
-  position:relative;
-  max-width:480px;
-  margin:0 auto;
-  min-height:100vh;
-  padding:14px 14px 120px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.09), rgba(0,0,0,.04)),
-    linear-gradient(180deg, #a8a8a8 0%, #8f8f8f 45%, #7f7f7f 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.35),
-    inset 0 -1px 0 rgba(0,0,0,.18);
-}
-
-.header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:8px 0 18px;
-}
+body{background:var(--bg);color:var(--t);font-family:var(--fa);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(56,189,248,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(56,189,248,.08) 0%,transparent 70%);pointer-events:none;z-index:0;}
+.app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:16px;padding-bottom:120px;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 20px;}
 .logo{display:flex;align-items:center;gap:10px;}
-.logo-icon{
-  width:42px;height:42px;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(180deg,#2f2f34,#18181b);
-  color:#fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.12),
-    inset 0 -2px 4px rgba(0,0,0,.35),
-    0 2px 5px rgba(0,0,0,.18);
-  font-size:20px;
-}
-.logo-text{
-  font-family:var(--fe);
-  font-size:22px;
-  font-weight:700;
-  color:#111827;
-  letter-spacing:.5px;
-}
-.logo-text span{color:var(--a2);}
-.logo-sub{
-  font-size:10px;
-  color:#374151;
-  letter-spacing:2px;
-  font-family:var(--fe);
-  text-transform:uppercase;
-}
-
-.lang-btn{
-  border:1px solid rgba(0,0,0,.22);
-  color:#111827;
-  padding:8px 14px;
-  border-radius:20px;
-  cursor:pointer;
-  font-family:var(--fe);
-  font-size:13px;
-  font-weight:700;
-  background:linear-gradient(180deg,#d9d9d9,#b9b9b9);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.55),
-    inset 0 -1px 2px rgba(0,0,0,.15);
-  transition:all .2s;
-}
-.lang-btn:hover{filter:brightness(1.03);}
-.lang-btn:active{transform:translateY(1px);}
-
-.dash,
-.card,
-.con-card,
-.set-group{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.02)),
-    linear-gradient(180deg,var(--panel),var(--panel2));
-  border:1px solid rgba(0,0,0,.22);
-  border-radius:var(--rad);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.38),
-    inset 0 -1px 0 rgba(0,0,0,.14),
-    0 2px 8px rgba(0,0,0,.08);
-  position:relative;
-}
-.dash{padding:18px;margin-bottom:14px;overflow:hidden;}
-.card{padding:16px;margin-bottom:14px;}
-.dash::before,
-.card::before,
-.con-card::before,
-.set-group::before{
-  content:'';
-  position:absolute;left:10px;right:10px;top:0;height:1px;
-  background:rgba(255,255,255,.35);
-}
-.dash::after,
-.card::after,
-.con-card::after,
-.set-group::after{
-  content:'';
-  position:absolute;left:12px;right:12px;bottom:0;height:1px;
-  background:rgba(0,0,0,.15);
-}
-
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--a2),var(--a));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px var(--ag);}
+.logo-text{font-family:var(--fe);font-size:22px;font-weight:700;color:var(--tb);letter-spacing:1px;}
+.logo-text span{color:var(--a);}
+.logo-sub{font-size:10px;color:var(--tm);letter-spacing:2px;font-family:var(--fe);text-transform:uppercase;}
+.lang-btn{background:var(--s2);border:1px solid var(--b);color:var(--t);padding:8px 14px;border-radius:20px;cursor:pointer;font-family:var(--fe);font-size:13px;font-weight:600;transition:all .2s;}
+.lang-btn:hover{border-color:var(--a);color:var(--a);}
+.dash{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
+.dash::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a),transparent);}
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.met{
-  background:linear-gradient(180deg,var(--dark3),var(--dark2));
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:var(--rads);
-  padding:12px;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    inset 0 -2px 6px rgba(0,0,0,.35);
-}
-.met.p{border-color:rgba(242,138,30,.18);}
-.met.g{border-color:rgba(52,211,153,.18);}
-.met.am{border-color:rgba(251,191,36,.18);}
-.met-lbl{
-  font-size:10px;color:#c7c7cc;text-transform:uppercase;letter-spacing:1.5px;
-  margin-bottom:4px;font-family:var(--fe);
-}
-.met-val{
-  font-family:var(--fe);
-  font-size:26px;
-  font-weight:700;
-  color:#fff;
-  line-height:1;
-  transition:opacity .15s;
-}
+.met{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:12px;}
+.met.p{background:linear-gradient(135deg,rgba(14,165,233,.1),rgba(56,189,248,.05));border-color:rgba(56,189,248,.3);}
+.met.g{background:var(--gd);border-color:rgba(52,211,153,.2);}
+.met.am{background:var(--amd);border-color:rgba(251,191,36,.2);}
+.met-lbl{font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;font-family:var(--fe);}
+.met-val{font-family:var(--fe);font-size:26px;font-weight:700;color:var(--tb);line-height:1;transition:opacity .15s;}
 .met-val.fade{opacity:0;}
 .met.p .met-val{color:var(--a);}
 .met.g .met-val{color:var(--g);}
 .met.am .met-val{color:var(--am);}
-.met-unit{font-size:11px;color:#b0b0b8;font-family:var(--fe);margin-top:3px;}
-
-.sec-ttl{
-  font-size:11px;
-  letter-spacing:2px;
-  color:#374151;
-  text-transform:uppercase;
-  margin-bottom:14px;
-  font-family:var(--fe);
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-weight:700;
-}
-.sec-ttl::after{content:'';flex:1;height:1px;background:rgba(0,0,0,.15);}
-
+.met-unit{font-size:11px;color:var(--tm);font-family:var(--fe);margin-top:3px;}
+.card{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);padding:16px;margin-bottom:14px;}
+.sec-ttl{font-size:11px;letter-spacing:2px;color:var(--tm);text-transform:uppercase;margin-bottom:14px;font-family:var(--fe);display:flex;align-items:center;gap:8px;}
+.sec-ttl::after{content:'';flex:1;height:1px;background:var(--b);}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .row1{margin-bottom:10px;}
-.lbl{
-  font-size:11px;
-  color:#374151;
-  margin-bottom:5px;
-  font-family:var(--fe);
-  font-weight:700;
-}
-
-.ifield,
-.dd-btn,
-.dev-row,
-.exp-btn,
-.con-link,
-.set-item,
-.modal,
-.cat-item{
-  border-radius:var(--rads);
-}
-
-.ifield,
-.dd-btn{
-  background:linear-gradient(180deg,var(--dark3),var(--dark2));
-  border:1px solid rgba(255,255,255,.08);
-  min-height:48px;
-  color:#fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.05),
-    inset 0 -2px 6px rgba(0,0,0,.35);
-}
-.ifield{
-  padding:10px 12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  transition:all .2s;
-  font-family:var(--fm);
-  font-size:17px;
-}
-.ifield.on{
-  border-color:rgba(242,138,30,.45);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.06),
-    inset 0 -2px 6px rgba(0,0,0,.35),
-    0 0 0 2px rgba(242,138,30,.18);
-}
+.lbl{font-size:11px;color:var(--tm);margin-bottom:5px;font-family:var(--fe);}
+.ifield{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px 12px;min-height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-family:var(--fm);font-size:17px;color:var(--tb);}
+.ifield.on{border-color:var(--a);box-shadow:0 0 0 2px var(--ag);background:rgba(56,189,248,.05);}
 .ifield .cur{display:none;width:2px;height:18px;background:var(--a);animation:blink 1s infinite;margin-left:2px;}
 .ifield.on .cur{display:inline-block;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-.ph{color:#9ca3af;font-size:13px;font-family:var(--fa);}
-
+.ph{color:var(--tm);font-size:13px;font-family:var(--fa);}
 .dots{display:flex;gap:6px;margin-bottom:12px;}
-.dot{flex:1;height:4px;border-radius:2px;background:rgba(0,0,0,.12);transition:background .2s;}
+.dot{flex:1;height:3px;border-radius:2px;background:var(--b);transition:background .2s;}
 .dot.on{background:var(--a);}
-
 .dd-wrap{position:relative;}
-.dd-btn{
-  padding:10px 12px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:6px;
-  cursor:pointer;
-  transition:all .2s;
-  font-size:13px;
-}
-.dd-btn.open{
-  border-color:rgba(242,138,30,.45);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.05),
-    inset 0 -2px 6px rgba(0,0,0,.35),
-    0 0 0 2px rgba(242,138,30,.18);
-}
-.dd-arr{color:#c4c4cc;font-size:10px;transition:transform .2s;flex-shrink:0;}
+.dd-btn{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px 12px;min-height:46px;display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;transition:all .2s;font-size:13px;color:var(--tb);}
+.dd-btn.open{border-color:var(--a);box-shadow:0 0 0 2px var(--ag);}
+.dd-arr{color:var(--tm);font-size:10px;transition:transform .2s;flex-shrink:0;}
 .dd-btn.open .dd-arr{transform:rotate(180deg);}
-.dd-menu{
-  position:absolute;top:calc(100% + 4px);left:0;right:0;
-  background:#232327;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:var(--rads);
-  z-index:300;
-  display:none;
-  max-height:260px;
-  overflow-y:auto;
-  box-shadow:0 10px 24px rgba(0,0,0,.28);
-}
+.dd-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--s3);border:1px solid var(--bb);border-radius:var(--rads);z-index:300;display:none;max-height:260px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.5);}
 .dd-menu.show{display:block;}
-.dd-item{
-  padding:10px 14px;
-  font-size:13px;
-  cursor:pointer;
-  border-bottom:1px solid rgba(255,255,255,.04);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  transition:background .15s;
-  color:#fff;
-}
+.dd-item{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;gap:8px;transition:background .15s;}
 .dd-item:last-child{border-bottom:none;}
-.dd-item:hover,.dd-item.sel{background:rgba(242,138,30,.10);color:#fff;}
+.dd-item:hover,.dd-item.sel{background:var(--ad);color:var(--a);}
 .dd-item-info{flex:1;}
-.dd-item-sub{font-size:10px;color:#a1a1aa;margin-top:2px;font-family:var(--fe);}
-.dd-badge{
-  font-size:10px;font-family:var(--fe);
-  background:#16161a;border:1px solid rgba(255,255,255,.06);
-  padding:2px 7px;border-radius:4px;color:#d1d5db;flex-shrink:0;
-}
-.dd-cat-hdr{
-  padding:8px 14px 4px;
-  font-size:10px;font-weight:700;letter-spacing:1.5px;
-  color:var(--a);text-transform:uppercase;font-family:var(--fe);
-  border-bottom:1px solid rgba(255,255,255,.05);
-  margin-top:4px;background:rgba(242,138,30,.05);
-}
-
+.dd-item-sub{font-size:10px;color:var(--tm);margin-top:2px;font-family:var(--fe);}
+.dd-badge{font-size:10px;font-family:var(--fe);background:var(--s2);border:1px solid var(--b);padding:2px 7px;border-radius:4px;color:var(--tm);flex-shrink:0;}
+.dd-cat-hdr{padding:8px 14px 4px;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--a);text-transform:uppercase;font-family:var(--fe);border-bottom:1px solid var(--b);margin-top:4px;background:rgba(56,189,248,0.04);}
+.dd-item.sel .dd-badge{background:var(--ad);color:var(--a);border-color:rgba(56,189,248,.3);}
 .dev-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
-.dev-row{
-  background:linear-gradient(180deg,var(--dark3),var(--dark2));
-  border:1px solid rgba(255,255,255,.06);
-  padding:10px 12px;
-  display:flex;align-items:center;gap:8px;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.04),
-    inset 0 -2px 6px rgba(0,0,0,.35);
-}
+.dev-row{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px 12px;display:flex;align-items:center;gap:8px;}
 .dev-ico{font-size:22px;flex-shrink:0;}
 .dev-info{flex:1;min-width:0;}
-.dev-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.dev-watt{font-size:11px;color:#c4c4cc;font-family:var(--fe);margin-top:1px;}
+.dev-name{font-size:13px;font-weight:600;color:var(--tb);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dev-watt{font-size:11px;color:var(--tm);font-family:var(--fe);margin-top:1px;}
 .dev-qty{display:flex;align-items:center;gap:5px;flex-shrink:0;}
-
-.qbtn,
-.dev-del,
-.modal-x{
-  user-select:none;
-  transition:all .15s;
-}
-
-.qbtn{
-  width:28px;height:28px;border-radius:6px;
-  border:1px solid rgba(255,255,255,.08);
-  background:linear-gradient(180deg,#e1e1e1,#b7b7b7);
-  color:#111827;cursor:pointer;font-size:18px;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 2px rgba(0,0,0,.12);
-}
-.qbtn:hover{filter:brightness(1.03);}
-.qnum{font-family:var(--fm);font-size:15px;font-weight:700;color:#fff;min-width:22px;text-align:center;}
-
-.dev-btu{
-  font-family:var(--fe);font-size:10px;color:#ffd28a;
-  background:rgba(242,138,30,.12);
-  border:1px solid rgba(242,138,30,.18);
-  padding:2px 6px;border-radius:4px;flex-shrink:0;white-space:nowrap;
-}
-.dev-del{
-  width:28px;height:28px;border-radius:6px;
-  border:1px solid rgba(248,113,113,.25);
-  background:linear-gradient(180deg,#ffd8d8,#ffb5b5);
-  color:#991b1b;cursor:pointer;font-size:14px;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.dev-del:hover{filter:brightness(1.03);}
-.dev-empty{
-  text-align:center;color:#374151;padding:20px;font-size:13px;
-  border:1px dashed rgba(0,0,0,.18);border-radius:var(--rads);
-  background:rgba(255,255,255,.08);
-}
-
-.add-btn,
-.exp-btn{
-  width:100%;
-  background:linear-gradient(180deg,#303035,#19191d);
-  border:1px solid rgba(255,255,255,.08);
-  color:#fff;
-  padding:12px 14px;
-  border-radius:var(--rads);
-  font-size:14px;
-  cursor:pointer;
-  transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  font-family:var(--fa);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.05),
-    inset 0 -2px 6px rgba(0,0,0,.35);
-}
-.add-btn{margin-top:0;}
-.add-btn:hover,.exp-btn:hover{border-color:rgba(242,138,30,.35);}
-
-.dev-total{
-  background:rgba(242,138,30,.12);
-  border:1px solid rgba(242,138,30,.18);
-  border-radius:var(--rads);
-  padding:8px 12px;
-  display:flex;align-items:center;justify-content:space-between;
-  font-size:12px;color:#7c2d12;margin-top:8px;
-}
-
+.qbtn{width:28px;height:28px;border-radius:6px;border:1px solid var(--b);background:var(--s3);color:var(--t);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;user-select:none;transition:all .15s;}
+.qbtn:hover{border-color:var(--a);color:var(--a);}
+.qnum{font-family:var(--fm);font-size:15px;font-weight:700;color:var(--tb);min-width:22px;text-align:center;}
+.dev-btu{font-family:var(--fe);font-size:10px;color:var(--am);background:var(--amd);border:1px solid rgba(251,191,36,.2);padding:2px 6px;border-radius:4px;flex-shrink:0;white-space:nowrap;}
+.dev-del{width:28px;height:28px;border-radius:6px;border:1px solid rgba(248,113,113,.2);background:var(--rd);color:var(--r);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.dev-del:hover{background:rgba(248,113,113,.2);}
+.dev-empty{text-align:center;color:var(--tm);padding:20px;font-size:13px;border:1px dashed var(--b);border-radius:var(--rads);}
+.add-btn{width:100%;background:var(--s2);border:1px dashed var(--bb);border-radius:var(--rads);padding:11px;color:var(--a);font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--fa);}
+.add-btn:hover{background:var(--ad);}
+.dev-total{background:var(--amd);border:1px solid rgba(251,191,36,.2);border-radius:var(--rads);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--am);margin-top:8px;}
 .pad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-.key{
-  border-radius:12px;
-  font-family:var(--fm);
-  font-size:20px;
-  font-weight:600;
-  cursor:pointer;
-  min-height:54px;
-  display:flex;align-items:center;justify-content:center;
-  user-select:none;
-  transition:all .15s;
-  border:1px solid rgba(0,0,0,.24);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.04)),
-    linear-gradient(180deg,#3a3a40,#1b1b1f);
-  color:#fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.12),
-    inset 0 -2px 5px rgba(0,0,0,.35),
-    0 1px 2px rgba(0,0,0,.10);
-}
-.key:hover{filter:brightness(1.03);}
-.key:active{transform:scale(.96);}
-.key.kac,
-.key.kclr{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.08)),
-    linear-gradient(180deg,#efefef,#bababa);
-  color:#111827;
-}
-.key.kdel{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.08)),
-    linear-gradient(180deg,#e8e8e8,#b4b4b4);
-  color:#111827;
-}
-.key.kppl,.key.kcalc{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.03)),
-    linear-gradient(180deg,#f49a3a,#d56d09);
-  color:#fff;
-  border-color:rgba(122,58,0,.28);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.18),
-    inset 0 -2px 5px rgba(0,0,0,.22),
-    0 2px 4px rgba(0,0,0,.10);
-}
-.key.km3{
-  font-size:14px;
-  font-family:var(--fe);
-  color:#d1d5db;
-}
-.key.kac{font-family:var(--fe);font-size:15px;font-weight:700;letter-spacing:1px;}
-.key.kclr{font-size:14px;font-family:var(--fa);}
-.key.kppl{font-size:16px;}
-.key.kcalc{
-  font-family:var(--fe);
-  font-size:14px;
-  font-weight:700;
-  letter-spacing:1px;
-  grid-column:span 2;
-}
-
+.key{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);font-family:var(--fm);font-size:20px;font-weight:500;color:var(--t);cursor:pointer;min-height:54px;display:flex;align-items:center;justify-content:center;user-select:none;transition:all .15s;}
+.key:hover{background:var(--s3);border-color:var(--bb);}
+.key:active{transform:scale(.94);}
+.key.kac{background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(14,165,233,.1));border-color:rgba(56,189,248,.4);color:var(--a);font-family:var(--fe);font-size:15px;font-weight:700;letter-spacing:1px;}
+.key.kdel{background:var(--rd);border-color:rgba(248,113,113,.3);color:var(--r);font-size:18px;}
+.key.kclr{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);color:var(--am);font-size:14px;font-family:var(--fa);}
+.key.kppl{background:var(--gd);border-color:rgba(52,211,153,.2);color:var(--g);font-size:16px;}
+.key.km3{font-size:14px;color:var(--tm);font-family:var(--fe);}
+.key.kcalc{background:linear-gradient(135deg,var(--a2),var(--a));border-color:transparent;color:#fff;font-family:var(--fe);font-size:14px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(56,189,248,.3);grid-column:span 2;}
+.key.kcalc:hover{box-shadow:0 6px 24px rgba(56,189,248,.5);}
 .breakdown{display:none;}
 .breakdown.show{display:block;}
-.br-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:9px 0;border-bottom:1px solid rgba(0,0,0,.10);
-}
+.br-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--b);}
 .br-row:last-child{border-bottom:none;}
-.br-lbl{font-size:13px;color:#374151;font-weight:700;}
-.br-val{font-family:var(--fm);font-size:14px;color:#111827;}
-.badge{
-  display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;
-  font-family:var(--fe);font-weight:700;
-}
-.ba{background:rgba(242,138,30,.12);color:#9a3412;border:1px solid rgba(242,138,30,.18);}
-.bg{background:rgba(52,211,153,.12);color:#065f46;border:1px solid rgba(52,211,153,.18);}
-.bam{background:rgba(251,191,36,.14);color:#92400e;border:1px solid rgba(251,191,36,.18);}
-
+.br-lbl{font-size:13px;color:var(--tm);}
+.br-val{font-family:var(--fm);font-size:14px;color:var(--tb);}
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-family:var(--fe);font-weight:700;}
+.ba{background:var(--ad);color:var(--a);border:1px solid rgba(56,189,248,.2);}
+.bg{background:var(--gd);color:var(--g);border:1px solid rgba(52,211,153,.2);}
+.bam{background:var(--amd);color:var(--am);border:1px solid rgba(251,191,36,.2);}
 .hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.hist-clr{
-  background:linear-gradient(180deg,#efefef,#bababa);
-  border:1px solid rgba(0,0,0,.22);
-  color:#111827;
-  padding:5px 12px;
-  border-radius:8px;
-  font-size:12px;
-  cursor:pointer;
-  font-family:var(--fa);
-  transition:all .2s;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
-}
-.hist-clr:hover{filter:brightness(1.03);}
+.hist-clr{background:none;border:1px solid rgba(248,113,113,.3);color:var(--r);padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:var(--fa);transition:all .2s;}
+.hist-clr:hover{background:rgba(248,113,113,.1);}
 .hist-list{display:flex;flex-direction:column;gap:8px;}
-.hist-item{
-  background:linear-gradient(180deg,var(--dark3),var(--dark2));
-  border:1px solid rgba(255,255,255,.06);
-  border-radius:var(--rads);
-  padding:12px;
-  display:flex;align-items:center;justify-content:space-between;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.05),
-    inset 0 -2px 6px rgba(0,0,0,.35);
-}
-.hist-info{font-size:12px;color:#c4c4cc;}
-.hist-res{font-family:var(--fm);font-size:14px;font-weight:700;color:var(--a);}
-.hist-empty{text-align:center;color:#374151;padding:24px;font-size:13px;font-weight:700;}
-
-.con-card{padding:24px;text-align:center;}
-.con-av{
-  width:80px;height:80px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:36px;margin:0 auto 16px;
-  background:linear-gradient(180deg,#303035,#19191d);
-  color:#fff;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.08),
-    inset 0 -2px 6px rgba(0,0,0,.35);
-}
-.con-name{font-size:20px;font-weight:700;color:#111827;margin-bottom:4px;}
-.con-title{font-size:12px;color:#374151;letter-spacing:1px;margin-bottom:20px;font-family:var(--fe);text-transform:uppercase;}
-.con-link{
-  display:flex;align-items:center;gap:12px;padding:12px;
-  background:linear-gradient(180deg,var(--dark3),var(--dark2));
-  border:1px solid rgba(255,255,255,.06);
-  margin-bottom:8px;text-decoration:none;color:#fff;transition:all .2s;font-size:13px;
-}
-.con-link:hover{border-color:rgba(242,138,30,.35);}
-.made-in{margin-top:20px;font-size:13px;color:#374151;font-weight:700;}
-
-.set-group{overflow:hidden;margin-bottom:12px;}
-.set-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:16px;border-bottom:1px solid rgba(0,0,0,.10);
-}
+.hist-item{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:12px;display:flex;align-items:center;justify-content:space-between;}
+.hist-info{font-size:12px;color:var(--tm);}
+.hist-res{font-family:var(--fm);font-size:14px;font-weight:600;color:var(--a);}
+.hist-empty{text-align:center;color:var(--tm);padding:24px;font-size:13px;}
+.exp-btn{width:100%;background:var(--s2);border:1px solid var(--b);color:var(--t);padding:14px;border-radius:var(--rads);font-family:var(--fa);font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;}
+.exp-btn:hover{border-color:var(--a);color:var(--a);}
+.con-card{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);padding:24px;text-align:center;}
+.con-av{width:80px;height:80px;background:linear-gradient(135deg,var(--a2),var(--a));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px;box-shadow:0 0 30px var(--ag);}
+.con-name{font-size:20px;font-weight:700;color:var(--tb);margin-bottom:4px;}
+.con-title{font-size:12px;color:var(--tm);letter-spacing:1px;margin-bottom:20px;font-family:var(--fe);text-transform:uppercase;}
+.con-link{display:flex;align-items:center;gap:12px;padding:12px;background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);margin-bottom:8px;text-decoration:none;color:var(--t);transition:all .2s;font-size:13px;}
+.con-link:hover{border-color:var(--a);color:var(--a);}
+.made-in{margin-top:20px;font-size:13px;color:var(--tm);}
+.set-group{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);overflow:hidden;margin-bottom:12px;}
+.set-item{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--b);}
 .set-item:last-child{border-bottom:none;}
-.set-lbl{font-size:14px;color:#111827;font-weight:700;}
-.set-sub{font-size:11px;color:#374151;margin-top:2px;}
-
-.tog{
-  width:44px;height:24px;
-  background:linear-gradient(180deg,#d7d7d7,#b7b7b7);
-  border-radius:12px;position:relative;cursor:pointer;transition:background .2s;
-  border:1px solid rgba(0,0,0,.18);flex-shrink:0;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.45);
-}
-.tog.on{background:linear-gradient(180deg,#f49a3a,#d56d09);}
-.tog::after{
-  content:'';
-  position:absolute;top:2px;right:2px;width:18px;height:18px;
-  background:#fff;border-radius:50%;transition:transform .2s;
-  box-shadow:0 1px 2px rgba(0,0,0,.18);
-}
+.set-lbl{font-size:14px;}
+.set-sub{font-size:11px;color:var(--tm);margin-top:2px;}
+.tog{width:44px;height:24px;background:var(--s3);border-radius:12px;position:relative;cursor:pointer;transition:background .2s;border:1px solid var(--b);flex-shrink:0;}
+.tog.on{background:var(--a2);border-color:var(--a);}
+.tog::after{content:'';position:absolute;top:2px;right:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;}
 .tog.on::after{transform:translateX(-20px);}
-
-.bnav{
-  position:fixed;
-  bottom:0;left:0;right:0;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.02)),
-    linear-gradient(180deg,#a3a3a3,#7c7c7c);
-  border-top:1px solid rgba(0,0,0,.24);
-  display:flex;align-items:center;justify-content:space-around;
-  padding:10px 0 max(10px,env(safe-area-inset-bottom));
-  z-index:100;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.35),
-    0 -3px 10px rgba(0,0,0,.08);
-}
-.ni{
-  display:flex;flex-direction:column;align-items:center;gap:4px;
-  cursor:pointer;padding:6px 14px;color:#374151;transition:all .2s;
-}
-.ni.on{color:var(--a2);}
+.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,23,.95);backdrop-filter:blur(12px);border-top:1px solid var(--b);display:flex;align-items:center;justify-content:space-around;padding:10px 0 max(10px,env(safe-area-inset-bottom));z-index:100;}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 14px;color:var(--tm);transition:color .2s;}
+.ni.on{color:var(--a);}
 .ni-ico{font-size:20px;}
-.ni-lbl{font-size:10px;font-family:var(--fa);font-weight:700;}
-
+.ni-lbl{font-size:10px;font-family:var(--fa);}
 .panel{display:none;}
 .panel.on{display:block;}
-
-.overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.55);
-  z-index:500;display:none;align-items:flex-end;justify-content:center;
-}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:flex-end;justify-content:center;}
 .overlay.on{display:flex;}
-.modal{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.03)),
-    linear-gradient(180deg,#b1b1b1,#8d8d8d);
-  border:1px solid rgba(0,0,0,.22);
-  border-radius:var(--rad) var(--rad) 0 0;
-  width:100%;max-width:480px;padding:20px;max-height:85vh;overflow-y:auto;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
-}
+.modal{background:var(--s1);border:1px solid var(--bb);border-radius:var(--rad) var(--rad) 0 0;width:100%;max-width:480px;padding:20px;max-height:85vh;overflow-y:auto;}
 .modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.modal-ttl{font-size:16px;font-weight:700;color:#111827;}
-.modal-x{
-  width:30px;height:30px;border-radius:50%;
-  border:1px solid rgba(0,0,0,.22);
-  background:linear-gradient(180deg,#efefef,#bababa);
-  color:#111827;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;
-}
-.modal-x:hover{filter:brightness(1.03);}
-
+.modal-ttl{font-size:16px;font-weight:700;color:var(--tb);}
+.modal-x{width:30px;height:30px;border-radius:50%;border:1px solid var(--b);background:var(--s2);color:var(--tm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.modal-x:hover{border-color:var(--r);color:var(--r);}
 .ftabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
-.ftab{
-  padding:6px 12px;border-radius:20px;border:1px solid rgba(0,0,0,.18);
-  background:linear-gradient(180deg,#e7e7e7,#bfbfbf);
-  color:#111827;font-size:12px;cursor:pointer;font-family:var(--fa);transition:all .2s;font-weight:700;
-}
-.ftab:hover,.ftab.on{
-  background:linear-gradient(180deg,#f49a3a,#d56d09);
-  color:#fff;border-color:rgba(122,58,0,.28);
-}
-
+.ftab{padding:6px 12px;border-radius:20px;border:1px solid var(--b);background:var(--s2);color:var(--tm);font-size:12px;cursor:pointer;font-family:var(--fa);transition:all .2s;}
+.ftab:hover,.ftab.on{background:var(--ad);border-color:var(--a);color:var(--a);}
 .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.cat-hdr{
-  grid-column:1/-1;font-size:11px;font-weight:700;letter-spacing:1.5px;
-  color:#9a3412;text-transform:uppercase;padding:8px 2px 4px;font-family:var(--fe);
-  border-bottom:1px solid rgba(0,0,0,.12);
-}
-.cat-item{
-  background:linear-gradient(180deg,var(--dark3),var(--dark2));
-  border:1px solid rgba(255,255,255,.06);
-  padding:14px 10px;cursor:pointer;text-align:center;transition:all .2s;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.04),
-    inset 0 -2px 6px rgba(0,0,0,.35);
-}
-.cat-item:hover{border-color:rgba(242,138,30,.35);transform:translateY(-1px);}
+.cat-hdr{grid-column:1/-1;font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--a);text-transform:uppercase;padding:8px 2px 4px;font-family:var(--fe);border-bottom:1px solid var(--b);}
+.cat-item{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:14px 10px;cursor:pointer;text-align:center;transition:all .2s;}
+.cat-item:hover{border-color:var(--a);background:var(--ad);transform:translateY(-1px);}
 .cat-ico{font-size:28px;margin-bottom:6px;}
-.cat-name{font-size:12px;color:#fff;font-weight:600;margin-bottom:4px;line-height:1.3;}
-.cat-w{font-size:12px;color:#ffd28a;font-family:var(--fe);font-weight:600;}
-.cat-btu{font-size:10px;color:#c4c4cc;font-family:var(--fe);margin-top:2px;}
-
-.toast{
-  position:fixed;bottom:90px;left:50%;
-  transform:translateX(-50%) translateY(20px);
-  background:linear-gradient(180deg,#2f2f34,#18181b);
-  border:1px solid rgba(255,255,255,.08);
-  color:#fff;padding:12px 20px;border-radius:20px;font-size:13px;
-  opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none;
-  box-shadow:0 6px 18px rgba(0,0,0,.20);
-}
+.cat-name{font-size:12px;color:var(--tb);font-weight:600;margin-bottom:4px;line-height:1.3;}
+.cat-w{font-size:12px;color:var(--am);font-family:var(--fe);font-weight:600;}
+.cat-btu{font-size:10px;color:var(--tm);font-family:var(--fe);margin-top:2px;}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s3);border:1px solid var(--bb);color:var(--tb);padding:12px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none;}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
-
-@media(min-width:480px){
-  .app{padding:20px 20px 120px;}
-}
+@media(min-width:480px){.app{padding:24px;padding-bottom:120px;}}
 </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">❄️</div>
+      <div>
+        <div class="logo-text">Air<span>Calc</span> Pro</div>
+        <div class="logo-sub">HVAC Engineering Suite</div>
+      </div>
+    </div>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+  </div>
+
+  <div class="panel on" id="p-calc">
+    <div class="dash">
+      <div class="dash-grid">
+        <div class="met p"><div class="met-lbl">Cooling Load</div><div class="met-val" id="vtr">0.00</div><div class="met-unit">TON (TR)</div></div>
+        <div class="met g"><div class="met-lbl">Airflow</div><div class="met-val" id="vcfm">0</div><div class="met-unit">CFM</div></div>
+        <div class="met am"><div class="met-lbl">Heat Load</div><div class="met-val" id="vbtu">0</div><div class="met-unit">BTU/h</div></div>
+        <div class="met"><div class="met-lbl">Market BTU</div><div class="met-val" id="vmkt">0</div><div class="met-unit">BTU (Mkt)</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-ttl" id="st-room">ROOM</div>
+      <div class="dots">
+        <div class="dot on" id="d0"></div>
+        <div class="dot" id="d1"></div>
+        <div class="dot" id="d2"></div>
+      </div>
+      <div class="row2">
+        <div>
+          <div class="lbl" id="lbl-vol">Room Volume (m³)</div>
+          <div class="ifield on" id="f-vol" onclick="setF(0)">
+            <span class="cur"></span><span id="dv" class="ph">0 m³</span>
+          </div>
+        </div>
+        <div class="dd-wrap">
+          <div class="lbl" id="lbl-type">Room Type</div>
+          <div class="dd-btn" id="f-type" onclick="toggleDD('dd-room')">
+            <span id="dt" style="font-size:13px">—</span><span class="dd-arr">▼</span>
+          </div>
+          <div class="dd-menu" id="dd-room">
+            <div class="dd-cat-hdr">🏗️ General / عام</div>
+            <div class="dd-item sel" onclick="pickRoom(this,400,'🏢 Office / مكتب')"><div class="dd-item-info"><div>🏢 Office / مكتب</div><div class="dd-item-sub">أعمال مكتبية</div></div><span class="dd-badge">400</span></div>
+            <div class="dd-item" onclick="pickRoom(this,350,'🏠 Residential / سكني')"><div class="dd-item-info"><div>🏠 Residential / سكني</div><div class="dd-item-sub">منازل وشقق</div></div><span class="dd-badge">350</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'🛍️ Retail / محل')"><div class="dd-item-info"><div>🛍️ Retail / محل</div><div class="dd-item-sub">تجزئة وأسواق</div></div><span class="dd-badge">500</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'🍳 Kitchen / مطبخ')"><div class="dd-item-info"><div>🍳 Kitchen / مطبخ</div><div class="dd-item-sub">مطابخ تجارية</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,700,'🖥️ Server Room / سيرفر')"><div class="dd-item-info"><div>🖥️ Server Room / سيرفر</div><div class="dd-item-sub">مراكز بيانات</div></div><span class="dd-badge">700</span></div>
+            <div class="dd-item" onclick="pickRoom(this,450,'📚 Classroom / قاعة')"><div class="dd-item-info"><div>📚 Classroom / قاعة</div><div class="dd-item-sub">فصول ومحاضرات</div></div><span class="dd-badge">450</span></div>
+            <div class="dd-item" onclick="pickRoom(this,550,'🏋️ Gym / صالة')"><div class="dd-item-info"><div>🏋️ Gym / صالة</div><div class="dd-item-sub">صالات لياقة</div></div><span class="dd-badge">550</span></div>
+            <div class="dd-item" onclick="pickRoom(this,400,'🕌 Mosque / مسجد')"><div class="dd-item-info"><div>🕌 Mosque / مسجد</div><div class="dd-item-sub">مصليات ومساجد</div></div><span class="dd-badge">400</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'🍽️ Restaurant / مطعم')"><div class="dd-item-info"><div>🍽️ Restaurant / مطعم</div><div class="dd-item-sub">مطاعم وكافيهات</div></div><span class="dd-badge">500</span></div>
+            <div class="dd-cat-hdr">🏥 Healthcare — ASHRAE 170 / رعاية صحية</div>
+            <div class="dd-item" onclick="pickRoom(this,480,'🛏️ Patient Room / غرفة المريض')"><div class="dd-item-info"><div>🛏️ Patient Room / غرفة المريض</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">480</span></div>
+            <div class="dd-item" onclick="pickRoom(this,400,'🏥 Patient Corridor / ممر المرضى')"><div class="dd-item-info"><div>🏥 Patient Corridor / ممر المرضى</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH min</div></div><span class="dd-badge">400</span></div>
+            <div class="dd-item" onclick="pickRoom(this,900,'🔪 Operating Room / غرفة العمليات')"><div class="dd-item-info"><div>🔪 Operating Room / غرفة العمليات</div><div class="dd-item-sub">ASHRAE 170 — 20 ACH min · Positive pressure</div></div><span class="dd-badge">900</span></div>
+            <div class="dd-item" onclick="pickRoom(this,850,'🔪 OR Sub-sterile / تعقيم العمليات')"><div class="dd-item-info"><div>🔪 OR Sub-sterile / تعقيم العمليات</div><div class="dd-item-sub">ASHRAE 170 — 20 ACH · Positive pressure</div></div><span class="dd-badge">850</span></div>
+            <div class="dd-item" onclick="pickRoom(this,800,'🫁 ICU / وحدة العناية المركزة')"><div class="dd-item-info"><div>🫁 ICU / وحدة العناية المركزة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">800</span></div>
+            <div class="dd-item" onclick="pickRoom(this,750,'🫀 CCU / وحدة رعاية القلب')"><div class="dd-item-info"><div>🫀 CCU / وحدة رعاية القلب</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">750</span></div>
+            <div class="dd-item" onclick="pickRoom(this,700,'🚨 Emergency / Trauma / الطوارئ')"><div class="dd-item-info"><div>🚨 Emergency / Trauma / الطوارئ</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 12 ACH total</div></div><span class="dd-badge">700</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'🩺 Examination Room / غرفة الفحص')"><div class="dd-item-info"><div>🩺 Examination Room / غرفة الفحص</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'💉 Treatment Room / غرفة العلاج')"><div class="dd-item-info"><div>💉 Treatment Room / غرفة العلاج</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'💊 Medication Room / غرفة الأدوية')"><div class="dd-item-info"><div>💊 Medication Room / غرفة الأدوية</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,800,'😷 Isolation Room / غرفة العزل')"><div class="dd-item-info"><div>😷 Isolation Room / غرفة العزل</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 12 ACH · Negative pressure</div></div><span class="dd-badge">800</span></div>
+            <div class="dd-item" onclick="pickRoom(this,850,'🦠 Airborne Isolation / عزل الهواء')"><div class="dd-item-info"><div>🦠 Airborne Isolation / عزل الهواء</div><div class="dd-item-sub">ASHRAE 170 — 12 ACH OA · Negative pressure</div></div><span class="dd-badge">850</span></div>
+            <div class="dd-item" onclick="pickRoom(this,800,'🏥 Protective Isolation / العزل الوقائي')"><div class="dd-item-info"><div>🏥 Protective Isolation / العزل الوقائي</div><div class="dd-item-sub">ASHRAE 170 — 12 ACH OA · Positive pressure</div></div><span class="dd-badge">800</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'🍼 NICU / وحدة حديثي الولادة')"><div class="dd-item-info"><div>🍼 NICU / وحدة حديثي الولادة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'👶 Nursery / حضانة الأطفال')"><div class="dd-item-info"><div>👶 Nursery / حضانة الأطفال</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'🤱 Labor &amp; Delivery / غرفة الولادة')"><div class="dd-item-info"><div>🤱 Labor &amp; Delivery / غرفة الولادة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,700,'🧪 Laboratory / المختبر')"><div class="dd-item-info"><div>🧪 Laboratory / المختبر</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">700</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'🧬 Pathology Lab / مختبر الباثولوجيا')"><div class="dd-item-info"><div>🧬 Pathology Lab / مختبر الباثولوجيا</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,750,'🔬 Autopsy Room / غرفة التشريح')"><div class="dd-item-info"><div>🔬 Autopsy Room / غرفة التشريح</div><div class="dd-item-sub">ASHRAE 170 — 12 ACH OA · Negative pressure</div></div><span class="dd-badge">750</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'🩻 Radiology / الأشعة')"><div class="dd-item-info"><div>🩻 Radiology / الأشعة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">500</span></div>
+            <div class="dd-item" onclick="pickRoom(this,550,'🧲 MRI Room / غرفة الرنين المغناطيسي')"><div class="dd-item-info"><div>🧲 MRI Room / غرفة الرنين المغناطيسي</div><div class="dd-item-sub">ASHRAE 170 — 3 ACH OA, 6 ACH total</div></div><span class="dd-badge">550</span></div>
+            <div class="dd-item" onclick="pickRoom(this,700,'🩸 Dialysis / غرفة الغسيل الكلوي')"><div class="dd-item-info"><div>🩸 Dialysis / غرفة الغسيل الكلوي</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">700</span></div>
+            <div class="dd-item" onclick="pickRoom(this,900,'🧼 Sterile Processing / التعقيم المركزي')"><div class="dd-item-info"><div>🧼 Sterile Processing / التعقيم المركزي</div><div class="dd-item-sub">ASHRAE 170 — Decontam: neg · Clean: positive</div></div><span class="dd-badge">900</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'🦷 Dental Operatory / كرسي الأسنان')"><div class="dd-item-info"><div>🦷 Dental Operatory / كرسي الأسنان</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 15 ACH total</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'💆 Physical Therapy / العلاج الطبيعي')"><div class="dd-item-info"><div>💆 Physical Therapy / العلاج الطبيعي</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">500</span></div>
+            <div class="dd-item" onclick="pickRoom(this,550,'🏥 Waiting Room / غرفة الانتظار')"><div class="dd-item-info"><div>🏥 Waiting Room / غرفة الانتظار</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 12 ACH total</div></div><span class="dd-badge">550</span></div>
+            <div class="dd-item" onclick="pickRoom(this,450,'📋 Nurse Station / محطة التمريض')"><div class="dd-item-info"><div>📋 Nurse Station / محطة التمريض</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">450</span></div>
+            <div class="dd-item" onclick="pickRoom(this,650,'💊 Pharmacy / الصيدلية')"><div class="dd-item-info"><div>💊 Pharmacy / الصيدلية</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">650</span></div>
+            <div class="dd-item" onclick="pickRoom(this,800,'🍽️ Hospital Kitchen / مطبخ المستشفى')"><div class="dd-item-info"><div>🍽️ Hospital Kitchen / مطبخ المستشفى</div><div class="dd-item-sub">ASHRAE 170 — 10 ACH total · Exhaust</div></div><span class="dd-badge">800</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'🛁 Soiled Utility / النفايات الملوثة')"><div class="dd-item-info"><div>🛁 Soiled Utility / النفايات الملوثة</div><div class="dd-item-sub">ASHRAE 170 — 10 ACH · Negative pressure</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'🧹 Clean Utility / الخدمات النظيفة')"><div class="dd-item-info"><div>🧹 Clean Utility / الخدمات النظيفة</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 4 ACH total</div></div><span class="dd-badge">500</span></div>
+            <div class="dd-item" onclick="pickRoom(this,600,'🚿 Patient Toilet/Bath / حمام المريض')"><div class="dd-item-info"><div>🚿 Patient Toilet/Bath / حمام المريض</div><div class="dd-item-sub">ASHRAE 170 — 10 ACH · Negative pressure</div></div><span class="dd-badge">600</span></div>
+            <div class="dd-item" onclick="pickRoom(this,500,'🗄️ Medical Records / السجلات الطبية')"><div class="dd-item-info"><div>🗄️ Medical Records / السجلات الطبية</div><div class="dd-item-sub">ASHRAE 170 — 2 ACH OA, 6 ACH total</div></div><span class="dd-badge">500</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="row1">
+        <div class="lbl" id="lbl-ppl">👤 Persons — 400 BTU/h each</div>
+        <div class="ifield" id="f-ppl" onclick="setF(2)">
+          <span class="cur"></span><span id="dp" class="ph">0 أشخاص</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-ttl" id="st-dev">DEVICES</div>
+      <div class="dev-list" id="dev-list"></div>
+      <button class="add-btn" onclick="openModal()">⚡ <span id="lbl-add">+ إضافة جهاز</span></button>
+      <div class="dev-total" id="dev-total" style="display:none">
+        <span id="lbl-dtot">إجمالي حمل الأجهزة</span>
+        <span id="val-dtot" style="font-weight:700;font-family:var(--fm)">0 BTU/h</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-ttl">KEYPAD</div>
+      <div class="pad">
+        <div class="key kac"  onclick="kAC()">AC</div>
+        <div class="key kdel" onclick="kDEL()">⌫</div>
+        <div class="key km3"  onclick="setF(0)">m³</div>
+        <div class="key kppl" onclick="setF(2)">👤</div>
+        <div class="key" onclick="kNum('7')">7</div>
+        <div class="key" onclick="kNum('8')">8</div>
+        <div class="key" onclick="kNum('9')">9</div>
+        <div class="key" onclick="kNum('.')">.</div>
+        <div class="key" onclick="kNum('4')">4</div>
+        <div class="key" onclick="kNum('5')">5</div>
+        <div class="key" onclick="kNum('6')">6</div>
+        <div class="key kclr" id="lbl-clr" onclick="kCLR()">مسح</div>
+        <div class="key" onclick="kNum('1')">1</div>
+        <div class="key" onclick="kNum('2')">2</div>
+        <div class="key" onclick="kNum('3')">3</div>
+        <div class="key" onclick="kNum('0')">0</div>
+        <div class="key kcalc" id="lbl-calc" onclick="doCalc()">احسب ▶</div>
+      </div>
+    </div>
+
+    <div class="card breakdown" id="breakdown">
+      <div class="sec-ttl">BREAKDOWN</div>
+      <div class="br-row"><span class="br-lbl" id="brl-vol">حجم الغرفة</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-vol">—</span><span class="badge ba">m³</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-base">الحمل الأساسي</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-base">—</span><span class="badge bam">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-ppl">حمل الأشخاص</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-ppl">—</span><span class="badge bg">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-dev">حمل الأجهزة</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-dev">—</span><span class="badge bam">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-sub">الإجمالي</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sub">—</span><span class="badge ba">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-sf">+ معامل أمان 10%</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sf">—</span><span class="badge ba">BTU/h</span></div></div>
+    </div>
+  </div>
+
+  <div class="panel" id="p-hist">
+    <div class="card">
+      <div class="hist-hdr">
+        <div class="sec-ttl" style="margin-bottom:0">HISTORY</div>
+        <button class="hist-clr" id="lbl-hclr" onclick="clearHist()">مسح السجل</button>
+      </div>
+      <div class="hist-list" id="hist-list">
+        <div class="hist-empty" id="hist-empty">لا توجد حسابات بعد</div>
+      </div>
+    </div>
+    <button class="exp-btn" onclick="exportCSV()">📥 <span id="lbl-exp">تصدير CSV</span></button>
+  </div>
+
+  <div class="panel" id="p-contact">
+    <div class="con-card">
+      <div class="con-av">👷</div>
+      <div class="con-name">م. يوسف ال همام</div>
+      <div class="con-title">HVAC Engineer · Saudi Arabia</div>
+      <a class="con-link" href="tel:0560282701"><span style="font-size:18px">📞</span><span>0560282701</span></a>
+      <a class="con-link" href="mailto:yousef.alhammam@live.com"><span style="font-size:18px">✉️</span><span>yousef.alhammam@live.com</span></a>
+      <div class="made-in">صنع في السعودية 🇸🇦</div>
+    </div>
+  </div>
+
+  <div class="panel" id="p-settings">
+    <div class="set-group">
+      <div class="set-item">
+        <div><div class="set-lbl" id="sl-lang">اللغة / Language</div><div class="set-sub" id="sl-langsub">تبديل واجهة اللغة</div></div>
+        <div class="tog on" id="tog-lang" onclick="toggleLang()"></div>
+      </div>
+    </div>
+    <div style="text-align:center;color:var(--tm);font-size:12px;padding:16px;font-family:var(--fe)">Air Calc Pro v3.0 · Built with ❤️ in Saudi Arabia</div>
+  </div>
+</div>
+
+<div class="bnav">
+  <div class="ni on" id="ni-calc"     onclick="goPanel('calc')">    <div class="ni-ico">🧮</div><div class="ni-lbl" id="nl-calc">الحاسبة</div></div>
+  <div class="ni"    id="ni-hist"     onclick="goPanel('hist')">    <div class="ni-ico">📤</div><div class="ni-lbl" id="nl-hist">التصدير</div></div>
+  <div class="ni"    id="ni-contact"  onclick="goPanel('contact')"> <div class="ni-ico">☎️</div><div class="ni-lbl" id="nl-contact">تواصل</div></div>
+  <div class="ni"    id="ni-settings" onclick="goPanel('settings')"><div class="ni-ico">⚙️</div><div class="ni-lbl" id="nl-settings">الإعدادات</div></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-ttl" id="lbl-modal">اختر نوع الجهاز</div>
+      <div class="modal-x" onclick="closeModal()">✕</div>
+    </div>
+    <div class="ftabs">
+      <div class="ftab on" onclick="filterTab(this,null)">🔍 الكل</div>
+      <div class="ftab"    onclick="filterTab(this,'office')">🏢 Office</div>
+      <div class="ftab"    onclick="filterTab(this,'light')">💡 Lighting</div>
+      <div class="ftab"    onclick="filterTab(this,'home')">🏠 Domestic</div>
+      <div class="ftab"    onclick="filterTab(this,'health')">🏥 Healthcare</div>
+    </div>
+    <div class="cat-grid" id="cat-grid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var CAT = [
+  {id:'pc',         g:'office', e:'💻', ar:'كمبيوتر مكتبي',          en:'Desktop PC',              w:300},
+  {id:'laptop',     g:'office', e:'💻', ar:'لابتوب',                   en:'Laptop',                  w:65},
+  {id:'monitor',    g:'office', e:'🖥️', ar:'شاشة كمبيوتر',             en:'Monitor',                 w:40},
+  {id:'printer',    g:'office', e:'🖨️', ar:'طابعة ليزر',               en:'Laser Printer',           w:500},
+  {id:'server',     g:'office', e:'🗄️', ar:'سيرفر',                    en:'Server',                  w:500},
+  {id:'router',     g:'office', e:'📡', ar:'راوتر / سويتش',             en:'Router / Switch',         w:20},
+  {id:'ups',        g:'office', e:'🔋', ar:'UPS مزود طاقة',            en:'UPS',                     w:600},
+  {id:'projector',  g:'office', e:'📽️', ar:'بروجكتور',                 en:'Projector',               w:300},
+  {id:'copier',     g:'office', e:'📠', ar:'آلة تصوير',                en:'Copier / Scanner',        w:1200},
+  {id:'phone',      g:'office', e:'📱', ar:'شاحن جوال',                en:'Phone Charger',           w:20},
+  {id:'led',        g:'light',  e:'💡', ar:'إضاءة LED',                en:'LED Light',               w:15},
+  {id:'fluor',      g:'light',  e:'🔦', ar:'فلورسنت',                  en:'Fluorescent',             w:40},
+  {id:'spot',       g:'light',  e:'🔆', ar:'سبوت لايت',                en:'Spotlight',               w:50},
+  {id:'ledpanel',   g:'light',  e:'🟦', ar:'لوحة LED 60x60',           en:'LED Panel 60x60',         w:36},
+  {id:'tv',         g:'home',   e:'📺', ar:'تلفزيون',                  en:'TV',                      w:150},
+  {id:'fridge',     g:'home',   e:'🧊', ar:'ثلاجة',                    en:'Refrigerator',            w:150},
+  {id:'fridgelg',   g:'home',   e:'🏠', ar:'ثلاجة كبيرة سايد',         en:'Side-by-Side Fridge',     w:250},
+  {id:'microwave',  g:'home',   e:'📦', ar:'ميكروويف',                 en:'Microwave',               w:1000},
+  {id:'coffee',     g:'home',   e:'☕', ar:'ماكينة قهوة',              en:'Coffee Machine',          w:1500},
+  {id:'dispenser',  g:'home',   e:'🚰', ar:'واتر كولر',                en:'Water Dispenser',         w:500},
+  {id:'oven',       g:'home',   e:'🔥', ar:'فرن كهربائي',              en:'Electric Oven',           w:2000},
+  {id:'washer',     g:'home',   e:'👕', ar:'غسالة ملابس',              en:'Washing Machine',         w:500},
+  {id:'dryer',      g:'home',   e:'🌀', ar:'مجفف ملابس',               en:'Clothes Dryer',           w:5000},
+  {id:'dishwasher', g:'home',   e:'🍽️', ar:'غسالة صحون',               en:'Dishwasher',              w:1800},
+  {id:'iron',       g:'home',   e:'♨️', ar:'مكواة',                    en:'Clothes Iron',            w:2200},
+  {id:'vacuum',     g:'home',   e:'🌪️', ar:'مكنسة كهربائية',           en:'Vacuum Cleaner',          w:1200},
+  {id:'hairdryer',  g:'home',   e:'💨', ar:'مجفف شعر',                 en:'Hair Dryer',              w:1800},
+  {id:'kettle',     g:'home',   e:'🫖', ar:'غلاية ماء كهربائية',       en:'Electric Kettle',         w:2000},
+  {id:'mixer',      g:'home',   e:'🥣', ar:'خلاط كهربائي',             en:'Electric Mixer',          w:300},
+  {id:'pumphome',   g:'home',   e:'⚙️', ar:'موتور / ضخة مياه',         en:'Water Pump',              w:750},
+  {id:'xray',       g:'health', e:'🩻', ar:'جهاز أشعة سينية',          en:'X-Ray Machine',           w:5000},
+  {id:'mri',        g:'health', e:'🧲', ar:'جهاز MRI',                 en:'MRI Machine',             w:35000},
+  {id:'ct',         g:'health', e:'🔬', ar:'جهاز CT Scan',             en:'CT Scanner',              w:30000},
+  {id:'ultrasound', g:'health', e:'🩺', ar:'جهاز سونار',               en:'Ultrasound Machine',      w:500},
+  {id:'ventilator', g:'health', e:'🫁', ar:'جهاز تنفس اصطناعي',       en:'Ventilator',              w:150},
+  {id:'ecg',        g:'health', e:'💓', ar:'جهاز رسم القلب ECG',       en:'ECG Machine',             w:40},
+  {id:'defib',      g:'health', e:'⚡', ar:'جهاز صدمة كهربائية',       en:'Defibrillator',           w:200},
+  {id:'infusion',   g:'health', e:'💉', ar:'مضخة تسريب IV',            en:'IV Infusion Pump',        w:12},
+  {id:'syringe',    g:'health', e:'🩹', ar:'مضخة حقن آلية',            en:'Syringe Pump',            w:10},
+  {id:'patmon',     g:'health', e:'📊', ar:'مراقب المريض',             en:'Patient Monitor',         w:150},
+  {id:'autoclave',  g:'health', e:'🧼', ar:'أوتوكلاف / تعقيم',         en:'Autoclave Sterilizer',    w:3000},
+  {id:'incubator',  g:'health', e:'🍼', ar:'حاضنة أطفال',              en:'Infant Incubator',        w:500},
+  {id:'bloodbank',  g:'health', e:'🩸', ar:'ثلاجة بنك الدم',           en:'Blood Bank Fridge',       w:800},
+  {id:'anesthesia', g:'health', e:'😷', ar:'جهاز تخدير',               en:'Anesthesia Machine',      w:500},
+  {id:'dental',     g:'health', e:'🦷', ar:'كرسي أسنان كامل',          en:'Dental Unit',             w:750},
+  {id:'centrifuge', g:'health', e:'🧪', ar:'جهاز طرد مركزي',           en:'Centrifuge',              w:300},
+  {id:'pcr',        g:'health', e:'🧬', ar:'جهاز PCR',                 en:'PCR Machine',             w:1200},
+  {id:'pharmfridge',g:'health', e:'💊', ar:'ثلاجة أدوية',              en:'Pharmacy Refrigerator',   w:600},
+  {id:'endoscope',  g:'health', e:'🔍', ar:'جهاز منظار',               en:'Endoscopy Unit',          w:800},
+  {id:'surglight',  g:'health', e:'🔦', ar:'لمبة غرفة عمليات',         en:'Surgical Light',          w:300}
+];
+
+function w2b(w){ return Math.round(w * 3.412); }
+
+var lang = 'ar';
+var fi   = 0;
+var vals = ['',''];
+var rFac = 400;
+var rLbl = '🏢 Office / مكتب';
+var devs = [];
+var hist = [];
+try { hist = JSON.parse(localStorage.getItem('acp3') || '[]'); } catch(x){}
+
+var TX = {
+  ar:{calc:'احسب ▶',clr:'مسح',hclr:'مسح السجل',exp:'تصدير CSV',
+      ncalc:'الحاسبة',nhist:'التصدير',ncontact:'تواصل',nset:'الإعدادات',
+      lvol:'حجم الغرفة (m³)',ltype:'نوع الغرفة',lppl:'👤 أشخاص — 400 BTU/h لكل شخص',
+      ladd:'+ إضافة جهاز',lmodal:'اختر نوع الجهاز',ldtot:'إجمالي حمل الأجهزة',
+      sroom:'الغرفة',sdev:'الأجهزة',
+      bvol:'حجم الغرفة',bbase:'الحمل الأساسي',bppl:'حمل الأشخاص',
+      bdev:'حمل الأجهزة',bsub:'الإجمالي',bsf:'+ معامل أمان 10%',
+      hempty:'لا توجد حسابات بعد',dempty:'لا توجد أجهزة — اضغط + لإضافة',ppu:'أشخاص',
+      tnov:'⚠️ أدخل حجم الغرفة أولاً',tnodata:'⚠️ لا توجد بيانات',
+      tcalc:'✅ تم الحساب',texp:'✅ تم التصدير',tclr:'🗑️ تم المسح',
+      slang:'اللغة / Language',slangsub:'تبديل واجهة اللغة'},
+  en:{calc:'Calculate ▶',clr:'Clear',hclr:'Clear History',exp:'Export CSV',
+      ncalc:'Calc',nhist:'History',ncontact:'Contact',nset:'Settings',
+      lvol:'Room Volume (m³)',ltype:'Room Type',lppl:'👤 Persons — 400 BTU/h each',
+      ladd:'+ Add Device',lmodal:'Select Device Type',ldtot:'Total Device Load',
+      sroom:'ROOM',sdev:'DEVICES',
+      bvol:'Room Volume',bbase:'Base Load',bppl:'People Load',
+      bdev:'Device Load',bsub:'Sub-total',bsf:'+ Safety 10%',
+      hempty:'No calculations yet',dempty:'No devices — tap + to add',ppu:'persons',
+      tnov:'⚠️ Enter room volume first',tnodata:'⚠️ No data to export',
+      tcalc:'✅ Calculated',texp:'✅ Exported',tclr:'🗑️ Cleared',
+      slang:'Language',slangsub:'Switch interface language'}
+};
+
+function tx(k){ return TX[lang][k]||k; }
+function el(id){ return document.getElementById(id); }
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.documentElement.dir  = lang==='ar' ? 'rtl' : 'ltr';
+  el('langBtn').textContent      = lang==='ar' ? 'EN' : 'ع';
+  el('tog-lang').className       = 'tog '+(lang==='ar'?'on':'');
+  var mp = {
+    'lbl-calc':'calc','lbl-clr':'clr','lbl-hclr':'hclr','lbl-exp':'exp',
+    'nl-calc':'ncalc','nl-hist':'nhist','nl-contact':'ncontact','nl-settings':'nset',
+    'lbl-vol':'lvol','lbl-type':'ltype','lbl-ppl':'lppl',
+    'lbl-add':'ladd','lbl-modal':'lmodal','lbl-dtot':'ldtot',
+    'st-room':'sroom','st-dev':'sdev',
+    'brl-vol':'bvol','brl-base':'bbase','brl-ppl':'bppl',
+    'brl-dev':'bdev','brl-sub':'bsub','brl-sf':'bsf',
+    'hist-empty':'hempty','sl-lang':'slang','sl-langsub':'slangsub'
+  };
+  for (var id in mp){ var e=el(id); if(e) e.textContent=tx(mp[id]); }
+  refreshDisp();
+  renderDevs();
+  renderHist();
+}
+
+function toggleLang(){ lang = lang==='ar' ? 'en' : 'ar'; applyLang(); }
+
+function refreshDisp(){
+  el('dv').textContent = (vals[0]||'0') + ' m³';
+  el('dv').className   = vals[0] ? '' : 'ph';
+  el('dp').textContent = (vals[1]||'0') + ' ' + tx('ppu');
+  el('dp').className   = vals[1] ? '' : 'ph';
+  el('dt').textContent = rLbl;
+}
+
+function setF(idx){
+  fi = idx;
+  var fields = ['f-vol','f-type','f-ppl'];
+  fields.forEach(function(fid,i){
+    var e = el(fid); if (!e) return;
+    if (i===idx){ e.classList.add('on'); } else { e.classList.remove('on'); }
+    var d = el('d'+i); if (d){ d.className = 'dot'+(i===idx?' on':''); }
+  });
+}
+
+function flash(id, val){
+  var e = el(id); e.classList.add('fade');
+  setTimeout(function(){ e.textContent=val; e.classList.remove('fade'); }, 150);
+}
+
+function showToast(msg){
+  var e = el('toast'); e.textContent = msg; e.classList.add('on');
+  setTimeout(function(){ e.classList.remove('on'); }, 2500);
+}
+
+function toggleDD(menuId){
+  var menu = el(menuId); var btn = menu.previousElementSibling;
+  var open = menu.classList.contains('show');
+  closeAllDD();
+  if (!open){ menu.classList.add('show'); btn.classList.add('open'); }
+}
+
+function closeAllDD(){
+  document.querySelectorAll('.dd-menu.show').forEach(function(m){
+    m.classList.remove('show');
+    if (m.previousElementSibling) m.previousElementSibling.classList.remove('open');
+  });
+}
+
+document.addEventListener('click', function(e){ if (!e.target.closest('.dd-wrap')) closeAllDD(); });
+
+function pickRoom(el2, factor, label){
+  document.querySelectorAll('#dd-room .dd-item').forEach(function(i){ i.classList.remove('sel'); });
+  el2.classList.add('sel'); rFac = factor; rLbl = label; closeAllDD(); el('dt').textContent = label;
+}
+
+function kNum(n){
+  var idx = (fi===2) ? 1 : 0; var cur = vals[idx]||'';
+  if (n==='.' && cur.indexOf('.')!==-1) return;
+  if (cur.length >= 8) return;
+  vals[idx] = cur + n; refreshDisp();
+}
+function kDEL(){ var idx=(fi===2)?1:0; vals[idx]=(vals[idx]||'').slice(0,-1); refreshDisp(); }
+function kCLR(){ var idx=(fi===2)?1:0; vals[idx]=''; refreshDisp(); }
+function kAC(){
+  vals=['','']; refreshDisp();
+  flash('vtr','0.00'); flash('vcfm','0'); flash('vbtu','0'); flash('vmkt','0');
+  el('breakdown').classList.remove('show');
+}
+
+function totalDevBtu(){
+  return devs.reduce(function(sum,d){
+    var c=CAT.filter(function(x){ return x.id===d.id; })[0];
+    return sum+(c?w2b(c.w)*d.qty:0);
+  },0);
+}
+
+function doCalc(){
+  var vol=parseFloat(vals[0])||0; var ppl=parseInt(vals[1])||0;
+  if (vol===0){ showToast(tx('tnov')); return; }
+  var base=vol*rFac, pplBtu=ppl*400, devBtu=totalDevBtu();
+  var sub=base+pplBtu+devBtu, total=sub*1.10;
+  var tr=total/12000, cfm=Math.round(tr*400), mkt=Math.ceil(total/9000)*9000;
+  flash('vtr',tr.toFixed(2)); flash('vcfm',Math.round(cfm).toLocaleString());
+  flash('vbtu',Math.round(total).toLocaleString()); flash('vmkt',mkt.toLocaleString());
+  el('brv-vol').textContent=vol.toLocaleString(); el('brv-base').textContent=Math.round(base).toLocaleString();
+  el('brv-ppl').textContent=Math.round(pplBtu).toLocaleString(); el('brv-dev').textContent=Math.round(devBtu).toLocaleString();
+  el('brv-sub').textContent=Math.round(sub).toLocaleString(); el('brv-sf').textContent=Math.round(total).toLocaleString();
+  el('breakdown').classList.add('show');
+  var devSum=devs.map(function(d){ var c=CAT.filter(function(x){ return x.id===d.id; })[0]; return c?(lang==='ar'?c.ar:c.en)+'x'+d.qty:''; }).filter(Boolean).join(' | ');
+  hist.unshift({time:new Date().toLocaleString('ar-SA'),vol:vol,ppl:ppl,type:rLbl,devSum:devSum,devBtu:devBtu,tr:tr.toFixed(2),cfm:cfm,btu:Math.round(total),mkt:mkt});
+  if (hist.length>50) hist.pop();
+  localStorage.setItem('acp3',JSON.stringify(hist)); renderHist(); showToast(tx('tcalc'));
+}
+
+function renderDevs(){
+  var list=el('dev-list'); list.innerHTML='';
+  if (!devs.length){
+    var em=document.createElement('div'); em.className='dev-empty'; em.textContent=tx('dempty'); list.appendChild(em);
+    el('dev-total').style.display='none'; return;
+  }
+  devs.forEach(function(d){
+    var c=CAT.filter(function(x){ return x.id===d.id; })[0]; if (!c) return;
+    var name=lang==='ar'?c.ar:c.en; var btu=w2b(c.w)*d.qty;
+    var row=document.createElement('div'); row.className='dev-row';
+    row.innerHTML='<div class="dev-ico">'+c.e+'</div><div class="dev-info"><div class="dev-name">'+name+'</div><div class="dev-watt">'+c.w+'W &times; '+d.qty+' = '+(c.w*d.qty).toLocaleString()+'W</div></div><div class="dev-qty"><div class="qbtn" onclick="chgQty(\''+d.id+'\',-1)">&#8722;</div><div class="qnum">'+d.qty+'</div><div class="qbtn" onclick="chgQty(\''+d.id+'\',1)">&#43;</div></div><div class="dev-btu">'+btu.toLocaleString()+' BTU/h</div><div class="dev-del" onclick="delDev(\''+d.id+'\')">&#128465;</div>';
+    list.appendChild(row);
+  });
+  var tot=totalDevBtu(); el('dev-total').style.display='flex';
+  el('val-dtot').textContent=tot.toLocaleString()+' BTU/h'; el('lbl-dtot').textContent=tx('ldtot');
+}
+
+function chgQty(id,delta){
+  for (var i=0;i<devs.length;i++){ if(devs[i].id===id){ devs[i].qty+=delta; if(devs[i].qty<=0) devs.splice(i,1); break; } }
+  renderDevs();
+}
+function delDev(id){ devs=devs.filter(function(d){ return d.id!==id; }); renderDevs(); }
+
+function openModal(){
+  buildGrid(null);
+  document.querySelectorAll('.ftab').forEach(function(t,i){ t.className='ftab'+(i===0?' on':''); });
+  el('overlay').classList.add('on');
+}
+function closeModal(){ el('overlay').classList.remove('on'); }
+function overlayClick(e){ if (e.target===el('overlay')) closeModal(); }
+function filterTab(tabEl,grp){ document.querySelectorAll('.ftab').forEach(function(t){ t.className='ftab'; }); tabEl.className='ftab on'; buildGrid(grp); }
+
+var gLabel={office:{ar:'🏢 مكتب / Office',en:'🏢 Office'},light:{ar:'💡 إضاءة / Lighting',en:'💡 Lighting'},home:{ar:'🏠 منزلي / Domestic',en:'🏠 Domestic'},health:{ar:'🏥 صحي / Healthcare',en:'🏥 Healthcare'}};
+
+function buildGrid(grp){
+  var grid=el('cat-grid'); grid.innerHTML='';
+  var groups=grp?[grp]:['office','light','home','health'];
+  groups.forEach(function(gk){
+    var items=CAT.filter(function(d){ return d.g===gk; }); if (!items.length) return;
+    var hdr=document.createElement('div'); hdr.className='cat-hdr'; hdr.textContent=gLabel[gk][lang]; grid.appendChild(hdr);
+    items.forEach(function(d){
+      var wl=d.w>=1000?(d.w/1000).toFixed(1)+'kW':d.w+'W'; var btu=w2b(d.w);
+      var card=document.createElement('div'); card.className='cat-item';
+      card.innerHTML='<div class="cat-ico">'+d.e+'</div><div class="cat-name">'+(lang==='ar'?d.ar:d.en)+'</div><div class="cat-w">'+wl+'</div><div class="cat-btu">'+btu.toLocaleString()+' BTU/h</div>';
+      (function(did,dname){ card.onclick=function(){ var found=false; for(var i=0;i<devs.length;i++){ if(devs[i].id===did){ devs[i].qty++; found=true; break; } } if(!found) devs.push({id:did,qty:1}); closeModal(); renderDevs(); showToast('✅ '+dname+' +1'); }; })(d.id,lang==='ar'?d.ar:d.en);
+      grid.appendChild(card);
+    });
+  });
+}
+
+function renderHist(){
+  var list=el('hist-list'); list.innerHTML='';
+  if (!hist.length){ var em=document.createElement('div'); em.className='hist-empty'; em.id='hist-empty'; em.textContent=tx('hempty'); list.appendChild(em); return; }
+  hist.forEach(function(h){ var row=document.createElement('div'); row.className='hist-item'; row.innerHTML='<div><div class="hist-info">'+h.type+' &middot; '+h.vol+'m&sup3; &middot; '+h.ppl+'&#128100;'+(h.devSum?' &middot; '+h.devSum:'')+'</div><div class="hist-info" style="margin-top:2px">'+h.time+'</div></div><div class="hist-res">'+h.tr+' TR</div>'; list.appendChild(row); });
+}
+function clearHist(){ hist=[]; localStorage.removeItem('acp3'); renderHist(); showToast(tx('tclr')); }
+
+function exportCSV(){
+  if (!hist.length){ showToast(tx('tnodata')); return; }
+  var h=['Time','Room Type','Volume(m3)','Persons','Devices','Device BTU/h','TR','CFM','Total BTU/h','Market BTU'];
+  var rows=hist.map(function(r){ return [r.time,r.type,r.vol,r.ppl,r.devSum||'',r.devBtu||0,r.tr,r.cfm,r.btu,r.mkt]; });
+  var csv=[h].concat(rows).map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'})); a.download='aircalc_pro.csv'; a.click(); showToast(tx('texp'));
+}
+
+function goPanel(name){
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
+  document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('on'); });
+  el('p-'+name).classList.add('on'); el('ni-'+name).classList.add('on');
+}
+
+applyLang(); setF(0); renderDevs(); renderHist();
+</script>
+</body>
+</html>
