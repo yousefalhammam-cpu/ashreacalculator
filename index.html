@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Air Calc Pro | HVAC Engineering Suite</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -22,7 +22,7 @@ body{background:var(--bg);color:var(--t);font-family:var(--fa);min-height:100vh;
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(56,189,248,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
 body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(56,189,248,.08) 0%,transparent 70%);pointer-events:none;z-index:0;}
 .app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:16px;padding-bottom:120px;}
-.header{display:flex;align-items:center;justify-content:space-between;padding:12px 0 20px;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:10px 0 14px;}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--a2),var(--a));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px var(--ag);}
 .logo-text{font-family:var(--fe);font-size:22px;font-weight:700;color:var(--tb);letter-spacing:1px;}
@@ -30,8 +30,20 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .logo-sub{font-size:10px;color:var(--tm);letter-spacing:2px;font-family:var(--fe);text-transform:uppercase;}
 .lang-btn{background:var(--s2);border:1px solid var(--b);color:var(--t);padding:8px 14px;border-radius:20px;cursor:pointer;font-family:var(--fe);font-size:13px;font-weight:600;transition:all .2s;}
 .lang-btn:hover{border-color:var(--a);color:var(--a);}
-/* DASHBOARD */
-.dash{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);padding:18px;margin-bottom:14px;position:relative;overflow:hidden;}
+.card{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);padding:16px;margin-bottom:10px;}
+.sec-ttl{font-size:11px;letter-spacing:2px;color:var(--tm);text-transform:uppercase;margin-bottom:14px;font-family:var(--fe);display:flex;align-items:center;gap:8px;}
+.sec-ttl::after{content:'';flex:1;height:1px;background:var(--b);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.row1{margin-bottom:10px;}
+.lbl{font-size:11px;color:var(--tm);margin-bottom:5px;font-family:var(--fe);}
+.ifield-wrap{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:0 12px;min-height:46px;display:flex;align-items:center;justify-content:center;cursor:text;transition:all .2s;}
+.ifield-wrap:focus-within{border-color:var(--a);box-shadow:0 0 0 2px var(--ag);background:rgba(56,189,248,.05);}
+.ninput{width:100%;background:transparent;border:none;outline:none;font-family:var(--fm);font-size:16px;color:var(--tb);text-align:center;padding:0;caret-color:var(--a);}
+.ninput::placeholder{color:var(--tm);font-family:var(--fa);font-size:13px;}
+.ninput::-webkit-inner-spin-button,.ninput::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+.ninput[type=number]{-moz-appearance:textfield;}
+
+.dash{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);padding:18px;margin-bottom:10px;position:relative;overflow:hidden;}
 .dash::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a),transparent);}
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .met{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:12px;}
@@ -45,24 +57,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .met.g .met-val{color:var(--g);}
 .met.am .met-val{color:var(--am);}
 .met-unit{font-size:11px;color:var(--tm);font-family:var(--fe);margin-top:3px;}
-/* CARDS */
-.card{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);padding:16px;margin-bottom:14px;}
-.sec-ttl{font-size:11px;letter-spacing:2px;color:var(--tm);text-transform:uppercase;margin-bottom:14px;font-family:var(--fe);display:flex;align-items:center;gap:8px;}
-.sec-ttl::after{content:'';flex:1;height:1px;background:var(--b);}
-/* INPUTS */
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
-.row1{margin-bottom:10px;}
-.lbl{font-size:11px;color:var(--tm);margin-bottom:5px;font-family:var(--fe);}
-.ifield{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px 12px;min-height:46px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-family:var(--fm);font-size:17px;color:var(--tb);}
-.ifield.on{border-color:var(--a);box-shadow:0 0 0 2px var(--ag);background:rgba(56,189,248,.05);}
-.ifield .cur{display:none;width:2px;height:18px;background:var(--a);animation:blink 1s infinite;margin-left:2px;}
-.ifield.on .cur{display:inline-block;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-.ph{color:var(--tm);font-size:13px;font-family:var(--fa);}
-.dots{display:flex;gap:6px;margin-bottom:12px;}
-.dot{flex:1;height:3px;border-radius:2px;background:var(--b);transition:background .2s;}
-.dot.on{background:var(--a);}
-/* DROPDOWN */
+
 .dd-wrap{position:relative;}
 .dd-btn{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px 12px;min-height:46px;display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;transition:all .2s;font-size:13px;color:var(--tb);}
 .dd-btn.open{border-color:var(--a);box-shadow:0 0 0 2px var(--ag);}
@@ -77,8 +72,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .dd-item-sub{font-size:10px;color:var(--tm);margin-top:2px;font-family:var(--fe);}
 .dd-badge{font-size:10px;font-family:var(--fe);background:var(--s2);border:1px solid var(--b);padding:2px 7px;border-radius:4px;color:var(--tm);flex-shrink:0;}
 .dd-cat-hdr{padding:8px 14px 4px;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--a);text-transform:uppercase;font-family:var(--fe);border-bottom:1px solid var(--b);margin-top:4px;background:rgba(56,189,248,.04);}
-.dd-item.sel .dd-badge{background:var(--ad);color:var(--a);border-color:rgba(56,189,248,.3);}
-/* DEVICES */
+
 .dev-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
 .dev-row{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px 12px;display:flex;align-items:center;gap:8px;}
 .dev-ico{font-size:22px;flex-shrink:0;}
@@ -96,19 +90,11 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .add-btn{width:100%;background:var(--s2);border:1px dashed var(--bb);border-radius:var(--rads);padding:11px;color:var(--a);font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--fa);}
 .add-btn:hover{background:var(--ad);}
 .dev-total{background:var(--amd);border:1px solid rgba(251,191,36,.2);border-radius:var(--rads);padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--am);margin-top:8px;}
-/* KEYPAD */
-.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-.key{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);font-family:var(--fm);font-size:20px;font-weight:500;color:var(--t);cursor:pointer;min-height:54px;display:flex;align-items:center;justify-content:center;user-select:none;transition:all .15s;}
-.key:hover{background:var(--s3);border-color:var(--bb);}
-.key:active{transform:scale(.94);}
-.key.kac{background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(14,165,233,.1));border-color:rgba(56,189,248,.4);color:var(--a);font-family:var(--fe);font-size:15px;font-weight:700;letter-spacing:1px;}
-.key.kdel{background:var(--rd);border-color:rgba(248,113,113,.3);color:var(--r);font-size:18px;}
-.key.kclr{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);color:var(--am);font-size:14px;font-family:var(--fa);}
-.key.kppl{background:var(--gd);border-color:rgba(52,211,153,.2);color:var(--g);font-size:16px;}
-.key.km3{font-size:14px;color:var(--tm);font-family:var(--fe);}
-.key.kcalc{background:linear-gradient(135deg,var(--a2),var(--a));border-color:transparent;color:#fff;font-family:var(--fe);font-size:14px;font-weight:700;letter-spacing:1px;box-shadow:0 4px 16px rgba(56,189,248,.3);grid-column:span 2;}
-.key.kcalc:hover{box-shadow:0 6px 24px rgba(56,189,248,.5);}
-/* BREAKDOWN */
+
+.disclaimer{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:var(--rads);padding:8px 12px;margin-bottom:12px;font-size:10.5px;color:var(--am);line-height:1.5;text-align:center;}
+.calc-btn{width:100%;background:linear-gradient(135deg,var(--a2),var(--a));border:none;border-radius:var(--rads);padding:14px;color:#fff;font-family:var(--fe);font-size:15px;font-weight:700;letter-spacing:1px;cursor:pointer;box-shadow:0 4px 16px rgba(56,189,248,.3);transition:all .2s;margin-top:4px;}
+.calc-btn:hover{box-shadow:0 6px 24px rgba(56,189,248,.5);}
+
 .breakdown{display:none;}
 .breakdown.show{display:block;}
 .br-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--b);}
@@ -119,26 +105,50 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .ba{background:var(--ad);color:var(--a);border:1px solid rgba(56,189,248,.2);}
 .bg{background:var(--gd);color:var(--g);border:1px solid rgba(52,211,153,.2);}
 .bam{background:var(--amd);color:var(--am);border:1px solid rgba(251,191,36,.2);}
-/* HEALTHCARE CARD */
-.hc-card{border-color:rgba(56,189,248,.35);background:linear-gradient(135deg,rgba(14,165,233,.07),rgba(56,189,248,.03));}
+
+.hc-card{border-color:rgba(56,189,248,.35);background:linear-gradient(135deg,rgba(14,165,233,.07),rgba(56,189,248,.03));display:none;}
 .hc-badge-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
 .hc-pill{padding:4px 10px;border-radius:20px;font-size:11px;font-family:var(--fe);font-weight:700;letter-spacing:.5px;}
 .hc-pill.pos{background:rgba(52,211,153,.15);color:var(--g);border:1px solid rgba(52,211,153,.35);}
 .hc-pill.neg{background:rgba(248,113,113,.12);color:var(--r);border:1px solid rgba(248,113,113,.3);}
 .hc-pill.neu{background:var(--ad);color:var(--a);border:1px solid rgba(56,189,248,.3);}
 .hc-meta{font-size:11px;color:var(--tm);font-family:var(--fe);background:var(--s2);padding:3px 8px;border-radius:6px;border:1px solid var(--b);}
-/* HISTORY */
+
+.cum-card{background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(56,189,248,.06));border:1px solid rgba(56,189,248,.4);border-radius:var(--rad);padding:14px;margin-bottom:10px;position:relative;overflow:hidden;display:none;}
+.cum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a),transparent);}
+.cum-ttl{font-size:11px;letter-spacing:2px;color:var(--a);text-transform:uppercase;margin-bottom:10px;font-family:var(--fe);}
+.cum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cum-item{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px;}
+.cum-lbl{font-size:9px;color:var(--tm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px;font-family:var(--fe);}
+.cum-val{font-family:var(--fe);font-size:20px;font-weight:700;color:var(--a);}
+.cum-unit{font-size:10px;color:var(--tm);font-family:var(--fe);margin-top:2px;}
+
+.quote-card{display:none;background:linear-gradient(135deg,rgba(52,211,153,.1),rgba(14,165,233,.06));border:1px solid rgba(52,211,153,.25);}
+.quote-title{font-size:12px;font-family:var(--fe);letter-spacing:1px;color:var(--g);margin-bottom:10px;}
+.quote-line{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--b);}
+.quote-line:last-child{border-bottom:none;}
+.quote-key{font-size:12px;color:var(--tm);}
+.quote-val{font-size:12px;color:var(--tb);font-family:var(--fm);}
+.quote-strong{color:var(--g);font-size:16px;font-weight:700;}
+
 .hist-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .hist-clr{background:none;border:1px solid rgba(248,113,113,.3);color:var(--r);padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:var(--fa);transition:all .2s;}
 .hist-clr:hover{background:rgba(248,113,113,.1);}
 .hist-list{display:flex;flex-direction:column;gap:8px;}
-.hist-item{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:12px;display:flex;align-items:center;justify-content:space-between;}
-.hist-info{font-size:12px;color:var(--tm);}
-.hist-res{font-family:var(--fm);font-size:14px;font-weight:600;color:var(--a);white-space:nowrap;}
+.hist-item{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.hist-main{flex:1;min-width:0;}
+.hist-room{font-size:13px;font-weight:600;color:var(--tb);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hist-detail{font-size:11px;color:var(--tm);}
+.hist-cfm{font-size:10px;color:var(--tm);margin-top:2px;font-family:var(--fe);}
+.hist-time{font-size:10px;color:var(--tm);margin-top:3px;}
+.hist-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
+.hist-tr{font-family:var(--fm);font-size:15px;font-weight:700;color:var(--a);}
+.hist-btu{font-size:10px;color:var(--tm);font-family:var(--fe);}
 .hist-empty{text-align:center;color:var(--tm);padding:24px;font-size:13px;}
+.room-count{display:inline-block;background:var(--ad);border:1px solid rgba(56,189,248,.3);color:var(--a);font-size:10px;font-family:var(--fe);padding:2px 7px;border-radius:10px;margin-right:8px;}
 .exp-btn{width:100%;background:var(--s2);border:1px solid var(--b);color:var(--t);padding:14px;border-radius:var(--rads);font-family:var(--fa);font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;}
 .exp-btn:hover{border-color:var(--a);color:var(--a);}
-/* CONTACT */
+
 .con-card{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);padding:24px;text-align:center;}
 .con-av{width:80px;height:80px;background:linear-gradient(135deg,var(--a2),var(--a));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px;box-shadow:0 0 30px var(--ag);}
 .con-name{font-size:20px;font-weight:700;color:var(--tb);margin-bottom:4px;}
@@ -146,7 +156,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .con-link{display:flex;align-items:center;gap:12px;padding:12px;background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);margin-bottom:8px;text-decoration:none;color:var(--t);transition:all .2s;font-size:13px;}
 .con-link:hover{border-color:var(--a);color:var(--a);}
 .made-in{margin-top:20px;font-size:13px;color:var(--tm);}
-/* SETTINGS */
+
 .set-group{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);overflow:hidden;margin-bottom:12px;}
 .set-item{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--b);}
 .set-item:last-child{border-bottom:none;}
@@ -156,15 +166,15 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .tog.on{background:var(--a2);border-color:var(--a);}
 .tog::after{content:'';position:absolute;top:2px;right:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;}
 .tog.on::after{transform:translateX(-20px);}
-/* BOTTOM NAV */
+
 .bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,23,.95);backdrop-filter:blur(12px);border-top:1px solid var(--b);display:flex;align-items:center;justify-content:space-around;padding:10px 0 max(10px,env(safe-area-inset-bottom));z-index:100;}
 .ni{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 14px;color:var(--tm);transition:color .2s;}
 .ni.on{color:var(--a);}
-.ni-ico{font-size:20px;}
+.ni-svg{width:22px;height:22px;stroke-width:2;}
 .ni-lbl{font-size:10px;font-family:var(--fa);}
 .panel{display:none;}
 .panel.on{display:block;}
-/* DEVICE MODAL */
+
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:flex-end;justify-content:center;}
 .overlay.on{display:flex;}
 .modal{background:var(--s1);border:1px solid var(--bb);border-radius:var(--rad) var(--rad) 0 0;width:100%;max-width:480px;padding:20px;max-height:85vh;overflow-y:auto;}
@@ -183,52 +193,10 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .cat-name{font-size:12px;color:var(--tb);font-weight:600;margin-bottom:4px;line-height:1.3;}
 .cat-w{font-size:12px;color:var(--am);font-family:var(--fe);font-weight:600;}
 .cat-btu{font-size:10px;color:var(--tm);font-family:var(--fe);margin-top:2px;}
-/* TOAST */
+
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--s3);border:1px solid var(--bb);color:var(--tb);padding:12px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none;}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
-/* NATIVE INPUT FIELDS */
-.ninput{width:100%;background:transparent;border:none;outline:none;font-family:var(--fm);font-size:17px;color:var(--tb);text-align:center;padding:0;caret-color:var(--a);}
-.ninput::placeholder{color:var(--tm);font-family:var(--fa);font-size:13px;}
-.ninput::-webkit-inner-spin-button,.ninput::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
-.ninput[type=number]{-moz-appearance:textfield;}
-.ifield-wrap{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:0 12px;min-height:46px;display:flex;align-items:center;justify-content:center;cursor:text;transition:all .2s;}
-.ifield-wrap:focus-within{border-color:var(--a);box-shadow:0 0 0 2px var(--ag);background:rgba(56,189,248,.05);}
-/* DISCLAIMER BANNER */
-.disclaimer{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:var(--rads);padding:8px 12px;margin-bottom:12px;font-size:10.5px;color:var(--am);line-height:1.5;text-align:center;}
-/* COMPACT SPACING */
-.card{margin-bottom:10px;}
-.dash{margin-bottom:10px;}
-.header{padding:10px 0 14px;}
-/* CALC BUTTON */
-.calc-btn{width:100%;background:linear-gradient(135deg,var(--a2),var(--a));border:none;border-radius:var(--rads);padding:14px;color:#fff;font-family:var(--fe);font-size:15px;font-weight:700;letter-spacing:1px;cursor:pointer;box-shadow:0 4px 16px rgba(56,189,248,.3);transition:all .2s;margin-top:4px;}
-.calc-btn:hover{box-shadow:0 6px 24px rgba(56,189,248,.5);}
-/* CUMULATIVE TOTALS CARD */
-.cum-card{background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(56,189,248,.06));border:1px solid rgba(56,189,248,.4);border-radius:var(--rad);padding:14px;margin-bottom:10px;position:relative;overflow:hidden;}
-.cum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a),transparent);}
-.cum-ttl{font-size:11px;letter-spacing:2px;color:var(--a);text-transform:uppercase;margin-bottom:10px;font-family:var(--fe);}
-.cum-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.cum-item{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px;}
-.cum-lbl{font-size:9px;color:var(--tm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px;font-family:var(--fe);}
-.cum-val{font-family:var(--fe);font-size:20px;font-weight:700;color:var(--a);}
-.cum-unit{font-size:10px;color:var(--tm);font-family:var(--fe);margin-top:2px;}
-/* HISTORY CARD IMPROVEMENTS */
-.hist-item{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px;}
-.hist-item:last-child{margin-bottom:0;}
-.hist-main{flex:1;min-width:0;}
-.hist-room{font-size:13px;font-weight:600;color:var(--tb);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.hist-detail{font-size:11px;color:var(--tm);}
-.hist-cfm{font-size:10px;color:var(--tm);margin-top:2px;font-family:var(--fe);}
-.hist-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
-.hist-tr{font-family:var(--fm);font-size:15px;font-weight:700;color:var(--a);}
-.hist-btu{font-size:10px;color:var(--tm);font-family:var(--fe);}
-.hist-time{font-size:10px;color:var(--tm);margin-top:2px;}
-/* ROOM COUNT BADGE */
-.room-count{display:inline-block;background:var(--ad);border:1px solid rgba(56,189,248,.3);color:var(--a);font-size:10px;font-family:var(--fe);padding:2px 7px;border-radius:10px;margin-right:8px;}
-.ni-svg{width:22px;height:22px;stroke-width:2;margin-bottom:1px;}
-.hist-actions{display:flex;gap:4px;margin-top:4px;}
-.hact-btn{background:var(--s3);border:1px solid var(--b);border-radius:6px;padding:3px 8px;font-size:12px;cursor:pointer;color:var(--tm);transition:all .15s;}
-.hact-btn:hover{border-color:var(--a);color:var(--a);}
-.del-btn:hover{border-color:var(--r)!important;color:var(--r)!important;}
+
 @media(min-width:480px){.app{padding:24px;padding-bottom:120px;}}
 </style>
 </head>
@@ -245,20 +213,42 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
     <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
   </div>
 
-  <!-- ══ CALCULATOR PANEL ══ -->
+  <!-- CALC PANEL -->
   <div class="panel on" id="p-calc">
 
-    <!-- Dashboard metrics -->
+    <div class="card">
+      <div class="sec-ttl">PROJECT</div>
+      <div class="row2">
+        <div>
+          <div class="lbl">Project Name</div>
+          <div class="ifield-wrap"><input class="ninput" id="project-name" type="text" placeholder="اسم المشروع"></div>
+        </div>
+        <div>
+          <div class="lbl">Client Name</div>
+          <div class="ifield-wrap"><input class="ninput" id="client-name" type="text" placeholder="اسم العميل"></div>
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <div class="lbl">Quotation Ref</div>
+          <div class="ifield-wrap"><input class="ninput" id="quote-ref" type="text" placeholder="Q-001"></div>
+        </div>
+        <div>
+          <div class="lbl">Unit Rate / TR (SAR)</div>
+          <div class="ifield-wrap"><input class="ninput" id="rate-tr" type="number" inputmode="decimal" placeholder="0"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="dash">
       <div class="dash-grid">
         <div class="met p"><div class="met-lbl">Cooling Load</div><div class="met-val" id="vtr">0.00</div><div class="met-unit">TON (TR)</div></div>
-        <div class="met g"><div class="met-lbl">Supply CFM</div><div class="met-val" id="vcfm">0</div><div class="met-unit">CFM</div></div>
+        <div class="met g"><div class="met-lbl" id="cfm-label">Supply CFM</div><div class="met-val" id="vcfm">0</div><div class="met-unit">CFM</div></div>
         <div class="met am"><div class="met-lbl">Heat Load</div><div class="met-val" id="vbtu">0</div><div class="met-unit">BTU/h</div></div>
         <div class="met"><div class="met-lbl">Market BTU</div><div class="met-val" id="vmkt">0</div><div class="met-unit">BTU (Mkt)</div></div>
       </div>
     </div>
 
-    <!-- Room inputs -->
     <div class="card">
       <div class="sec-ttl" id="st-room">ROOM</div>
 
@@ -266,66 +256,71 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
         <div>
           <div class="lbl" id="lbl-vol">Room Volume (m³)</div>
           <div class="ifield-wrap">
-            <input class="ninput" id="inp-vol" type="number" inputmode="decimal"
-              min="0" step="0.1" placeholder="0 m³"
-              oninput="onVolInput()" />
+            <input class="ninput" id="inp-vol" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0 m³" oninput="onVolInput()">
           </div>
         </div>
+
         <div class="dd-wrap">
           <div class="lbl" id="lbl-type">Room Type</div>
           <div class="dd-btn" id="f-type" onclick="toggleDD('dd-room')">
-            <span id="dt" style="font-size:13px">—</span><span class="dd-arr">▼</span>
+            <span id="dt">—</span><span class="dd-arr">▼</span>
           </div>
-          <div class="dd-menu" id="dd-room">
-            <!-- GENERAL -->
-            <div class="dd-cat-hdr">🏗️ General / عام</div>
-            <div class="dd-item sel" onclick="pickRoom(this,'r_office')"><div class="dd-item-info"><div>🏢 Office / مكتب</div><div class="dd-item-sub">أعمال مكتبية</div></div><span class="dd-badge">BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'r_residential')"><div class="dd-item-info"><div>🏠 Residential / سكني</div><div class="dd-item-sub">منازل وشقق</div></div><span class="dd-badge">BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'r_retail')"><div class="dd-item-info"><div>🛍️ Retail / محل</div><div class="dd-item-sub">تجزئة وأسواق</div></div><span class="dd-badge">BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'r_kitchen')"><div class="dd-item-info"><div>🍳 Kitchen / مطبخ</div><div class="dd-item-sub">مطابخ تجارية</div></div><span class="dd-badge">BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'r_server')"><div class="dd-item-info"><div>🖥️ Server Room / سيرفر</div><div class="dd-item-sub">مراكز بيانات</div></div><span class="dd-badge">BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'r_classroom')"><div class="dd-item-info"><div>📚 Classroom / قاعة</div><div class="dd-item-sub">فصول ومحاضرات</div></div><span class="dd-badge">BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'r_gym')"><div class="dd-item-info"><div>🏋️ Gym / صالة</div><div class="dd-item-sub">صالات لياقة</div></div><span class="dd-badge">BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'r_mosque')"><div class="dd-item-info"><div>🕌 Mosque / مسجد</div><div class="dd-item-sub">مصليات ومساجد</div></div><span class="dd-badge">BTU/m³</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'r_restaurant')"><div class="dd-item-info"><div>🍽️ Restaurant / مطعم</div><div class="dd-item-sub">مطاعم وكافيهات</div></div><span class="dd-badge">BTU/m³</span></div>
 
-            <!-- HEALTHCARE ASHRAE 170 -->
-            <div class="dd-cat-hdr">🏥 Healthcare — ASHRAE 170 / رعاية صحية</div>
-            <div class="dd-item" onclick="pickRoom(this,'h_patient_room')"><div class="dd-item-info"><div>🛏️ Patient Room / غرفة المريض</div><div class="dd-item-sub">2 OA · 6 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_corridor')"><div class="dd-item-info"><div>🏥 Patient Corridor / ممر المرضى</div><div class="dd-item-sub">2 OA · 4 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_or')"><div class="dd-item-info"><div>🔪 Operating Room / غرفة العمليات</div><div class="dd-item-sub">4 OA · 20 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_or_sub')"><div class="dd-item-info"><div>🔪 OR Sub-sterile / تعقيم العمليات</div><div class="dd-item-sub">2 OA · 10 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_icu')"><div class="dd-item-info"><div>🫁 ICU / وحدة العناية المركزة</div><div class="dd-item-sub">2 OA · 8 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_ccu')"><div class="dd-item-info"><div>🫀 CCU / وحدة رعاية القلب</div><div class="dd-item-sub">2 OA · 8 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_emergency')"><div class="dd-item-info"><div>🚨 Emergency / Trauma / الطوارئ</div><div class="dd-item-sub">2 OA · 12 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_exam')"><div class="dd-item-info"><div>🩺 Examination Room / غرفة الفحص</div><div class="dd-item-sub">2 OA · 6 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_treatment')"><div class="dd-item-info"><div>💉 Treatment Room / غرفة العلاج</div><div class="dd-item-sub">2 OA · 6 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_medication')"><div class="dd-item-info"><div>💊 Medication Room / غرفة الأدوية</div><div class="dd-item-sub">2 OA · 4 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_isolation')"><div class="dd-item-info"><div>😷 Isolation Room / غرفة العزل (AII)</div><div class="dd-item-sub">2 OA · 12 Total ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_airborne')"><div class="dd-item-info"><div>🦠 Airborne Precaution / عزل الهواء</div><div class="dd-item-sub">2 OA · 12 Total ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_protective')"><div class="dd-item-info"><div>🏥 Protective Environment / العزل الوقائي</div><div class="dd-item-sub">2 OA · 12 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_nicu')"><div class="dd-item-info"><div>🍼 NICU / وحدة حديثي الولادة</div><div class="dd-item-sub">2 OA · 6 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_nursery')"><div class="dd-item-info"><div>👶 Nursery / حضانة الأطفال</div><div class="dd-item-sub">2 OA · 6 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_labor')"><div class="dd-item-info"><div>🤱 Labor &amp; Delivery / غرفة الولادة</div><div class="dd-item-sub">2 OA · 6 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_lab')"><div class="dd-item-info"><div>🧪 Laboratory / المختبر</div><div class="dd-item-sub">2 OA · 6 Total ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_pathology')"><div class="dd-item-info"><div>🧬 Pathology Lab / مختبر الباثولوجيا</div><div class="dd-item-sub">2 OA · 10 Total ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_autopsy')"><div class="dd-item-info"><div>🔬 Autopsy Room / غرفة التشريح</div><div class="dd-item-sub">2 OA · 12 Total ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_radiology')"><div class="dd-item-info"><div>🩻 Radiology / الأشعة</div><div class="dd-item-sub">2 OA · 6 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_mri')"><div class="dd-item-info"><div>🧲 MRI Room / غرفة الرنين المغناطيسي</div><div class="dd-item-sub">3 OA · 8 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_dialysis')"><div class="dd-item-info"><div>🩸 Dialysis / غرفة الغسيل الكلوي</div><div class="dd-item-sub">2 OA · 6 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_sterile_decontam')"><div class="dd-item-info"><div>🧼 Sterile — Decontam / إزالة التلوث</div><div class="dd-item-sub">2 OA · 10 Total ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_sterile_clean')"><div class="dd-item-info"><div>🧼 Sterile — Clean Assembly / التجميع النظيف</div><div class="dd-item-sub">2 OA · 4 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_sterile_storage')"><div class="dd-item-info"><div>🧼 Sterile — Storage / تخزين المعقم</div><div class="dd-item-sub">2 OA · 4 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_dental')"><div class="dd-item-info"><div>🦷 Dental Operatory / كرسي الأسنان</div><div class="dd-item-sub">2 OA · 15 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_physio')"><div class="dd-item-info"><div>💆 Physical Therapy / العلاج الطبيعي</div><div class="dd-item-sub">2 OA · 6 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_waiting')"><div class="dd-item-info"><div>🏥 Waiting Room / غرفة الانتظار</div><div class="dd-item-sub">2 OA · 8 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_nurse')"><div class="dd-item-info"><div>📋 Nurse Station / محطة التمريض</div><div class="dd-item-sub">2 OA · 4 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_pharmacy')"><div class="dd-item-info"><div>💊 Pharmacy / الصيدلية</div><div class="dd-item-sub">2 OA · 6 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_hkitchen')"><div class="dd-item-info"><div>🍽️ Hospital Kitchen / مطبخ المستشفى</div><div class="dd-item-sub">2 OA · 15 Total ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_soiled')"><div class="dd-item-info"><div>🛁 Soiled Utility / النفايات الملوثة</div><div class="dd-item-sub">2 OA · 10 Total ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_clean')"><div class="dd-item-info"><div>🧹 Clean Utility / الخدمات النظيفة</div><div class="dd-item-sub">2 OA · 4 Total ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_toilet')"><div class="dd-item-info"><div>🚿 Patient Toilet/Bath / حمام المريض</div><div class="dd-item-sub">Exhaust only · 10 Total ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-            <div class="dd-item" onclick="pickRoom(this,'h_records')"><div class="dd-item-info"><div>🗄️ Medical Records / السجلات الطبية</div><div class="dd-item-sub">2 OA · 4 Total ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+          <div class="dd-menu" id="dd-room">
+            <div class="dd-cat-hdr">🏗️ General / عام</div>
+            <div class="dd-item sel" data-room="r_office" onclick="pickRoom(this,'r_office')">
+              <div class="dd-item-info"><div>🏢 Office / مكتب</div><div class="dd-item-sub">Standard office load</div></div><span class="dd-badge">BTU/m³</span>
+            </div>
+            <div class="dd-item" data-room="r_residential" onclick="pickRoom(this,'r_residential')">
+              <div class="dd-item-info"><div>🏠 Residential / سكني</div><div class="dd-item-sub">Homes & apartments</div></div><span class="dd-badge">BTU/m³</span>
+            </div>
+            <div class="dd-item" data-room="r_retail" onclick="pickRoom(this,'r_retail')">
+              <div class="dd-item-info"><div>🛍️ Retail / محل</div><div class="dd-item-sub">Retail shops</div></div><span class="dd-badge">BTU/m³</span>
+            </div>
+            <div class="dd-item" data-room="r_kitchen" onclick="pickRoom(this,'r_kitchen')">
+              <div class="dd-item-info"><div>🍳 Kitchen / مطبخ</div><div class="dd-item-sub">Commercial kitchen</div></div><span class="dd-badge">BTU/m³</span>
+            </div>
+            <div class="dd-item" data-room="r_server" onclick="pickRoom(this,'r_server')">
+              <div class="dd-item-info"><div>🖥️ Server Room / سيرفر</div><div class="dd-item-sub">Server / IT</div></div><span class="dd-badge">BTU/m³</span>
+            </div>
+            <div class="dd-item" data-room="r_classroom" onclick="pickRoom(this,'r_classroom')">
+              <div class="dd-item-info"><div>📚 Classroom / قاعة</div><div class="dd-item-sub">Lecture room</div></div><span class="dd-badge">BTU/m³</span>
+            </div>
+            <div class="dd-item" data-room="r_gym" onclick="pickRoom(this,'r_gym')">
+              <div class="dd-item-info"><div>🏋️ Gym / صالة</div><div class="dd-item-sub">Fitness space</div></div><span class="dd-badge">BTU/m³</span>
+            </div>
+            <div class="dd-item" data-room="r_mosque" onclick="pickRoom(this,'r_mosque')">
+              <div class="dd-item-info"><div>🕌 Mosque / مسجد</div><div class="dd-item-sub">Prayer hall</div></div><span class="dd-badge">BTU/m³</span>
+            </div>
+            <div class="dd-item" data-room="r_restaurant" onclick="pickRoom(this,'r_restaurant')">
+              <div class="dd-item-info"><div>🍽️ Restaurant / مطعم</div><div class="dd-item-sub">Dining area</div></div><span class="dd-badge">BTU/m³</span>
+            </div>
+
+            <div class="dd-cat-hdr">🏥 Healthcare — ASHRAE 170</div>
+            <div class="dd-item" data-room="h_patient_room" onclick="pickRoom(this,'h_patient_room')">
+              <div class="dd-item-info"><div>🛏️ Patient Room</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span>
+            </div>
+            <div class="dd-item" data-room="h_or" onclick="pickRoom(this,'h_or')">
+              <div class="dd-item-info"><div>🔪 Operating Room</div><div class="dd-item-sub">4 OA · 20 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span>
+            </div>
+            <div class="dd-item" data-room="h_icu" onclick="pickRoom(this,'h_icu')">
+              <div class="dd-item-info"><div>🫁 ICU</div><div class="dd-item-sub">2 OA · 8 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span>
+            </div>
+            <div class="dd-item" data-room="h_exam" onclick="pickRoom(this,'h_exam')">
+              <div class="dd-item-info"><div>🩺 Examination Room</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span>
+            </div>
+            <div class="dd-item" data-room="h_isolation" onclick="pickRoom(this,'h_isolation')">
+              <div class="dd-item-info"><div>😷 Isolation Room</div><div class="dd-item-sub">2 OA · 12 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span>
+            </div>
+            <div class="dd-item" data-room="h_lab" onclick="pickRoom(this,'h_lab')">
+              <div class="dd-item-info"><div>🧪 Laboratory</div><div class="dd-item-sub">2 OA · 6 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span>
+            </div>
+            <div class="dd-item" data-room="h_mri" onclick="pickRoom(this,'h_mri')">
+              <div class="dd-item-info"><div>🧲 MRI Room</div><div class="dd-item-sub">3 OA · 8 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span>
+            </div>
+            <div class="dd-item" data-room="h_pharmacy" onclick="pickRoom(this,'h_pharmacy')">
+              <div class="dd-item-info"><div>💊 Pharmacy</div><div class="dd-item-sub">2 OA · 6 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span>
+            </div>
           </div>
         </div>
       </div>
@@ -333,14 +328,11 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
       <div class="row1">
         <div class="lbl" id="lbl-ppl">👤 Persons — 400 BTU/h each</div>
         <div class="ifield-wrap">
-          <input class="ninput" id="inp-ppl" type="number" inputmode="numeric"
-            min="0" step="1" placeholder="0"
-            oninput="onPplInput()" />
+          <input class="ninput" id="inp-ppl" type="number" inputmode="numeric" min="0" step="1" placeholder="0" oninput="onPplInput()">
         </div>
       </div>
     </div>
 
-    <!-- Devices -->
     <div class="card">
       <div class="sec-ttl" id="st-dev">DEVICES</div>
       <div class="dev-list" id="dev-list"></div>
@@ -351,45 +343,44 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
       </div>
     </div>
 
-    <!-- Disclaimer + Calc button -->
-    <div class="disclaimer" id="disclaimer-banner">
+    <div class="disclaimer">
       <div id="disclaimer-ar">تقدير أولي فقط للتكييف — لا يعتمد عليه للتصميم النهائي أو الطرح أو الاعتماد التنفيذي.</div>
       <div id="disclaimer-en" style="display:none">Preliminary HVAC sizing only — not for final design, tender, or construction submittals.</div>
     </div>
+
     <button class="calc-btn" id="lbl-calc" onclick="doCalc()">احسب ▶</button>
 
-    <!-- Rule-of-thumb breakdown -->
     <div class="card breakdown" id="breakdown">
-      <div class="sec-ttl" id="bkd-ttl">BREAKDOWN</div>
-      <div class="br-row"><span class="br-lbl" id="brl-vol">حجم الغرفة</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-vol">—</span><span class="badge ba">m³</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-base">الحمل الأساسي</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-base">—</span><span class="badge bam">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-ppl">حمل الأشخاص</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-ppl">—</span><span class="badge bg">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-dev">حمل الأجهزة</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-dev">—</span><span class="badge bam">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-sub">الإجمالي</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sub">—</span><span class="badge ba">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-sf">+ معامل أمان 10%</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sf">—</span><span class="badge ba">BTU/h</span></div></div>
+      <div class="sec-ttl">BREAKDOWN</div>
+      <div class="br-row"><span class="br-lbl">حجم الغرفة</span><div><span class="br-val" id="brv-vol">—</span> <span class="badge ba">m³</span></div></div>
+      <div class="br-row"><span class="br-lbl">الحمل الأساسي</span><div><span class="br-val" id="brv-base">—</span> <span class="badge bam">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl">حمل الأشخاص</span><div><span class="br-val" id="brv-ppl">—</span> <span class="badge bg">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl">حمل الأجهزة</span><div><span class="br-val" id="brv-dev">—</span> <span class="badge bam">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl">الإجمالي</span><div><span class="br-val" id="brv-sub">—</span> <span class="badge ba">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl">+ معامل أمان 10%</span><div><span class="br-val" id="brv-sf">—</span> <span class="badge ba">BTU/h</span></div></div>
     </div>
 
-    <!-- ASHRAE 170 technical card (healthcare only) -->
-    <div class="card hc-card" id="hc-card" style="display:none">
-      <div class="sec-ttl" id="hcttl">ASHRAE 170 — AIRFLOW</div>
+    <div class="card hc-card" id="hc-card">
+      <div class="sec-ttl">ASHRAE 170 — AIRFLOW</div>
       <div class="hc-badge-row">
         <span class="hc-pill" id="hc-pressure-pill">—</span>
         <span class="hc-meta" id="hc-temp">—</span>
         <span class="hc-meta" id="hc-rh">—</span>
       </div>
-      <div class="br-row"><span class="br-lbl" id="hcl-ach">Total ACH</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-ach">—</span><span class="badge ba">ACH</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-sup">Supply CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-sup">—</span><span class="badge ba">CFM</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-oa">Outdoor Air CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-oa">—</span><span class="badge bg">CFM</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-exh">Exhaust CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-exh">—</span><span class="badge bam">CFM</span></div></div>
-      <div class="br-row" id="hc-note-row" style="display:none"><span class="br-lbl" id="hcl-note">Note</span><span class="br-val" id="hcv-note" style="font-size:11px;color:var(--tm)">—</span></div>
+      <div class="br-row"><span class="br-lbl">Total ACH</span><div><span class="br-val" id="hcv-ach">—</span> <span class="badge ba">ACH</span></div></div>
+      <div class="br-row"><span class="br-lbl">Supply CFM</span><div><span class="br-val" id="hcv-sup">—</span> <span class="badge ba">CFM</span></div></div>
+      <div class="br-row"><span class="br-lbl">Outdoor Air CFM</span><div><span class="br-val" id="hcv-oa">—</span> <span class="badge bg">CFM</span></div></div>
+      <div class="br-row"><span class="br-lbl">Exhaust CFM</span><div><span class="br-val" id="hcv-exh">—</span> <span class="badge bam">CFM</span></div></div>
+      <div class="br-row" id="hc-note-row" style="display:none"><span class="br-lbl">Note</span><span class="br-val" id="hcv-note" style="font-size:11px;color:var(--tm)">—</span></div>
     </div>
 
-  </div><!-- /p-calc -->
+  </div>
+  <!-- /CALC PANEL -->
 
-  <!-- ══ HISTORY PANEL ══ -->
+  <!-- HISTORY PANEL -->
   <div class="panel" id="p-hist">
-    <!-- Cumulative totals -->
-    <div class="cum-card" id="cum-card" style="display:none">
+
+    <div class="cum-card" id="cum-card">
       <div class="cum-ttl" id="cum-ttl">الإجمالي التراكمي لعدة غرف</div>
       <div class="cum-grid">
         <div class="cum-item"><div class="cum-lbl">Total TR</div><div class="cum-val" id="cum-tr">0.00</div><div class="cum-unit">TON</div></div>
@@ -399,9 +390,18 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
       </div>
     </div>
 
+    <div class="card quote-card" id="quote-card">
+      <div class="quote-title">PROJECT QUOTATION</div>
+      <div class="quote-line"><span class="quote-key">Project</span><span class="quote-val" id="q-project">—</span></div>
+      <div class="quote-line"><span class="quote-key">Client</span><span class="quote-val" id="q-client">—</span></div>
+      <div class="quote-line"><span class="quote-key">Quotation Ref</span><span class="quote-val" id="q-ref">—</span></div>
+      <div class="quote-line"><span class="quote-key">Unit Rate / TR</span><span class="quote-val" id="q-rate">0 SAR</span></div>
+      <div class="quote-line"><span class="quote-key">Estimated Total</span><span class="quote-val quote-strong" id="q-total">0 SAR</span></div>
+    </div>
+
     <div class="card">
       <div class="hist-hdr">
-        <div class="sec-ttl" style="margin-bottom:0"><span class="room-count" id="hist-count">0</span><span id="hist-ttl-lbl">HISTORY</span></div>
+        <div class="sec-ttl" style="margin-bottom:0;"><span class="room-count" id="hist-count">0</span><span id="hist-ttl-lbl">سجل العمليات</span></div>
         <button class="hist-clr" id="lbl-hclr" onclick="clearHist()">مسح السجل</button>
       </div>
       <div class="hist-list" id="hist-list">
@@ -411,58 +411,66 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 
     <button class="exp-btn" onclick="exportCSV()">📥 <span id="lbl-exp">تصدير CSV</span></button>
   </div>
+  <!-- /HISTORY PANEL -->
 
-  <!-- ══ CONTACT PANEL ══ -->
+  <!-- CONTACT PANEL -->
   <div class="panel" id="p-contact">
     <div class="con-card">
       <div class="con-av">👷</div>
       <div class="con-name">م. يوسف ال همام</div>
       <div class="con-title">HVAC Engineer · Saudi Arabia</div>
       <a class="con-link" href="tel:0560282701"><span style="font-size:18px">📞</span><span>0560282701</span></a>
-      <a class="con-link" href="/cdn-cgi/l/email-protection#5920362c2a3c3f7738353138343438341935302f3c773a3634"><span style="font-size:18px">✉️</span><span><span class="__cf_email__" data-cfemail="dda4b2a8aeb8bbf3bcb1b5bcb0b0bcb09db1b4abb8f3beb2b0">[email&#160;protected]</span></span></a>
+      <a class="con-link" href="mailto:info@example.com"><span style="font-size:18px">✉️</span><span>info@example.com</span></a>
       <div class="made-in">صنع في السعودية 🇸🇦</div>
     </div>
   </div>
+  <!-- /CONTACT PANEL -->
 
-  <!-- ══ SETTINGS PANEL ══ -->
+  <!-- SETTINGS PANEL -->
   <div class="panel" id="p-settings">
     <div class="set-group">
       <div class="set-item">
-        <div><div class="set-lbl" id="sl-lang">اللغة / Language</div><div class="set-sub" id="sl-langsub">تبديل واجهة اللغة</div></div>
+        <div>
+          <div class="set-lbl">اللغة / Language</div>
+          <div class="set-sub">تبديل واجهة اللغة</div>
+        </div>
         <div class="tog on" id="tog-lang" onclick="toggleLang()"></div>
       </div>
     </div>
-    <div style="text-align:center;color:var(--tm);font-size:12px;padding:16px;font-family:var(--fe)">Air Calc Pro v5.0 · Built with ❤️ in Saudi Arabia</div>
+    <div style="text-align:center;color:var(--tm);font-size:12px;padding:16px;font-family:var(--fe)">Air Calc Pro v6.0 · Built with ❤️ in Saudi Arabia</div>
   </div>
-</div><!-- /app -->
+  <!-- /SETTINGS PANEL -->
 
+</div>
+
+<!-- BOTTOM NAV -->
 <div class="bnav">
   <div class="ni on" id="ni-calc" onclick="goPanel('calc')">
-    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    <div class="ni-lbl" id="nl-calc">الحاسبة</div>
+    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <div class="ni-lbl" id="nl-calc">الرئيسية</div>
   </div>
   <div class="ni" id="ni-hist" onclick="goPanel('hist')">
-    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     <div class="ni-lbl" id="nl-hist">سجل العمليات</div>
   </div>
   <div class="ni" id="ni-contact" onclick="goPanel('contact')">
-    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.77 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.69a16 16 0 0 0 6.29 6.29l1.06-1.06a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18.85 19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.33 2 2 0 0 1 3.77 1h3a2 2 0 0 1 2 1.72c.12.95.35 1.88.68 2.78a2 2 0 0 1-.45 2.11l-1.1 1.1a16 16 0 0 0 6.29 6.29l1.1-1.1a2 2 0 0 1 2.11-.45c.9.33 1.83.56 2.78.68A2 2 0 0 1 22 16.92z"/></svg>
     <div class="ni-lbl" id="nl-contact">تواصل</div>
   </div>
   <div class="ni" id="ni-settings" onclick="goPanel('settings')">
-    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.9 0 1.64.73 1.64 1.63V11a2 2 0 1 1 0 2h-.09A1.65 1.65 0 0 0 19.4 15z"/></svg>
     <div class="ni-lbl" id="nl-settings">الإعدادات</div>
   </div>
 </div>
 
-<!-- Device modal -->
+<!-- DEVICE MODAL -->
 <div class="overlay" id="overlay" onclick="overlayClick(event)">
   <div class="modal">
     <div class="modal-hdr">
       <div class="modal-ttl" id="lbl-modal">اختر نوع الجهاز</div>
       <div class="modal-x" onclick="closeModal()">✕</div>
     </div>
-    <div class="ftabs" id="modal-tabs">
+    <div class="ftabs">
       <div class="ftab on" onclick="filterTab(this,null)">🔍 الكل</div>
       <div class="ftab" onclick="filterTab(this,'office')">🏢 Office</div>
       <div class="ftab" onclick="filterTab(this,'light')">💡 Lighting</div>
@@ -475,573 +483,165 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script>
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 1 — ROOM DATA
-// calc_mode: 'rule_of_thumb' | 'healthcare_ashrae'
-// ════════════════════════════════════════════════════════════════════════════
 var ROOMS = {
-  r_office:      {id:'r_office',      calc_mode:'rule_of_thumb', category:'general',    label_ar:'🏢 مكتب / Office',              label_en:'🏢 Office / مكتب',               room_factor:400},
-  r_residential: {id:'r_residential', calc_mode:'rule_of_thumb', category:'home',       label_ar:'🏠 سكني / Residential',         label_en:'🏠 Residential / سكني',          room_factor:350},
-  r_retail:      {id:'r_retail',      calc_mode:'rule_of_thumb', category:'commercial', label_ar:'🛍️ محل / Retail',                label_en:'🛍️ Retail / محل',                room_factor:500},
-  r_kitchen:     {id:'r_kitchen',     calc_mode:'rule_of_thumb', category:'commercial', label_ar:'🍳 مطبخ / Kitchen',              label_en:'🍳 Kitchen / مطبخ',              room_factor:600},
-  r_server:      {id:'r_server',      calc_mode:'rule_of_thumb', category:'commercial', label_ar:'🖥️ سيرفر / Server Room',         label_en:'🖥️ Server Room / سيرفر',         room_factor:700},
-  r_classroom:   {id:'r_classroom',   calc_mode:'rule_of_thumb', category:'commercial', label_ar:'📚 قاعة / Classroom',             label_en:'📚 Classroom / قاعة',             room_factor:450},
-  r_gym:         {id:'r_gym',         calc_mode:'rule_of_thumb', category:'commercial', label_ar:'🏋️ صالة / Gym',                   label_en:'🏋️ Gym / صالة',                   room_factor:550},
-  r_mosque:      {id:'r_mosque',      calc_mode:'rule_of_thumb', category:'commercial', label_ar:'🕌 مسجد / Mosque',                label_en:'🕌 Mosque / مسجد',                room_factor:400},
-  r_restaurant:  {id:'r_restaurant',  calc_mode:'rule_of_thumb', category:'commercial', label_ar:'🍽️ مطعم / Restaurant',            label_en:'🍽️ Restaurant / مطعم',            room_factor:500},
+  r_office:{id:'r_office',calc_mode:'rule_of_thumb',category:'general',label_ar:'🏢 مكتب / Office',label_en:'🏢 Office / مكتب',room_factor:400},
+  r_residential:{id:'r_residential',calc_mode:'rule_of_thumb',category:'home',label_ar:'🏠 سكني / Residential',label_en:'🏠 Residential / سكني',room_factor:350},
+  r_retail:{id:'r_retail',calc_mode:'rule_of_thumb',category:'commercial',label_ar:'🛍️ محل / Retail',label_en:'🛍️ Retail / محل',room_factor:500},
+  r_kitchen:{id:'r_kitchen',calc_mode:'rule_of_thumb',category:'commercial',label_ar:'🍳 مطبخ / Kitchen',label_en:'🍳 Kitchen / مطبخ',room_factor:600},
+  r_server:{id:'r_server',calc_mode:'rule_of_thumb',category:'commercial',label_ar:'🖥️ سيرفر / Server Room',label_en:'🖥️ Server Room / سيرفر',room_factor:700},
+  r_classroom:{id:'r_classroom',calc_mode:'rule_of_thumb',category:'commercial',label_ar:'📚 قاعة / Classroom',label_en:'📚 Classroom / قاعة',room_factor:450},
+  r_gym:{id:'r_gym',calc_mode:'rule_of_thumb',category:'commercial',label_ar:'🏋️ صالة / Gym',label_en:'🏋️ Gym / صالة',room_factor:550},
+  r_mosque:{id:'r_mosque',calc_mode:'rule_of_thumb',category:'commercial',label_ar:'🕌 مسجد / Mosque',label_en:'🕌 Mosque / مسجد',room_factor:400},
+  r_restaurant:{id:'r_restaurant',calc_mode:'rule_of_thumb',category:'commercial',label_ar:'🍽️ مطعم / Restaurant',label_en:'🍽️ Restaurant / مطعم',room_factor:500},
 
-  h_patient_room:{id:'h_patient_room', calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🛏️ غرفة المريض',              label_en:'🛏️ Patient Room',                 outdoor_ach:2, total_ach:6,  pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'General inpatient room. Min 2 OA ACH, 6 total supply ACH per ASHRAE 170 Tbl 7.1'},
-  h_corridor:    {id:'h_corridor',     calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🏥 ممر المرضى',               label_en:'🏥 Patient Corridor',             outdoor_ach:2, total_ach:4,  pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'Served by corridor supply. Min 2 OA ACH; total may be higher in practice'},
-  h_or:          {id:'h_or',           calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🔪 غرفة العمليات',            label_en:'🔪 Operating Room',               outdoor_ach:4, total_ach:20, pressure:'positive', temp_range:[18,26], rh_range:[20,60], notes:'Min 20 total ACH; min 4 OA ACH. HEPA required. All supply from ceiling; exhaust at floor. Positive pressure vs corridor'},
-  h_or_sub:      {id:'h_or_sub',       calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🔪 غرفة تعقيم العمليات',      label_en:'🔪 OR Sub-sterile',               outdoor_ach:2, total_ach:10, pressure:'positive', temp_range:[20,24], rh_range:[30,60], notes:'Support room adjacent to OR. Lower ACH than main OR. Positive pressure to prevent contamination ingress'},
-  h_icu:         {id:'h_icu',          calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🫁 وحدة العناية المركزة',      label_en:'🫁 ICU',                          outdoor_ach:2, total_ach:8,  pressure:'positive', temp_range:[21,24], rh_range:[30,60], notes:'Min 2 OA ACH; 6-10 total ACH typical. Positive pressure preferred for immunocompromised patients'},
-  h_ccu:         {id:'h_ccu',          calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🫀 وحدة رعاية القلب',          label_en:'🫀 CCU',                          outdoor_ach:2, total_ach:8,  pressure:'positive', temp_range:[21,24], rh_range:[30,60], notes:'Similar to ICU. Min 2 OA ACH; 6-10 total ACH. Positive pressure'},
-  h_emergency:   {id:'h_emergency',    calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🚨 الطوارئ',                   label_en:'🚨 Emergency / Trauma',           outdoor_ach:2, total_ach:12, pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'Min 2 OA ACH; 12 total ACH per ASHRAE 170. Higher ventilation for high-acuity procedures'},
-  h_exam:        {id:'h_exam',         calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🩺 غرفة الفحص',               label_en:'🩺 Examination Room',             outdoor_ach:2, total_ach:6,  pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'Min 2 OA ACH; 6 total ACH per ASHRAE 170 Tbl 7.1'},
-  h_treatment:   {id:'h_treatment',    calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'💉 غرفة العلاج',              label_en:'💉 Treatment Room',               outdoor_ach:2, total_ach:6,  pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'Min 2 OA ACH; 6 total ACH. Neutral pressure unless procedure-specific needs differ'},
-  h_medication:  {id:'h_medication',   calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'💊 غرفة الأدوية',             label_en:'💊 Medication Room',              outdoor_ach:2, total_ach:4,  pressure:'positive', temp_range:[20,23], rh_range:[30,60], notes:'Positive pressure to protect stored medications. Lower ACH than clinical rooms; typically 4 total per ASHRAE 170'},
-  h_isolation:   {id:'h_isolation',    calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'😷 غرفة العزل',               label_en:'😷 Isolation Room (Airborne Infection)', outdoor_ach:2, total_ach:12, pressure:'negative', temp_range:[21,24], rh_range:[30,60], notes:'Negative pressure AII room. Min 12 total ACH, min 2 OA ACH. Anteroom recommended. Exhaust directly to outside'},
-  h_airborne:    {id:'h_airborne',     calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🦠 غرفة عزل الهواء',          label_en:'🦠 Airborne Precaution Room',     outdoor_ach:2, total_ach:12, pressure:'negative', temp_range:[21,24], rh_range:[30,60], notes:'Negative pressure. Min 12 ACH; min 2 OA ACH. HEPA filtration on exhaust if recirculated via central system. All exhausted air discharged outside'},
-  h_protective:  {id:'h_protective',   calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🏥 العزل الوقائي',            label_en:'🏥 Protective Environment Room',  outdoor_ach:2, total_ach:12, pressure:'positive', temp_range:[21,24], rh_range:[30,60], notes:'Positive pressure protective environment for immunocompromised. HEPA on supply. Min 12 total ACH, min 2 OA ACH'},
-  h_nicu:        {id:'h_nicu',         calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🍼 وحدة حديثي الولادة',        label_en:'🍼 NICU',                         outdoor_ach:2, total_ach:6,  pressure:'positive', temp_range:[22,26], rh_range:[30,60], notes:'Neonatal ICU. Higher temp set-point for premature infants. Min 6 total ACH, min 2 OA ACH. Positive pressure'},
-  h_nursery:     {id:'h_nursery',      calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'👶 حضانة الأطفال',            label_en:'👶 Newborn Nursery',             outdoor_ach:2, total_ach:6,  pressure:'neutral',  temp_range:[22,26], rh_range:[30,60], notes:'Newborn nursery. Similar temp range to NICU. Neutral pressure. Min 6 total ACH per ASHRAE 170'},
-  h_labor:       {id:'h_labor',        calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🤱 غرفة الولادة',             label_en:'🤱 Labor & Delivery',             outdoor_ach:2, total_ach:6,  pressure:'neutral',  temp_range:[20,24], rh_range:[30,60], notes:'Labor and delivery room. Similar to patient room; cooler lower-end temp acceptable. Neutral pressure'},
-  h_lab:         {id:'h_lab',          calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🧪 المختبر العام',            label_en:'🧪 Laboratory (General)',         outdoor_ach:2, total_ach:6,  pressure:'negative', temp_range:[21,24], rh_range:[30,60], notes:'General lab. Negative pressure vs adjacent areas. Min 6 total ACH. No recirculation in chemical or biohazard areas'},
-  h_pathology:   {id:'h_pathology',    calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🧬 مختبر الباثولوجيا',        label_en:'🧬 Pathology Lab',                outdoor_ach:2, total_ach:10, pressure:'negative', temp_range:[21,24], rh_range:[30,60], notes:'Pathology / histology lab. Higher exhaust due to chemical fumes and formaldehyde. No recirculation'},
-  h_autopsy:     {id:'h_autopsy',      calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🔬 غرفة التشريح',             label_en:'🔬 Autopsy Room',                 outdoor_ach:2, total_ach:12, pressure:'negative', temp_range:[16,21], rh_range:[30,60], notes:'High-risk environment. Negative pressure. Min 12 total ACH; 100% exhaust, no recirculation. Cooler temp for preservation'},
-  h_radiology:   {id:'h_radiology',    calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🩻 قسم الأشعة',               label_en:'🩻 Radiology',                    outdoor_ach:2, total_ach:6,  pressure:'neutral',  temp_range:[20,24], rh_range:[30,60], notes:'Radiology suite. Slightly cooler to offset equipment heat. Min 6 total ACH per ASHRAE 170'},
-  h_mri:         {id:'h_mri',          calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🧲 غرفة الرنين المغناطيسي',    label_en:'🧲 MRI Room',                     outdoor_ach:3, total_ach:8,  pressure:'neutral',  temp_range:[18,22], rh_range:[30,60], notes:'MRI magnet generates significant sensible heat load. Dedicated equipment cooling required in addition to HVAC. Higher OA ACH for humidity control'},
-  h_dialysis:    {id:'h_dialysis',     calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🩸 غرفة الغسيل الكلوي',       label_en:'🩸 Dialysis',                     outdoor_ach:2, total_ach:6,  pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'Dialysis unit. Min 6 total ACH. Neutral pressure. Water treatment room adjacent may have specific exhaust needs'},
-  h_sterile_decontam:{id:'h_sterile_decontam', calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🧼 التعقيم — غرفة إزالة التلوث', label_en:'🧼 Sterile Processing — Decontam', outdoor_ach:2, total_ach:10, pressure:'negative', temp_range:[16,18], rh_range:[30,60], notes:'Decontamination zone. Negative pressure vs adjacent areas. High exhaust ACH. Cooler temp preferred for processing. All exhaust to outside'},
-  h_sterile_clean:{id:'h_sterile_clean', calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🧼 التعقيم — غرفة النظيف', label_en:'🧼 Sterile Processing — Clean Assembly', outdoor_ach:2, total_ach:4, pressure:'positive', temp_range:[20,23], rh_range:[30,60], notes:'Clean assembly and packaging zone. Positive pressure vs decontam. Cooler temp to limit microbial growth. Min 4 total ACH'},
-  h_sterile_storage:{id:'h_sterile_storage', calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🧼 التعقيم — تخزين المعقم', label_en:'🧼 Sterile Processing — Sterile Storage', outdoor_ach:2, total_ach:4, pressure:'positive', temp_range:[18,22], rh_range:[30,50], notes:'Sterile storage. Positive pressure to protect packaged sterile items. Lower humidity limit (max 50%) to maintain package integrity'},
-  h_dental:      {id:'h_dental',       calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🦷 كرسي الأسنان',            label_en:'🦷 Dental Operatory',             outdoor_ach:2, total_ach:15, pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'High-aerosol environment. Min 15 total ACH per updated guidance. Local exhaust capture preferred near source'},
-  h_physio:      {id:'h_physio',       calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'💆 العلاج الطبيعي',           label_en:'💆 Physical Therapy',             outdoor_ach:2, total_ach:6,  pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'Active patient use; min 6 total ACH. No specific pressure requirement'},
-  h_waiting:     {id:'h_waiting',      calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🏥 غرفة الانتظار',            label_en:'🏥 Waiting Room',                 outdoor_ach:2, total_ach:8,  pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'High occupancy; OA ventilation drives sizing. Min 2 OA ACH; 8 total recommended to address peak occupancy loads'},
-  h_nurse:       {id:'h_nurse',        calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'📋 محطة التمريض',            label_en:'📋 Nurse Station',                outdoor_ach:2, total_ach:4,  pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'Administrative / staff area within ward. Min 4 total ACH. Neutral pressure'},
-  h_pharmacy:    {id:'h_pharmacy',     calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'💊 الصيدلية',                label_en:'💊 Pharmacy',                     outdoor_ach:2, total_ach:6,  pressure:'positive', temp_range:[18,22], rh_range:[30,60], notes:'General pharmacy: positive pressure to protect drug inventory. Compounding areas require ISO-class cleanroom design as a separate assessment'},
-  h_hkitchen:    {id:'h_hkitchen',     calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🍽️ مطبخ المستشفى',           label_en:'🍽️ Hospital Kitchen',            outdoor_ach:2, total_ach:15, pressure:'negative', temp_range:[18,26], rh_range:[30,65], notes:'High-heat environment. Negative pressure vs dining areas. Strong cooking exhaust hoods required. Min 2 OA ACH; total ACH driven by hood exhaust volumes'},
-  h_soiled:      {id:'h_soiled',       calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🛁 غرفة النفايات الملوثة',    label_en:'🛁 Soiled Utility',              outdoor_ach:2, total_ach:10, pressure:'negative', temp_range:[21,24], rh_range:[30,60], notes:'Negative pressure. 100% exhaust, no recirculation. Min 10 total ACH to control odour and contamination'},
-  h_clean:       {id:'h_clean',        calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🧹 غرفة الخدمات النظيفة',     label_en:'🧹 Clean Utility',               outdoor_ach:2, total_ach:4,  pressure:'positive', temp_range:[21,24], rh_range:[30,60], notes:'Positive pressure to protect clean supplies. Min 4 total ACH per ASHRAE 170'},
-  h_toilet:      {id:'h_toilet',       calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🚿 حمام المريض',             label_en:'🚿 Patient Toilet / Bath',       outdoor_ach:0, total_ach:10, pressure:'negative', temp_range:[21,24], rh_range:[30,65], notes:'Exhaust-only ventilation typical. 100% exhaust to outside. Negative pressure vs patient room. Min 10 total exhaust ACH'},
-  h_records:     {id:'h_records',      calc_mode:'healthcare_ashrae', category:'healthcare', label_ar:'🗄️ السجلات الطبية',          label_en:'🗄️ Medical Records',             outdoor_ach:2, total_ach:4,  pressure:'neutral',  temp_range:[21,24], rh_range:[30,60], notes:'Admin support space. Low ACH requirement. Neutral pressure. Min 4 total ACH per ASHRAE 170 support area guidance'}
+  h_patient_room:{id:'h_patient_room',calc_mode:'healthcare_ashrae',category:'healthcare',label_ar:'🛏️ غرفة المريض',label_en:'🛏️ Patient Room',outdoor_ach:2,total_ach:6,pressure:'neutral',temp_range:[21,24],rh_range:[30,60],notes:'General inpatient room'},
+  h_or:{id:'h_or',calc_mode:'healthcare_ashrae',category:'healthcare',label_ar:'🔪 غرفة العمليات',label_en:'🔪 Operating Room',outdoor_ach:4,total_ach:20,pressure:'positive',temp_range:[18,26],rh_range:[20,60],notes:'Positive pressure OR'},
+  h_icu:{id:'h_icu',calc_mode:'healthcare_ashrae',category:'healthcare',label_ar:'🫁 وحدة العناية المركزة',label_en:'🫁 ICU',outdoor_ach:2,total_ach:8,pressure:'positive',temp_range:[21,24],rh_range:[30,60],notes:'ICU airflow'},
+  h_exam:{id:'h_exam',calc_mode:'healthcare_ashrae',category:'healthcare',label_ar:'🩺 غرفة الفحص',label_en:'🩺 Examination Room',outdoor_ach:2,total_ach:6,pressure:'neutral',temp_range:[21,24],rh_range:[30,60],notes:'Examination room'},
+  h_isolation:{id:'h_isolation',calc_mode:'healthcare_ashrae',category:'healthcare',label_ar:'😷 غرفة العزل',label_en:'😷 Isolation Room',outdoor_ach:2,total_ach:12,pressure:'negative',temp_range:[21,24],rh_range:[30,60],notes:'Negative pressure room'},
+  h_lab:{id:'h_lab',calc_mode:'healthcare_ashrae',category:'healthcare',label_ar:'🧪 المختبر',label_en:'🧪 Laboratory',outdoor_ach:2,total_ach:6,pressure:'negative',temp_range:[21,24],rh_range:[30,60],notes:'Lab exhaust room'},
+  h_mri:{id:'h_mri',calc_mode:'healthcare_ashrae',category:'healthcare',label_ar:'🧲 غرفة الرنين',label_en:'🧲 MRI Room',outdoor_ach:3,total_ach:8,pressure:'neutral',temp_range:[18,22],rh_range:[30,60],notes:'MRI room'},
+  h_pharmacy:{id:'h_pharmacy',calc_mode:'healthcare_ashrae',category:'healthcare',label_ar:'💊 الصيدلية',label_en:'💊 Pharmacy',outdoor_ach:2,total_ach:6,pressure:'positive',temp_range:[18,22],rh_range:[30,60],notes:'Pharmacy positive pressure'}
 };
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 2 — DEVICE CATALOG
-// ════════════════════════════════════════════════════════════════════════════
 var CAT = [
-  {id:'led',         g:'light',  shared:true,  e:'💡', ar:'إضاءة LED',            en:'LED Light',             w:15},
-  {id:'fluor',       g:'light',  shared:true,  e:'🔦', ar:'فلورسنت',             en:'Fluorescent',           w:40},
-  {id:'spot',        g:'light',  shared:true,  e:'🔆', ar:'سبوت لايت',           en:'Spotlight',             w:50},
-  {id:'ledpanel',    g:'light',  shared:true,  e:'🟦', ar:'لوحة LED 60x60',      en:'LED Panel 60x60',       w:36},
-  {id:'dispenser',   g:'office', shared:true,  e:'🚰', ar:'واتر كولر',            en:'Water Dispenser',       w:500},
-  {id:'phone',       g:'office', shared:true,  e:'📱', ar:'شاحن جوال',            en:'Phone Charger',         w:20},
-  {id:'pc',          g:'office', shared:false, e:'💻', ar:'كمبيوتر مكتبي',        en:'Desktop PC',            w:300},
-  {id:'laptop',      g:'office', shared:false, e:'💻', ar:'لابتوب',               en:'Laptop',                w:65},
-  {id:'monitor',     g:'office', shared:false, e:'🖥️', ar:'شاشة كمبيوتر',         en:'Monitor',               w:40},
-  {id:'printer',     g:'office', shared:false, e:'🖨️', ar:'طابعة ليزر',           en:'Laser Printer',         w:500},
-  {id:'server',      g:'office', shared:false, e:'🗄️', ar:'سيرفر',                en:'Server',                w:500},
-  {id:'router',      g:'office', shared:false, e:'📡', ar:'راوتر / سويتش',         en:'Router / Switch',       w:20},
-  {id:'ups',         g:'office', shared:false, e:'🔋', ar:'UPS مزود طاقة',        en:'UPS',                   w:600},
-  {id:'projector',   g:'office', shared:false, e:'📽️', ar:'بروجكتور',             en:'Projector',             w:300},
-  {id:'copier',      g:'office', shared:false, e:'📠', ar:'آلة تصوير',            en:'Copier / Scanner',      w:1200},
-  {id:'tv',          g:'home',   shared:false, e:'📺', ar:'تلفزيون',              en:'TV',                    w:150},
-  {id:'fridge',      g:'home',   shared:false, e:'🧊', ar:'ثلاجة',                en:'Refrigerator',          w:150},
-  {id:'fridgelg',    g:'home',   shared:false, e:'🏠', ar:'ثلاجة كبيرة سايد',     en:'Side-by-Side Fridge',   w:250},
-  {id:'microwave',   g:'home',   shared:false, e:'📦', ar:'ميكروويف',             en:'Microwave',             w:1000},
-  {id:'coffee',      g:'home',   shared:false, e:'☕', ar:'ماكينة قهوة',          en:'Coffee Machine',        w:1500},
-  {id:'oven',        g:'home',   shared:false, e:'🔥', ar:'فرن كهربائي',          en:'Electric Oven',         w:2000},
-  {id:'washer',      g:'home',   shared:false, e:'👕', ar:'غسالة ملابس',          en:'Washing Machine',       w:500},
-  {id:'dryer',       g:'home',   shared:false, e:'🌀', ar:'مجفف ملابس',           en:'Clothes Dryer',         w:5000},
-  {id:'dishwasher',  g:'home',   shared:false, e:'🍽️', ar:'غسالة صحون',           en:'Dishwasher',            w:1800},
-  {id:'iron',        g:'home',   shared:false, e:'♨️', ar:'مكواة',                en:'Clothes Iron',          w:2200},
-  {id:'vacuum',      g:'home',   shared:false, e:'🌪️', ar:'مكنسة كهربائية',       en:'Vacuum Cleaner',        w:1200},
-  {id:'hairdryer',   g:'home',   shared:false, e:'💨', ar:'مجفف شعر',             en:'Hair Dryer',            w:1800},
-  {id:'kettle',      g:'home',   shared:false, e:'🫖', ar:'غلاية ماء كهربائية',   en:'Electric Kettle',       w:2000},
-  {id:'mixer',       g:'home',   shared:false, e:'🥣', ar:'خلاط كهربائي',         en:'Electric Mixer',        w:300},
-  {id:'pumphome',    g:'home',   shared:false, e:'⚙️', ar:'موتور / ضخة مياه',      en:'Water Pump',            w:750},
-  {id:'xray',        g:'health', shared:false, e:'🩻', ar:'جهاز أشعة سينية',      en:'X-Ray Machine',         w:5000},
-  {id:'mri',         g:'health', shared:false, e:'🧲', ar:'جهاز MRI',             en:'MRI Machine',           w:35000},
-  {id:'ct',          g:'health', shared:false, e:'🔬', ar:'جهاز CT Scan',         en:'CT Scanner',            w:30000},
-  {id:'ultrasound',  g:'health', shared:false, e:'🩺', ar:'جهاز سونار',           en:'Ultrasound Machine',    w:500},
-  {id:'ventilator',  g:'health', shared:false, e:'🫁', ar:'جهاز تنفس اصطناعي',    en:'Ventilator',            w:150},
-  {id:'ecg',         g:'health', shared:false, e:'💓', ar:'جهاز رسم القلب ECG',   en:'ECG Machine',           w:40},
-  {id:'defib',       g:'health', shared:false, e:'⚡', ar:'جهاز صدمة كهربائية',    en:'Defibrillator',         w:200},
-  {id:'infusion',    g:'health', shared:false, e:'💉', ar:'مضخة تسريب IV',        en:'IV Infusion Pump',      w:12},
-  {id:'syringe',     g:'health', shared:false, e:'🩹', ar:'مضخة حقن آلية',        en:'Syringe Pump',          w:10},
-  {id:'patmon',      g:'health', shared:false, e:'📊', ar:'مراقب المريض',         en:'Patient Monitor',       w:150},
-  {id:'autoclave',   g:'health', shared:false, e:'🧼', ar:'أوتوكلاف / تعقيم',     en:'Autoclave Sterilizer',  w:3000},
-  {id:'incubator',   g:'health', shared:false, e:'🍼', ar:'حاضنة أطفال',          en:'Infant Incubator',      w:500},
-  {id:'bloodbank',   g:'health', shared:false, e:'🩸', ar:'ثلاجة بنك الدم',       en:'Blood Bank Fridge',     w:800},
-  {id:'anesthesia',  g:'health', shared:false, e:'😷', ar:'جهاز تخدير',           en:'Anesthesia Machine',    w:500},
-  {id:'dental',      g:'health', shared:false, e:'🦷', ar:'كرسي أسنان كامل',      en:'Dental Unit',           w:750},
-  {id:'centrifuge',  g:'health', shared:false, e:'🧪', ar:'جهاز طرد مركزي',       en:'Centrifuge',            w:300},
-  {id:'pcr',         g:'health', shared:false, e:'🧬', ar:'جهاز PCR',             en:'PCR Machine',           w:1200},
-  {id:'pharmfridge', g:'health', shared:false, e:'💊', ar:'ثلاجة أدوية',          en:'Pharmacy Refrigerator', w:600},
-  {id:'endoscope',   g:'health', shared:false, e:'🔍', ar:'جهاز منظار',           en:'Endoscopy Unit',        w:800},
-  {id:'surglight',   g:'health', shared:false, e:'🔦', ar:'لمبة غرفة عمليات',     en:'Surgical Light',        w:300}
+  {id:'led',g:'light',e:'💡',ar:'إضاءة LED',en:'LED Light',w:15},
+  {id:'fluor',g:'light',e:'🔦',ar:'فلورسنت',en:'Fluorescent',w:40},
+  {id:'ledpanel',g:'light',e:'🟦',ar:'لوحة LED 60x60',en:'LED Panel 60x60',w:36},
+  {id:'dispenser',g:'office',e:'🚰',ar:'واتر كولر',en:'Water Dispenser',w:500},
+  {id:'phone',g:'office',e:'📱',ar:'شاحن جوال',en:'Phone Charger',w:20},
+  {id:'pc',g:'office',e:'💻',ar:'كمبيوتر مكتبي',en:'Desktop PC',w:300},
+  {id:'laptop',g:'office',e:'💻',ar:'لابتوب',en:'Laptop',w:65},
+  {id:'monitor',g:'office',e:'🖥️',ar:'شاشة كمبيوتر',en:'Monitor',w:40},
+  {id:'printer',g:'office',e:'🖨️',ar:'طابعة ليزر',en:'Laser Printer',w:500},
+  {id:'server',g:'office',e:'🗄️',ar:'سيرفر',en:'Server',w:500},
+  {id:'tv',g:'home',e:'📺',ar:'تلفزيون',en:'TV',w:150},
+  {id:'fridge',g:'home',e:'🧊',ar:'ثلاجة',en:'Refrigerator',w:150},
+  {id:'microwave',g:'home',e:'📦',ar:'ميكروويف',en:'Microwave',w:1000},
+  {id:'coffee',g:'home',e:'☕',ar:'ماكينة قهوة',en:'Coffee Machine',w:1500},
+  {id:'kettle',g:'home',e:'🫖',ar:'غلاية ماء',en:'Electric Kettle',w:2000},
+  {id:'xray',g:'health',e:'🩻',ar:'جهاز أشعة',en:'X-Ray Machine',w:5000},
+  {id:'mri',g:'health',e:'🧲',ar:'جهاز MRI',en:'MRI Machine',w:35000},
+  {id:'ct',g:'health',e:'🔬',ar:'جهاز CT',en:'CT Scanner',w:30000},
+  {id:'ultrasound',g:'health',e:'🩺',ar:'جهاز سونار',en:'Ultrasound Machine',w:500},
+  {id:'ventilator',g:'health',e:'🫁',ar:'جهاز تنفس',en:'Ventilator',w:150},
+  {id:'patmon',g:'health',e:'📊',ar:'مراقب المريض',en:'Patient Monitor',w:150},
+  {id:'autoclave',g:'health',e:'🧼',ar:'أوتوكلاف',en:'Autoclave',w:3000}
 ];
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 3 — TRANSLATIONS
-// ════════════════════════════════════════════════════════════════════════════
 var TX = {
-  ar:{
-    calc:'احسب ▶', clr:'مسح', hclr:'مسح السجل', exp:'تصدير CSV',
-    ncalc:'الحاسبة', nhist:'سجل العمليات', ncontact:'تواصل', nset:'الإعدادات',
-    lvol:'حجم الغرفة (m³)', ltype:'نوع الغرفة', lppl:'👤 أشخاص — 400 BTU/h لكل شخص',
-    ladd:'+ إضافة جهاز', lmodal:'اختر نوع الجهاز', ldtot:'إجمالي حمل الأجهزة',
-    sroom:'الغرفة', sdev:'الأجهزة',
-    bvol:'حجم الغرفة', bbase:'الحمل الأساسي', bppl:'حمل الأشخاص',
-    bdev:'حمل الأجهزة', bsub:'الإجمالي', bsf:'+ معامل أمان 10%',
-    hempty:'لا توجد حسابات بعد', dempty:'لا توجد أجهزة — اضغط + لإضافة', ppu:'أشخاص',
-    tnov:'⚠️ أدخل حجم الغرفة أولاً', tnodata:'⚠️ لا توجد بيانات',
-    tcalc:'✅ تم الحساب', texp:'✅ تم التصدير', tclr:'🗑️ تم المسح',
-    slang:'اللغة / Language', slangsub:'تبديل واجهة اللغة',
-    hcttl:'ASHRAE 170 — تدفق الهواء',
-    hcl_ach:'إجمالي ACH', hcl_sup:'تدفق الإمداد', hcl_oa:'هواء خارجي',
-    hcl_exh:'تدفق العادم', hcl_note:'ملاحظة',
-    press_pos:'ضغط موجب ▲', press_neg:'ضغط سالب ▼', press_neu:'ضغط محايد',
-    vcfm_lbl:'تدفق الإمداد'
-  },
-  en:{
-    calc:'Calculate ▶', clr:'Clear', hclr:'Clear History', exp:'Export CSV',
-    ncalc:'Calc', nhist:'Calc Log', ncontact:'Contact', nset:'Settings',
-    lvol:'Room Volume (m³)', ltype:'Room Type', lppl:'👤 Persons — 400 BTU/h each',
-    ladd:'+ Add Device', lmodal:'Select Device Type', ldtot:'Total Device Load',
-    sroom:'ROOM', sdev:'DEVICES',
-    bvol:'Room Volume', bbase:'Base Load', bppl:'People Load',
-    bdev:'Device Load', bsub:'Sub-total', bsf:'+ Safety 10%',
-    hempty:'No calculations yet', dempty:'No devices — tap + to add', ppu:'persons',
-    tnov:'⚠️ Enter room volume first', tnodata:'⚠️ No data to export',
-    tcalc:'✅ Calculated', texp:'✅ Exported', tclr:'🗑️ Cleared',
-    slang:'Language', slangsub:'Switch interface language',
-    hcttl:'ASHRAE 170 — Airflow',
-    hcl_ach:'Total ACH', hcl_sup:'Supply CFM', hcl_oa:'Outdoor Air CFM',
-    hcl_exh:'Exhaust CFM', hcl_note:'Note',
-    press_pos:'Positive Pressure ▲', press_neg:'Negative Pressure ▼', press_neu:'Neutral Pressure',
-    vcfm_lbl:'Supply CFM'
-  }
+  ar:{calc:'احسب ▶',nhist:'سجل العمليات',ncalc:'الرئيسية',ncontact:'تواصل',nset:'الإعدادات',tcalc:'✅ تم الحساب',tnov:'⚠️ أدخل حجم الغرفة أولاً',texp:'✅ تم التصدير',tclr:'🗑️ تم المسح',dempty:'لا توجد أجهزة — اضغط + لإضافة',hempty:'لا توجد حسابات بعد'},
+  en:{calc:'Calculate ▶',nhist:'Calc Log',ncalc:'Home',ncontact:'Contact',nset:'Settings',tcalc:'✅ Calculated',tnov:'⚠️ Enter room volume first',texp:'✅ Exported',tclr:'🗑️ Cleared',dempty:'No devices — tap + to add',hempty:'No calculations yet'}
 };
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 4 — STATE
-// ════════════════════════════════════════════════════════════════════════════
-var lang = 'ar';
-var fi = 0;
-var vals = ['',''];
-var curRoom = ROOMS['r_office'];
-var devs = [];
-var hist = [];
-var editingIdx = -1;
-try { hist = JSON.parse(localStorage.getItem('acp4') || '[]'); } catch(x){}
+var lang='ar';
+var curRoom=ROOMS.r_office;
+var vals=['',''];
+var devs=[];
+var hist=[];
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 5 — HELPERS
-// ════════════════════════════════════════════════════════════════════════════
-function tx(k){ return TX[lang][k] || k; }
+try{ hist=JSON.parse(localStorage.getItem('acp6')||'[]'); }catch(e){ hist=[]; }
+
 function el(id){ return document.getElementById(id); }
-function w2b(w){ return Math.round(w * 3.412); }
-function m3toft3(m){ return m * 35.3147; }
+function tx(k){ return (TX[lang] && TX[lang][k]) ? TX[lang][k] : k; }
+function w2b(w){ return Math.round(w*3.412); }
+function m3toft3(m){ return m*35.3147; }
 
-function flash(id, val){
-  var e = el(id);
+function flash(id,val){
+  var e=el(id);
+  if(!e) return;
   e.classList.add('fade');
-  setTimeout(function(){ e.textContent = val; e.classList.remove('fade'); }, 150);
+  setTimeout(function(){ e.textContent=val; e.classList.remove('fade'); },150);
 }
 
 function showToast(msg){
-  var e = el('toast');
-  e.textContent = msg;
+  var e=el('toast');
+  e.textContent=msg;
   e.classList.add('on');
-  setTimeout(function(){ e.classList.remove('on'); }, 2600);
+  setTimeout(function(){ e.classList.remove('on'); },2200);
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 6 — LANGUAGE
-// ════════════════════════════════════════════════════════════════════════════
+function onVolInput(){
+  var input=el('inp-vol');
+  input.value=input.value.replace(/[٠-٩]/g,function(d){ return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
+  vals[0]=input.value;
+}
+
+function onPplInput(){
+  var input=el('inp-ppl');
+  input.value=input.value.replace(/[٠-٩]/g,function(d){ return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
+  vals[1]=input.value;
+}
+
 function applyLang(){
-  document.documentElement.lang = lang;
-  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-  el('langBtn').textContent = lang === 'ar' ? 'EN' : 'ع';
-  el('tog-lang').className = 'tog ' + (lang === 'ar' ? 'on' : '');
-
-  var mp = {
-    'lbl-calc':'calc', 'lbl-hclr':'hclr', 'lbl-exp':'exp',
-    'nl-calc':'ncalc', 'nl-hist':'nhist', 'nl-contact':'ncontact', 'nl-settings':'nset',
-    'lbl-vol':'lvol', 'lbl-type':'ltype', 'lbl-ppl':'lppl',
-    'lbl-add':'ladd', 'lbl-modal':'lmodal', 'lbl-dtot':'ldtot',
-    'st-room':'sroom', 'st-dev':'sdev',
-    'brl-vol':'bvol', 'brl-base':'bbase', 'brl-ppl':'bppl',
-    'brl-dev':'bdev', 'brl-sub':'bsub', 'brl-sf':'bsf',
-    'hist-empty':'hempty',
-    'sl-lang':'slang', 'sl-langsub':'slangsub',
-    'hcttl':'hcttl',
-    'hcl-ach':'hcl_ach', 'hcl-sup':'hcl_sup', 'hcl-oa':'hcl_oa',
-    'hcl-exh':'hcl_exh', 'hcl-note':'hcl_note'
-  };
-
-  for (var id in mp){
-    var node = el(id);
-    if (node) node.textContent = tx(mp[id]);
-  }
-
-  var cfmMet = el('vcfm');
-  if (cfmMet) cfmMet.closest('.met').querySelector('.met-lbl').textContent = tx('vcfm_lbl');
-
-  var calcBtn = el('lbl-calc');
-  if (calcBtn) calcBtn.textContent = tx('calc');
-
-  var dAr = el('disclaimer-ar');
-  var dEn = el('disclaimer-en');
-  if (dAr) dAr.style.display = lang === 'ar' ? '' : 'none';
-  if (dEn) dEn.style.display = lang === 'en' ? '' : 'none';
-
-  var cumTtl = el('cum-ttl');
-  if (cumTtl) cumTtl.textContent = lang === 'ar' ? 'الإجمالي التراكمي لعدة غرف' : 'Cumulative Total for Multiple Rooms';
-
-  var hTtl = el('hist-ttl-lbl');
-  if (hTtl) hTtl.textContent = lang === 'ar' ? 'السجل' : 'HISTORY';
-
-  var ivol = el('inp-vol');
-  if (ivol) ivol.placeholder = lang === 'ar' ? '٠ م³' : '0 m³';
-
-  var ippl = el('inp-ppl');
-  if (ippl) ippl.placeholder = lang === 'ar' ? '٠' : '0';
-
+  document.documentElement.lang=lang;
+  document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  el('langBtn').textContent=lang==='ar'?'EN':'ع';
+  el('tog-lang').className='tog '+(lang==='ar'?'on':'');
+  el('lbl-calc').textContent=tx('calc');
+  el('nl-hist').textContent=tx('nhist');
+  el('nl-calc').textContent=tx('ncalc');
+  el('nl-contact').textContent=tx('ncontact');
+  el('nl-settings').textContent=tx('nset');
+  el('hist-ttl-lbl').textContent=tx('nhist');
+  el('disclaimer-ar').style.display=lang==='ar'?'':'none';
+  el('disclaimer-en').style.display=lang==='en'?'':'none';
+  el('inp-vol').placeholder=lang==='ar'?'0 م³':'0 m³';
+  el('inp-ppl').placeholder='0';
   refreshDisp();
   renderDevs();
   renderHist();
 }
 
 function toggleLang(){
-  lang = lang === 'ar' ? 'en' : 'ar';
+  lang=lang==='ar'?'en':'ar';
   applyLang();
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 7 — INPUT DISPLAY
-// ════════════════════════════════════════════════════════════════════════════
 function refreshDisp(){
-  var ivol = el('inp-vol');
-  var ippl = el('inp-ppl');
-  if (ivol) vals[0] = ivol.value;
-  if (ippl) vals[1] = ippl.value;
-  var lbl = lang === 'ar' ? curRoom.label_ar : curRoom.label_en;
-  el('dt').textContent = lbl;
+  var lbl=lang==='ar'?curRoom.label_ar:curRoom.label_en;
+  el('dt').textContent=lbl;
 }
 
-function onVolInput(){
-  var v = el('inp-vol').value;
-  el('inp-vol').value = v.replace(/[٠-٩]/g, function(d){ return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
-  vals[0] = el('inp-vol').value;
-}
-
-function onPplInput(){
-  var v = el('inp-ppl').value;
-  el('inp-ppl').value = v.replace(/[٠-٩]/g, function(d){ return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
-  vals[1] = el('inp-ppl').value;
-}
-
-function setF(idx){
-  fi = idx;
-  if (idx === 0){ var iv = el('inp-vol'); if(iv) iv.focus(); }
-  if (idx === 2){ var ip = el('inp-ppl'); if(ip) ip.focus(); }
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 8 — DROPDOWN
-// ════════════════════════════════════════════════════════════════════════════
 function toggleDD(menuId){
-  var menu = el(menuId);
-  var open = menu.classList.contains('show');
+  var menu=el(menuId);
+  var isOpen=menu.classList.contains('show');
   closeAllDD();
-  if (!open){
+  if(!isOpen){
     menu.classList.add('show');
-    var btn = el('f-type');
-    if (btn) btn.classList.add('open');
+    el('f-type').classList.add('open');
   }
 }
 
 function closeAllDD(){
-  document.querySelectorAll('.dd-menu.show').forEach(function(m){
-    m.classList.remove('show');
-  });
-  var btn = el('f-type');
-  if (btn) btn.classList.remove('open');
+  document.querySelectorAll('.dd-menu.show').forEach(function(m){ m.classList.remove('show'); });
+  el('f-type').classList.remove('open');
 }
 
-document.addEventListener('click', function(e){
-  if (!e.target.closest('.dd-wrap')) closeAllDD();
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.dd-wrap')) closeAllDD();
 });
 
-function pickRoom(domEl, roomId){
-  var room = ROOMS[roomId];
-  if (!room) return;
-
-  curRoom = room;
+function pickRoom(domEl,roomId){
+  if(!ROOMS[roomId]) return;
+  curRoom=ROOMS[roomId];
   document.querySelectorAll('#dd-room .dd-item').forEach(function(i){ i.classList.remove('sel'); });
   domEl.classList.add('sel');
   closeAllDD();
-
-  vals = ['',''];
-  var iv = el('inp-vol'); if (iv) iv.value = '';
-  var ip = el('inp-ppl'); if (ip) ip.value = '';
-  devs = [];
-  renderDevs();
   refreshDisp();
-  el('breakdown').classList.remove('show');
-  el('hc-card').style.display = 'none';
-  flash('vtr','0.00');
-  flash('vcfm','0');
-  flash('vbtu','0');
-  flash('vmkt','0');
+  el('hc-card').style.display='none';
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 9 — KEYPAD
-// ════════════════════════════════════════════════════════════════════════════
-function kNum(n){
-  var idx = (fi === 2) ? 1 : 0;
-  var cur = vals[idx] || '';
-  if (n === '.' && cur.indexOf('.') !== -1) return;
-  if (cur.length >= 8) return;
-  vals[idx] = cur + n;
-  refreshDisp();
-}
-
-function kDEL(){
-  var idx = (fi === 2) ? 1 : 0;
-  vals[idx] = (vals[idx] || '').slice(0, -1);
-  refreshDisp();
-}
-
-function kCLR(){
-  var idx = (fi === 2) ? 1 : 0;
-  vals[idx] = '';
-  refreshDisp();
-}
-
-function kAC(){
-  vals = ['',''];
-  devs = [];
-  var iv = el('inp-vol'); if (iv) iv.value = '';
-  var ip = el('inp-ppl'); if (ip) ip.value = '';
-  renderDevs();
-  flash('vtr','0.00');
-  flash('vcfm','0');
-  flash('vbtu','0');
-  flash('vmkt','0');
-  el('breakdown').classList.remove('show');
-  el('hc-card').style.display = 'none';
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 10 — CALCULATION ENGINE
-// ════════════════════════════════════════════════════════════════════════════
-function totalDevBtu(){
-  return devs.reduce(function(sum, d){
-    var c = CAT.filter(function(x){ return x.id === d.id; })[0];
-    return sum + (c ? w2b(c.w) * d.qty : 0);
-  }, 0);
-}
-
-function doCalc(){
-  var iv = el('inp-vol');
-  var ip = el('inp-ppl');
-  var vol = parseFloat(iv ? iv.value : vals[0]) || 0;
-  var ppl = parseInt(ip ? ip.value : vals[1]) || 0;
-
-  vals[0] = String(vol);
-  vals[1] = String(ppl);
-
-  if (vol === 0){
-    showToast(tx('tnov'));
-    return;
-  }
-
-  if (curRoom.calc_mode === 'healthcare_ashrae'){
-    calcHealthcare(vol, ppl);
-  } else {
-    calcRuleOfThumb(vol, ppl);
-  }
-}
-
-function calcRuleOfThumb(vol, ppl){
-  var base = vol * curRoom.room_factor;
-  var pplBtu = ppl * 400;
-  var devBtu = totalDevBtu();
-  var sub = base + pplBtu + devBtu;
-  var total = sub * 1.10;
-  var tr = total / 12000;
-  var cfm = Math.round(tr * 400);
-  var mkt = Math.ceil(total / 9000) * 9000;
-
-  flash('vtr', tr.toFixed(2));
-  flash('vcfm', Math.round(cfm).toLocaleString());
-  flash('vbtu', Math.round(total).toLocaleString());
-  flash('vmkt', mkt.toLocaleString());
-
-  el('brv-vol').textContent = vol.toLocaleString();
-  el('brv-base').textContent = Math.round(base).toLocaleString();
-  el('brv-ppl').textContent = Math.round(pplBtu).toLocaleString();
-  el('brv-dev').textContent = Math.round(devBtu).toLocaleString();
-  el('brv-sub').textContent = Math.round(sub).toLocaleString();
-  el('brv-sf').textContent = Math.round(total).toLocaleString();
-  el('breakdown').classList.add('show');
-  el('hc-card').style.display = 'none';
-
-  saveHistory(vol, ppl, tr, cfm, total, mkt, devBtu, null);
-  showToast(tx('tcalc'));
-}
-
-function calcHealthcare(vol, ppl){
-  var r = curRoom;
-  var ft3 = m3toft3(vol);
-
-  var supCFM = Math.round((r.total_ach * ft3) / 60);
-  var oaCFM = Math.round((r.outdoor_ach * ft3) / 60);
-
-  var exhCFM;
-  if (r.pressure === 'negative') exhCFM = Math.round(supCFM * 1.10);
-  else if (r.pressure === 'positive') exhCFM = Math.round(supCFM * 0.90);
-  else exhCFM = supCFM;
-
-  var DT_F = 20;
-  var baseBtu = supCFM * 1.08 * DT_F;
-
-  var pplBtu = ppl * 400;
-  var devBtu = totalDevBtu();
-  var sub = baseBtu + pplBtu + devBtu;
-  var total = sub * 1.10;
-  var tr = total / 12000;
-  var mkt = Math.ceil(total / 9000) * 9000;
-
-  flash('vtr', tr.toFixed(2));
-  flash('vcfm', supCFM.toLocaleString());
-  flash('vbtu', Math.round(total).toLocaleString());
-  flash('vmkt', mkt.toLocaleString());
-
-  el('brv-vol').textContent = vol.toLocaleString();
-  el('brv-base').textContent = Math.round(baseBtu).toLocaleString();
-  el('brv-ppl').textContent = Math.round(pplBtu).toLocaleString();
-  el('brv-dev').textContent = Math.round(devBtu).toLocaleString();
-  el('brv-sub').textContent = Math.round(sub).toLocaleString();
-  el('brv-sf').textContent = Math.round(total).toLocaleString();
-  el('breakdown').classList.add('show');
-
-  renderHcCard(r, supCFM, oaCFM, exhCFM);
-
-  saveHistory(vol, ppl, tr, supCFM, total, mkt, devBtu, {
-    supCFM: supCFM, oaCFM: oaCFM, exhCFM: exhCFM, pressure: r.pressure
-  });
-
-  showToast(tx('tcalc'));
-}
-
-function renderHcCard(r, supCFM, oaCFM, exhCFM){
-  var pill = el('hc-pressure-pill');
-  var pKey = r.pressure === 'positive' ? 'press_pos' : r.pressure === 'negative' ? 'press_neg' : 'press_neu';
-  pill.textContent = tx(pKey);
-  pill.className = 'hc-pill ' + (r.pressure === 'positive' ? 'pos' : r.pressure === 'negative' ? 'neg' : 'neu');
-
-  el('hc-temp').textContent = r.temp_range[0] + '–' + r.temp_range[1] + ' °C';
-  el('hc-rh').textContent = r.rh_range[0] + '–' + r.rh_range[1] + '% RH';
-  el('hcv-ach').textContent = r.total_ach;
-  el('hcv-sup').textContent = supCFM.toLocaleString();
-  el('hcv-oa').textContent = oaCFM.toLocaleString();
-  el('hcv-exh').textContent = exhCFM.toLocaleString();
-
-  if (r.notes){
-    el('hc-note-row').style.display = '';
-    el('hcv-note').textContent = r.notes;
-  } else {
-    el('hc-note-row').style.display = 'none';
-  }
-
-  el('hc-card').style.display = 'block';
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 11 — DEVICES UI
-// ════════════════════════════════════════════════════════════════════════════
-function renderDevs(){
-  var list = el('dev-list');
-  list.innerHTML = '';
-
-  if (!devs.length){
-    var em = document.createElement('div');
-    em.className = 'dev-empty';
-    em.textContent = tx('dempty');
-    list.appendChild(em);
-    el('dev-total').style.display = 'none';
-    return;
-  }
-
-  devs.forEach(function(d){
-    var c = CAT.filter(function(x){ return x.id === d.id; })[0];
-    if (!c) return;
-
-    var name = lang === 'ar' ? c.ar : c.en;
-    var btu = w2b(c.w) * d.qty;
-    var row = document.createElement('div');
-    row.className = 'dev-row';
-    row.innerHTML =
-      '<div class="dev-ico">' + c.e + '</div>' +
-      '<div class="dev-info">' +
-        '<div class="dev-name">' + name + '</div>' +
-        '<div class="dev-watt">' + c.w + 'W &times; ' + d.qty + ' = ' + (c.w * d.qty).toLocaleString() + 'W</div>' +
-      '</div>' +
-      '<div class="dev-qty">' +
-        '<div class="qbtn" onclick="chgQty(\'' + d.id + '\',-1)">&#8722;</div>' +
-        '<div class="qnum">' + d.qty + '</div>' +
-        '<div class="qbtn" onclick="chgQty(\'' + d.id + '\',1)">&#43;</div>' +
-      '</div>' +
-      '<div class="dev-btu">' + btu.toLocaleString() + ' BTU/h</div>' +
-      '<div class="dev-del" onclick="delDev(\'' + d.id + '\')">&#128465;</div>';
-    list.appendChild(row);
-  });
-
-  var tot = totalDevBtu();
-  el('dev-total').style.display = 'flex';
-  el('val-dtot').textContent = tot.toLocaleString() + ' BTU/h';
-  el('lbl-dtot').textContent = tx('ldtot');
-}
-
-function chgQty(id, delta){
-  for (var i = 0; i < devs.length; i++){
-    if (devs[i].id === id){
-      devs[i].qty += delta;
-      if (devs[i].qty <= 0) devs.splice(i, 1);
-      break;
-    }
-  }
-  renderDevs();
-}
-
-function delDev(id){
-  devs = devs.filter(function(d){ return d.id !== id; });
-  renderDevs();
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 12 — DEVICE MODAL
-// ════════════════════════════════════════════════════════════════════════════
 function allowedGroups(){
-  var cat = curRoom.category;
-  if (cat === 'healthcare') return ['health','light'];
-  if (cat === 'home') return ['home','light','office'];
+  if(curRoom.category==='healthcare') return ['health','light'];
+  if(curRoom.category==='home') return ['home','light','office'];
   return ['office','light','home'];
 }
 
 function openModal(){
   buildGrid(null);
-  document.querySelectorAll('.ftab').forEach(function(t, i){
-    t.className = 'ftab' + (i === 0 ? ' on' : '');
-  });
+  document.querySelectorAll('.ftab').forEach(function(t,i){ t.className='ftab'+(i===0?' on':''); });
   el('overlay').classList.add('on');
 }
 
@@ -1050,293 +650,368 @@ function closeModal(){
 }
 
 function overlayClick(e){
-  if (e.target === el('overlay')) closeModal();
+  if(e.target===el('overlay')) closeModal();
 }
 
-function filterTab(tabEl, grp){
-  document.querySelectorAll('.ftab').forEach(function(t){ t.className = 'ftab'; });
-  tabEl.className = 'ftab on';
+function filterTab(tabEl,grp){
+  document.querySelectorAll('.ftab').forEach(function(t){ t.className='ftab'; });
+  tabEl.className='ftab on';
   buildGrid(grp);
 }
 
-var gLabel = {
-  office:{ar:'🏢 مكتب / Office', en:'🏢 Office'},
-  light:{ar:'💡 إضاءة / Lighting', en:'💡 Lighting'},
-  home:{ar:'🏠 منزلي / Domestic', en:'🏠 Domestic'},
-  health:{ar:'🏥 صحي / Healthcare', en:'🏥 Healthcare'}
+var gLabel={
+  office:{ar:'🏢 مكتب / Office',en:'🏢 Office'},
+  light:{ar:'💡 إضاءة / Lighting',en:'💡 Lighting'},
+  home:{ar:'🏠 منزلي / Domestic',en:'🏠 Domestic'},
+  health:{ar:'🏥 صحي / Healthcare',en:'🏥 Healthcare'}
 };
 
 function buildGrid(grp){
-  var grid = el('cat-grid');
-  grid.innerHTML = '';
-  var allowed = allowedGroups();
-
-  var groups;
-  if (grp && allowed.indexOf(grp) !== -1) groups = [grp];
-  else if (grp && allowed.indexOf(grp) === -1) groups = allowed;
-  else groups = allowed;
+  var grid=el('cat-grid');
+  grid.innerHTML='';
+  var allowed=allowedGroups();
+  var groups=(grp && allowed.indexOf(grp)!==-1)?[grp]:allowed;
 
   groups.forEach(function(gk){
-    var items = CAT.filter(function(d){ return d.g === gk; });
-    if (!items.length) return;
+    var items=CAT.filter(function(d){ return d.g===gk; });
+    if(!items.length) return;
 
-    var hdr = document.createElement('div');
-    hdr.className = 'cat-hdr';
-    hdr.textContent = gLabel[gk][lang];
+    var hdr=document.createElement('div');
+    hdr.className='cat-hdr';
+    hdr.textContent=gLabel[gk][lang];
     grid.appendChild(hdr);
 
     items.forEach(function(d){
-      var wl = d.w >= 1000 ? (d.w / 1000).toFixed(1) + 'kW' : d.w + 'W';
-      var btu = w2b(d.w);
+      var wl=d.w>=1000?(d.w/1000).toFixed(1)+'kW':d.w+'W';
+      var btu=w2b(d.w);
+      var card=document.createElement('div');
+      card.className='cat-item';
+      card.innerHTML=
+        '<div class="cat-ico">'+d.e+'</div>'+
+        '<div class="cat-name">'+(lang==='ar'?d.ar:d.en)+'</div>'+
+        '<div class="cat-w">'+wl+'</div>'+
+        '<div class="cat-btu">'+btu.toLocaleString()+' BTU/h</div>';
 
-      var card = document.createElement('div');
-      card.className = 'cat-item';
-      card.innerHTML =
-        '<div class="cat-ico">' + d.e + '</div>' +
-        '<div class="cat-name">' + (lang === 'ar' ? d.ar : d.en) + '</div>' +
-        '<div class="cat-w">' + wl + '</div>' +
-        '<div class="cat-btu">' + btu.toLocaleString() + ' BTU/h</div>';
-
-      (function(did, dname){
-        card.onclick = function(){
-          var found = false;
-          for (var i = 0; i < devs.length; i++){
-            if (devs[i].id === did){
-              devs[i].qty++;
-              found = true;
-              break;
-            }
-          }
-          if (!found) devs.push({id: did, qty: 1});
-          closeModal();
-          renderDevs();
-          showToast('✅ ' + dname + ' +1');
-        };
-      })(d.id, lang === 'ar' ? d.ar : d.en);
+      card.onclick=function(){
+        var found=devs.find(function(x){ return x.id===d.id; });
+        if(found){ found.qty++; }
+        else{ devs.push({id:d.id,qty:1}); }
+        renderDevs();
+        closeModal();
+        showToast('✅ '+(lang==='ar'?d.ar:d.en)+' +1');
+      };
 
       grid.appendChild(card);
     });
   });
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 13 — HISTORY
-// ════════════════════════════════════════════════════════════════════════════
-function saveHistory(vol, ppl, tr, cfm, totalBtu, mkt, devBtu, hcData){
-  var devSum = devs.map(function(d){
-    var c = CAT.filter(function(x){ return x.id === d.id; })[0];
-    return c ? (lang === 'ar' ? c.ar : c.en) + 'x' + d.qty : '';
+function totalDevBtu(){
+  return devs.reduce(function(sum,d){
+    var c=CAT.find(function(x){ return x.id===d.id; });
+    return sum + (c ? w2b(c.w)*d.qty : 0);
+  },0);
+}
+
+function renderDevs(){
+  var list=el('dev-list');
+  list.innerHTML='';
+
+  if(!devs.length){
+    var em=document.createElement('div');
+    em.className='dev-empty';
+    em.textContent=tx('dempty');
+    list.appendChild(em);
+    el('dev-total').style.display='none';
+    return;
+  }
+
+  devs.forEach(function(d){
+    var c=CAT.find(function(x){ return x.id===d.id; });
+    if(!c) return;
+    var name=lang==='ar'?c.ar:c.en;
+    var btu=w2b(c.w)*d.qty;
+
+    var row=document.createElement('div');
+    row.className='dev-row';
+    row.innerHTML=
+      '<div class="dev-ico">'+c.e+'</div>'+
+      '<div class="dev-info"><div class="dev-name">'+name+'</div><div class="dev-watt">'+c.w+'W × '+d.qty+' = '+(c.w*d.qty).toLocaleString()+'W</div></div>'+
+      '<div class="dev-qty"><div class="qbtn" onclick="chgQty(\''+d.id+'\',-1)">−</div><div class="qnum">'+d.qty+'</div><div class="qbtn" onclick="chgQty(\''+d.id+'\',1)">+</div></div>'+
+      '<div class="dev-btu">'+btu.toLocaleString()+' BTU/h</div>'+
+      '<div class="dev-del" onclick="delDev(\''+d.id+'\')">🗑</div>';
+    list.appendChild(row);
+  });
+
+  var tot=totalDevBtu();
+  el('dev-total').style.display='flex';
+  el('val-dtot').textContent=tot.toLocaleString()+' BTU/h';
+}
+
+function chgQty(id,delta){
+  var item=devs.find(function(d){ return d.id===id; });
+  if(!item) return;
+  item.qty+=delta;
+  if(item.qty<=0) devs=devs.filter(function(d){ return d.id!==id; });
+  renderDevs();
+}
+
+function delDev(id){
+  devs=devs.filter(function(d){ return d.id!==id; });
+  renderDevs();
+}
+
+function doCalc(){
+  var vol=parseFloat(el('inp-vol').value)||0;
+  var ppl=parseInt(el('inp-ppl').value)||0;
+  if(vol===0){ showToast(tx('tnov')); return; }
+
+  if(curRoom.calc_mode==='healthcare_ashrae'){
+    calcHealthcare(vol,ppl);
+  }else{
+    calcRuleOfThumb(vol,ppl);
+  }
+}
+
+function calcRuleOfThumb(vol,ppl){
+  var base=vol*curRoom.room_factor;
+  var pplBtu=ppl*400;
+  var devBtu=totalDevBtu();
+  var sub=base+pplBtu+devBtu;
+  var total=sub*1.10;
+  var tr=total/12000;
+  var cfm=Math.round(tr*400);
+  var mkt=Math.ceil(total/9000)*9000;
+
+  updateDashboard(tr,cfm,total,mkt);
+  updateBreakdown(vol,base,pplBtu,devBtu,sub,total);
+  el('hc-card').style.display='none';
+
+  saveHistory(vol,ppl,tr,cfm,total,mkt,devBtu,null);
+  showToast(tx('tcalc'));
+}
+
+function calcHealthcare(vol,ppl){
+  var r=curRoom;
+  var ft3=m3toft3(vol);
+  var supCFM=Math.round((r.total_ach*ft3)/60);
+  var oaCFM=Math.round((r.outdoor_ach*ft3)/60);
+  var exhCFM=(r.pressure==='negative')?Math.round(supCFM*1.10):(r.pressure==='positive')?Math.round(supCFM*0.90):supCFM;
+
+  var baseBtu=supCFM*1.08*20;
+  var pplBtu=ppl*400;
+  var devBtu=totalDevBtu();
+  var sub=baseBtu+pplBtu+devBtu;
+  var total=sub*1.10;
+  var tr=total/12000;
+  var mkt=Math.ceil(total/9000)*9000;
+
+  updateDashboard(tr,supCFM,total,mkt);
+  updateBreakdown(vol,baseBtu,pplBtu,devBtu,sub,total);
+  renderHcCard(r,supCFM,oaCFM,exhCFM);
+
+  saveHistory(vol,ppl,tr,supCFM,total,mkt,devBtu,{supCFM:supCFM,oaCFM:oaCFM,exhCFM:exhCFM,pressure:r.pressure});
+  showToast(tx('tcalc'));
+}
+
+function updateDashboard(tr,cfm,total,mkt){
+  flash('vtr',tr.toFixed(2));
+  flash('vcfm',Number(cfm).toLocaleString());
+  flash('vbtu',Math.round(total).toLocaleString());
+  flash('vmkt',Number(mkt).toLocaleString());
+}
+
+function updateBreakdown(vol,base,pplBtu,devBtu,sub,total){
+  el('brv-vol').textContent=Number(vol).toLocaleString();
+  el('brv-base').textContent=Math.round(base).toLocaleString();
+  el('brv-ppl').textContent=Math.round(pplBtu).toLocaleString();
+  el('brv-dev').textContent=Math.round(devBtu).toLocaleString();
+  el('brv-sub').textContent=Math.round(sub).toLocaleString();
+  el('brv-sf').textContent=Math.round(total).toLocaleString();
+  el('breakdown').classList.add('show');
+}
+
+function renderHcCard(r,supCFM,oaCFM,exhCFM){
+  var pill=el('hc-pressure-pill');
+  pill.className='hc-pill '+(r.pressure==='positive'?'pos':r.pressure==='negative'?'neg':'neu');
+  pill.textContent=r.pressure==='positive'?(lang==='ar'?'ضغط موجب ▲':'Positive Pressure ▲'):r.pressure==='negative'?(lang==='ar'?'ضغط سالب ▼':'Negative Pressure ▼'):(lang==='ar'?'ضغط محايد':'Neutral Pressure');
+  el('hc-temp').textContent=r.temp_range[0]+'–'+r.temp_range[1]+' °C';
+  el('hc-rh').textContent=r.rh_range[0]+'–'+r.rh_range[1]+'% RH';
+  el('hcv-ach').textContent=r.total_ach;
+  el('hcv-sup').textContent=supCFM.toLocaleString();
+  el('hcv-oa').textContent=oaCFM.toLocaleString();
+  el('hcv-exh').textContent=exhCFM.toLocaleString();
+
+  if(r.notes){
+    el('hc-note-row').style.display='';
+    el('hcv-note').textContent=r.notes;
+  }else{
+    el('hc-note-row').style.display='none';
+  }
+  el('hc-card').style.display='block';
+}
+
+function currentProjectMeta(){
+  return {
+    project: el('project-name').value.trim(),
+    client: el('client-name').value.trim(),
+    ref: el('quote-ref').value.trim(),
+    rate: parseFloat(el('rate-tr').value)||0
+  };
+}
+
+function saveHistory(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcData){
+  var meta=currentProjectMeta();
+  var devSum=devs.map(function(d){
+    var c=CAT.find(function(x){ return x.id===d.id; });
+    return c ? ((lang==='ar'?c.ar:c.en)+'x'+d.qty) : '';
   }).filter(Boolean).join(' | ');
 
-  var record = {
-    time: new Date().toLocaleString('ar-SA'),
-    type: lang === 'ar' ? curRoom.label_ar : curRoom.label_en,
-    category: curRoom.category,
-    calc_mode: curRoom.calc_mode,
-    vol: vol,
-    ppl: ppl,
-    devSum: devSum,
-    devBtu: devBtu,
-    tr: tr.toFixed(2),
-    cfm: cfm,
-    btu: Math.round(totalBtu),
-    mkt: mkt
+  var record={
+    time:new Date().toLocaleString('ar-SA'),
+    type:lang==='ar'?curRoom.label_ar:curRoom.label_en,
+    roomId:curRoom.id,
+    category:curRoom.category,
+    calc_mode:curRoom.calc_mode,
+    vol:vol,
+    ppl:ppl,
+    devSum:devSum,
+    devBtu:devBtu,
+    tr:tr.toFixed(2),
+    cfm:cfm,
+    btu:Math.round(totalBtu),
+    mkt:mkt,
+    project:meta.project,
+    client:meta.client,
+    ref:meta.ref,
+    rate:meta.rate
   };
 
-  if (hcData){
-    record.supCFM = hcData.supCFM;
-    record.oaCFM = hcData.oaCFM;
-    record.exhCFM = hcData.exhCFM;
-    record.pressure = hcData.pressure;
+  if(hcData){
+    record.supCFM=hcData.supCFM;
+    record.oaCFM=hcData.oaCFM;
+    record.exhCFM=hcData.exhCFM;
+    record.pressure=hcData.pressure;
   }
 
-  if (editingIdx >= 0 && editingIdx < hist.length){
-    hist[editingIdx] = record;
-    editingIdx = -1;
-  } else {
-    hist.push(record);
-    if (hist.length > 100) hist.shift();
-  }
-
-  localStorage.setItem('acp4', JSON.stringify(hist));
+  hist.push(record);
+  if(hist.length>100) hist.shift();
+  localStorage.setItem('acp6',JSON.stringify(hist));
   renderHist();
 }
 
 function renderHist(){
-  var list = el('hist-list');
-  list.innerHTML = '';
+  var list=el('hist-list');
+  list.innerHTML='';
+  el('hist-count').textContent=hist.length;
 
-  var countEl = el('hist-count');
-  if (countEl) countEl.textContent = hist.length;
-
-  if (!hist.length){
-    var em = document.createElement('div');
-    em.className = 'hist-empty';
-    em.id = 'hist-empty';
-    em.textContent = tx('hempty');
+  if(!hist.length){
+    var em=document.createElement('div');
+    em.className='hist-empty';
+    em.textContent=tx('hempty');
     list.appendChild(em);
-    el('cum-card').style.display = 'none';
+    el('cum-card').style.display='none';
+    el('quote-card').style.display='none';
     return;
   }
 
-  var totTR = 0, totCFM = 0, totBTU = 0, totMKT = 0;
+  var totTR=0,totCFM=0,totBTU=0,totMKT=0;
   hist.forEach(function(h){
-    totTR += parseFloat(h.tr) || 0;
-    totCFM += parseInt(h.cfm) || 0;
-    totBTU += parseInt(h.btu) || 0;
-    totMKT += parseInt(h.mkt) || 0;
+    totTR+=parseFloat(h.tr)||0;
+    totCFM+=parseInt(h.cfm)||0;
+    totBTU+=parseInt(h.btu)||0;
+    totMKT+=parseInt(h.mkt)||0;
   });
 
-  el('cum-tr').textContent = totTR.toFixed(2);
-  el('cum-cfm').textContent = totCFM.toLocaleString('en');
-  el('cum-btu').textContent = totBTU.toLocaleString('en');
-  el('cum-mkt').textContent = totMKT.toLocaleString('en');
-  el('cum-card').style.display = '';
+  el('cum-tr').textContent=totTR.toFixed(2);
+  el('cum-cfm').textContent=totCFM.toLocaleString('en');
+  el('cum-btu').textContent=totBTU.toLocaleString('en');
+  el('cum-mkt').textContent=totMKT.toLocaleString('en');
+  el('cum-card').style.display='block';
 
-  hist.forEach(function(h, idx){
-    var cfmLine = '';
-    if (h.supCFM) cfmLine = 'S:' + h.supCFM + ' OA:' + h.oaCFM + ' Exh:' + h.exhCFM + ' CFM';
+  var last=hist[hist.length-1];
+  var rate=Number(last.rate||0);
+  var totalSar=totTR*rate;
+  el('q-project').textContent=last.project||'—';
+  el('q-client').textContent=last.client||'—';
+  el('q-ref').textContent=last.ref||'—';
+  el('q-rate').textContent=rate ? rate.toLocaleString('en')+' SAR' : '0 SAR';
+  el('q-total').textContent=totalSar ? totalSar.toLocaleString('en')+' SAR' : '0 SAR';
+  el('quote-card').style.display='block';
 
-    var row = document.createElement('div');
-    row.className = 'hist-item';
-    row.setAttribute('data-idx', idx);
-    row.innerHTML =
-      '<div class="hist-main">' +
-        '<div class="hist-room">' + (idx + 1) + '. ' + h.type + '</div>' +
-        '<div class="hist-detail">' +
-          h.vol + ' m³ · ' + h.ppl + '&#128100;' + (h.devSum ? ' · ' + h.devSum : '') +
-        '</div>' +
-        (cfmLine ? '<div class="hist-cfm">' + cfmLine + '</div>' : '') +
-        '<div class="hist-time">' + h.time + '</div>' +
-        '<div class="hist-actions">' +
-          '<button class="hact-btn edit-btn" onclick="editRecord(' + idx + ')">✏️</button>' +
-          '<button class="hact-btn del-btn" onclick="deleteRecord(' + idx + ')">🗑️</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="hist-right">' +
-        '<div class="hist-tr">' + h.tr + ' TR</div>' +
-        '<div class="hist-btu">' + Number(h.btu).toLocaleString('en') + ' BTU/h</div>' +
-        '<div class="hist-btu">' + Number(h.mkt).toLocaleString('en') + ' Mkt</div>' +
+  hist.forEach(function(h,idx){
+    var cfmLine='';
+    if(h.supCFM) cfmLine='S:'+h.supCFM+' · OA:'+h.oaCFM+' · Exh:'+h.exhCFM+' CFM';
+
+    var row=document.createElement('div');
+    row.className='hist-item';
+    row.innerHTML=
+      '<div class="hist-main">'+
+        '<div class="hist-room">'+(idx+1)+'. '+h.type+'</div>'+
+        '<div class="hist-detail">'+h.vol+' m³ · '+h.ppl+' 👤'+(h.devSum?' · '+h.devSum:'')+'</div>'+
+        (cfmLine?'<div class="hist-cfm">'+cfmLine+'</div>':'')+
+        '<div class="hist-time">'+h.time+'</div>'+
+      '</div>'+
+      '<div class="hist-right">'+
+        '<div class="hist-tr">'+h.tr+' TR</div>'+
+        '<div class="hist-btu">'+Number(h.btu).toLocaleString('en')+' BTU/h</div>'+
+        '<div class="hist-btu">'+Number(h.mkt).toLocaleString('en')+' Mkt</div>'+
       '</div>';
     list.appendChild(row);
   });
 }
 
 function clearHist(){
-  hist = [];
-  localStorage.removeItem('acp4');
+  hist=[];
+  localStorage.removeItem('acp6');
   renderHist();
   showToast(tx('tclr'));
 }
 
 function exportCSV(){
-  if (!hist.length){
-    showToast(tx('tnodata'));
-    return;
-  }
+  if(!hist.length){ showToast(lang==='ar'?'⚠️ لا توجد بيانات':'⚠️ No data'); return; }
 
-  var headers = ['#','Time','Room Type','Category','Calc Mode','Volume(m3)','Persons','Devices','Device BTU/h','TR','CFM','Total BTU/h','Market BTU','Supply CFM','OA CFM','Exhaust CFM','Pressure'];
+  var headers=['#','Time','Project','Client','Quotation Ref','Room Type','Category','Calc Mode','Volume(m3)','Persons','Devices','Device BTU/h','TR','CFM','Total BTU/h','Market BTU','Rate / TR','Estimated SAR','Supply CFM','OA CFM','Exhaust CFM','Pressure'];
 
-  var rows = hist.map(function(r, i){
+  var rows=hist.map(function(r,i){
+    var rate=Number(r.rate||0);
+    var sar=(parseFloat(r.tr)||0)*rate;
     return [
-      i + 1, r.time, r.type, r.category || '', r.calc_mode || '', r.vol, r.ppl,
-      r.devSum || '', r.devBtu || 0, r.tr, r.cfm, r.btu, r.mkt,
-      r.supCFM || '', r.oaCFM || '', r.exhCFM || '', r.pressure || ''
+      i+1,r.time,r.project||'',r.client||'',r.ref||'',r.type,r.category||'',r.calc_mode||'',r.vol,r.ppl,
+      r.devSum||'',r.devBtu||0,r.tr,r.cfm,r.btu,r.mkt,rate,sar.toFixed(2),r.supCFM||'',r.oaCFM||'',r.exhCFM||'',r.pressure||''
     ];
   });
 
-  var totTR = hist.reduce(function(s,r){ return s + (parseFloat(r.tr) || 0); }, 0);
-  var totCFM = hist.reduce(function(s,r){ return s + (parseInt(r.cfm) || 0); }, 0);
-  var totBTU = hist.reduce(function(s,r){ return s + (parseInt(r.btu) || 0); }, 0);
-  var totMKT = hist.reduce(function(s,r){ return s + (parseInt(r.mkt) || 0); }, 0);
+  var totTR=hist.reduce(function(s,r){ return s+(parseFloat(r.tr)||0); },0);
+  var totCFM=hist.reduce(function(s,r){ return s+(parseInt(r.cfm)||0); },0);
+  var totBTU=hist.reduce(function(s,r){ return s+(parseInt(r.btu)||0); },0);
+  var totMKT=hist.reduce(function(s,r){ return s+(parseInt(r.mkt)||0); },0);
+  var last=hist[hist.length-1];
+  var rate=Number(last.rate||0);
+  var totalSar=totTR*rate;
 
-  rows.push(['TOTAL','','','','','','','','', totTR.toFixed(2), totCFM, totBTU, totMKT,'','','','']);
+  rows.push(['TOTAL','','','','','','','','','', '', '', totTR.toFixed(2), totCFM, totBTU, totMKT, rate, totalSar.toFixed(2), '', '', '', '']);
 
-  var csv = [headers].concat(rows).map(function(r){
+  var csv=[headers].concat(rows).map(function(r){
     return r.map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(',');
   }).join('\n');
 
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'}));
-  a.download = 'aircalc_pro_v5.csv';
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='aircalc_pro_v6.csv';
   a.click();
-
   showToast(tx('texp'));
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 13B — HISTORY EDIT & DELETE
-// ════════════════════════════════════════════════════════════════════════════
-function deleteRecord(idx){
-  hist.splice(idx, 1);
-  localStorage.setItem('acp4', JSON.stringify(hist));
-  renderHist();
-  showToast('🗑️ ' + (lang === 'ar' ? 'تم الحذف' : 'Deleted'));
-}
-
-function editRecord(idx){
-  var h = hist[idx];
-  if (!h) return;
-
-  goPanel('calc');
-
-  var roomId = null;
-  for (var rid in ROOMS){
-    var r = ROOMS[rid];
-    if (r.label_ar === h.type || r.label_en === h.type){
-      roomId = rid;
-      break;
-    }
-  }
-
-  if (roomId){
-    curRoom = ROOMS[roomId];
-    document.querySelectorAll('#dd-room .dd-item').forEach(function(item){
-      item.classList.remove('sel');
-      var oc = item.getAttribute('onclick');
-      if (oc && oc.indexOf("'" + roomId + "'") >= 0) item.classList.add('sel');
-    });
-    el('dt').textContent = lang === 'ar' ? curRoom.label_ar : curRoom.label_en;
-  }
-
-  var iv = el('inp-vol');
-  if (iv){ iv.value = h.vol; vals[0] = String(h.vol); }
-
-  var ip = el('inp-ppl');
-  if (ip){ ip.value = h.ppl; vals[1] = String(h.ppl); }
-
-  devs = [];
-  if (h.devSum){
-    h.devSum.split(' | ').forEach(function(part){
-      var m = part.match(/^(.+?)x(\d+)$/);
-      if (!m) return;
-      var dname = m[1].trim();
-      var qty = parseInt(m[2], 10);
-      var found = CAT.filter(function(c){ return c.ar === dname || c.en === dname; })[0];
-      if (found) devs.push({id: found.id, qty: qty});
-    });
-  }
-
-  renderDevs();
-  editingIdx = idx;
-  showToast(lang === 'ar' ? '✏️ تحرير السجل رقم ' + (idx + 1) : '✏️ Editing record #' + (idx + 1));
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-// SECTION 14 — NAVIGATION
-// ════════════════════════════════════════════════════════════════════════════
 function goPanel(name){
   document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('on'); });
   document.querySelectorAll('.ni').forEach(function(n){ n.classList.remove('on'); });
-  el('p-' + name).classList.add('on');
-  el('ni-' + name).classList.add('on');
+  el('p-'+name).classList.add('on');
+  el('ni-'+name).classList.add('on');
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════════════════════════════════════
 applyLang();
-setF(0);
+refreshDisp();
 renderDevs();
 renderHist();
 </script>
