@@ -260,6 +260,13 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .ac-room-tr{color:var(--tm);font-size:11px;white-space:nowrap;}
 .ac-opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
 
+
+/* UNIT TYPE SELECTOR IN QUOTE CARD */
+.qi-utype{display:flex;align-items:center;gap:6px;padding:5px 0 6px;border-bottom:1px solid var(--b);margin-bottom:6px;flex-wrap:wrap;}
+.qi-utype-lbl{font-size:10px;color:var(--tm);font-family:var(--fe);letter-spacing:.5px;white-space:nowrap;}
+.qi-utype-sel{background:var(--s3);border:1px solid var(--b);border-radius:4px;padding:4px 8px;color:var(--tb);font-family:var(--fa);font-size:11px;outline:none;cursor:pointer;flex:1;min-width:100px;max-width:180px;}
+.qi-utype-sel:focus{border-color:var(--a);}
+
 @media(min-width:480px){.app{padding:24px;padding-bottom:120px;}}
 </style>
 </head>
@@ -401,89 +408,6 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
   <!-- HIST + QUOTATION PANEL -->
   <div class="panel" id="p-hist">
 
-  <!-- AC TYPE SELECTION CARD -->
-  <div class="qs-card" id="ac-card" style="display:block">
-    <div class="sec-ttl" id="ac-ttl">اختيار نوع التكييف المقترح</div>
-
-    <!-- System Type -->
-    <div class="lbl" id="ac-lbl-sys" style="margin-bottom:6px">نوع النظام</div>
-    <select class="qs-sel" id="ac-sys" onchange="acCalc()" style="margin-bottom:12px">
-      <option value="split" id="ac-opt-split">Split (Wall)</option>
-      <option value="ducted" id="ac-opt-ducted">Ducted Split</option>
-      <option value="package" id="ac-opt-package">Package Unit</option>
-      <option value="vrf" id="ac-opt-vrf">VRF</option>
-      <option value="chiller" id="ac-opt-chiller">Chiller</option>
-    </select>
-
-    <!-- Mode segmented control -->
-    <div class="lbl" id="ac-lbl-mode" style="margin-bottom:6px">وضع التوزيع</div>
-    <div class="ac-seg" style="margin-bottom:12px">
-      <div class="ac-seg-btn on" id="ac-mode-total" onclick="acSetMode('total')">
-        <span id="ac-mode-total-lbl">وحدة واحدة للمشروع</span>
-      </div>
-      <div class="ac-seg-btn" id="ac-mode-room" onclick="acSetMode('room')">
-        <span id="ac-mode-room-lbl">وحدة لكل غرفة</span>
-      </div>
-    </div>
-
-    <!-- Rounding step -->
-    <div class="lbl" id="ac-lbl-round" style="margin-bottom:6px">تقريب السعة</div>
-    <select class="qs-sel" id="ac-round" onchange="acCalc()" style="margin-bottom:12px">
-      <option value="btu">BTU/h Market Steps</option>
-      <option value="htr">0.5 TR Steps</option>
-      <option value="1tr">1 TR Steps</option>
-    </select>
-
-    <!-- Optional fields -->
-    <div class="ac-opt-grid">
-      <div>
-        <div class="lbl" id="ac-lbl-brand" style="margin-bottom:4px;font-size:11px">الماركة / الموديل</div>
-        <input class="inp" id="ac-brand" placeholder="e.g. Carrier 42KHB" style="font-size:12px" oninput="acCalc()">
-      </div>
-      <div>
-        <div class="lbl" id="ac-lbl-volt" style="margin-bottom:4px;font-size:11px">الجهد الكهربائي</div>
-        <input class="inp" id="ac-volt" placeholder="e.g. 220V / 380V" style="font-size:12px" oninput="acCalc()">
-      </div>
-      <div>
-        <div class="lbl" id="ac-lbl-eff" style="margin-bottom:4px;font-size:11px">كفاءة الطاقة</div>
-        <input class="inp" id="ac-eff" placeholder="e.g. EER 12, SEER 16" style="font-size:12px" oninput="acCalc()">
-      </div>
-    </div>
-
-    <!-- Result display -->
-    <div class="ac-result show" id="ac-result">
-      <!-- Total mode result -->
-      <div id="ac-total-result">
-        <div class="ac-res-grid">
-          <div class="ac-res-item">
-            <div class="ac-res-val" id="ac-rec-btu">—</div>
-            <div class="ac-res-lbl" id="ac-rec-btu-lbl">BTU/h الموصى بها</div>
-          </div>
-          <div class="ac-res-item">
-            <div class="ac-res-val" id="ac-rec-tr">—</div>
-            <div class="ac-res-lbl">TR</div>
-          </div>
-          <div class="ac-res-item">
-            <div class="ac-res-val" id="ac-rec-units">1</div>
-            <div class="ac-res-lbl" id="ac-rec-units-lbl">عدد الوحدات</div>
-          </div>
-          <div class="ac-res-item">
-            <div class="ac-res-val" id="ac-rec-sys">—</div>
-            <div class="ac-res-lbl" id="ac-rec-sys-lbl">نوع النظام</div>
-          </div>
-        </div>
-      </div>
-      <!-- Per-room mode result -->
-      <div id="ac-room-result" style="display:none">
-        <div class="ac-per-room" id="ac-room-list"></div>
-        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--b);
-          display:flex;justify-content:space-between;font-size:12px">
-          <span id="ac-room-total-lbl" style="color:var(--tm)">الإجمالي</span>
-          <span id="ac-room-total" style="color:var(--a);font-weight:700"></span>
-        </div>
-      </div>
-    </div>
-  </div>
 
     <div class="cum-card" id="cum-card" style="display:none">
       <div class="cum-ttl" id="cum-ttl">الإجمالي التراكمي</div>
@@ -734,7 +658,9 @@ var qlines = []; // [{qty,up}] parallel to hist
 
 try { hist = JSON.parse(localStorage.getItem('acp9h') || '[]'); } catch(e){ hist=[]; }
 try { qlines = JSON.parse(localStorage.getItem('acp9q') || '[]'); } catch(e){ qlines=[]; }
-while(qlines.length < hist.length) var lastUp=(qlines.length>0?qlines[qlines.length-1].up:0)||0; qlines.push({qty:1,up:lastUp});
+while(qlines.length < hist.length) var lastUp=(qlines.length>0?qlines[qlines.length-1].up:0)||0;
+  var lastUT=(qlines.length>0?qlines[qlines.length-1].unitType:'')||'split';
+  qlines.push({qty:1,up:lastUp,unitType:lastUT});
 qlines = qlines.slice(0, hist.length);
 
 var editIdx = -1;
@@ -795,7 +721,7 @@ var T = {
       acrbtu:'BTU/h الموصى بها',acrunits:'عدد الوحدات',acrsys:'نوع النظام',
       acroomtot:'إجمالي الوحدات',
       acround_btu:'خطوات السوق BTU/h',acround_htr:'خطوات 0.5 TR',acround_1tr:'خطوات 1 TR',
-      acsplit:'مكيف ولاعة (Split)',acducted:'سبليت مخفي (Ducted)',acpackage:'وحدة مركزية (Package)',acvrf:'VRF',acchiller:'تبريد مركزي (Chiller)',
+      acsplit:'سبليت (Split)',acducted:'سبليت مخفي (Ducted)',acpackage:'وحدة مركزية (Package)',acvrf:'VRF',acchiller:'تبريد مركزي (Chiller)',accassette:'كاسيت (Cassette)',acchillerfcu:'فريش إير + FCU',acwindow:'تكييف شباك (Window)',
       lvol:'حجم الغرفة (m³)',ltype:'نوع الغرفة',lppl:'👤 أشخاص — 400 BTU/h',ladd:'+ إضافة جهاز',
       lmodal:'اختر نوع الجهاز',ldtot:'إجمالي حمل الأجهزة',sroom:'الغرفة',sdev:'الأجهزة',
       bvol:'حجم الغرفة',bbase:'الحمل الأساسي',bppl:'حمل الأشخاص',bdev:'حمل الأجهزة',bsub:'الإجمالي',bsf:'+ معامل أمان 10%',
@@ -821,7 +747,7 @@ var T = {
       acrbtu:'Recommended BTU/h',acrunits:'Units Required',acrsys:'System Type',
       acroomtot:'Total Units',
       acround_btu:'BTU/h Market Steps',acround_htr:'0.5 TR Steps',acround_1tr:'1 TR Steps',
-      acsplit:'Split (Wall)',acducted:'Ducted Split',acpackage:'Package Unit',acvrf:'VRF',acchiller:'Chiller',
+      acsplit:'Split (Wall)',acducted:'Ducted Split',acpackage:'Package Unit',acvrf:'VRF',acchiller:'Chiller',accassette:'Cassette',acchillerfcu:'Chiller FCU',acwindow:'Window AC',
       lvol:'Room Volume (m³)',ltype:'Room Type',lppl:'👤 Persons — 400 BTU/h each',ladd:'+ Add Device',
       lmodal:'Select Device Type',ldtot:'Total Device Load',sroom:'ROOM',sdev:'DEVICES',
       bvol:'Room Volume',bbase:'Base Load',bppl:'People Load',bdev:'Device Load',bsub:'Sub-total',bsf:'+ Safety 10%',
@@ -897,7 +823,6 @@ function applyLang(){
   G('dt').textContent = rLabel(curRoom);
   renderDevs();
   renderHist();
-  if(acLastBtu) acCalc();
 }
 function toggleLang(){ lang=lang==='ar'?'en':'ar'; applyLang(); }
 
@@ -908,7 +833,6 @@ function goPanel(name){
   var p=G('p-'+name), n=G('ni-'+name);
   if(p) p.classList.add('on');
   if(n) n.classList.add('on');
-  if(name==='hist' && hist.length) acShowCard();
 }
 
 // ── DROPDOWN ──────────────────────────────────────────────────────────────
@@ -1150,6 +1074,7 @@ function clearHist(){ hist=[]; qlines=[]; save(); renderHist(); toast(t('tclr'))
 // ── QUOTATION ─────────────────────────────────────────────────────────────
 function getQty(i){ return Math.max(1,parseInt((qlines[i]||{}).qty)||1); }
 function getUP(i){ return parseFloat((qlines[i]||{}).up)||0; }
+function getUT(i){ return (qlines[i]||{}).unitType||'split'; }
 
 function renderQuote(){
   var list=G('qi-list'); list.innerHTML='';
@@ -1169,8 +1094,12 @@ function renderQuote(){
       hcLine='<div class="qi-hcline">ASHRAE — S:'+h.sup+' OA:'+h.oa+' Exh:'+h.exh+' CFM | '+pl+'</div>';
     }
     var devLine=h.devSum?'<div class="qi-devline">⚡ '+h.devSum+'</div>':'';
+    var utOpts=['split','ducted','cassette','package','vrf','chillerfcu','window'];
+    var utLabels={split:t('acsplit'),ducted:t('acducted'),cassette:(lang==='ar'?'كاسيت (Cassette)':'Cassette'),package:t('acpackage'),vrf:t('acvrf'),chillerfcu:(lang==='ar'?'فريش إير + FCU':'Chiller FCU'),window:(lang==='ar'?'تكييف شباك':'Window')};
+    var utSelOpts=utOpts.map(function(k){ return '<option value="'+k+'"'+(getUT(i)===k?' selected':'')+'>'+utLabels[k]+'</option>'; }).join('');
+    var utHtml='<div class="qi-utype"><span class="qi-utype-lbl">'+(lang==='ar'?'نوع الوحدة':'Unit Type')+'</span><select class="qi-utype-sel" onchange="setUnitType('+i+',this.value)">'+utSelOpts+'</select></div>';
     item.innerHTML=
-      '<div class="qi-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+
+      '<div class="qi-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+utHtml+
       '<div class="qi-body">'+
         '<div class="qi-tech">'+
           '<div class="qi-stat"><div class="qi-slbl">m³</div><div class="qi-sval">'+h.vol+'</div></div>'+
@@ -1203,6 +1132,8 @@ function renderQuote(){
 }
 
 function setQty(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].qty=Math.max(1,parseInt(v)||1); save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); }
+function setUnitType(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0,unitType:'split'}; qlines[i].unitType=v||'split'; save(); }
+
 function setUp(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].up=parseFloat(v)||0; save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); }
 
 function refreshGrandTotal(){
@@ -1426,14 +1357,16 @@ function buildInvoiceHTML(){
   var bodyFont = isAr ? "'Cairo', Arial, sans-serif" : "'Segoe UI', Arial, sans-serif";
 
   var rows='';
+  var utLblsInv={split:(isAr?'سبليت (Split)':'Split (Wall)'),ducted:(isAr?'سبليت مخفي':'Ducted Split'),cassette:(isAr?'كاسيت':'Cassette'),package:(isAr?'وحدة مركزية':'Package Unit'),vrf:'VRF',chillerfcu:(isAr?'فريش إير + FCU':'Chiller FCU'),window:(isAr?'تكييف شباك':'Window AC'),chiller:(isAr?'تبريد مركزي':'Chiller')};
   hist.forEach(function(h,i){
     var _nm=isAr?(h.ar||h.en):(h.en||h.ar);
     var name=_nm.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}]/gu,'').trim();
+    var utKey=getUT(i); var utLbl=utLblsInv[utKey]||utKey;
     var lt=getQty(i)*getUP(i);
     var bg = i%2===0?'#ffffff':'#f8fafc';
     rows+='<tr style="background:'+bg+'">'
       +'<td style="text-align:center;color:#64748b">'+( i+1)+'</td>'
-      +'<td style="text-align:'+(isAr?'right':'left')+'">'+name+'</td>'
+      +'<td style="text-align:'+(isAr?'right':'left')+'">'+name+'<div style="font-size:10px;color:#0ea5e9;margin-top:2px;font-weight:600">'+utLbl+'</div></td>'
       +'<td>'+h.vol+'</td>'
       +'<td>'+h.ppl+'</td>'
       +'<td style="color:#0ea5e9;font-weight:600">'+h.tr+'</td>'
@@ -1561,48 +1494,8 @@ function buildInvoiceHTML(){
     // Notes
     +(notes?'<div class="notes-box"><div class="notes-lbl">'+t('invnotes')+'</div>'+notes.replace(/\n/g,'<br>')+'</div>':'')
 
-    // AC SELECTION SECTION
-    var acData = acGetExportData();
+    // Unit types are embedded per room in the table rows above.
     var acSection = '';
-    if(acData){
-      var modeLabel = acData.mode==='total'?(isAr?'وحدة واحدة للمشروع':'One unit for project'):(isAr?'وحدة لكل غرفة':'Unit per room');
-      var acRows = '';
-      if(acData.mode==='total'){
-        acRows = '<tr><td style="font-weight:600;color:#0ea5e9">'+acData.sysLabel+'</td>'
-          +'<td>'+modeLabel+'</td>'
-          +'<td style="font-weight:700">'+Number(acData.unitBtu).toLocaleString()+' BTU/h</td>'
-          +'<td style="font-weight:700">'+acData.unitTr+' TR</td>'
-          +'<td>1</td>'
-          +(acData.brand?'<td>'+acData.brand+'</td>':'<td>—</td>')
-          +'</tr>';
-      } else {
-        (acData.rooms||[]).forEach(function(r,i){
-          acRows += '<tr><td>'+(i+1)+'. '+r.name+'</td><td>'+acData.sysLabel+'</td>'
-            +'<td style="font-weight:700">'+Number(r.btu).toLocaleString()+' BTU/h</td>'
-            +'<td style="font-weight:700">'+r.tr+' TR</td>'
-            +'<td>1</td>'
-            +'<td>'+( acData.brand||'—')+'</td>'
-            +'</tr>';
-        });
-      }
-      var acOptInfo = [];
-      if(acData.volt) acOptInfo.push((isAr?'الجهد: ':'Voltage: ')+acData.volt);
-      if(acData.eff)  acOptInfo.push((isAr?'الكفاءة: ':'Efficiency: ')+acData.eff);
-      acSection =
-        '<div style="margin-top:20px;margin-bottom:16px">'
-        +'<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #0ea5e9">'
-          +(isAr?'نظام التكييف المقترح':'Recommended AC System')
-        +'</div>'
-        +'<table><thead><tr style="background:#0f172a;color:#fff">'
-          +(acData.mode==='total'
-            ? '<th>'+(isAr?'نوع النظام':'System')+'</th><th>'+(isAr?'الوضع':'Mode')+'</th><th>BTU/h</th><th>TR</th><th>'+(isAr?'الوحدات':'Units')+'</th><th>'+(isAr?'الماركة':'Brand')+'</th>'
-            : '<th>'+(isAr?'الغرفة':'Room')+'</th><th>'+(isAr?'نوع النظام':'System')+'</th><th>BTU/h</th><th>TR</th><th>'+(isAr?'الوحدات':'Units')+'</th><th>'+(isAr?'الماركة':'Brand')+'</th>'
-          )
-        +'</tr></thead><tbody>'+acRows+'</tbody></table>'
-        +(acOptInfo.length?'<div style="font-size:11px;color:#64748b;margin-top:6px">'+acOptInfo.join(' &nbsp;|&nbsp; ')+'</div>':'')
-        +'</div>';
-    }
-
     // Disclaimer
     +(acSection)
     +'<div class="disclaimer">'+t('invdiscl')+'<br>AirCalc Pro — HVAC Engineering Suite &copy; '+new Date().getFullYear()+'</div>'
@@ -1614,10 +1507,6 @@ function buildInvoiceHTML(){
 
 
 // ── AC SELECTION ──────────────────────────────────────────────────────────
-var acMode = 'total';
-var acLastBtu = 0;
-var acLastHist = [];
-
 var AC_BTU_STEPS = [9000,12000,18000,24000,27000,30000,36000,42000,48000,60000,72000,96000,120000];
 
 function acRoundBtu(btu, method){
@@ -1631,100 +1520,14 @@ function acRoundBtu(btu, method){
   }
 }
 
-function acSetMode(mode){
-  acMode=mode;
-  var btnT=G('ac-mode-total'), btnR=G('ac-mode-room');
-  if(mode==='total'){ btnT.classList.add('on'); btnR.classList.remove('on'); }
-  else { btnR.classList.add('on'); btnT.classList.remove('on'); }
-  acCalc();
-}
 
-function acSysLabel(val){
-  var map={split:t('acsplit'),ducted:t('acducted'),package:t('acpackage'),vrf:t('acvrf'),chiller:t('acchiller')};
-  return map[val]||val;
-}
-
-function acCalc(){
-  if(!acLastBtu) return;
-  var method=(G('ac-round')||{value:'btu'}).value;
-  var sysVal=(G('ac-sys')||{value:'split'}).value;
-  var resEl=G('ac-result'); if(!resEl) return;
-  resEl.classList.add('show');
-  // update select option texts for current lang
-  var ro=G('ac-round');
-  if(ro){ ro.options[0].text=t('acround_btu'); ro.options[1].text=t('acround_htr'); ro.options[2].text=t('acround_1tr'); }
-  if(acMode==='total'){
-    G('ac-total-result').style.display='';
-    G('ac-room-result').style.display='none';
-    var recBtu=acRoundBtu(acLastBtu,method);
-    G('ac-rec-btu').textContent=Number(recBtu).toLocaleString();
-    G('ac-rec-tr').textContent=(recBtu/12000).toFixed(1)+' TR';
-    G('ac-rec-units').textContent='1';
-    G('ac-rec-sys').textContent=acSysLabel(sysVal);
-  } else {
-    G('ac-total-result').style.display='none';
-    G('ac-room-result').style.display='';
-    var listEl=G('ac-room-list'); listEl.innerHTML='';
-    var totalUnits=0;
-    var snap=acLastHist.length?acLastHist:hist;
-    snap.forEach(function(h,i){
-      var hBtu=parseFloat(h.btu)||0;
-      var recBtu=acRoundBtu(hBtu,method);
-      totalUnits++;
-      var name=(lang==='ar'?(h.ar||h.en):(h.en||h.ar)).replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}]/gu,'').trim();
-      var row=document.createElement('div'); row.className='ac-room-row';
-      row.innerHTML='<span class="ac-room-name">'+(i+1)+'. '+name+'</span>'
-        +'<span class="ac-room-tr">'+(recBtu/12000).toFixed(1)+' TR</span>'
-        +'<span class="ac-room-cap">'+Number(recBtu).toLocaleString()+' BTU</span>';
-      listEl.appendChild(row);
-    });
-    G('ac-room-total').textContent=totalUnits+' \u00d7 '+acSysLabel(sysVal);
-  }
-}
-
-function acShowCard(){
-  // Update snapshot from current hist
-  acLastBtu = 0;
-  for(var _i=0;_i<hist.length;_i++){
-    acLastBtu += parseFloat(hist[_i].btu)||0;
-  }
-  acLastHist = hist.slice();
-  acCalc();
-}
 
 function addToQuote(){
-  // navigate to quotation panel and refresh AC data
   goPanel('hist');
-  acShowCard();
   toast(lang==='ar'?'✅ تم الإضافة للعرض':'✅ Added to quote');
 }
 
-function acGetExportData(){
-  // ensure fresh total from hist
-  if(!acLastBtu && hist.length){
-    acLastBtu=0;
-    for(var _j=0;_j<hist.length;_j++) acLastBtu+=parseFloat(hist[_j].btu)||0;
-  }
-  if(!acLastBtu) return null;
-  var method=(G('ac-round')||{value:'btu'}).value;
-  var sysVal=(G('ac-sys')||{value:'split'}).value;
-  var brand=(G('ac-brand')||{value:''}).value.trim();
-  var volt=(G('ac-volt')||{value:''}).value.trim();
-  var eff=(G('ac-eff')||{value:''}).value.trim();
-  var res={sys:sysVal,sysLabel:acSysLabel(sysVal),mode:acMode,method:method,brand:brand,volt:volt,eff:eff,totalBtu:acLastBtu};
-  if(acMode==='total'){
-    var rb=acRoundBtu(acLastBtu,method);
-    res.units=1; res.unitBtu=rb; res.unitTr=(rb/12000).toFixed(1);
-  } else {
-    var snap=acLastHist.length?acLastHist:hist;
-    res.rooms=snap.map(function(h){
-      var hb=parseFloat(h.btu)||0, rb=acRoundBtu(hb,method);
-      return {name:(lang==='ar'?(h.ar||h.en):(h.en||h.ar)).replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}]/gu,'').trim(),btu:rb,tr:(rb/12000).toFixed(1)};
-    });
-    res.units=snap.length;
-  }
-  return res;
-}
+
 
 </script>
 </body>
