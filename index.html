@@ -239,8 +239,6 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .exp-btn-inv:hover{background:rgba(52,211,153,.22);}.exp-btn-pdf{background:linear-gradient(135deg,rgba(248,113,113,.15),rgba(248,113,113,.06));border:1px solid rgba(248,113,113,.4);color:var(--r);padding:13px 8px;border-radius:var(--rads);font-family:var(--fa);font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}.exp-btn-pdf:hover{background:rgba(248,113,113,.2);border-color:var(--r);}.exp-btn-pdf:disabled{opacity:.5;cursor:not-allowed;}
 
 /* AC SELECTION CARD */
-#ac-card{display:none;}
-#ac-card.show{display:block;}
 .ac-seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:2px;}
 .ac-seg-btn{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);
   padding:10px 8px;font-family:var(--fa);font-size:12px;color:var(--tm);cursor:pointer;
@@ -392,8 +390,19 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
       <div class="br-row" id="hc-note-row" style="display:none"><span class="br-lbl">Note</span><span class="br-val" id="hcv-note" style="font-size:11px;color:var(--tm)">—</span></div>
     </div>
   </div>
+
+  <!-- ADD TO QUOTE BUTTON -->
+  <div id="add-quote-wrap" style="display:none;margin-top:6px">
+    <button class="calc-btn" id="btn-add-quote" onclick="addToQuote()" style="background:linear-gradient(135deg,rgba(52,211,153,.18),rgba(52,211,153,.08));border-color:rgba(52,211,153,.5);color:var(--g)">
+      ✅ <span id="lbl-add-quote">أضف للعرض</span>
+    </button>
+  </div>
+
+  <!-- HIST + QUOTATION PANEL -->
+  <div class="panel" id="p-hist">
+
   <!-- AC TYPE SELECTION CARD -->
-  <div class="card" id="ac-card">
+  <div class="qs-card" id="ac-card" style="display:block">
     <div class="sec-ttl" id="ac-ttl">اختيار نوع التكييف المقترح</div>
 
     <!-- System Type -->
@@ -442,7 +451,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
     </div>
 
     <!-- Result display -->
-    <div class="ac-result" id="ac-result">
+    <div class="ac-result show" id="ac-result">
       <!-- Total mode result -->
       <div id="ac-total-result">
         <div class="ac-res-grid">
@@ -476,9 +485,6 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
     </div>
   </div>
 
-
-  <!-- HIST + QUOTATION PANEL -->
-  <div class="panel" id="p-hist">
     <div class="cum-card" id="cum-card" style="display:none">
       <div class="cum-ttl" id="cum-ttl">الإجمالي التراكمي</div>
       <div class="cum-grid">
@@ -782,6 +788,7 @@ var T = {
   ar:{calc:'احسب ▶',hclr:'مسح السجل',ncalc:'الحاسبة',nhist:'عرض السعر',ncontact:'تواصل',nset:'الإعدادات',
       mltr:'حمل التبريد',mlcfm:'تدفق الإمداد',mlbtu:'حمل الحرارة',mlmkt:'BTU السوق',
       acttl:'اختيار نوع التكييف المقترح',
+      laddquote:'أضف للعرض',
       aclsys:'نوع النظام',aclmode:'وضع التوزيع',aclround:'تقريب السعة',
       aclbrand:'الماركة / الموديل',aclvolt:'الجهد الكهربائي',acleff:'كفاءة الطاقة',
       acmtotal:'وحدة واحدة للمشروع',acmroom:'وحدة لكل غرفة',
@@ -807,6 +814,7 @@ var T = {
   en:{calc:'Calculate ▶',hclr:'Clear History',ncalc:'Calc',nhist:'Quotation',ncontact:'Contact',nset:'Settings',
       mltr:'Cooling Load',mlcfm:'Supply CFM',mlbtu:'Heat Load',mlmkt:'Market BTU',
       acttl:'Recommended AC Selection',
+      laddquote:'Add to Quote',
       aclsys:'System Type',aclmode:'Sizing Mode',aclround:'Capacity Rounding',
       aclbrand:'Brand / Model',aclvolt:'Voltage',acleff:'Efficiency',
       acmtotal:'One unit for project',acmroom:'Unit per room',
@@ -853,7 +861,7 @@ function applyLang(){
     'lbl-export2':'exphtml',
     'lbl-export3':'exppdf',
     'ml-tr':'mltr','ml-cfm':'mlcfm','ml-btu':'mlbtu','ml-mkt':'mlmkt',
-    'ac-ttl':'acttl',
+    'ac-ttl':'acttl','lbl-add-quote':'laddquote',
     'ac-lbl-sys':'aclsys','ac-lbl-mode':'aclmode','ac-lbl-round':'aclround',
     'ac-lbl-brand':'aclbrand','ac-lbl-volt':'aclvolt','ac-lbl-eff':'acleff',
     'ac-mode-total-lbl':'acmtotal','ac-mode-room-lbl':'acmroom',
@@ -900,6 +908,7 @@ function goPanel(name){
   var p=G('p-'+name), n=G('ni-'+name);
   if(p) p.classList.add('on');
   if(n) n.classList.add('on');
+  if(name==='hist' && hist.length) acShowCard();
 }
 
 // ── DROPDOWN ──────────────────────────────────────────────────────────────
@@ -1023,7 +1032,7 @@ function calcROT(vol,ppl){
   G('brv-sub').textContent=Math.round(sub).toLocaleString(); G('brv-sf').textContent=Math.round(total).toLocaleString();
   G('breakdown').classList.add('show'); G('hc-card').style.display='none';
   saveHist(vol,ppl,tr,cfm,total,mkt,devb,null);
-  acShowCard(Math.round(total));
+  G('add-quote-wrap').style.display='block';
   toast(t('tcalc'));
 }
 function calcHC(vol,ppl){
@@ -1048,7 +1057,7 @@ function calcHC(vol,ppl){
   if(r.note){G('hc-note-row').style.display='';G('hcv-note').textContent=r.note;}else{G('hc-note-row').style.display='none';}
   G('hc-card').style.display='block';
   saveHist(vol,ppl,tr,sup,total,mkt,devb,{sup:sup,oa:oa,exh:exh,pres:r.pres});
-  acShowCard(Math.round(total));
+  G('add-quote-wrap').style.display='block';
   toast(t('tcalc'));
 }
 
@@ -1673,14 +1682,29 @@ function acCalc(){
   }
 }
 
-function acShowCard(totalBtu){
-  acLastBtu=totalBtu;
-  acLastHist=hist.slice();
-  var card=G('ac-card'); if(card) card.classList.add('show');
+function acShowCard(){
+  // Update snapshot from current hist
+  acLastBtu = 0;
+  for(var _i=0;_i<hist.length;_i++){
+    acLastBtu += parseFloat(hist[_i].btu)||0;
+  }
+  acLastHist = hist.slice();
   acCalc();
 }
 
+function addToQuote(){
+  // navigate to quotation panel and refresh AC data
+  goPanel('hist');
+  acShowCard();
+  toast(lang==='ar'?'✅ تم الإضافة للعرض':'✅ Added to quote');
+}
+
 function acGetExportData(){
+  // ensure fresh total from hist
+  if(!acLastBtu && hist.length){
+    acLastBtu=0;
+    for(var _j=0;_j<hist.length;_j++) acLastBtu+=parseFloat(hist[_j].btu)||0;
+  }
   if(!acLastBtu) return null;
   var method=(G('ac-round')||{value:'btu'}).value;
   var sysVal=(G('ac-sys')||{value:'split'}).value;
