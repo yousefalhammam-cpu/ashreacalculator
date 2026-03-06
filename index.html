@@ -206,6 +206,35 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .disclaimer{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:var(--rads);padding:8px 12px;margin-bottom:12px;font-size:10.5px;color:var(--am);line-height:1.5;text-align:center;}
 .calc-btn{width:100%;background:linear-gradient(135deg,var(--a2),var(--a));border:none;border-radius:var(--rads);padding:14px;color:#fff;font-family:var(--fe);font-size:15px;font-weight:700;letter-spacing:1px;cursor:pointer;box-shadow:0 4px 16px rgba(56,189,248,.3);transition:all .2s;margin-top:4px;}
 .calc-btn:hover{box-shadow:0 6px 24px rgba(56,189,248,.5);}
+
+/* PRO QUOTATION SETTINGS */
+.qs-card{background:linear-gradient(135deg,rgba(56,189,248,.07),rgba(14,165,233,.03));border:1px solid rgba(56,189,248,.3);border-radius:var(--rad);padding:16px;margin-bottom:10px;position:relative;overflow:hidden;}
+.qs-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a),transparent);}
+.qs-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;}
+.qs-row:last-child{margin-bottom:0;}
+.qs-label{font-size:13px;color:var(--t);flex:1;}
+.qs-sub{font-size:11px;color:var(--tm);margin-top:2px;}
+.vat-tog{width:44px;height:24px;background:var(--s3);border-radius:12px;position:relative;cursor:pointer;transition:background .2s;border:1px solid var(--b);flex-shrink:0;}
+.vat-tog.on{background:var(--g);border-color:rgba(52,211,153,.6);}
+.vat-tog::after{content:'';position:absolute;top:2px;right:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;}
+.vat-tog.on::after{transform:translateX(-20px);}
+.qs-sel{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:8px 10px;color:var(--tb);font-family:var(--fa);font-size:13px;outline:none;cursor:pointer;transition:border .15s;flex-shrink:0;}
+.qs-sel:focus{border-color:var(--a);}
+.qs-ta{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:10px 12px;color:var(--tb);font-family:var(--fa);font-size:13px;outline:none;width:100%;resize:vertical;min-height:68px;transition:border .15s;line-height:1.6;margin-top:5px;}
+.qs-ta:focus{border-color:var(--a);}
+.q-summary{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:12px 14px;margin-bottom:12px;}
+.q-sr{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--b);font-size:13px;}
+.q-sr:last-child{border-bottom:none;padding-top:8px;}
+.q-sl{color:var(--tm);font-family:var(--fe);}
+.q-sv{font-family:var(--fm);color:var(--tb);}
+.q-sr.vrow .q-sv{color:var(--am);}
+.q-sr.grow .q-sl{color:var(--g);font-size:14px;font-weight:700;}
+.q-sr.grow .q-sv{color:var(--g);font-size:18px;font-weight:700;}
+.exp-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.exp-btn-csv{background:linear-gradient(135deg,rgba(56,189,248,.15),rgba(56,189,248,.06));border:1px solid rgba(56,189,248,.4);color:var(--a);padding:13px 8px;border-radius:var(--rads);font-family:var(--fa);font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.exp-btn-csv:hover{background:rgba(56,189,248,.22);}
+.exp-btn-inv{background:linear-gradient(135deg,rgba(52,211,153,.15),rgba(52,211,153,.06));border:1px solid rgba(52,211,153,.4);color:var(--g);padding:13px 8px;border-radius:var(--rads);font-family:var(--fa);font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.exp-btn-inv:hover{background:rgba(52,211,153,.22);}
 @media(min-width:480px){.app{padding:24px;padding-bottom:120px;}}
 </style>
 </head>
@@ -363,11 +392,51 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
       <div class="qi-list" id="qi-list">
         <div class="qi-empty" id="qi-empty">لا توجد غرف — احسب غرفة أولاً</div>
       </div>
-      <div class="q-totals">
-        <div class="q-trow"><span class="q-tlbl" id="qt-qty-lbl">إجمالي الكمية</span><span class="q-tval" id="qt-total-qty">0</span></div>
-        <div class="q-trow grand"><span class="q-tlbl" id="qt-grand-lbl">الإجمالي النهائي</span><span class="q-tval" id="qt-grand">0.00</span></div>
+      <div class="q-summary" id="q-summary">
+        <div class="q-sr"><span class="q-sl" id="qs-subl">المجموع الفرعي</span><span class="q-sv" id="qs-subtotal-v">0.00</span></div>
+        <div class="q-sr"><span class="q-sl" id="qs-instl">التركيب (10%)</span><span class="q-sv" id="qs-inst-v">0.00</span></div>
+        <div class="q-sr vrow" id="vat-row"><span class="q-sl" id="qs-vatl">ضريبة القيمة المضافة 15%</span><span class="q-sv" id="qs-vat-v">0.00</span></div>
+        <div class="q-sr"><span class="q-sl" id="qt-qty-lbl">إجمالي الكمية</span><span class="q-sv" id="qt-total-qty">0</span></div>
+        <div class="q-sr grow"><span class="q-sl" id="qt-grand-lbl">الإجمالي النهائي</span><span class="q-sv" id="qt-grand">0.00</span></div>
       </div>
-      <button class="exp-btn" onclick="exportCSV()">📄 <span id="lbl-export">تصدير عرض السعر (CSV)</span></button>
+      <div class="exp-row">
+        <button class="exp-btn-csv" onclick="exportCSV()">📊 <span id="lbl-export">CSV</span></button>
+        <button class="exp-btn-inv" onclick="exportInvoiceHTML()">🖨️ <span id="lbl-export2">فاتورة HTML</span></button>
+      </div>
+    </div>
+
+    <!-- QUOTATION SETTINGS CARD -->
+    <div class="qs-card" id="qs-card">
+      <div class="sec-ttl" id="qs-ttl">&#9881;&#65039; &#x625;&#x639;&#x62f;&#x627;&#x62f;&#x627;&#x62a; &#x639;&#x631;&#x636; &#x627;&#x644;&#x633;&#x639;&#x631;</div>
+      <div class="qs-row">
+        <div class="qs-label" id="qs-inst-lbl">&#x646;&#x633;&#x628;&#x629; &#x627;&#x644;&#x62a;&#x631;&#x643;&#x64a;&#x628;</div>
+        <select class="qs-sel" id="qs-inst" onchange="qsPersist()">
+          <option value="5">5%</option>
+          <option value="10" selected>10%</option>
+          <option value="15">15%</option>
+          <option value="20">20%</option>
+          <option value="25">25%</option>
+        </select>
+      </div>
+      <div class="qs-row">
+        <div class="qs-label">
+          <div id="qs-vat-lbl">&#x62a;&#x641;&#x639;&#x64a;&#x644; &#x636;&#x631;&#x64a;&#x628;&#x629; &#x627;&#x644;&#x642;&#x64a;&#x645;&#x629; &#x627;&#x644;&#x645;&#x636;&#x627;&#x641;&#x629;</div>
+          <div class="qs-sub">VAT 15% &#x2014; &#x627;&#x644;&#x633;&#x639;&#x648;&#x62f;&#x64a;&#x629;</div>
+        </div>
+        <div class="vat-tog on" id="vat-tog" onclick="toggleVAT()"></div>
+      </div>
+      <div class="qs-row">
+        <div class="qs-label" id="qs-valid-lbl">&#x645;&#x62f;&#x629; &#x635;&#x644;&#x627;&#x62d;&#x64a;&#x629; &#x627;&#x644;&#x639;&#x631;&#x636;</div>
+        <select class="qs-sel" id="qs-validity" onchange="qsPersist()">
+          <option value="7" id="v7">7 &#x623;&#x64a;&#x627;&#x645;</option>
+          <option value="14" selected id="v14">14 &#x64a;&#x648;&#x645;</option>
+          <option value="30" id="v30">30 &#x64a;&#x648;&#x645;</option>
+        </select>
+      </div>
+      <div>
+        <div class="lbl" id="qs-notes-lbl" style="margin-bottom:4px">&#x645;&#x644;&#x627;&#x62d;&#x638;&#x627;&#x62a;</div>
+        <textarea class="qs-ta" id="qs-notes" oninput="qsPersist()"></textarea>
+      </div>
     </div>
     <div class="card">
       <div class="hist-hdr">
@@ -383,9 +452,9 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
     <div class="con-card">
       <div class="con-av">👷</div>
       <div class="con-name">م. يوسف ال همام</div>
-      <div class="con-title">Architectural Engineer · Saudi Arabia</div>
+      <div class="con-title">HVAC Engineer · Saudi Arabia</div>
       <a class="con-link" href="tel:0560282701"><span style="font-size:18px">📞</span><span>0560282701</span></a>
-      <a class="con-link" href="#"><span style="font-size:18px">✉️</span><span>yousef.alhammam@live.com</span></a>
+      <a class="con-link" href="#"><span style="font-size:18px">✉️</span><span><span class="__cf_email__" data-cfemail="a3daccd6d1e3c6cec2cacf8dc0ccce">[email&#160;protected]</span></span></a>
       <div class="made-in">صنع في السعودية 🇸🇦</div>
     </div>
   </div>
@@ -441,7 +510,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 </div>
 <div class="toast" id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── DATA ──────────────────────────────────────────────────────────────────
 var ROOMS = {
   r_office:{id:'r_office',mode:'rot',cat:'general',ar:'🏢 مكتب',en:'🏢 Office',factor:400},
@@ -552,6 +621,40 @@ while(qlines.length < hist.length) qlines.push({qty:1,up:0});
 qlines = qlines.slice(0, hist.length);
 
 var editIdx = -1;
+var vatOn = true;
+var instPct = 10;
+var qsValidity = 14;
+var qsNotes = '';
+try{
+  var _qs=JSON.parse(localStorage.getItem('acp9qs')||'{}');
+  if(_qs.vatOn!==undefined) vatOn=_qs.vatOn;
+  if(_qs.instPct) instPct=_qs.instPct;
+  if(_qs.qsValidity) qsValidity=_qs.qsValidity;
+  if(_qs.qsNotes!==undefined) qsNotes=_qs.qsNotes;
+}catch(e){}
+
+function qsPersist(){
+  vatOn=G('vat-tog').classList.contains('on');
+  instPct=parseInt(G('qs-inst').value)||10;
+  qsValidity=parseInt(G('qs-validity').value)||14;
+  qsNotes=G('qs-notes').value||'';
+  localStorage.setItem('acp9qs',JSON.stringify({vatOn:vatOn,instPct:instPct,qsValidity:qsValidity,qsNotes:qsNotes}));
+  refreshGrandTotal();
+}
+function toggleVAT(){
+  G('vat-tog').classList.toggle('on');
+  vatOn=G('vat-tog').classList.contains('on');
+  G('vat-row').style.display=vatOn?'':'none';
+  qsPersist();
+}
+function applyQSState(){
+  var inst=G('qs-inst'); if(inst) inst.value=String(instPct);
+  var vt=G('vat-tog');
+  if(vt){if(vatOn)vt.classList.add('on');else vt.classList.remove('on');}
+  var vr=G('vat-row'); if(vr) vr.style.display=vatOn?'':'none';
+  var val=G('qs-validity'); if(val) val.value=String(qsValidity);
+  var notes=G('qs-notes'); if(notes) notes.value=qsNotes;
+}
 
 // ── HELPERS ───────────────────────────────────────────────────────────────
 function G(id){ return document.getElementById(id); }
@@ -580,7 +683,7 @@ var T = {
       qqty:'الكمية',qup:'سعر الوحدة',qlt:'إجمالي السطر',
       qtqty:'إجمالي الكمية',qtgrand:'الإجمالي النهائي',
       qempty:'لا توجد غرف — احسب غرفة أولاً',
-      qexport:'تصدير عرض السعر (CSV)',qdel:'🗑️ تم الحذف'},
+      qexport:'تصدير عرض السعر (CSV)',qdel:'🗑️ تم الحذف',qsttl:'⚙️ إعدادات عرض السعر',qsinst:'نسبة التركيب',qsvat:'تفعيل ضريبة القيمة المضافة',qsvalid:'مدة صلاحية العرض',qsnotes:'ملاحظات',qsnph:'مثال: العرض شامل التوريد والتركيب داخل المدينة.',v7:'7 أيام',v14:'14 يوم',v30:'30 يوم',qssubl:'المجموع الفرعي (المعدات)',qsinstl:'التركيب',qsvatl:'ضريبة القيمة المضافة 15%',qsqtyl:'إجمالي الكمية',expcsv:'📊 CSV',exphtml:'🖨️ فاتورة HTML',cur:'ر.س',invtitle:'فاتورة / عرض سعر',invvalid:'صلاحية العرض',invdate:'التاريخ',invnotes:'ملاحظات',invroom:'نوع الغرفة',invvol:'الحجم',invppl:'أشخاص',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'الكمية',invup:'سعر الوحدة',invlt:'إجمالي السطر',invsubt:'المجموع الفرعي',invinst:'التركيب',invvat:'ضريبة 15%',invgrand:'الإجمالي النهائي',invdiscl:'تقدير أولي — لا يُعتمد للتصميم النهائي'},
   en:{calc:'Calculate ▶',hclr:'Clear History',ncalc:'Calc',nhist:'Calc Log',ncontact:'Contact',nset:'Settings',
       lvol:'Room Volume (m³)',ltype:'Room Type',lppl:'👤 Persons — 400 BTU/h each',ladd:'+ Add Device',
       lmodal:'Select Device Type',ldtot:'Total Device Load',sroom:'ROOM',sdev:'DEVICES',
@@ -596,7 +699,7 @@ var T = {
       qqty:'Quantity',qup:'Unit Price',qlt:'Line Total',
       qtqty:'Total Quantity',qtgrand:'Grand Total',
       qempty:'No rooms saved — calculate a room first',
-      qexport:'Export Quotation (CSV)',qdel:'🗑️ Deleted'}
+      qexport:'Export Quotation (CSV)',qdel:'🗑️ Deleted',qsttl:'⚙️ Quotation Settings',qsinst:'Installation %',qsvat:'Enable VAT',qsvalid:'Quotation Validity',qsnotes:'Notes',qsnph:'Example: Price includes supply & installation within city limits.',v7:'7 days',v14:'14 days',v30:'30 days',qssubl:'Equipment Subtotal',qsinstl:'Installation',qsvatl:'VAT 15%',qsqtyl:'Total Quantity',expcsv:'📊 CSV',exphtml:'🖨️ Invoice HTML',cur:'SAR',invtitle:'Quotation / Invoice',invvalid:'Validity',invdate:'Date',invnotes:'Notes',invroom:'Room Type',invvol:'Volume m³',invppl:'Persons',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'Qty',invup:'Unit Price',invlt:'Line Total',invsubt:'Equipment Subtotal',invinst:'Installation',invvat:'VAT 15%',invgrand:'Grand Total',invdiscl:'Preliminary estimate — not for final design submittal'}
 };
 function t(k){ return T[lang][k]||k; }
 
@@ -617,7 +720,17 @@ function applyLang(){
     'vcfm-lbl':'vcfm','cum-ttl':'cumttl','hist-ttl-lbl':'histttl',
     'q-ttl':'qttl','lbl-project':'qproject','lbl-qno':'qqno',
     'qt-qty-lbl':'qtqty','qt-grand-lbl':'qtgrand',
-    'lbl-export':'qexport'
+    'lbl-export':'expcsv',
+    'lbl-export2':'exphtml',
+    'qs-ttl':'qsttl',
+    'qs-inst-lbl':'qsinst',
+    'qs-vat-lbl':'qsvat',
+    'qs-valid-lbl':'qsvalid',
+    'qs-notes-lbl':'qsnotes',
+    'qs-subl':'qssubl',
+    'qs-vatl':'qsvatl',
+    'qt-qty-lbl':'qsqtyl',
+    'qt-grand-lbl':'qtgrand'
   };
   for(var id in m){ var e=G(id); if(e) e.textContent=t(m[id]); }
   G('dis-ar').style.display = lang==='ar'?'':'none';
@@ -625,6 +738,15 @@ function applyLang(){
   G('inp-vol').placeholder = lang==='ar'?'٠ م³':'0 m³';
   G('inp-ppl').placeholder = '0';
   G('quote-project').placeholder = lang==='ar'?'اسم المشروع':'Project Name';
+  var v7=G('v7'),v14=G('v14'),v30=G('v30');
+  if(v7) v7.textContent=t('v7');
+  if(v14) v14.textContent=t('v14');
+  if(v30) v30.textContent=t('v30');
+  var qn=G('qs-notes'); if(qn) qn.placeholder=t('qsnph');
+  var isl=G('qs-instl'); if(isl){
+    var ip2=parseInt((G('qs-inst')||{value:'10'}).value)||10;
+    isl.textContent=t('qsinstl')+' ('+ip2+'%)';
+  }
   G('dt').textContent = rLabel(curRoom);
   renderDevs();
   renderHist();
@@ -931,66 +1053,207 @@ function setQty(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].qty=Math.
 function setUp(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].up=parseFloat(v)||0; save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); }
 
 function refreshGrandTotal(){
-  var totalQty=0, grand=0;
-  for(var i=0;i<hist.length;i++){ totalQty+=getQty(i); grand+=getQty(i)*getUP(i); }
+  var totalQty=0, subtotal=0;
+  for(var i=0;i<hist.length;i++){ totalQty+=getQty(i); subtotal+=getQty(i)*getUP(i); }
+  var ip=parseInt((G('qs-inst')||{value:'10'}).value)||10;
+  var instAmt=subtotal*ip/100;
+  var vatBase=subtotal+instAmt;
+  var vatAmt=vatOn?vatBase*0.15:0;
+  var grand=vatBase+vatAmt;
+  var cur=t('cur');
+  var isl=G('qs-instl'); if(isl) isl.textContent=t('qsinstl')+' ('+ip+'%)';
+  var sv=G('qs-subtotal-v'); if(sv) sv.textContent=cur+' '+money(subtotal);
+  var iv=G('qs-inst-v'); if(iv) iv.textContent=cur+' '+money(instAmt);
+  var vr=G('vat-row'); if(vr) vr.style.display=vatOn?'':'none';
+  var vv=G('qs-vat-v'); if(vv) vv.textContent=cur+' '+money(vatAmt);
   G('qt-total-qty').textContent=totalQty;
-  G('qt-grand').textContent=money(grand);
+  G('qt-grand').textContent=cur+' '+money(grand);
 }
 
 // ── CSV EXPORT ────────────────────────────────────────────────────────────
 function exportCSV(){
-  if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف':'⚠️ No rooms saved'); return; }
-  var proj=G('quote-project').value.trim()||(lang==='ar'?'غير محدد':'Untitled');
+  if(!hist.length){ toast(lang==='ar'?'\u26a0\ufe0f \u0644\u0627 \u062a\u0648\u062c\u062f \u063a\u0631\u0641':'\u26a0\ufe0f No rooms saved'); return; }
+  var proj=G('quote-project').value.trim()||(lang==='ar'?'\u063a\u064a\u0631 \u0645\u062d\u062f\u062f':'Untitled');
   var qno=G('quote-no').value.trim()||'Q-001';
   var today=new Date().toISOString().slice(0,10);
-  var totalQty=0, grand=0;
-  for(var i=0;i<hist.length;i++){ totalQty+=getQty(i); grand+=getQty(i)*getUP(i); }
+  var ip=parseInt((G('qs-inst')||{value:'10'}).value)||10;
+  var vd=parseInt((G('qs-validity')||{value:'14'}).value)||14;
+  var notes=(G('qs-notes')||{value:''}).value||'';
+  var subtotal=0,totalQty=0;
+  for(var i=0;i<hist.length;i++){totalQty+=getQty(i);subtotal+=getQty(i)*getUP(i);}
+  var instAmt=subtotal*ip/100;
+  var vatBase=subtotal+instAmt;
+  var vatAmt=vatOn?vatBase*0.15:0;
+  var grand=vatBase+vatAmt;
   var rows=[];
   if(lang==='ar'){
-    rows.push(['AirCalc Pro — عرض السعر','','','','','','','','','','','','']);
-    rows.push(['اسم المشروع',proj,'','','','','','','','','','','']);
-    rows.push(['رقم عرض السعر',qno,'','','','','','','','','','','']);
-    rows.push(['التاريخ',today,'','','','','','','','','','','']);
+    rows.push(['AirCalc Pro \u2014 \u0639\u0631\u0636 \u0627\u0644\u0633\u0639\u0631','','','','','','','','','','','','']);
+    rows.push(['\u0627\u0633\u0645 \u0627\u0644\u0645\u0634\u0631\u0648\u0639',proj,'','','','','','','','','','','']);
+    rows.push(['\u0631\u0642\u0645 \u0639\u0631\u0636 \u0627\u0644\u0633\u0639\u0631',qno,'','','','','','','','','','','']);
+    rows.push(['\u0627\u0644\u062a\u0627\u0631\u064a\u062e',today,'','','','','','','','','','','']);
+    rows.push(['\u0635\u0644\u0627\u062d\u064a\u0629 \u0627\u0644\u0639\u0631\u0636',vd+' \u064a\u0648\u0645','','','','','','','','','','','']);
     rows.push(['','','','','','','','','','','','','']);
-    rows.push(['#','نوع الغرفة','الحجم م³','الأشخاص','حمل الأجهزة BTU/h','الحمولة TR','تدفق CFM','BTU/h','Market BTU','ASHRAE','الكمية','سعر الوحدة','إجمالي السطر']);
+    rows.push(['#','\u0646\u0648\u0639 \u0627\u0644\u063a\u0631\u0641\u0629','\u0627\u0644\u062d\u062c\u0645 \u0645\u00b3','\u0623\u0634\u062e\u0627\u0635','\u062d\u0645\u0644 \u0627\u0644\u0623\u062c\u0647\u0632\u0629 BTU/h','TR','CFM','BTU/h','\u0633\u0648\u0642 BTU','ASHRAE','\u0627\u0644\u0643\u0645\u064a\u0629','\u0633\u0639\u0631 \u0627\u0644\u0648\u062d\u062f\u0629','\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0633\u0637\u0631']);
     hist.forEach(function(h,i){
-      var hc=h.sup?('S:'+h.sup+' OA:'+h.oa+' Exh:'+h.exh+' '+h.pres):'—';
+      var hc=h.sup?'S:'+h.sup+' OA:'+h.oa+' Exh:'+h.exh+' '+h.pres:'\u2014';
       rows.push([i+1,h.ar||h.en,h.vol,h.ppl,h.devBtu||0,h.tr,h.cfm,h.btu,h.mkt,hc,getQty(i),getUP(i),money(getQty(i)*getUP(i))]);
     });
     rows.push(['','','','','','','','','','','','','']);
-    rows.push(['إجمالي الكمية',totalQty,'','','','','','','','','','','']);
-    rows.push(['الإجمالي النهائي',money(grand),'','','','','','','','','','','']);
+    rows.push(['\u0627\u0644\u0645\u062c\u0645\u0648\u0639 \u0627\u0644\u0641\u0631\u0639\u064a','\u0631.\u0633 '+money(subtotal),'','','','','','','','','','','']);
+    rows.push(['\u0627\u0644\u062a\u0631\u0643\u064a\u0628 ('+ip+'%)','\u0631.\u0633 '+money(instAmt),'','','','','','','','','','','']);
+    if(vatOn) rows.push(['\u0636\u0631\u064a\u0628\u0629 \u0627\u0644\u0642\u064a\u0645\u0629 \u0627\u0644\u0645\u0636\u0627\u0641\u0629 15%','\u0631.\u0633 '+money(vatAmt),'','','','','','','','','','','']);
+    rows.push(['\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0643\u0645\u064a\u0629',totalQty,'','','','','','','','','','','']);
+    rows.push(['\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0646\u0647\u0627\u0626\u064a','\u0631.\u0633 '+money(grand),'','','','','','','','','','','']);
+    if(notes) rows.push(['\u0645\u0644\u0627\u062d\u0638\u0627\u062a',notes,'','','','','','','','','','','']);
     rows.push(['','','','','','','','','','','','','']);
-    rows.push(['تنبيه: تقدير أولي — لا يُعتمد للتصميم النهائي','','','','','','','','','','','','']);
+    rows.push(['\u062a\u0646\u0628\u064a\u0647: \u062a\u0642\u062f\u064a\u0631 \u0623\u0648\u0644\u064a \u2014 \u0644\u0627 \u064a\u064f\u0639\u062a\u0645\u062f \u0644\u0644\u062a\u0635\u0645\u064a\u0645 \u0627\u0644\u0646\u0647\u0627\u0626\u064a','','','','','','','','','','','','']);
   } else {
-    rows.push(['AirCalc Pro — Quotation','','','','','','','','','','','','']);
+    rows.push(['AirCalc Pro \u2014 Quotation','','','','','','','','','','','','']);
     rows.push(['Project Name',proj,'','','','','','','','','','','']);
     rows.push(['Quotation No.',qno,'','','','','','','','','','','']);
     rows.push(['Date',today,'','','','','','','','','','','']);
+    rows.push(['Validity',vd+' days','','','','','','','','','','','']);
     rows.push(['','','','','','','','','','','','','']);
-    rows.push(['#','Room Type','Volume m³','Persons','Device Load BTU/h','Cooling Load TR','Supply CFM','BTU/h','Market BTU','ASHRAE','Quantity','Unit Price','Line Total']);
+    rows.push(['#','Room Type','Volume m\u00b3','Persons','Device Load BTU/h','TR','CFM','BTU/h','Market BTU','ASHRAE','Quantity','Unit Price','Line Total']);
     hist.forEach(function(h,i){
-      var hc=h.sup?('S:'+h.sup+' OA:'+h.oa+' Exh:'+h.exh+' '+h.pres):'—';
+      var hc=h.sup?'S:'+h.sup+' OA:'+h.oa+' Exh:'+h.exh+' '+h.pres:'\u2014';
       rows.push([i+1,h.en||h.ar,h.vol,h.ppl,h.devBtu||0,h.tr,h.cfm,h.btu,h.mkt,hc,getQty(i),getUP(i),money(getQty(i)*getUP(i))]);
     });
     rows.push(['','','','','','','','','','','','','']);
+    rows.push(['Equipment Subtotal','SAR '+money(subtotal),'','','','','','','','','','','']);
+    rows.push(['Installation ('+ip+'%)','SAR '+money(instAmt),'','','','','','','','','','','']);
+    if(vatOn) rows.push(['VAT 15%','SAR '+money(vatAmt),'','','','','','','','','','','']);
     rows.push(['Total Quantity',totalQty,'','','','','','','','','','','']);
-    rows.push(['Grand Total',money(grand),'','','','','','','','','','','']);
+    rows.push(['Grand Total','SAR '+money(grand),'','','','','','','','','','','']);
+    if(notes) rows.push(['Notes',notes,'','','','','','','','','','','']);
     rows.push(['','','','','','','','','','','','','']);
-    rows.push(['Notice: Preliminary estimate — not for final design submittal','','','','','','','','','','','','']);
+    rows.push(['Notice: Preliminary estimate \u2014 not for final design submittal','','','','','','','','','','','','']);
   }
-  var csv=rows.map(function(r){ return r.map(function(c){ var s=String(c).replace(/"/g,'""'); return /[,"\n]/.test(s)?'"'+s+'"':s; }).join(','); }).join('\r\n');
-  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='quotation_'+qno.replace(/[^a-zA-Z0-9\u0600-\u06FF_-]/g,'_')+'.csv'; a.click();
-  toast(lang==='ar'?'📄 تم التصدير':'📄 Exported');
+  var csv=rows.map(function(r){
+    return r.map(function(c){var s=String(c).replace(/"/g,'""');return /[,"\n]/.test(s)?'"'+s+'"':s;}).join(',');
+  }).join('\r\n');
+  var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='quotation_'+qno.replace(/[^a-zA-Z0-9\u0600-\u06FF_-]/g,'_')+'.csv';a.click();
+  toast(lang==='ar'?'\U0001f4c4 \u062a\u0645 \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u0645\u0644\u0641':'\U0001f4c4 CSV exported');
+}
+function exportInvoiceHTML(){
+  if(!hist.length){ toast(lang==='ar'?'\u26a0\ufe0f \u0644\u0627 \u062a\u0648\u062c\u062f \u063a\u0631\u0641':'\u26a0\ufe0f No rooms'); return; }
+  var proj=G('quote-project').value.trim()||(lang==='ar'?'\u063a\u064a\u0631 \u0645\u062d\u062f\u062f':'Untitled');
+  var qno=G('quote-no').value.trim()||'Q-001';
+  var today=new Date().toLocaleDateString(lang==='ar'?'ar-SA':'en-GB');
+  var ip=parseInt((G('qs-inst')||{value:'10'}).value)||10;
+  var vd=parseInt((G('qs-validity')||{value:'14'}).value)||14;
+  var notes=(G('qs-notes')||{value:''}).value||'';
+  var isAr=lang==='ar', dir=isAr?'rtl':'ltr';
+  var cur=t('cur');
+  var validLbl=vd+' '+(isAr?(vd===7?'\u0623\u064a\u0627\u0645':'\u064a\u0648\u0645'):'days');
+  var subtotal=0,totalQty=0;
+  for(var i=0;i<hist.length;i++){totalQty+=getQty(i);subtotal+=getQty(i)*getUP(i);}
+  var instAmt=subtotal*ip/100;
+  var vatBase=subtotal+instAmt;
+  var vatAmt=vatOn?vatBase*0.15:0;
+  var grand=vatBase+vatAmt;
+  var rows='';
+  hist.forEach(function(h,i){
+    var name=isAr?(h.ar||h.en):(h.en||h.ar);
+    var lt=getQty(i)*getUP(i);
+    var align=isAr?'right':'left';
+    rows+='<tr>'+
+      '<td>'+( i+1)+'</td>'+
+      '<td style="text-align:'+align+'">'+name+'</td>'+
+      '<td>'+h.vol+'</td>'+
+      '<td>'+h.ppl+'</td>'+
+      '<td>'+h.tr+'</td>'+
+      '<td>'+Number(h.cfm).toLocaleString()+'</td>'+
+      '<td>'+Number(h.btu).toLocaleString()+'</td>'+
+      '<td>'+Number(h.mkt).toLocaleString()+'</td>'+
+      '<td>'+getQty(i)+'</td>'+
+      '<td>'+money(getUP(i))+'</td>'+
+      '<td><strong>'+cur+' '+money(lt)+'</strong></td>'+
+    '</tr>';
+  });
+  var vatRowHTML=vatOn?
+    '<div class="sr vrow"><span class="sl">'+t('invvat')+'</span><span class="sv">'+cur+' '+money(vatAmt)+'</span></div>':'';
+  var notesHTML=notes?
+    '<div class="notes-box"><strong>'+t('invnotes')+':</strong><br>'+notes.replace(/\n/g,'<br>')+'</div>':'';
+  var html='<!DOCTYPE html><html lang="'+(isAr?'ar':'en')+'" dir="'+dir+'">'
+    +'<head><meta charset="UTF-8">'
+    +'<title>'+t('invtitle')+' '+qno+'</title>'
+    +'<style>'
+    +'*{margin:0;padding:0;box-sizing:border-box;}'
+    +'body{font-family:'+(isAr?'Cairo,':'Segoe UI,')+'Arial,sans-serif;background:#f1f5f9;color:#111;direction:'+dir+';}'
+    +'.page{max-width:920px;margin:24px auto;background:#fff;padding:36px 40px;border-radius:8px;box-shadow:0 2px 16px rgba(0,0,0,.1);}'
+    +'h1{font-size:24px;font-weight:800;color:#0f172a;margin-bottom:2px;}'
+    +'.sub{font-size:12px;color:#64748b;margin-bottom:24px;letter-spacing:.5px;}'
+    +'.meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}'
+    +'.mb{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px 14px;}'
+    +'.ml{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:3px;}'
+    +'.mv{font-size:14px;font-weight:700;color:#1e293b;}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:24px;font-size:12px;}'
+    +'thead tr{background:#0f172a;color:#fff;}'
+    +'th{padding:10px 8px;font-weight:600;text-align:center;white-space:nowrap;}'
+    +'th:nth-child(2){text-align:'+(isAr?'right':'left')+';}'
+    +'tbody tr:nth-child(even){background:#f8fafc;}'
+    +'td{padding:9px 8px;border-bottom:1px solid #e2e8f0;text-align:center;vertical-align:middle;}'
+    +'.summary{margin-'+(isAr?'right':'left')+':auto;max-width:320px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px 18px;margin-bottom:20px;}'
+    +'.sr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #e2e8f0;font-size:13px;}'
+    +'.sr:last-child{border-bottom:none;padding-top:10px;}'
+    +'.sl{color:#64748b;}'
+    +'.sv{font-weight:700;color:#1e293b;}'
+    +'.vrow .sv{color:#d97706;}'
+    +'.grow .sl{color:#059669;font-weight:700;font-size:15px;}'
+    +'.grow .sv{color:#059669;font-size:17px;}'
+    +'.notes-box{background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:12px 16px;font-size:12px;line-height:1.7;margin-bottom:20px;}'
+    +'.disc{margin-top:24px;font-size:11px;color:#94a3b8;text-align:center;padding-top:16px;border-top:1px solid #e2e8f0;}'
+    +'@media print{body{background:#fff;}.page{box-shadow:none;margin:0;border-radius:0;padding:20px;}}'
+    +'</style></head><body>'
+    +'<div class="page">'
+    +'<h1>'+t('invtitle')+'</h1>'
+    +'<div class="sub">AirCalc Pro \u2014 HVAC Engineering Suite</div>'
+    +'<div class="meta">'
+    +'<div class="mb"><div class="ml">'+(isAr?'\u0627\u0633\u0645 \u0627\u0644\u0645\u0634\u0631\u0648\u0639':'Project')+'</div><div class="mv">'+proj+'</div></div>'
+    +'<div class="mb"><div class="ml">'+(isAr?'\u0631\u0642\u0645 \u0627\u0644\u0639\u0631\u0636':'Quote No.')+'</div><div class="mv">'+qno+'</div></div>'
+    +'<div class="mb"><div class="ml">'+t('invdate')+'</div><div class="mv">'+today+'</div></div>'
+    +'<div class="mb"><div class="ml">'+t('invvalid')+'</div><div class="mv">'+validLbl+'</div></div>'
+    +'</div>'
+    +'<table><thead><tr>'
+    +'<th>#</th>'
+    +'<th>'+t('invroom')+'</th>'
+    +'<th>'+t('invvol')+'</th>'
+    +'<th>'+t('invppl')+'</th>'
+    +'<th>'+t('invtr')+'</th>'
+    +'<th>'+t('invcfm')+'</th>'
+    +'<th>'+t('invbtu')+'</th>'
+    +'<th>'+t('invmkt')+'</th>'
+    +'<th>'+t('invqty')+'</th>'
+    +'<th>'+t('invup')+'</th>'
+    +'<th>'+t('invlt')+'</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows
+    +'<tr style="background:#f1f5f9">'
+    +'<td colspan="9" style="text-align:'+(isAr?'left':'right')+';color:#475569;font-weight:600">'+t('invsubt')+'</td>'
+    +'<td colspan="2"><strong>'+cur+' '+money(subtotal)+'</strong></td></tr>'
+    +'<tr style="background:#f1f5f9">'
+    +'<td colspan="9" style="text-align:'+(isAr?'left':'right')+';color:#475569;font-weight:600">'+t('invinst')+' ('+ip+'%)</td>'
+    +'<td colspan="2"><strong>'+cur+' '+money(instAmt)+'</strong></td></tr>'
+    +(vatOn?'<tr style="background:#fffbeb"><td colspan="9" style="text-align:'+(isAr?'left':'right')+';color:#d97706;font-weight:600">'+t('invvat')+'</td><td colspan="2" style="color:#d97706"><strong>'+cur+' '+money(vatAmt)+'</strong></td></tr>':'')
+    +'<tr style="background:#f0fdf4">'
+    +'<td colspan="9" style="text-align:'+(isAr?'left':'right')+';color:#059669;font-weight:700;font-size:14px">'+t('invgrand')+'</td>'
+    +'<td colspan="2" style="color:#059669;font-size:15px"><strong>'+cur+' '+money(grand)+'</strong></td></tr>'
+    +'</tbody></table>'
+    +(notesHTML||'')
+    +'<div class="disc">'+t('invdiscl')+'</div>'
+    +'</div>'
+    +'<script>setTimeout(function(){window.print();},300);<\/script>'
+    +'</body></html>';
+  var blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='invoice_'+qno.replace(/[^a-zA-Z0-9\u0600-\u06FF_-]/g,'_')+'.html';
+  a.click();
+  toast(lang==='ar'?'\U0001f5a8\ufe0f \u062a\u0645 \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629':'\U0001f5a8\ufe0f Invoice exported');
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────
-applyLang();
-G('dt').textContent = rLabel(curRoom);
-renderDevs();
-renderHist();
 </script>
 </body>
 </html>
