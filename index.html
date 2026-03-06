@@ -1016,7 +1016,9 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     hist[editIdx]=rec; editIdx=-1;
   } else {
     hist.push(rec);
-    qlines.push({qty:1,up:0});
+    var _pUT=(qlines.length>0?qlines[qlines.length-1].unitType:'')||'split';
+    var _pBtu=(qlines.length>0?qlines[qlines.length-1].selectedBtu:0)||0;
+    qlines.push({qty:1,up:0,unitType:_pUT,selectedBtu:_pBtu});
     if(hist.length>100){hist.shift();qlines.shift();}
   }
   save(); renderHist();
@@ -1121,7 +1123,8 @@ function renderQuote(){
     if(!selBtu){ for(var _s=0;_s<BTU_STEPS.length;_s++){ if(BTU_STEPS[_s]>=reqBtu){selBtu=BTU_STEPS[_s];break;} } if(!selBtu) selBtu=BTU_STEPS[BTU_STEPS.length-1]; qlines[i].selectedBtu=selBtu; }
     var btuStepOpts = BTU_STEPS.map(function(b){ return '<option value="'+b+'"'+(selBtu===b?' selected':'')+'>'+Number(b).toLocaleString()+' BTU/h — '+(b/12000).toFixed(1)+' TR</option>'; }).join('');
     var capHtml = '<div class="qi-cap-row"><span class="qi-cap-lbl">'+(lang==='ar'?'السعة المختارة':'Capacity')+'</span>'
-      +'<select class="qi-cap-sel" onchange="setSelBtu('+i+',this.value)">'+btuStepOpts+'</select></div>';
+      +'<select class="qi-cap-sel" onchange="setSelBtu('+i+',this.value)">'+btuStepOpts+'</select>'
+      +'<span class="qi-cap-badge-slot"></span></div>';
     var effCap = selBtu * qty;
     var marginPct = Math.round((effCap / reqBtu - 1) * 100);
     var warnHtml = '';
@@ -1142,7 +1145,7 @@ function renderQuote(){
         capBadge = '<span class="qi-cap-badge over">'+(lang==='ar'?'سعة زائدة':'Oversized')+'</span>';
       }
     }
-    capHtml = capHtml.replace('</div>', capBadge+'</div>');
+    capHtml = capHtml.replace('<span class="qi-cap-badge-slot"></span>', capBadge);
 
     item.innerHTML=
       '<div class="qi-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+utHtml+
@@ -1178,7 +1181,7 @@ function renderQuote(){
 }
 
 function setQty(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].qty=Math.max(1,parseInt(v)||1); save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); renderQuote(); }
-function setUnitType(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0,unitType:'split'}; qlines[i].unitType=v||'split'; save(); }
+function setUnitType(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0,unitType:'split',selectedBtu:0}; qlines[i].unitType=v||'split'; save(); renderQuote(); }
 
 function setUp(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].up=parseFloat(v)||0; save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); }
 
@@ -1269,115 +1272,15 @@ function exportCSV(){
 }
 function exportInvoiceHTML(){
   if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف':'⚠️ No rooms'); return; }
-  var html = buildInvoiceHTML();
-  var qno = (G('quote-no')||{value:''}).value.trim()||'Q-001';
-  var blob = new Blob([html],{type:'text/html;charset=utf-8'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'invoice_'+qno.replace(/[^a-zA-Z0-9؀-ۿ_-]/g,'_')+'.html';
-  a.click();
-  toast(lang==='ar'?'🖨️ تم تصدير الفاتورة':'🖨️ Invoice exported');
+  var win=window.open('','_blank');
+  if(!win){ toast(lang==='ar'?'⚠️ افتح منبثقات المتصفح':'⚠️ Allow popups'); return; }
+  win.document.write(buildInvoiceHTML());
+  win.document.close();
 }
 
 
-
-// ── PDF EXPORT ─────────────────────────────────────────────────────────────
-function exportPDF(){
-  if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف':'⚠️ No rooms saved'); return; }
-  if(typeof html2canvas==='undefined'||typeof window.jspdf==='undefined'){
-    toast(lang==='ar'?'⚠️ المكتبات لم تُحمَّل بعد، أعد المحاولة':'⚠️ Libraries not loaded, retry');
-    return;
-  }
-  var btn=G('btn-pdf');
-  if(btn){ btn.disabled=true; btn.textContent=lang==='ar'?'جارٍ التحميل...':'Generating...'; }
-
-  // Build invoice HTML (same as exportInvoiceHTML but returned as string)
-  var htmlStr = buildInvoiceHTML();
-
-  // Create offscreen container
-  var wrap = document.createElement('div');
-  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;z-index:-1;';
-  wrap.innerHTML = htmlStr;
-  document.body.appendChild(wrap);
-
-  // Wait for fonts + images then capture
-  var doCapture = function(){
-    var pageEl = wrap.querySelector('.inv-page');
-    if(!pageEl){ pageEl = wrap; }
-    var totalH = pageEl.scrollHeight;
-    var A4_W_PX = 794;
-    var A4_H_PX = 1123; // ~297mm at 96dpi
-    var SCALE = 2;
-
-    html2canvas(pageEl, {
-      scale: SCALE,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff',
-      width: A4_W_PX,
-      windowWidth: A4_W_PX,
-      scrollX: 0,
-      scrollY: 0,
-      logging: false
-    }).then(function(canvas){
-      document.body.removeChild(wrap);
-      var imgData = canvas.toDataURL('image/jpeg', 0.92);
-      var jsPDF = window.jspdf.jsPDF;
-      var pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-      var pageW_mm = 210;
-      var pageH_mm = 297;
-      // canvas dims in mm
-      var canvW_mm = pageW_mm;
-      var canvH_mm = (canvas.height / canvas.width) * canvW_mm;
-      var pagesNeeded = Math.ceil(canvH_mm / pageH_mm);
-      if(pagesNeeded <= 1){
-        pdf.addImage(imgData,'JPEG',0,0,canvW_mm,canvH_mm);
-      } else {
-        // Slice canvas into A4-height chunks
-        var sliceH_px = Math.floor((pageH_mm / canvW_mm) * canvas.width);
-        var yOffset = 0;
-        for(var p=0; p<pagesNeeded; p++){
-          var sliceCanvas = document.createElement('canvas');
-          sliceCanvas.width = canvas.width;
-          var remaining = canvas.height - yOffset;
-          sliceCanvas.height = Math.min(sliceH_px, remaining);
-          var ctx = sliceCanvas.getContext('2d');
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0,0,sliceCanvas.width,sliceCanvas.height);
-          ctx.drawImage(canvas, 0, -yOffset);
-          var sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
-          var sliceH_mm = (sliceCanvas.height / canvas.width) * canvW_mm;
-          if(p > 0) pdf.addPage();
-          pdf.addImage(sliceData,'JPEG',0,0,canvW_mm,sliceH_mm);
-          yOffset += sliceH_px;
-        }
-      }
-      // filename
-      var qno = (G('quote-no')||{value:''}).value.trim()||'';
-      var proj = (G('quote-project')||{value:''}).value.trim()||'';
-      var fname = 'AirCalc_Invoice';
-      if(qno) fname = 'Quote_'+qno;
-      else if(proj) fname = proj.replace(/[^a-zA-Z0-9\u0600-\u06FF_-]/g,'_');
-      pdf.save(fname+'.pdf');
-      toast(lang==='ar'?'📥 تم تحميل PDF':'📥 PDF downloaded');
-      if(btn){ btn.disabled=false; btn.innerHTML='📥 <span id="lbl-export3">'+(lang==='ar'?'تحميل PDF':'Download PDF')+'</span>'; }
-    }).catch(function(err){
-      document.body.removeChild(wrap);
-      console.error('PDF error:',err);
-      toast(lang==='ar'?'❌ فشل التحميل':'❌ PDF failed');
-      if(btn){ btn.disabled=false; btn.innerHTML='📥 <span id="lbl-export3">'+(lang==='ar'?'تحميل PDF':'Download PDF')+'</span>'; }
-    });
-  };
-
-  if(document.fonts && document.fonts.ready){
-    document.fonts.ready.then(doCapture);
-  } else {
-    setTimeout(doCapture, 400);
-  }
-}
-
-// ── BUILD INVOICE HTML STRING (shared by HTML + PDF exports) ───────────────
-function buildInvoiceHTML(){
+// ── SHARED INVOICE HELPERS ─────────────────────────────────────────────────
+function invCommon(){
   var proj = (G('quote-project')||{value:''}).value.trim()||(lang==='ar'?'غير محدد':'Untitled');
   var qno  = (G('quote-no')||{value:''}).value.trim()||'Q-001';
   var today = new Date().toLocaleDateString(lang==='ar'?'ar-SA':'en-GB');
@@ -1396,172 +1299,329 @@ function buildInvoiceHTML(){
   var vatBase = subtotal+instAmt;
   var vatAmt  = vatOn ? vatBase*0.15 : 0;
   var grand   = vatBase+vatAmt;
-
   var fontLink = isAr
     ? '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">'
     : '<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">';
   var bodyFont = isAr ? "'Cairo', Arial, sans-serif" : "'Segoe UI', Arial, sans-serif";
+  var utLbls={split:(isAr?'سبليت (Split)':'Split (Wall)'),ducted:(isAr?'سبليت مخفي':'Ducted Split'),cassette:(isAr?'كاسيت':'Cassette'),package:(isAr?'وحدة مركزية':'Package Unit'),vrf:'VRF',chillerfcu:(isAr?'فريش إير + FCU':'Chiller FCU'),window:(isAr?'تكييف شباك':'Window AC'),chiller:(isAr?'تبريد مركزي':'Chiller')};
+  return {proj:proj,qno:qno,today:today,ip:ip,validDays:validDays,validLabel:validLabel,notes:notes,isAr:isAr,dir:dir,cur:cur,subtotal:subtotal,totalQty:totalQty,instAmt:instAmt,vatBase:vatBase,vatAmt:vatAmt,grand:grand,fontLink:fontLink,bodyFont:bodyFont,utLbls:utLbls};
+}
 
+function invSharedCss(c){
+  return '*{margin:0;padding:0;box-sizing:border-box;}'
+    +' body{font-family:'+c.bodyFont+';background:#ffffff;color:#1e293b;direction:'+c.dir+';}'
+    +' .inv-page{width:794px;background:#ffffff;padding:36px 44px;page-break-after:always;}'
+    +' .inv-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;padding-bottom:18px;border-bottom:3px solid #0f172a;gap:20px;}'
+    +' .inv-brand{display:flex;align-items:center;gap:12px;}'
+    +' .inv-brand-icon{width:48px;height:48px;background:linear-gradient(135deg,#0ea5e9,#0369a1);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700;}'
+    +' .inv-brand-name{font-size:20px;font-weight:700;color:#0f172a;letter-spacing:1px;}'
+    +' .inv-brand-sub{font-size:11px;color:#64748b;margin-top:2px;}'
+    +' .inv-meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:22px;background:#f8fafc;border-radius:8px;padding:14px;border:1px solid #e2e8f0;}'
+    +' .inv-meta-item{}'
+    +' .inv-meta-lbl{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}'
+    +' .inv-meta-val{font-size:13px;font-weight:600;color:#0f172a;}'
+    +' .page-title{font-size:14px;font-weight:700;color:#0f172a;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #e2e8f0;display:flex;align-items:center;gap:8px;}'
+    +' .page-badge{font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;}'
+    +' .page-badge.client{background:#dbeafe;color:#1d4ed8;}'
+    +' .page-badge.tech{background:#dcfce7;color:#166534;}'
+    +' table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px;}'
+    +' th{padding:9px 8px;font-weight:700;text-align:center;background:#0f172a;color:#fff;}'
+    +' td{padding:8px 8px;border-bottom:1px solid #e2e8f0;text-align:center;vertical-align:middle;}'
+    +' tr:hover td{background:#f8fafc;}'
+    +' .totals-box{background:#f8fafc;border-radius:8px;padding:16px;border:1px solid #e2e8f0;margin-bottom:16px;}'
+    +' .tot-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px;border-bottom:1px solid #e2e8f0;}'
+    +' .tot-row:last-child{border-bottom:none;padding-top:10px;font-size:15px;font-weight:700;color:#0ea5e9;}'
+    +' .tot-lbl{color:#475569;}'
+    +' .tot-val{font-weight:600;color:#0f172a;}'
+    +' .warn-box{background:#fffbeb;border:1px solid #f59e0b;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#92400e;}'
+    +' .warn-inline{background:#fffbeb;border:1px solid #fbbf24;border-radius:4px;padding:6px 10px;font-size:11px;color:#92400e;margin-top:6px;}'
+    +' .badge-ok{display:inline-block;background:#dcfce7;color:#166534;border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700;}'
+    +' .badge-warn{display:inline-block;background:#fef3c7;color:#d97706;border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700;}'
+    +' .badge-over{display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700;}'
+    +' .footer{margin-top:auto;padding-top:14px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center;}'
+    +' .td-name{text-align:'+(c.isAr?'right':'left')+';padding-'+( c.isAr?'right':'left')+':12px;}'
+    +' .sec-lbl{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;}'
+    +' .hc-detail-box{background:#f0f9ff;border:1px solid #bae6fd;border-radius:6px;padding:10px 12px;margin-bottom:8px;font-size:11px;}'
+    +' .hc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}'
+    +' .hc-item{text-align:center;}'
+    +' .hc-lbl{color:#64748b;font-size:10px;}'
+    +' .hc-val{font-weight:700;color:#0369a1;font-size:13px;margin-top:2px;}'
+    +' .room-tech-card{border:1px solid #e2e8f0;border-radius:8px;margin-bottom:12px;overflow:hidden;}'
+    +' .room-tech-head{background:#0f172a;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}'
+    +' .room-tech-body{padding:12px 14px;}'
+    +' .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px;}'
+    +' .stat-item{text-align:center;background:#f8fafc;border-radius:6px;padding:8px 4px;}'
+    +' .stat-lbl{font-size:10px;color:#64748b;}'
+    +' .stat-val{font-size:14px;font-weight:700;color:#0ea5e9;margin-top:2px;}';
+}
+
+function buildPage1(c){
+  // Client Summary Page
   var rows='';
-  var utLblsInv={split:(isAr?'سبليت (Split)':'Split (Wall)'),ducted:(isAr?'سبليت مخفي':'Ducted Split'),cassette:(isAr?'كاسيت':'Cassette'),package:(isAr?'وحدة مركزية':'Package Unit'),vrf:'VRF',chillerfcu:(isAr?'فريش إير + FCU':'Chiller FCU'),window:(isAr?'تكييف شباك':'Window AC'),chiller:(isAr?'تبريد مركزي':'Chiller')};
-  hist.forEach(function(h,i){
-    var _nm=isAr?(h.ar||h.en):(h.en||h.ar);
+  for(var i=0;i<hist.length;i++){
+    var h=hist[i];
+    var _nm=c.isAr?(h.ar||h.en):(h.en||h.ar);
     var name=_nm.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}]/gu,'').trim();
-    var utKey=getUT(i); var utLbl=utLblsInv[utKey]||utKey;
+    var utKey=getUT(i); var utLbl=c.utLbls[utKey]||utKey;
+    var selBtu=getSelBtu(i)||acRoundBtu(parseInt(h.btu)||0,'btu');
+    var selTR=(selBtu/12000).toFixed(1);
     var lt=getQty(i)*getUP(i);
-    var bg = i%2===0?'#ffffff':'#f8fafc';
+    var bg=i%2===0?'#ffffff':'#f8fafc';
     rows+='<tr style="background:'+bg+'">'
-      +'<td style="text-align:center;color:#64748b">'+( i+1)+'</td>'
-      +'<td style="text-align:'+(isAr?'right':'left')+'">'+name+'<div style="font-size:10px;color:#0ea5e9;margin-top:2px;font-weight:600">'+utLbl+'</div></td>'
+      +'<td style="color:#64748b">'+(i+1)+'</td>'
+      +'<td class="td-name">'+name+'<div style="font-size:10px;color:#0ea5e9;margin-top:1px;font-weight:600">'+utLbl+'</div></td>'
       +'<td>'+h.vol+'</td>'
-      +'<td>'+h.ppl+'</td>'
-      +'<td style="color:#0ea5e9;font-weight:600">'+h.tr+'</td>'
-      +'<td>'+Number(h.cfm).toLocaleString()+'</td>'
-      +'<td>'+Number(h.btu).toLocaleString()+'</td>'
-      +'<td>'+Number(h.mkt).toLocaleString()+'</td>'
+      +'<td>'+Number(selBtu).toLocaleString()+' BTU</td>'
+      +'<td>'+selTR+' TR</td>'
       +'<td>'+getQty(i)+'</td>'
-      +'<td>'+money(getUP(i))+'</td>'
-      +'<td style="color:#059669;font-weight:700">'+money(lt)+'</td>'
-    +'</tr>';
-  });
-
-  var vatRow = vatOn
-    ? '<tr><td colspan="9" style="text-align:'+(isAr?'left':'right')
-        +';background:#fffbeb;color:#d97706;font-weight:600;padding:8px 10px">'
-        +t('invvat')+'</td>'
-        +'<td colspan="2" style="text-align:center;background:#fffbeb;color:#d97706;font-weight:700">'
-        +cur+' '+money(vatAmt)+'</td></tr>'
+      +'<td>'+c.cur+' '+money(getUP(i))+'</td>'
+      +'<td style="color:#059669;font-weight:700">'+c.cur+' '+money(lt)+'</td>'
+      +'</tr>';
+  }
+  var vatRowHtml = vatOn
+    ? '<div class="tot-row"><span class="tot-lbl">'+(c.isAr?'ضريبة القيمة المضافة 15%':'VAT 15%')+'</span><span class="tot-val" style="color:#d97706">'+c.cur+' '+money(c.vatAmt)+'</span></div>'
     : '';
-
-  var thStyle = 'padding:10px 8px;font-weight:700;text-align:center;';
-  var tdStyle = 'padding:8px 8px;border-bottom:1px solid #e2e8f0;text-align:center;vertical-align:middle;font-size:12px;';
-
-  var html =
-    '<!DOCTYPE html><html lang="'+(isAr?'ar':'en')+'" dir="'+dir+'">'
-    +'<head><meta charset="UTF-8">'
-    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
-    +fontLink
-    +'<title>'+t('invtitle')+' '+qno+'</title>'
-    +'<style>'
-    +'*{margin:0;padding:0;box-sizing:border-box;}'
-    +'body{font-family:'+bodyFont+';background:#f1f5f9;color:#1e293b;direction:'+dir+';}'
-    +'.inv-page{width:794px;min-height:1123px;margin:0 auto;background:#fff;padding:40px 44px;}'
-    +'.inv-header{display:flex;align-items:flex-start;justify-content:space-between;'
-      +'margin-bottom:28px;padding-bottom:20px;border-bottom:3px solid #0f172a;gap:20px;}'
-    +'.inv-brand{display:flex;align-items:center;gap:12px;}'
-    +'.inv-brand-icon{width:52px;height:52px;background:linear-gradient(135deg,#0ea5e9,#38bdf8);'
-      +'border-radius:12px;display:flex;align-items:center;justify-content:center;'
-      +'font-size:26px;flex-shrink:0;}'
-    +'.inv-brand-name{font-size:24px;font-weight:700;color:#0f172a;letter-spacing:.5px;}'
-    +'.inv-brand-name span{color:#0ea5e9;}'
-    +'.inv-brand-sub{font-size:11px;color:#64748b;letter-spacing:2px;text-transform:uppercase;margin-top:2px;}'
-    +'.inv-badge{background:#0f172a;color:#fff;padding:6px 16px;border-radius:20px;'
-      +'font-size:13px;font-weight:700;letter-spacing:.5px;white-space:nowrap;}'
-    +'.meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:24px;}'
-    +'.meta-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;}'
-    +'.meta-lbl{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:4px;}'
-    +'.meta-val{font-size:14px;font-weight:700;color:#1e293b;}'
-    +'table{width:100%;border-collapse:collapse;margin-bottom:20px;}'
-    +'thead tr{background:#0f172a;color:#fff;}'
-    +'thead th{'+thStyle+'font-size:11px;letter-spacing:.5px;}'
-    +'thead th:nth-child(2){text-align:'+(isAr?'right':'left')+';}'
-    +'tbody tr:last-child td{border-bottom:none;}'
-    +'tfoot tr td{padding:9px 10px;font-size:13px;border-top:2px solid #e2e8f0;}'
-    +'.sum-section{display:flex;justify-content:'+(isAr?'flex-start':'flex-end')+';margin-bottom:24px;}'
-    +'.sum-table{width:320px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;}'
-    +'.sum-row{display:flex;justify-content:space-between;padding:10px 16px;'
-      +'border-bottom:1px solid #e2e8f0;font-size:13px;}'
-    +'.sum-row:last-child{border-bottom:none;background:#f0fdf4;font-size:15px;font-weight:700;}'
-    +'.sum-lbl{color:#64748b;}'
-    +'.sum-val{font-weight:600;color:#1e293b;}'
-    +'.sum-row.vat .sum-val{color:#d97706;}'
-    +'.sum-row.grand .sum-lbl{color:#059669;font-weight:700;}'
-    +'.sum-row.grand .sum-val{color:#059669;}'
-    +'.notes-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;'
-      +'padding:14px 16px;margin-bottom:20px;font-size:12px;line-height:1.7;}'
-    +'.notes-lbl{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}'
-    +'.disclaimer{font-size:10px;color:#94a3b8;text-align:center;padding-top:16px;'
-      +'border-top:1px solid #e2e8f0;margin-top:16px;line-height:1.6;}'
-    +'@media print{'
-      +'body{background:#fff;}'
-      +'.inv-page{box-shadow:none;margin:0;width:100%;padding:20px;}'
-    +'}'
-    +'</style></head>'
-    +'<body>'
-    +'<div class="inv-page">'
-    // Header
+  var notesHtml = c.notes
+    ? '<div style="margin-bottom:14px;padding:10px 14px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0"><div style="font-size:10px;color:#94a3b8;margin-bottom:4px">'+(c.isAr?'ملاحظات':'Notes')+'</div><div style="font-size:12px;color:#334155">'+c.notes.replace(/\n/g,'<br>')+'</div></div>'
+    : '';
+  var th=c.isAr?'background:#0f172a;color:#fff;padding:9px 8px;font-weight:700;text-align:right;padding-right:12px':'background:#0f172a;color:#fff;padding:9px 8px;font-weight:700;text-align:left;padding-left:12px';
+  var thC='background:#0f172a;color:#fff;padding:9px 8px;font-weight:700;text-align:center;';
+  return '<div class="inv-page" id="pdf-page1">'
     +'<div class="inv-header">'
       +'<div class="inv-brand">'
-        +'<div class="inv-brand-icon">❄️</div>'
-        +'<div>'
-          +'<div class="inv-brand-name">Air<span>Calc</span> Pro</div>'
-          +'<div class="inv-brand-sub">HVAC Engineering Suite</div>'
-        +'</div>'
+        +'<div class="inv-brand-icon">❄</div>'
+        +'<div><div class="inv-brand-name">AirCalc Pro</div>'
+        +'<div class="inv-brand-sub">HVAC Engineering Suite</div></div>'
       +'</div>'
-      +'<div class="inv-badge">'+t('invtitle')+'</div>'
+      +'<div style="text-align:'+(c.isAr?'left':'right')+'">'
+        +'<div style="font-size:18px;font-weight:700;color:#0f172a">'+(c.isAr?'عرض سعر':'Quotation')+'</div>'
+        +'<div style="font-size:13px;color:#64748b;margin-top:3px"># '+c.qno+'</div>'
+      +'</div>'
     +'</div>'
-    // Meta grid
-    +'<div class="meta-grid">'
-      +'<div class="meta-box"><div class="meta-lbl">'+(isAr?'المشروع':'Project')+'</div><div class="meta-val">'+proj+'</div></div>'
-      +'<div class="meta-box"><div class="meta-lbl">'+(isAr?'رقم العرض':'Quote No.')+'</div><div class="meta-val">'+qno+'</div></div>'
-      +'<div class="meta-box"><div class="meta-lbl">'+t('invdate')+'</div><div class="meta-val">'+today+'</div></div>'
-      +'<div class="meta-box"><div class="meta-lbl">'+t('invvalid')+'</div><div class="meta-val">'+validLabel+'</div></div>'
+    +'<div class="inv-meta-grid">'
+      +'<div class="inv-meta-item"><div class="inv-meta-lbl">'+(c.isAr?'المشروع':'Project')+'</div><div class="inv-meta-val">'+c.proj+'</div></div>'
+      +'<div class="inv-meta-item"><div class="inv-meta-lbl">'+(c.isAr?'التاريخ':'Date')+'</div><div class="inv-meta-val">'+c.today+'</div></div>'
+      +'<div class="inv-meta-item"><div class="inv-meta-lbl">'+(c.isAr?'صلاحية العرض':'Validity')+'</div><div class="inv-meta-val">'+c.validLabel+'</div></div>'
+      +'<div class="inv-meta-item"><div class="inv-meta-lbl">'+(c.isAr?'عدد البنود':'Items')+'</div><div class="inv-meta-val">'+hist.length+'</div></div>'
     +'</div>'
-    // Table
+    +'<div class="page-title">'+(c.isAr?'ملخص العميل':'Client Summary')+'<span class="page-badge client">'+(c.isAr?'صفحة العميل':'Page 1 / Client')+'</span></div>'
     +'<table>'
-    +'<thead><tr>'
-      +'<th style="width:32px">#</th>'
-      +'<th style="text-align:'+(isAr?'right':'left')+'">'+t('invroom')+'</th>'
-      +'<th>'+t('invvol')+'</th>'
-      +'<th>'+t('invppl')+'</th>'
-      +'<th>'+t('invtr')+'</th>'
-      +'<th>'+t('invcfm')+'</th>'
-      +'<th>'+t('invbtu')+'</th>'
-      +'<th>'+t('invmkt')+'</th>'
-      +'<th>'+t('invqty')+'</th>'
-      +'<th>'+t('invup')+'</th>'
-      +'<th>'+t('invlt')+'</th>'
-    +'</tr></thead>'
-    +'<tbody>'+rows
-    +'<tr style="background:#f8fafc">'
-      +'<td colspan="9" style="text-align:'+(isAr?'left':'right')+';color:#475569;font-weight:600;padding:9px 10px;font-size:12px">'+t('invsubt')+'</td>'
-      +'<td colspan="2" style="text-align:center;font-weight:700;font-size:13px;padding:9px 8px">'+cur+' '+money(subtotal)+'</td>'
-    +'</tr>'
-    +'<tr style="background:#f8fafc">'
-      +'<td colspan="9" style="text-align:'+(isAr?'left':'right')+';color:#475569;font-weight:600;padding:9px 10px;font-size:12px">'+t('invinst')+' ('+ip+'%)</td>'
-      +'<td colspan="2" style="text-align:center;font-weight:700;font-size:13px;padding:9px 8px">'+cur+' '+money(instAmt)+'</td>'
-    +'</tr>'
-    +vatRow
-    +'<tr style="background:#f0fdf4">'
-      +'<td colspan="9" style="text-align:'+(isAr?'left':'right')+';color:#059669;font-weight:700;padding:10px 10px;font-size:14px">'+t('invgrand')+'</td>'
-      +'<td colspan="2" style="text-align:center;color:#059669;font-weight:700;font-size:16px;padding:10px 8px">'+cur+' '+money(grand)+'</td>'
-    +'</tr>'
-    +'</tbody></table>'
-    // Notes
-    +(notes?'<div class="notes-box"><div class="notes-lbl">'+t('invnotes')+'</div>'+notes.replace(/\n/g,'<br>')+'</div>':'')
-
-    // Unit types are embedded per room in the table rows above.
-    var acSection = '';
-    // Undersized warning block for invoice
-    var anyUndersized = false;
-    hist.forEach(function(h,i){
-      var reqB=parseInt(h.btu)||0, selB=getSelBtu(i), q=getQty(i);
-      if(!selB){ var BSTEPS=[9000,12000,18000,24000,27000,30000,36000,42000,48000,60000,72000,96000,120000,150000,180000,240000]; for(var _x=0;_x<BSTEPS.length;_x++){ if(BSTEPS[_x]>=reqB){selB=BSTEPS[_x];break;} } }
-      if(reqB>0 && selB*q < reqB) anyUndersized=true;
-    });
-    var undersizedNote = anyUndersized
-      ? '<div style="margin:16px 0 0;padding:10px 14px;background:#fffbeb;border:1px solid #fbbf24;border-radius:6px;font-size:11px;color:#92400e;">'
-        +(isAr?'⚠ ملاحظة: بعض البنود سعتها أقل من الحمل المطلوب — يرجى مراجعة السعات قبل الاعتماد.':'⚠ Note: Some line items are undersized vs required load — please review capacities before approval.')
-        +'</div>' : '';
-
-    // Disclaimer
-    +(acSection)+undersizedNote
-    +'<div class="disclaimer">'+t('invdiscl')+'<br>AirCalc Pro — HVAC Engineering Suite &copy; '+new Date().getFullYear()+'</div>'
-    +'</div>' // inv-page
-    +'</body></html>';
-
-  return html;
+      +'<thead><tr>'
+        +'<th style="'+thC+'">#</th>'
+        +'<th style="'+th+'">'+(c.isAr?'نوع الغرفة / النظام':'Room / System')+'</th>'
+        +'<th style="'+thC+'">m³</th>'
+        +'<th style="'+thC+'">BTU/h</th>'
+        +'<th style="'+thC+'">TR</th>'
+        +'<th style="'+thC+'">'+(c.isAr?'الكمية':'Qty')+'</th>'
+        +'<th style="'+thC+'">'+(c.isAr?'سعر الوحدة':'Unit Price')+'</th>'
+        +'<th style="'+thC+'">'+(c.isAr?'الإجمالي':'Total')+'</th>'
+      +'</tr></thead>'
+      +'<tbody>'+rows+'</tbody>'
+    +'</table>'
+    +'<div class="totals-box">'
+      +'<div class="tot-row"><span class="tot-lbl">'+(c.isAr?'المجموع الفرعي':'Subtotal')+'</span><span class="tot-val">'+c.cur+' '+money(c.subtotal)+'</span></div>'
+      +'<div class="tot-row"><span class="tot-lbl">'+(c.isAr?'التركيب ('+c.ip+'%)':'Installation ('+c.ip+'%)')+'</span><span class="tot-val">'+c.cur+' '+money(c.instAmt)+'</span></div>'
+      +vatRowHtml
+      +'<div class="tot-row"><span class="tot-lbl">'+(c.isAr?'الإجمالي النهائي':'Grand Total')+'</span><span class="tot-val">'+c.cur+' '+money(c.grand)+'</span></div>'
+    +'</div>'
+    +notesHtml
+    +'<div class="footer">AirCalc Pro — HVAC Engineering Suite &copy; '+new Date().getFullYear()+' &nbsp;|&nbsp; '+(c.isAr?'هذا العرض صالح لمدة':'Valid for')+' '+c.validLabel+'</div>'
+    +'</div>';
 }
+
+function buildPage2(c){
+  // Technician Detail Page
+  var cards='';
+  var anyUndersized=false;
+  for(var i=0;i<hist.length;i++){
+    var h=hist[i];
+    var _nm=c.isAr?(h.ar||h.en):(h.en||h.ar);
+    var name=_nm.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}]/gu,'').trim();
+    var utKey=getUT(i); var utLbl=c.utLbls[utKey]||utKey;
+    var reqBtu=parseInt(h.btu)||0;
+    var selBtu=getSelBtu(i)||acRoundBtu(reqBtu,'btu');
+    var effCap=selBtu*getQty(i);
+    var marginPct=reqBtu>0?Math.round((effCap/reqBtu-1)*100):0;
+    var isUnder=reqBtu>0&&effCap<reqBtu;
+    if(isUnder) anyUndersized=true;
+    var reqTR=(reqBtu/12000).toFixed(1), effTR=(effCap/12000).toFixed(1);
+    var selTR=(selBtu/12000).toFixed(1);
+    // Warning or badge
+    var warnHtml='';
+    if(isUnder){
+      var shortfallPct=Math.abs(marginPct);
+      var wMsg=c.isAr
+        ?'تنبيه: السعة المختارة أقل من الحمل المطلوب. المطلوب ≈ '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR) بينما المختار '+Number(effCap).toLocaleString()+' BTU/h (≈ '+effTR+' TR). يُنصح برفع السعة أو تقسيم الحمل على أكثر من وحدة.'
+        :'Warning: Selected capacity is below the required load. Required ≈ '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR) but selected '+Number(effCap).toLocaleString()+' BTU/h (≈ '+effTR+' TR). Consider increasing capacity or splitting the load across multiple units.';
+      var marginLabel=c.isAr?'عجز: '+shortfallPct+'%':'Shortfall: '+shortfallPct+'%';
+      warnHtml='<div class="warn-inline">⚠ '+wMsg+'<br><strong>'+marginLabel+'</strong></div>';
+    } else if(marginPct>=0 && marginPct<=20){
+      warnHtml='<span class="badge-ok">✓ '+(c.isAr?'مطابق':'OK')+' +'+marginPct+'%</span>';
+    } else if(marginPct>20){
+      warnHtml='<span class="badge-over">'+(c.isAr?'سعة زائدة':'Oversized')+' +'+marginPct+'%</span>';
+    }
+    // HC details
+    var hcHtml='';
+    if(h.sup){
+      var presLbl=c.isAr?(h.pres==='positive'?'موجب':h.pres==='negative'?'سالب':'محايد'):(h.pres==='positive'?'Positive':h.pres==='negative'?'Negative':'Neutral');
+      hcHtml='<div class="hc-detail-box">'
+        +'<div style="font-size:10px;color:#0369a1;font-weight:700;margin-bottom:8px">ASHRAE 170</div>'
+        +'<div class="hc-grid">'
+          +'<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'إمداد':'Supply')+'</div><div class="hc-val">'+h.sup+'</div></div>'
+          +'<div class="hc-item"><div class="hc-lbl">OA CFM</div><div class="hc-val">'+(h.oa||'—')+'</div></div>'
+          +'<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'عادم':'Exhaust')+'</div><div class="hc-val">'+(h.exh||'—')+'</div></div>'
+          +'<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'الضغط':'Pressure')+'</div><div class="hc-val">'+presLbl+'</div></div>'
+        +'</div>'
+      +'</div>';
+    }
+    // Devices
+    var devHtml=h.devSum?'<div style="font-size:11px;color:#64748b;margin-top:6px">⚡ '+h.devSum+'</div>':'';
+    cards+='<div class="room-tech-card">'
+      +'<div class="room-tech-head">'
+        +'<span style="font-weight:700">#'+(i+1)+' '+name+'</span>'
+        +'<span style="font-size:11px;opacity:.8">'+utLbl+' — '+Number(selBtu).toLocaleString()+' BTU / '+selTR+' TR</span>'
+      +'</div>'
+      +'<div class="room-tech-body">'
+        +'<div class="stat-grid">'
+          +'<div class="stat-item"><div class="stat-lbl">'+(c.isAr?'حمل الحرارة':'Required BTU/h')+'</div><div class="stat-val">'+Number(reqBtu).toLocaleString()+'</div></div>'
+          +'<div class="stat-item"><div class="stat-lbl">'+(c.isAr?'TR المطلوب':'Required TR')+'</div><div class="stat-val">'+reqTR+'</div></div>'
+          +'<div class="stat-item"><div class="stat-lbl">'+(c.isAr?'تدفق الهواء':'Supply CFM')+'</div><div class="stat-val">'+Number(h.cfm).toLocaleString()+'</div></div>'
+          +'<div class="stat-item"><div class="stat-lbl">Market BTU</div><div class="stat-val">'+Number(h.mkt).toLocaleString()+'</div></div>'
+        +'</div>'
+        +hcHtml+devHtml
+        +'<div style="margin-top:8px">'+warnHtml+'</div>'
+      +'</div>'
+    +'</div>';
+  }
+  var globalWarn='';
+  if(anyUndersized){
+    globalWarn='<div class="warn-box">⚠️ <strong>'+(c.isAr?'تحذير':'Warning')+':</strong> '
+      +(c.isAr?'بعض البنود سعتها أقل من الحمل المطلوب—يرجى مراجعة السعات قبل الاعتماد.'
+               :'Some line items are undersized vs required load—please review capacities before approval.')
+      +'</div>';
+  }
+  return '<div class="inv-page" id="pdf-page2">'
+    +'<div class="inv-header">'
+      +'<div class="inv-brand">'
+        +'<div class="inv-brand-icon">🔧</div>'
+        +'<div><div class="inv-brand-name">AirCalc Pro</div>'
+        +'<div class="inv-brand-sub">Technical Details — '+c.proj+'</div></div>'
+      +'</div>'
+      +'<div style="text-align:'+(c.isAr?'left':'right')+'">'
+        +'<div style="font-size:13px;color:#64748b"># '+c.qno+'</div>'
+        +'<div style="font-size:12px;color:#94a3b8;margin-top:2px">'+c.today+'</div>'
+      +'</div>'
+    +'</div>'
+    +'<div class="page-title">'+(c.isAr?'التفاصيل الفنية':'Technician Details')+'<span class="page-badge tech">'+(c.isAr?'صفحة فنية':'Page 2 / Technical')+'</span></div>'
+    +globalWarn
+    +cards
+    +'<div class="footer">AirCalc Pro — HVAC Engineering Suite &copy; '+new Date().getFullYear()+'</div>'
+    +'</div>';
+}
+
+function buildInvoiceHTML(){
+  // For HTML export and legacy use — returns single-page client summary
+  var c=invCommon();
+  var css=invSharedCss(c);
+  var page1=buildPage1(c);
+  return '<!DOCTYPE html><html lang="'+(c.isAr?'ar':'en')+'" dir="'+c.dir+'">'
+    +'<head><meta charset="UTF-8">'+c.fontLink+'<style>'+css+'</style></head>'
+    +'<body>'+page1+'</body></html>';
+}
+
+function exportPDF(){
+  if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف':'⚠️ No rooms saved'); return; }
+  if(typeof html2canvas==='undefined'||typeof window.jspdf==='undefined'){
+    toast(lang==='ar'?'⚠️ المكتبات لم تُحمَّل بعد، أعد المحاولة':'⚠️ Libraries not loaded, retry');
+    return;
+  }
+  var btn=G('btn-pdf');
+  if(btn){ btn.disabled=true; btn.textContent=lang==='ar'?'جارٍ التحميل...':'Generating...'; }
+
+  var c=invCommon();
+  var css=invSharedCss(c);
+  var page1Html=buildPage1(c);
+  var page2Html=buildPage2(c);
+
+  // Build two-page container
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;left:-9999px;top:0;width:794px;background:#fff;z-index:-1;';
+  wrap.innerHTML='<!DOCTYPE html><html><head><style>'+css+'</style></head><body>'
+    +page1Html+page2Html+'</body></html>';
+  // Actually we just inject the page HTML divs directly (no nested doc)
+  wrap.innerHTML=page1Html+page2Html;
+  document.body.appendChild(wrap);
+
+  var A4W=794, A4H=1123, SCALE=2;
+  var jsPDF=window.jspdf.jsPDF;
+  var pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var pageW_mm=210, pageH_mm=297;
+
+  var pages=[wrap.querySelector('#pdf-page1'), wrap.querySelector('#pdf-page2')];
+
+  // Apply shared styles inline for html2canvas
+  var styleEl=document.createElement('style');
+  styleEl.textContent=css;
+  wrap.prepend(styleEl);
+
+  var capturePages=function(pageIdx){
+    if(pageIdx>=pages.length){
+      document.body.removeChild(wrap);
+      var qno=(G('quote-no')||{value:''}).value.trim()||'';
+      var proj=(G('quote-project')||{value:''}).value.trim()||'';
+      var fname='AirCalc_Invoice';
+      if(qno) fname='Quote_'+qno;
+      else if(proj) fname=proj.replace(/[^a-zA-Z0-9\u0600-\u06FF_-]/g,'_');
+      pdf.save(fname+'.pdf');
+      toast(lang==='ar'?'📥 تم تحميل PDF':'📥 PDF downloaded');
+      if(btn){ btn.disabled=false; btn.innerHTML='📥 <span id="lbl-export3">'+(lang==='ar'?'تحميل PDF':'Download PDF')+'</span>'; }
+      return;
+    }
+    var pageEl=pages[pageIdx];
+    html2canvas(pageEl,{
+      scale:SCALE, useCORS:true, allowTaint:true,
+      backgroundColor:'#ffffff', width:A4W, windowWidth:A4W,
+      scrollX:0, scrollY:0, logging:false
+    }).then(function(canvas){
+      if(pageIdx>0) pdf.addPage();
+      var canvH_mm=(canvas.height/canvas.width)*pageW_mm;
+      if(canvH_mm<=pageH_mm){
+        pdf.addImage(canvas.toDataURL('image/jpeg',0.93),'JPEG',0,0,pageW_mm,canvH_mm);
+      } else {
+        var sliceH_px=Math.floor((pageH_mm/pageW_mm)*canvas.width);
+        var yOff=0;
+        var isFirstSlice=true;
+        while(yOff<canvas.height){
+          var sc=document.createElement('canvas');
+          sc.width=canvas.width;
+          var rem=canvas.height-yOff;
+          sc.height=Math.min(sliceH_px,rem);
+          var ctx=sc.getContext('2d');
+          ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,sc.width,sc.height);
+          ctx.drawImage(canvas,0,-yOff);
+          var sliceH_mm=(sc.height/canvas.width)*pageW_mm;
+          if(!isFirstSlice) pdf.addPage();
+          pdf.addImage(sc.toDataURL('image/jpeg',0.93),'JPEG',0,0,pageW_mm,sliceH_mm);
+          isFirstSlice=false;
+          yOff+=sliceH_px;
+        }
+      }
+      capturePages(pageIdx+1);
+    }).catch(function(err){
+      document.body.removeChild(wrap);
+      console.error('PDF error:',err);
+      toast(lang==='ar'?'❌ فشل التحميل':'❌ PDF failed');
+      if(btn){ btn.disabled=false; btn.innerHTML='📥 <span id="lbl-export3">'+(lang==='ar'?'تحميل PDF':'Download PDF')+'</span>'; }
+    });
+  };
+
+  if(document.fonts&&document.fonts.ready){
+    document.fonts.ready.then(function(){ setTimeout(function(){ capturePages(0); },200); });
+  } else {
+    setTimeout(function(){ capturePages(0); },600);
+  }
+}
+
 
 
 // ── AC SELECTION ──────────────────────────────────────────────────────────
