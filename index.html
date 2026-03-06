@@ -267,6 +267,20 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .qi-utype-sel{background:var(--s3);border:1px solid var(--b);border-radius:4px;padding:4px 8px;color:var(--tb);font-family:var(--fa);font-size:11px;outline:none;cursor:pointer;flex:1;min-width:100px;max-width:180px;}
 .qi-utype-sel:focus{border-color:var(--a);}
 
+
+/* CAPACITY SELECTOR + UNDERSIZED WARNING */
+.qi-cap-row{display:flex;align-items:center;gap:8px;padding:5px 0 6px;flex-wrap:wrap;border-bottom:1px solid var(--b);margin-bottom:6px;}
+.qi-cap-lbl{font-size:10px;color:var(--tm);font-family:var(--fe);letter-spacing:.5px;white-space:nowrap;}
+.qi-cap-sel{background:var(--s3);border:1px solid var(--b);border-radius:4px;padding:4px 8px;color:var(--tb);font-family:var(--fa);font-size:11px;outline:none;cursor:pointer;flex:1;min-width:110px;max-width:200px;}
+.qi-cap-sel:focus{border-color:var(--a);}
+.qi-cap-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--fm);white-space:nowrap;}
+.qi-cap-badge.ok{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3);}
+.qi-cap-badge.over{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25);}
+.qi-cap-badge.warn{background:rgba(251,191,36,.13);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
+.qi-warn{background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.35);border-radius:6px;padding:8px 12px;margin:0 0 8px;font-size:11px;line-height:1.55;color:#fcd34d;font-family:var(--fa);}
+.qi-warn-head{font-weight:700;font-size:12px;margin-bottom:3px;display:flex;align-items:center;gap:6px;}
+.qi-warn-margin{margin-top:4px;font-size:10px;opacity:.85;}
+
 @media(min-width:480px){.app{padding:24px;padding-bottom:120px;}}
 </style>
 </head>
@@ -660,7 +674,7 @@ try { hist = JSON.parse(localStorage.getItem('acp9h') || '[]'); } catch(e){ hist
 try { qlines = JSON.parse(localStorage.getItem('acp9q') || '[]'); } catch(e){ qlines=[]; }
 while(qlines.length < hist.length) var lastUp=(qlines.length>0?qlines[qlines.length-1].up:0)||0;
   var lastUT=(qlines.length>0?qlines[qlines.length-1].unitType:'')||'split';
-  qlines.push({qty:1,up:lastUp,unitType:lastUT});
+  qlines.push({qty:1,up:lastUp,unitType:lastUT,selectedBtu:0});
 qlines = qlines.slice(0, hist.length);
 
 var editIdx = -1;
@@ -1075,6 +1089,8 @@ function clearHist(){ hist=[]; qlines=[]; save(); renderHist(); toast(t('tclr'))
 function getQty(i){ return Math.max(1,parseInt((qlines[i]||{}).qty)||1); }
 function getUP(i){ return parseFloat((qlines[i]||{}).up)||0; }
 function getUT(i){ return (qlines[i]||{}).unitType||'split'; }
+function getSelBtu(i){ return parseInt((qlines[i]||{}).selectedBtu)||0; }
+function setSelBtu(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0,unitType:'split',selectedBtu:0}; qlines[i].selectedBtu=parseInt(v)||0; save(); renderQuote(); }
 
 function renderQuote(){
   var list=G('qi-list'); list.innerHTML='';
@@ -1098,6 +1114,36 @@ function renderQuote(){
     var utLabels={split:t('acsplit'),ducted:t('acducted'),cassette:(lang==='ar'?'كاسيت (Cassette)':'Cassette'),package:t('acpackage'),vrf:t('acvrf'),chillerfcu:(lang==='ar'?'فريش إير + FCU':'Chiller FCU'),window:(lang==='ar'?'تكييف شباك':'Window')};
     var utSelOpts=utOpts.map(function(k){ return '<option value="'+k+'"'+(getUT(i)===k?' selected':'')+'>'+utLabels[k]+'</option>'; }).join('');
     var utHtml='<div class="qi-utype"><span class="qi-utype-lbl">'+(lang==='ar'?'نوع الوحدة':'Unit Type')+'</span><select class="qi-utype-sel" onchange="setUnitType('+i+',this.value)">'+utSelOpts+'</select></div>';
+    var BTU_STEPS=[9000, 12000, 18000, 24000, 27000, 30000, 36000, 42000, 48000, 60000, 72000, 96000, 120000, 150000, 180000, 240000];
+    var reqBtu = parseInt(h.btu)||0;
+    var selBtu = getSelBtu(i);
+    // Default selBtu to smallest market step >= reqBtu if not set
+    if(!selBtu){ for(var _s=0;_s<BTU_STEPS.length;_s++){ if(BTU_STEPS[_s]>=reqBtu){selBtu=BTU_STEPS[_s];break;} } if(!selBtu) selBtu=BTU_STEPS[BTU_STEPS.length-1]; qlines[i].selectedBtu=selBtu; }
+    var btuStepOpts = BTU_STEPS.map(function(b){ return '<option value="'+b+'"'+(selBtu===b?' selected':'')+'>'+Number(b).toLocaleString()+' BTU/h — '+(b/12000).toFixed(1)+' TR</option>'; }).join('');
+    var capHtml = '<div class="qi-cap-row"><span class="qi-cap-lbl">'+(lang==='ar'?'السعة المختارة':'Capacity')+'</span>'
+      +'<select class="qi-cap-sel" onchange="setSelBtu('+i+',this.value)">'+btuStepOpts+'</select></div>';
+    var effCap = selBtu * qty;
+    var marginPct = Math.round((effCap / reqBtu - 1) * 100);
+    var warnHtml = '';
+    var capBadge = '';
+    if(reqBtu > 0){
+      if(effCap < reqBtu){
+        var shortfallPct = Math.abs(marginPct);
+        var reqTR = (reqBtu/12000).toFixed(1), selTR = (effCap/12000).toFixed(1);
+        var warnMsg = lang==='ar'
+          ? 'تنبيه: السعة المختارة أقل من الحمل المطلوب. المطلوب ≈ '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR) بينما المختار '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR). يُنصح برفع السعة أو تقسيم الحمل على أكثر من وحدة.'
+          : 'Warning: Selected capacity is below the required load. Required ≈ '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR) but selected '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR). Consider increasing capacity or splitting the load across multiple units.';
+        var marginLabel = lang==='ar' ? 'عجز: '+shortfallPct+'%' : 'Shortfall: '+shortfallPct+'%';
+        warnHtml = '<div class="qi-warn"><div class="qi-warn-head">⚠ '+warnMsg+'</div><div class="qi-warn-margin">'+marginLabel+'</div></div>';
+        capBadge = '<span class="qi-cap-badge warn">⚠ '+(lang==='ar'?'عجز':'Shortfall')+' '+shortfallPct+'%</span>';
+      } else if(effCap <= reqBtu * 1.20){
+        capBadge = '<span class="qi-cap-badge ok">'+(lang==='ar'?'✓ مطابق':'✓ OK')+'</span>';
+      } else {
+        capBadge = '<span class="qi-cap-badge over">'+(lang==='ar'?'سعة زائدة':'Oversized')+'</span>';
+      }
+    }
+    capHtml = capHtml.replace('</div>', capBadge+'</div>');
+
     item.innerHTML=
       '<div class="qi-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+utHtml+
       '<div class="qi-body">'+
@@ -1110,7 +1156,7 @@ function renderQuote(){
           '<div class="qi-stat"><div class="qi-slbl">Mkt BTU</div><div class="qi-sval">'+Number(h.mkt).toLocaleString()+'</div></div>'+
           (h.devBtu>0?'<div class="qi-stat"><div class="qi-slbl">Dev</div><div class="qi-sval cam">'+Number(h.devBtu).toLocaleString()+'</div></div>':'')+
         '</div>'+
-        devLine+hcLine+
+        devLine+hcLine+capHtml+warnHtml+
         '<div class="qi-price-row">'+
           '<div>'+
             '<div class="qi-plbl">'+(lang==='ar'?'الكمية':'Qty')+'</div>'+
@@ -1131,7 +1177,7 @@ function renderQuote(){
   refreshGrandTotal();
 }
 
-function setQty(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].qty=Math.max(1,parseInt(v)||1); save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); }
+function setQty(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].qty=Math.max(1,parseInt(v)||1); save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); renderQuote(); }
 function setUnitType(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0,unitType:'split'}; qlines[i].unitType=v||'split'; save(); }
 
 function setUp(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].up=parseFloat(v)||0; save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); }
@@ -1496,8 +1542,20 @@ function buildInvoiceHTML(){
 
     // Unit types are embedded per room in the table rows above.
     var acSection = '';
+    // Undersized warning block for invoice
+    var anyUndersized = false;
+    hist.forEach(function(h,i){
+      var reqB=parseInt(h.btu)||0, selB=getSelBtu(i), q=getQty(i);
+      if(!selB){ var BSTEPS=[9000,12000,18000,24000,27000,30000,36000,42000,48000,60000,72000,96000,120000,150000,180000,240000]; for(var _x=0;_x<BSTEPS.length;_x++){ if(BSTEPS[_x]>=reqB){selB=BSTEPS[_x];break;} } }
+      if(reqB>0 && selB*q < reqB) anyUndersized=true;
+    });
+    var undersizedNote = anyUndersized
+      ? '<div style="margin:16px 0 0;padding:10px 14px;background:#fffbeb;border:1px solid #fbbf24;border-radius:6px;font-size:11px;color:#92400e;">'
+        +(isAr?'⚠ ملاحظة: بعض البنود سعتها أقل من الحمل المطلوب — يرجى مراجعة السعات قبل الاعتماد.':'⚠ Note: Some line items are undersized vs required load — please review capacities before approval.')
+        +'</div>' : '';
+
     // Disclaimer
-    +(acSection)
+    +(acSection)+undersizedNote
     +'<div class="disclaimer">'+t('invdiscl')+'<br>AirCalc Pro — HVAC Engineering Suite &copy; '+new Date().getFullYear()+'</div>'
     +'</div>' // inv-page
     +'</body></html>';
