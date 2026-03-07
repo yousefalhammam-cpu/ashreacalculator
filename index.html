@@ -677,9 +677,12 @@ var qlines = []; // [{qty,up}] parallel to hist
 
 try { hist = JSON.parse(localStorage.getItem('acp9h') || '[]'); } catch(e){ hist=[]; }
 try { qlines = JSON.parse(localStorage.getItem('acp9q') || '[]'); } catch(e){ qlines=[]; }
-while(qlines.length < hist.length) var lastUp=(qlines.length>0?qlines[qlines.length-1].up:0)||0;
+while(qlines.length < hist.length){
+  var lastUp=(qlines.length>0?qlines[qlines.length-1].up:0)||0;
   var lastUT=(qlines.length>0?qlines[qlines.length-1].unitType:'')||'split';
-  qlines.push({qty:1,up:lastUp,unitType:lastUT,selectedBtu:0});
+  var lastBtu=(qlines.length>0?qlines[qlines.length-1].selectedBtu:0)||0;
+  qlines.push({qty:1,up:lastUp,unitType:lastUT,selectedBtu:lastBtu});
+}
 qlines = qlines.slice(0, hist.length);
 
 var editIdx = -1;
@@ -700,7 +703,7 @@ function qsPersist(){
   instPct=parseInt(G('qs-inst').value)||10;
   qsValidity=parseInt(G('qs-validity').value)||14;
   qsNotes=G('qs-notes').value||'';
-  localStorage.setItem('acp9qs',JSON.stringify({vatOn:vatOn,instPct:instPct,qsValidity:qsValidity,qsNotes:qsNotes}));
+  try{ localStorage.setItem('acp9qs',JSON.stringify({vatOn:vatOn,instPct:instPct,qsValidity:qsValidity,qsNotes:qsNotes})); }catch(e){}
   refreshGrandTotal();
 }
 function toggleVAT(){
@@ -725,7 +728,7 @@ function m3toft3(m){ return m*35.3147; }
 function money(v){ return Number(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function flash(id,v){ var e=G(id); if(!e)return; e.classList.add('fade'); setTimeout(function(){e.textContent=v;e.classList.remove('fade');},150); }
 function toast(msg){ var t=G('toast'); t.textContent=msg; t.classList.add('on'); setTimeout(function(){t.classList.remove('on');},2600); }
-function save(){ localStorage.setItem('acp9h',JSON.stringify(hist)); localStorage.setItem('acp9q',JSON.stringify(qlines)); }
+function save(){ try{ localStorage.setItem('acp9h',JSON.stringify(hist)); localStorage.setItem('acp9q',JSON.stringify(qlines)); }catch(e){} }
 function rLabel(r){ return lang==='ar'?r.ar:r.en; }
 
 // ── LANG ──────────────────────────────────────────────────────────────────
@@ -1117,65 +1120,68 @@ function renderQuote(){
       hcLine='<div class="qi-hcline">ASHRAE — S:'+h.sup+' OA:'+h.oa+' Exh:'+h.exh+' CFM | '+pl+'</div>';
     }
     var devLine=h.devSum?'<div class="qi-devline">⚡ '+h.devSum+'</div>':'';
-    var utOpts=['split','ducted','cassette','package','vrf','chillerfcu','window'];
-    var utLabels={split:t('acsplit'),ducted:t('acducted'),cassette:(lang==='ar'?'كاسيت (Cassette)':'Cassette'),package:t('acpackage'),vrf:t('acvrf'),chillerfcu:(lang==='ar'?'فريش إير + FCU':'Chiller FCU'),window:(lang==='ar'?'تكييف شباك':'Window')};
-    var utSelOpts=utOpts.map(function(k){ return '<option value="'+k+'"'+(getUT(i)===k?' selected':'')+'>'+utLabels[k]+'</option>'; }).join('');
+    var UT_KEYS=['split','floor','ducted','cassette','package','vrf','chiller_air','chiller_water','fcu','ahu','window'];
+    var utSelOpts=UT_KEYS.map(function(k){ return '<option value="'+k+'"'+(getUT(i)===k?' selected':'')+'>'+utLabel(k)+'</option>'; }).join('');
     var utHtml='<div class="qi-utype"><span class="qi-utype-lbl">'+(lang==='ar'?'نوع الوحدة':'Unit Type')+'</span><select class="qi-utype-sel" onchange="setUnitType('+i+',this.value)">'+utSelOpts+'</select></div>';
-    var BTU_STEPS=[9000, 12000, 18000, 24000, 27000, 30000, 36000, 42000, 48000, 60000, 72000, 96000, 120000, 150000, 180000, 240000];
     var reqBtu = parseInt(h.btu)||0;
+    var curUT = getUT(i);
+    var catItems = getCatalog(curUT);
     var selBtu = getSelBtu(i);
-    // Default selBtu to smallest market step >= reqBtu if not set
-    if(!selBtu){ for(var _s=0;_s<BTU_STEPS.length;_s++){ if(BTU_STEPS[_s]>=reqBtu){selBtu=BTU_STEPS[_s];break;} } if(!selBtu) selBtu=BTU_STEPS[BTU_STEPS.length-1]; qlines[i].selectedBtu=selBtu; }
-    var btuStepOpts = BTU_STEPS.map(function(b){ return '<option value="'+b+'"'+(selBtu===b?' selected':'')+'>'+Number(b).toLocaleString()+' BTU/h — '+(b/12000).toFixed(1)+' TR</option>'; }).join('');
-    var capHtml = '<div class="qi-cap-row"><span class="qi-cap-lbl">'+(lang==='ar'?'السعة المختارة':'Capacity')+'</span>'
+    // Validate selBtu is in catalog; if not, pick best default
+    var validBtus = catItems.map(function(x){return x.btu;});
+    if(!selBtu || validBtus.indexOf(selBtu)<0){
+      selBtu = defaultCapForUT(curUT, reqBtu);
+      qlines[i].selectedBtu = selBtu;
+    }
+    var btuStepOpts = catItems.map(function(c){
+      var lbl = lang==='ar' ? c.label.ar : c.label.en;
+      return '<option value="'+c.btu+'"'+(selBtu===c.btu?' selected':'')+'>'+lbl+'</option>';
+    }).join('');
+    var capHtml = '<div class="qi-cap-row"><span class="qi-cap-lbl">'+(lang==='ar'?'السعة المختارة':'Selected Capacity')+'</span>'
       +'<select class="qi-cap-sel" onchange="setSelBtu('+i+',this.value)">'+btuStepOpts+'</select>'
       +'<span class="qi-cap-badge-slot"></span></div>';
     var effCap = selBtu * qty;
-    // Delta% = ((effCap - reqBtu) / reqBtu) * 100  (negative = deficit)
-    var deltaPct = reqBtu > 0 ? ((effCap - reqBtu) / reqBtu * 100) : 0;
-    var deltaPctRnd = Math.round(deltaPct);
+    // Delta% = ((selBtu*qty - reqBtu) / reqBtu) * 100 — TRUE percentage
     var warnHtml = '';
     var capBadge = '';
     if(reqBtu > 0){
-      var reqTR  = (reqBtu/12000).toFixed(1);
-      var selTR  = (effCap/12000).toFixed(1);
-      var absDelta = Math.abs(deltaPctRnd);
-      if(deltaPct < -15){
-        // SEVERE DEFICIT
-        var defMsg = lang==='ar'
-          ? 'تنبيه: السعة المختارة أقل من الحمل المطلوب.\nالعجز: '+absDelta+'%\nالمطلوب: '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR)\nالمختار: '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR)\nيُنصح برفع السعة أو تقسيم الحمل على أكثر من وحدة.'
-          : 'Warning: Selected capacity is below the required load.\nDeficit: '+absDelta+'%\nRequired: '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR)\nSelected: '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR)\nConsider increasing capacity or splitting the load.';
-        var defLines = defMsg.split('\n');
-        warnHtml = '<div class="qi-warn severe"><div class="qi-warn-head">⛔ '+defLines[0]+'</div>'
+      var deltaRaw = (effCap - reqBtu) / reqBtu * 100;
+      var deltaRnd = Math.round(deltaRaw * 10) / 10;
+      var absDelta = Math.abs(deltaRnd);
+      var reqTR = (reqBtu/12000).toFixed(1);
+      var selTR = (effCap/12000).toFixed(1);
+      var pctStr = (deltaRnd >= 0 ? '+' : '') + deltaRnd.toFixed(1) + '%';
+
+      if(deltaRaw < 0){
+        // DEFICIT
+        var defLines = lang==='ar'
+          ? ['تنبيه: السعة أقل من الحمل المطلوب.',
+             'العجز: '+deltaRnd.toFixed(1)+'%',
+             'المطلوب: '+Number(reqBtu).toLocaleString()+' BTU/h (~'+reqTR+' TR)',
+             'المختار: '+Number(effCap).toLocaleString()+' BTU/h (~'+selTR+' TR)',
+             'يُنصح برفع السعة أو تقسيم الحمل.']
+          : ['Warning: Capacity below required load.',
+             'Deficit: '+deltaRnd.toFixed(1)+'%',
+             'Required: '+Number(reqBtu).toLocaleString()+' BTU/h (~'+reqTR+' TR)',
+             'Selected: '+Number(effCap).toLocaleString()+' BTU/h (~'+selTR+' TR)',
+             'Consider higher capacity or multiple units.'];
+
+        var sev = absDelta > 15 ? 'severe' : 'mild';
+        var icon = absDelta > 15 ? '⛔' : '⚠';
+        warnHtml = '<div class="qi-warn '+sev+'"><div class="qi-warn-head">'+icon+' '+defLines[0]+'</div>'
           +defLines.slice(1).map(function(l){return '<div class="qi-warn-row">'+l+'</div>';}).join('')
           +'</div>';
-        capBadge = '<span class="qi-cap-badge deficit-severe">⛔ '+(lang==='ar'?'عجز شديد':'Severe Deficit')+' '+absDelta+'%</span>';
-      } else if(deltaPct < -5){
-        // MILD DEFICIT
-        var mildMsg = lang==='ar'
-          ? 'تنبيه: العجز الطفيف.\nالعجز: '+absDelta+'%\nالمطلوب: '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR)\nالمختار: '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR)\nيُنصح برفع السعة أو تقسيم الحمل.'
-          : 'Mild deficit: capacity slightly below required.\nDeficit: '+absDelta+'%\nRequired: '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR)\nSelected: '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR)\nConsider increasing capacity.';
-        var mildLines = mildMsg.split('\n');
-        warnHtml = '<div class="qi-warn mild"><div class="qi-warn-head">⚠ '+mildLines[0]+'</div>'
-          +mildLines.slice(1).map(function(l){return '<div class="qi-warn-row">'+l+'</div>';}).join('')
-          +'</div>';
-        capBadge = '<span class="qi-cap-badge deficit-mild">⚠ '+(lang==='ar'?'عجز':'Deficit')+' '+absDelta+'%</span>';
-      } else if(deltaPct <= 10){
-        // MATCHED -5% to +10%
-        var matchLbl = lang==='ar' ? 'مطابقة (±5%)' : 'Matched (±5%)';
-        if(deltaPctRnd > 0) matchLbl = lang==='ar' ? 'مطابقة +'+deltaPctRnd+'%' : 'Matched +'+deltaPctRnd+'%';
-        else if(deltaPctRnd < 0) matchLbl = lang==='ar' ? 'مطابقة −'+absDelta+'%' : 'Matched −'+absDelta+'%';
-        capBadge = '<span class="qi-cap-badge matched">✓ '+matchLbl+'</span>';
-      } else if(deltaPct <= 30){
-        // OVERSIZE ACCEPTABLE +10% to +30%
-        capBadge = '<span class="qi-cap-badge oversize-ok">'+(lang==='ar'?'سعة زائدة +':'Oversized +')+deltaPctRnd+'%</span>';
+        capBadge = '<span class="qi-cap-badge '+(absDelta>15?'deficit-severe':'deficit-mild')+'">'+icon+' '+(lang==='ar'?'عجز':'Deficit')+' '+deltaRnd.toFixed(1)+'%</span>';
+      } else if(deltaRaw <= 5){
+        capBadge = '<span class="qi-cap-badge matched">✓ '+(lang==='ar'?'مطابقة':'Match')+' '+pctStr+'</span>';
+      } else if(deltaRaw <= 25){
+        capBadge = '<span class="qi-cap-badge oversize-ok">'+(lang==='ar'?'سعة زائدة':'Slight oversize')+' '+pctStr+'</span>';
       } else {
-        // HIGH OVERSIZE >+30%
-        var highOvMsg = lang==='ar'
-          ? 'ملاحظة: السعة أعلى من المطلوب بنسبة كبيرة (+'+deltaPctRnd+'%) — احتمال short cycling.'
-          : 'Note: Capacity exceeds load by +'+deltaPctRnd+'% — short cycling risk.';
-        warnHtml = '<div class="qi-warn mild"><div class="qi-warn-head">ℹ '+highOvMsg+'</div></div>';
-        capBadge = '<span class="qi-cap-badge oversize-high">'+(lang==='ar'?'سعة عالية +':'High Oversize +')+deltaPctRnd+'%</span>';
+        var highMsg = lang==='ar'
+          ? 'ملاحظة: السعة أعلى من المطلوب ('+pctStr+') — احتمال قصر دورة الضاغط (Short Cycling).'
+          : 'Note: Capacity exceeds load by '+pctStr+'. Short cycling risk.';
+        warnHtml = '<div class="qi-warn mild"><div class="qi-warn-head">ℹ '+highMsg+'</div></div>';
+        capBadge = '<span class="qi-cap-badge oversize-high">'+(lang==='ar'?'سعة عالية':'High oversize')+' '+pctStr+'</span>';
       }
     }
     capHtml = capHtml.replace('<span class="qi-cap-badge-slot"></span>', capBadge);
@@ -1214,7 +1220,21 @@ function renderQuote(){
 }
 
 function setQty(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].qty=Math.max(1,parseInt(v)||1); save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); renderQuote(); }
-function setUnitType(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0,unitType:'split',selectedBtu:0}; qlines[i].unitType=v||'split'; save(); renderQuote(); }
+function setUnitType(i,v){
+  if(!qlines[i]) qlines[i]={qty:1,up:0,unitType:'split',selectedBtu:0};
+  var oldType=qlines[i].unitType||'split';
+  var newType=v||'split';
+  qlines[i].unitType=newType;
+  if(oldType!==newType){
+    var reqBtu2=parseInt((hist[i]||{}).btu)||0;
+    var newCat=getCatalog(newType);
+    var validBtus2=newCat.map(function(x){return x.btu;});
+    if(validBtus2.indexOf(qlines[i].selectedBtu)<0){
+      qlines[i].selectedBtu=defaultCapForUT(newType,reqBtu2);
+    }
+  }
+  save(); renderQuote();
+}
 
 function setUp(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].up=parseFloat(v)||0; save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); }
 
@@ -1259,10 +1279,12 @@ function exportCSV(){
     rows.push(['\u0627\u0644\u062a\u0627\u0631\u064a\u062e',today,'','','','','','','','','','','']);
     rows.push(['\u0635\u0644\u0627\u062d\u064a\u0629 \u0627\u0644\u0639\u0631\u0636',vd+' \u064a\u0648\u0645','','','','','','','','','','','']);
     rows.push(['','','','','','','','','','','','','']);
-    rows.push(['#','\u0646\u0648\u0639 \u0627\u0644\u063a\u0631\u0641\u0629','\u0627\u0644\u062d\u062c\u0645 \u0645\u00b3','\u0623\u0634\u062e\u0627\u0635','\u062d\u0645\u0644 \u0627\u0644\u0623\u062c\u0647\u0632\u0629 BTU/h','TR','CFM','BTU/h','\u0633\u0648\u0642 BTU','ASHRAE','\u0627\u0644\u0643\u0645\u064a\u0629','\u0633\u0639\u0631 \u0627\u0644\u0648\u062d\u062f\u0629','\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0633\u0637\u0631']);
+    rows.push(['#','\u0646\u0648\u0639 \u0627\u0644\u063a\u0631\u0641\u0629','\u0646\u0648\u0639 \u0627\u0644\u0648\u062d\u062f\u0629','\u0627\u0644\u0633\u0639\u0629 \u0627\u0644\u0645\u062e\u062a\u0627\u0631\u0629','\u0627\u0644\u062d\u062c\u0645 \u0645\u00b3','\u0623\u0634\u062e\u0627\u0635','\u062d\u0645\u0644 \u0627\u0644\u0623\u062c\u0647\u0632\u0629 BTU/h','TR','CFM','BTU/h','\u0633\u0648\u0642 BTU','ASHRAE','\u0627\u0644\u0643\u0645\u064a\u0629','\u0633\u0639\u0631 \u0627\u0644\u0648\u062d\u062f\u0629','\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0633\u0637\u0631']);
     hist.forEach(function(h,i){
       var hc=h.sup?'S:'+h.sup+' OA:'+h.oa+' Exh:'+h.exh+' '+h.pres:'\u2014';
-      rows.push([i+1,h.ar||h.en,h.vol,h.ppl,h.devBtu||0,h.tr,h.cfm,h.btu,h.mkt,hc,getQty(i),getUP(i),money(getQty(i)*getUP(i))]);
+      var _ut=utLabel(getUT(i));
+      var _sb=getSelBtu(i)||acRoundBtu(parseInt(h.btu)||0,'btu');
+      rows.push([i+1,h.ar||h.en,_ut,Number(_sb).toLocaleString()+' BTU',h.vol,h.ppl,h.devBtu||0,h.tr,h.cfm,h.btu,h.mkt,hc,getQty(i),getUP(i),money(getQty(i)*getUP(i))]);
     });
     rows.push(['','','','','','','','','','','','','']);
     rows.push(['\u0627\u0644\u0645\u062c\u0645\u0648\u0639 \u0627\u0644\u0641\u0631\u0639\u064a','\u0631.\u0633 '+money(subtotal),'','','','','','','','','','','']);
@@ -1280,10 +1302,12 @@ function exportCSV(){
     rows.push(['Date',today,'','','','','','','','','','','']);
     rows.push(['Validity',vd+' days','','','','','','','','','','','']);
     rows.push(['','','','','','','','','','','','','']);
-    rows.push(['#','Room Type','Volume m\u00b3','Persons','Device Load BTU/h','TR','CFM','BTU/h','Market BTU','ASHRAE','Quantity','Unit Price','Line Total']);
+    rows.push(['#','Room Type','System Type','Selected Capacity','Volume m\u00b3','Persons','Device Load BTU/h','TR','CFM','BTU/h','Market BTU','ASHRAE','Quantity','Unit Price','Line Total']);
     hist.forEach(function(h,i){
       var hc=h.sup?'S:'+h.sup+' OA:'+h.oa+' Exh:'+h.exh+' '+h.pres:'\u2014';
-      rows.push([i+1,h.en||h.ar,h.vol,h.ppl,h.devBtu||0,h.tr,h.cfm,h.btu,h.mkt,hc,getQty(i),getUP(i),money(getQty(i)*getUP(i))]);
+      var _ut2=utLabel(getUT(i));
+      var _sb2=getSelBtu(i)||acRoundBtu(parseInt(h.btu)||0,'btu');
+      rows.push([i+1,h.en||h.ar,_ut2,Number(_sb2).toLocaleString()+' BTU',h.vol,h.ppl,h.devBtu||0,h.tr,h.cfm,h.btu,h.mkt,hc,getQty(i),getUP(i),money(getQty(i)*getUP(i))]);
     });
     rows.push(['','','','','','','','','','','','','']);
     rows.push(['Equipment Subtotal','SAR '+money(subtotal),'','','','','','','','','','','']);
@@ -1336,7 +1360,7 @@ function invCommon(){
     ? '<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">'
     : '<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">';
   var bodyFont = isAr ? "'Cairo', Arial, sans-serif" : "'Segoe UI', Arial, sans-serif";
-  var utLbls={split:(isAr?'سبليت (Split)':'Split (Wall)'),ducted:(isAr?'سبليت مخفي':'Ducted Split'),cassette:(isAr?'كاسيت':'Cassette'),package:(isAr?'وحدة مركزية':'Package Unit'),vrf:'VRF',chillerfcu:(isAr?'فريش إير + FCU':'Chiller FCU'),window:(isAr?'تكييف شباك':'Window AC'),chiller:(isAr?'تبريد مركزي':'Chiller')};
+  var utLbls={}; Object.keys(UT_LABELS_AR).forEach(function(k){utLbls[k]=isAr?UT_LABELS_AR[k]:UT_LABELS_EN[k];}); utLbls['chillerfcu']=isAr?'وحدة مناولة / FCU':'FCU (Chilled Water)'; utLbls['chiller']=isAr?'تشيلر هوائي':'Chiller (Air-Cooled)';
   return {proj:proj,qno:qno,today:today,ip:ip,validDays:validDays,validLabel:validLabel,notes:notes,isAr:isAr,dir:dir,cur:cur,subtotal:subtotal,totalQty:totalQty,instAmt:instAmt,vatBase:vatBase,vatAmt:vatAmt,grand:grand,fontLink:fontLink,bodyFont:bodyFont,utLbls:utLbls};
 }
 
@@ -1413,14 +1437,17 @@ function buildPage1(c){
         var _rb=parseInt(h.btu)||0;
         var _sb=getSelBtu(i)||acRoundBtu(_rb,'btu');
         var _ef=_sb*getQty(i);
-        var _dp=_rb>0?((_ef-_rb)/_rb*100):0;
-        var _dr=Math.round(_dp), _da=Math.abs(_dr);
+        var _raw=_rb>0?((_ef-_rb)/_rb*100):0;
+        var _rnd=Math.round(_raw*10)/10;
+        var _pct=(_rnd>=0?'+':'')+_rnd.toFixed(1)+'%';
         var _bc,_bt;
-        if(_dp<-15){_bc='#dc2626';_bt='⛔ '+(c.isAr?'عجز شديد':'Severe Deficit')+' '+_da+'%';}
-        else if(_dp<-5){_bc='#d97706';_bt='⚠ '+(c.isAr?'عجز':'Deficit')+' '+_da+'%';}
-        else if(_dp<=10){_bc='#059669';_bt='✓ '+(c.isAr?'مطابقة':'Matched')+(_dr>=0?'+'+_dr:'−'+_da)+'%';}
-        else if(_dp<=30){_bc='#4f46e5';_bt=(c.isAr?'زائد +':'Ovrsz +')+_dr+'%';}
-        else{_bc='#6b7280';_bt=(c.isAr?'عالي +':'High +')+_dr+'%';}
+        if(_raw<0){
+          var _abs2=Math.abs(_rnd);
+          if(_abs2>15){_bc='#dc2626';_bt='⛔ '+(c.isAr?'عجز شديد':'Severe Deficit')+' '+_rnd.toFixed(1)+'%';}
+          else{_bc='#d97706';_bt='⚠ '+(c.isAr?'عجز':'Deficit')+' '+_rnd.toFixed(1)+'%';}
+        } else if(_raw<=5){_bc='#059669';_bt='✓ '+(c.isAr?'مطابقة':'Match')+' '+_pct;}
+        else if(_raw<=25){_bc='#4f46e5';_bt=(c.isAr?'سعة زائدة':'Slight oversize')+' '+_pct;}
+        else{_bc='#6b7280';_bt=(c.isAr?'سعة عالية':'High oversize')+' '+_pct;}
         return '<td style="text-align:center"><span style="font-size:10px;font-weight:700;color:'+_bc+'">'+_bt+'</span></td>';
       })()
       +'</tr>';
@@ -1495,25 +1522,22 @@ function buildPage2(c){
     var selTR=(selBtu/12000).toFixed(1);
     // Warning or badge
     var warnHtml='';
-    var delta2=reqBtu>0?((effCap-reqBtu)/reqBtu*100):0;
-    var delta2Rnd=Math.round(delta2);
-    var abs2=Math.abs(delta2Rnd);
-    if(delta2 < -15){
-      var d2msg=c.isAr
-        ?'عجز شديد: السعة المختارة أقل من الحمل المطلوب. العجز: '+abs2+'% | المطلوب: '+Number(reqBtu).toLocaleString()+' BTU/h ('+reqTR+' TR) | المختار: '+Number(effCap).toLocaleString()+' BTU/h ('+effTR+' TR)'
-        :'Severe Deficit: '+abs2+'% below required. Required: '+Number(reqBtu).toLocaleString()+' BTU/h ('+reqTR+' TR). Selected: '+Number(effCap).toLocaleString()+' BTU/h ('+effTR+' TR).';
-      warnHtml='<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:4px;padding:8px 10px;font-size:11px;color:#dc2626">⛔ '+d2msg+'</div>';
-    } else if(delta2 < -5){
-      var d2msg2=c.isAr
-        ?'عجز طفيف: '+abs2+'% | المطلوب: '+Number(reqBtu).toLocaleString()+' BTU/h ('+reqTR+' TR) | المختار: '+Number(effCap).toLocaleString()+' BTU/h ('+effTR+' TR)'
-        :'Mild Deficit: '+abs2+'%. Required: '+Number(reqBtu).toLocaleString()+' BTU/h ('+reqTR+' TR). Selected: '+Number(effCap).toLocaleString()+' BTU/h ('+effTR+' TR).';
-      warnHtml='<div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:4px;padding:8px 10px;font-size:11px;color:#d97706">⚠ '+d2msg2+'</div>';
-    } else if(delta2 <= 10){
-      warnHtml='<span class="badge-ok">✓ '+(c.isAr?'مطابقة':'Matched')+(delta2Rnd>=0?' +'+delta2Rnd:'−'+abs2)+'%</span>';
-    } else if(delta2 <= 30){
-      warnHtml='<span class="badge-over">'+(c.isAr?'سعة زائدة +':'Oversized +')+delta2Rnd+'%</span>';
+    var d2raw=reqBtu>0?((effCap-reqBtu)/reqBtu*100):0;
+    var d2rnd=Math.round(d2raw*10)/10, d2abs=Math.abs(d2rnd);
+    var d2pct=(d2rnd>=0?'+':'')+d2rnd.toFixed(1)+'%';
+    if(d2raw < 0){
+      var d2icon=d2abs>15?'⛔':'⚠';
+      var d2bgc=d2abs>15?'#fef2f2':'#fffbeb';
+      var d2bc=d2abs>15?'#fca5a5':'#fbbf24';
+      var d2tc=d2abs>15?'#dc2626':'#d97706';
+      var d2lbl=c.isAr?(d2abs>15?'عجز شديد':'عجز طفيف'):(d2abs>15?'Severe Deficit':'Mild Deficit');
+      warnHtml='<div style="background:'+d2bgc+';border:1px solid '+d2bc+';border-radius:4px;padding:8px 10px;font-size:11px;color:'+d2tc+'">'+d2icon+' '+d2lbl+': '+d2rnd.toFixed(1)+'% | '+(c.isAr?'المطلوب':'Req')+': '+Number(reqBtu).toLocaleString()+' BTU | '+(c.isAr?'المختار':'Sel')+': '+Number(effCap).toLocaleString()+' BTU</div>';
+    } else if(d2raw <= 5){
+      warnHtml='<span class="badge-ok">✓ '+(c.isAr?'مطابقة':'Match')+' '+d2pct+'</span>';
+    } else if(d2raw <= 25){
+      warnHtml='<span class="badge-over">'+(c.isAr?'سعة زائدة':'Slight oversize')+' '+d2pct+'</span>';
     } else {
-      warnHtml='<span style="display:inline-block;background:#ede9fe;color:#7c3aed;border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700">'+(c.isAr?'سعة عالية +':'High Oversize +')+delta2Rnd+'%</span>';
+      warnHtml='<span style="display:inline-block;background:#ede9fe;color:#7c3aed;border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700">'+(c.isAr?'سعة عالية':'High oversize')+' '+d2pct+'</span>';
     }
     // HC details
     var hcHtml='';
@@ -1684,6 +1708,145 @@ function exportPDF(){
 
 
 // ── AC SELECTION ──────────────────────────────────────────────────────────
+// ── AC SYSTEM CATALOG (Saudi market) ────────────────────────────────────
+// Each entry: { btu: <BTU/h>, cfm: <optional CFM for FCU/AHU>, label: {ar, en} }
+var AC_CATALOG = {
+  split: [
+    {btu:9000,  label:{ar:'9,000 BTU (0.75 TR — 9k)',   en:'9,000 BTU (0.75 TR — 9k)'}},
+    {btu:12000, label:{ar:'12,000 BTU (1 TR — 12k)',     en:'12,000 BTU (1 TR — 12k)'}},
+    {btu:18000, label:{ar:'18,000 BTU (1.5 TR — 18k)',   en:'18,000 BTU (1.5 TR — 18k)'}},
+    {btu:24000, label:{ar:'24,000 BTU (2 TR — 24k)',     en:'24,000 BTU (2 TR — 24k)'}},
+    {btu:30000, label:{ar:'30,000 BTU (2.5 TR — 30k)',   en:'30,000 BTU (2.5 TR — 30k)'}},
+    {btu:36000, label:{ar:'36,000 BTU (3 TR — 36k)',     en:'36,000 BTU (3 TR — 36k)'}}
+  ],
+  floor: [
+    {btu:36000, label:{ar:'36,000 BTU (3 TR — 36k)',     en:'36,000 BTU (3 TR — 36k)'}},
+    {btu:48000, label:{ar:'48,000 BTU (4 TR — 48k)',     en:'48,000 BTU (4 TR — 48k)'}},
+    {btu:60000, label:{ar:'60,000 BTU (5 TR — 60k)',     en:'60,000 BTU (5 TR — 60k)'}}
+  ],
+  ducted: [
+    {btu:24000, label:{ar:'24,000 BTU (2 TR — 24k)',     en:'24,000 BTU (2 TR — 24k)'}},
+    {btu:30000, label:{ar:'30,000 BTU (2.5 TR — 30k)',   en:'30,000 BTU (2.5 TR — 30k)'}},
+    {btu:36000, label:{ar:'36,000 BTU (3 TR — 36k)',     en:'36,000 BTU (3 TR — 36k)'}},
+    {btu:42000, label:{ar:'42,000 BTU (3.5 TR — 42k)',   en:'42,000 BTU (3.5 TR — 42k)'}},
+    {btu:48000, label:{ar:'48,000 BTU (4 TR — 48k)',     en:'48,000 BTU (4 TR — 48k)'}},
+    {btu:60000, label:{ar:'60,000 BTU (5 TR — 60k)',     en:'60,000 BTU (5 TR — 60k)'}}
+  ],
+  cassette: [
+    {btu:24000, label:{ar:'24,000 BTU (2 TR — 24k)',     en:'24,000 BTU (2 TR — 24k)'}},
+    {btu:30000, label:{ar:'30,000 BTU (2.5 TR — 30k)',   en:'30,000 BTU (2.5 TR — 30k)'}},
+    {btu:36000, label:{ar:'36,000 BTU (3 TR — 36k)',     en:'36,000 BTU (3 TR — 36k)'}},
+    {btu:42000, label:{ar:'42,000 BTU (3.5 TR — 42k)',   en:'42,000 BTU (3.5 TR — 42k)'}},
+    {btu:48000, label:{ar:'48,000 BTU (4 TR — 48k)',     en:'48,000 BTU (4 TR — 48k)'}}
+  ],
+  package: [
+    {btu:60000,  label:{ar:'60,000 BTU (5 TR)',          en:'60,000 BTU (5 TR)'}},
+    {btu:90000,  label:{ar:'90,000 BTU (7.5 TR)',        en:'90,000 BTU (7.5 TR)'}},
+    {btu:120000, label:{ar:'120,000 BTU (10 TR)',        en:'120,000 BTU (10 TR)'}},
+    {btu:150000, label:{ar:'150,000 BTU (12.5 TR)',      en:'150,000 BTU (12.5 TR)'}},
+    {btu:180000, label:{ar:'180,000 BTU (15 TR)',        en:'180,000 BTU (15 TR)'}},
+    {btu:240000, label:{ar:'240,000 BTU (20 TR)',        en:'240,000 BTU (20 TR)'}},
+    {btu:300000, label:{ar:'300,000 BTU (25 TR)',        en:'300,000 BTU (25 TR)'}},
+    {btu:360000, label:{ar:'360,000 BTU (30 TR)',        en:'360,000 BTU (30 TR)'}}
+  ],
+  vrf: [
+    {btu:48000,  label:{ar:'48,000 BTU (4 TR)',          en:'48,000 BTU (4 TR)'}},
+    {btu:60000,  label:{ar:'60,000 BTU (5 TR)',          en:'60,000 BTU (5 TR)'}},
+    {btu:72000,  label:{ar:'72,000 BTU (6 TR)',          en:'72,000 BTU (6 TR)'}},
+    {btu:96000,  label:{ar:'96,000 BTU (8 TR)',          en:'96,000 BTU (8 TR)'}},
+    {btu:120000, label:{ar:'120,000 BTU (10 TR)',        en:'120,000 BTU (10 TR)'}},
+    {btu:144000, label:{ar:'144,000 BTU (12 TR)',        en:'144,000 BTU (12 TR)'}},
+    {btu:168000, label:{ar:'168,000 BTU (14 TR)',        en:'168,000 BTU (14 TR)'}},
+    {btu:192000, label:{ar:'192,000 BTU (16 TR)',        en:'192,000 BTU (16 TR)'}},
+    {btu:216000, label:{ar:'216,000 BTU (18 TR)',        en:'216,000 BTU (18 TR)'}},
+    {btu:240000, label:{ar:'240,000 BTU (20 TR)',        en:'240,000 BTU (20 TR)'}}
+  ],
+  chiller_air: [
+    {btu:240000,  label:{ar:'240,000 BTU (20 TR)',       en:'240,000 BTU (20 TR)'}},
+    {btu:300000,  label:{ar:'300,000 BTU (25 TR)',       en:'300,000 BTU (25 TR)'}},
+    {btu:360000,  label:{ar:'360,000 BTU (30 TR)',       en:'360,000 BTU (30 TR)'}},
+    {btu:480000,  label:{ar:'480,000 BTU (40 TR)',       en:'480,000 BTU (40 TR)'}},
+    {btu:600000,  label:{ar:'600,000 BTU (50 TR)',       en:'600,000 BTU (50 TR)'}},
+    {btu:720000,  label:{ar:'720,000 BTU (60 TR)',       en:'720,000 BTU (60 TR)'}},
+    {btu:960000,  label:{ar:'960,000 BTU (80 TR)',       en:'960,000 BTU (80 TR)'}},
+    {btu:1200000, label:{ar:'1,200,000 BTU (100 TR)',   en:'1,200,000 BTU (100 TR)'}},
+    {btu:1440000, label:{ar:'1,440,000 BTU (120 TR)',   en:'1,440,000 BTU (120 TR)'}}
+  ],
+  chiller_water: [
+    {btu:600000,  label:{ar:'600,000 BTU (50 TR)',       en:'600,000 BTU (50 TR)'}},
+    {btu:960000,  label:{ar:'960,000 BTU (80 TR)',       en:'960,000 BTU (80 TR)'}},
+    {btu:1200000, label:{ar:'1,200,000 BTU (100 TR)',   en:'1,200,000 BTU (100 TR)'}},
+    {btu:1440000, label:{ar:'1,440,000 BTU (120 TR)',   en:'1,440,000 BTU (120 TR)'}},
+    {btu:1800000, label:{ar:'1,800,000 BTU (150 TR)',   en:'1,800,000 BTU (150 TR)'}},
+    {btu:2400000, label:{ar:'2,400,000 BTU (200 TR)',   en:'2,400,000 BTU (200 TR)'}},
+    {btu:3000000, label:{ar:'3,000,000 BTU (250 TR)',   en:'3,000,000 BTU (250 TR)'}},
+    {btu:3600000, label:{ar:'3,600,000 BTU (300 TR)',   en:'3,600,000 BTU (300 TR)'}}
+  ],
+  fcu: [
+    {btu:Math.round(1.08*300*20), cfm:300,  label:{ar:'300 CFM (≈6,480 BTU/h)',  en:'300 CFM (≈6,480 BTU/h)'}},
+    {btu:Math.round(1.08*400*20), cfm:400,  label:{ar:'400 CFM (≈8,640 BTU/h)',  en:'400 CFM (≈8,640 BTU/h)'}},
+    {btu:Math.round(1.08*600*20), cfm:600,  label:{ar:'600 CFM (≈12,960 BTU/h)', en:'600 CFM (≈12,960 BTU/h)'}},
+    {btu:Math.round(1.08*800*20), cfm:800,  label:{ar:'800 CFM (≈17,280 BTU/h)', en:'800 CFM (≈17,280 BTU/h)'}},
+    {btu:Math.round(1.08*1000*20),cfm:1000, label:{ar:'1,000 CFM (≈21,600 BTU/h)',en:'1,000 CFM (≈21,600 BTU/h)'}},
+    {btu:Math.round(1.08*1200*20),cfm:1200, label:{ar:'1,200 CFM (≈25,920 BTU/h)',en:'1,200 CFM (≈25,920 BTU/h)'}},
+    {btu:Math.round(1.08*1500*20),cfm:1500, label:{ar:'1,500 CFM (≈32,400 BTU/h)',en:'1,500 CFM (≈32,400 BTU/h)'}},
+    {btu:Math.round(1.08*2000*20),cfm:2000, label:{ar:'2,000 CFM (≈43,200 BTU/h)',en:'2,000 CFM (≈43,200 BTU/h)'}}
+  ],
+  ahu: [
+    {btu:Math.round(1.08*2000*20), cfm:2000,  label:{ar:'2,000 CFM (≈43,200 BTU/h)',   en:'2,000 CFM (≈43,200 BTU/h)'}},
+    {btu:Math.round(1.08*2500*20), cfm:2500,  label:{ar:'2,500 CFM (≈54,000 BTU/h)',   en:'2,500 CFM (≈54,000 BTU/h)'}},
+    {btu:Math.round(1.08*3000*20), cfm:3000,  label:{ar:'3,000 CFM (≈64,800 BTU/h)',   en:'3,000 CFM (≈64,800 BTU/h)'}},
+    {btu:Math.round(1.08*4000*20), cfm:4000,  label:{ar:'4,000 CFM (≈86,400 BTU/h)',   en:'4,000 CFM (≈86,400 BTU/h)'}},
+    {btu:Math.round(1.08*5000*20), cfm:5000,  label:{ar:'5,000 CFM (≈108,000 BTU/h)',  en:'5,000 CFM (≈108,000 BTU/h)'}},
+    {btu:Math.round(1.08*6000*20), cfm:6000,  label:{ar:'6,000 CFM (≈129,600 BTU/h)',  en:'6,000 CFM (≈129,600 BTU/h)'}},
+    {btu:Math.round(1.08*8000*20), cfm:8000,  label:{ar:'8,000 CFM (≈172,800 BTU/h)',  en:'8,000 CFM (≈172,800 BTU/h)'}},
+    {btu:Math.round(1.08*10000*20),cfm:10000, label:{ar:'10,000 CFM (≈216,000 BTU/h)', en:'10,000 CFM (≈216,000 BTU/h)'}}
+  ],
+  window: [
+    {btu:9000,  label:{ar:'9,000 BTU (0.75 TR)',  en:'9,000 BTU (0.75 TR)'}},
+    {btu:12000, label:{ar:'12,000 BTU (1 TR)',    en:'12,000 BTU (1 TR)'}},
+    {btu:18000, label:{ar:'18,000 BTU (1.5 TR)',  en:'18,000 BTU (1.5 TR)'}},
+    {btu:24000, label:{ar:'24,000 BTU (2 TR)',    en:'24,000 BTU (2 TR)'}}
+  ]
+};
+
+// Map unit type keys to AC_CATALOG keys
+var UT_TO_CAT = {
+  split:'split', floor:'floor', ducted:'ducted', cassette:'cassette',
+  package:'package', vrf:'vrf', chiller_air:'chiller_air',
+  chiller_water:'chiller_water', fcu:'fcu', ahu:'ahu', window:'window',
+  // legacy keys
+  chillerfcu:'fcu', chiller:'chiller_air'
+};
+
+// Labels for each unit type key (Arabic + English)
+var UT_LABELS_AR = {
+  split:'سبليت جداري', floor:'سبليت دولابي', ducted:'مخفي (دكتد سبليت)',
+  cassette:'كاسيت', package:'باكج روف توب', vrf:'VRF / VRV',
+  chiller_air:'تشيلر هوائي', chiller_water:'تشيلر مائي',
+  fcu:'وحدة مناولة / FCU', ahu:'وحدة مناولة هواء / AHU', window:'تكييف شباك'
+};
+var UT_LABELS_EN = {
+  split:'Split (Wall)', floor:'Split (Floor Standing)', ducted:'Ducted Split',
+  cassette:'Cassette', package:'Package (Rooftop)', vrf:'VRF/VRV',
+  chiller_air:'Chiller (Air-Cooled)', chiller_water:'Chiller (Water-Cooled)',
+  fcu:'FCU (Chilled Water)', ahu:'AHU (Chilled Water)', window:'Window AC'
+};
+
+function utLabel(key){ return lang==='ar' ? (UT_LABELS_AR[key]||key) : (UT_LABELS_EN[key]||key); }
+
+function getCatalog(utKey){
+  var catKey = UT_TO_CAT[utKey] || utKey;
+  return AC_CATALOG[catKey] || AC_CATALOG['split'];
+}
+
+// Get best default capacity from catalog >= reqBtu
+function defaultCapForUT(utKey, reqBtu){
+  var cat = getCatalog(utKey);
+  for(var i=0;i<cat.length;i++){ if(cat[i].btu >= reqBtu) return cat[i].btu; }
+  return cat[cat.length-1].btu;
+}
+
 var AC_BTU_STEPS = [9000,12000,18000,24000,27000,30000,36000,42000,48000,60000,72000,96000,120000];
 
 function acRoundBtu(btu, method){
