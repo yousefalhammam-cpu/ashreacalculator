@@ -510,17 +510,29 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
         <div class="duct-block-ttl" id="proj-duct-ttl">🌬 تصميم مجاري الهواء</div>
         <div class="duct-row">
           <span class="duct-lbl" id="duct-vel-sup-lbl">سرعة الإمداد (fpm)</span>
-          <select class="duct-sel" id="duct-vel-sup" onchange="renderProjBlock()">
+          <select class="duct-sel" id="duct-vel-sup" onchange="renderProjBlock();if(quoteMode==='room')renderQuote();">
             <option value="900">900</option>
             <option value="1000" selected>1000</option>
             <option value="1200">1200</option>
           </select>
           <span class="duct-lbl" id="duct-vel-ret-lbl">سرعة الرجوع (fpm)</span>
-          <select class="duct-sel" id="duct-vel-ret" onchange="renderProjBlock()">
+          <select class="duct-sel" id="duct-vel-ret" onchange="renderProjBlock();if(quoteMode==='room')renderQuote();">
             <option value="700">700</option>
             <option value="800" selected>800</option>
             <option value="900">900</option>
           </select>
+        </div>
+        <div class="duct-row" id="duct-cfm-per-tr-row">
+          <span class="duct-lbl" id="duct-cfmtr-lbl">CFM/TR</span>
+          <select class="duct-sel" id="duct-cfm-per-tr" onchange="renderProjBlock();if(quoteMode==='room')renderQuote();">
+            <option value="350">350</option>
+            <option value="400" selected>400</option>
+            <option value="450">450</option>
+            <option value="500">500</option>
+          </select>
+        </div>
+        <div class="duct-row" id="duct-cfm-src-row">
+          <span id="duct-cfm-src" dir="rtl" style="font-size:10px;color:var(--a);background:var(--ad);padding:2px 8px;border-radius:10px;font-family:var(--fe);white-space:nowrap;display:inline-flex;align-items:center;gap:4px">—</span>
         </div>
         <div class="duct-row">
           <span class="duct-lbl" id="duct-sup-lbl">مجرى الإمداد الرئيسي:</span>
@@ -1290,16 +1302,37 @@ function renderQuote(){
     }
     capHtml = capHtml.replace('<span class="qi-cap-badge-slot"></span>', capBadge);
 
-    // Duct sizing for this room (if ducted)
+    // Duct sizing for this room (if ducted) — Q only, no load change
     var roomDuctHtml = '';
-    if(isDucted(curUT) && parseInt(h.cfm)>0){
-      var _rCfm = parseInt(h.cfm)||0;
+    if(isDucted(curUT) && (parseInt(h.cfm)>0 || selBtu>0)){
       var _vSup = parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
       var _vRet = parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
+      var _cfmPerTr = parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
+      var _ductCfmObj = getDuctCfm(curUT, selBtu, parseInt(h.cfm)||0, _cfmPerTr);
+      var _rCfm = _ductCfmObj.cfm;
+      // Build ONE clear source label per spec
+      var _cfmSrcLbl;
+      if(_ductCfmObj.source==='unit'){
+        _cfmSrcLbl = lang==='ar'
+          ? 'مصدر CFM: السعة المختارة (CFM)'
+          : 'CFM Source: Selected Capacity (CFM)';
+      } else if(_ductCfmObj.source==='tr'){
+        _cfmSrcLbl = lang==='ar'
+          ? 'مصدر CFM: TR × ' + _cfmPerTr
+          : 'CFM Source: TR × ' + _cfmPerTr;
+      } else {
+        _cfmSrcLbl = lang==='ar'
+          ? 'مصدر CFM: إجمالي التدفق المحسوب'
+          : 'CFM Source: Calculated Total Flow';
+      }
       var _dSup = calcDuctSize(_rCfm, _vSup);
       var _dRet = calcDuctSize(Math.round(_rCfm*0.9), _vRet);
       var _supLbl = _dSup ? ductSizeLabel(_dSup.std||_dSup.calc) : '—';
       var _retLbl = _dRet ? ductSizeLabel(_dRet.std||_dRet.calc) : '—';
+      // Only show CFM/TR note when source is 'tr'
+      var _cfmTrNote = (_ductCfmObj.source==='tr')
+        ? '<div class="duct-note" style="color:var(--am)">'+(lang==='ar'?'نسبة CFM/TR قابلة للتعديل في إعدادات المجاري':'Adjust CFM/TR ratio in duct settings')+'</div>'
+        : '';
       roomDuctHtml = '<div class="duct-block">'+
         '<div class="duct-block-ttl">'+(lang==='ar'?'🌬 مجاري الهواء':'🌬 Duct Sizing')+'</div>'+
         '<div class="duct-row">'+
@@ -1308,7 +1341,16 @@ function renderQuote(){
           '<span class="duct-lbl">'+(lang==='ar'?'رجوع:':'Return:')+'</span>'+
           '<span class="duct-val">'+_retLbl+'</span>'+
         '</div>'+
-        '<div class="duct-note">'+(lang==='ar'?'سرعة الإمداد: ':'Supply vel: ')+_vSup+' fpm | '+(lang==='ar'?'الرجوع: ':'Return: ')+_vRet+' fpm | CFM: '+_rCfm+'</div>'+
+        '<div class="duct-row" style="margin-top:4px">'+
+          '<span dir="rtl" style="font-size:10px;color:var(--a);background:var(--ad);padding:3px 9px;border-radius:10px;font-family:var(--fe);white-space:nowrap;display:inline-flex;align-items:center;gap:4px">'+
+          (lang==='ar'
+            ? '<span dir="rtl">'+_cfmSrcLbl+'</span><span dir="ltr" style="font-family:var(--fe)"> — Q = '+Number(_rCfm).toLocaleString()+' CFM</span>'
+            : '<span>'+_cfmSrcLbl+' — Q = '+Number(_rCfm).toLocaleString()+' CFM</span>'
+          )+
+          '</span>'+
+        '</div>'+
+        _cfmTrNote+
+        '<div class="duct-note">'+(lang==='ar'?'سرعة الإمداد: ':'Sup vel: ')+_vSup+' fpm | '+(lang==='ar'?'الرجوع: ':'Ret: ')+_vRet+' fpm</div>'+
       '</div>';
     }
 
@@ -1685,15 +1727,25 @@ function buildPage2(c){
     var techDuctHtml='';
     var _techUT=getUT(i);
     var _techCfm=parseInt(h.cfm)||0;
-    if(isDucted(_techUT) && _techCfm>0){
+    if(isDucted(_techUT) && (_techCfm>0||selBtu>0)){
       var _tvSup=parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
       var _tvRet=parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
-      var _tdSup=calcDuctSize(_techCfm,_tvSup);
-      var _tdRet=calcDuctSize(Math.round(_techCfm*0.9),_tvRet);
+      var _tCfmPerTr=parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
+      var _techDuctCfm=getDuctCfm(_techUT,selBtu,_techCfm,_tCfmPerTr);
+      var _usedCfm=_techDuctCfm.cfm;
+      var _techCfmSrcLbl=c.isAr
+        ?(_techDuctCfm.source==='unit'?'CFM من سعة الوحدة'
+         :_techDuctCfm.source==='tr'?'CFM = TR × '+_tCfmPerTr
+         :'CFM المحسوب للغرفة')
+        :_techDuctCfm.label;
+      var _tdSup=calcDuctSize(_usedCfm,_tvSup);
+      var _tdRet=calcDuctSize(Math.round(_usedCfm*0.9),_tvRet);
       var _tds=_tdSup?_tdSup.std||_tdSup.calc:null;
       var _tdr=_tdRet?_tdRet.std||_tdRet.calc:null;
       techDuctHtml='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 10px;margin-top:8px;font-size:11px">'+
         '<div style="font-weight:700;color:#166534;margin-bottom:5px">'+(c.isAr?'مجاري الهواء':'Duct Sizing')+'</div>'+
+        '<div style="margin-bottom:6px"><span style="font-size:10px;background:#dcfce7;color:#166534;border-radius:10px;padding:2px 8px;font-weight:600">'+_techCfmSrcLbl+'</span>'+
+        ' <span style="font-size:10px;color:#374151;font-weight:700">Q = '+Number(_usedCfm).toLocaleString()+' CFM</span></div>'+
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+
           '<div><div style="color:#6b7280;font-size:10px">'+(c.isAr?'إمداد رئيسي':'Supply Main')+'</div><div style="font-weight:700;color:#059669">'+(_tds?_tds.w+'×'+_tds.h+' mm':'—')+'</div></div>'+
           '<div><div style="color:#6b7280;font-size:10px">'+(c.isAr?'رجوع رئيسي':'Return Main')+'</div><div style="font-weight:700;color:#059669">'+(_tdr?_tdr.w+'×'+_tdr.h+' mm':'—')+'</div></div>'+
@@ -2075,6 +2127,49 @@ function ductSizeLabel(d){
   return d.w + '×' + d.h + ' mm';
 }
 
+// ── getDuctCfm: resolve Q_cfm for duct sizing only (does NOT affect load calcs)
+// cfmPerTr: user-selectable 350|400|450, default 400
+// Returns {cfm, source, label}
+//   source 'unit'  — catalog entry has explicit CFM field (FCU/AHU)
+//   source 'tr'    — BTU-only catalog → derive from Selected TR × cfmPerTr
+//   source 'calc'  — fallback to computed supply CFM
+function getDuctCfm(utKey, selBtu, fallbackCfm, cfmPerTr){
+  cfmPerTr = cfmPerTr || 400;
+  var cat = getCatalog(utKey);
+  // Priority 1: catalog entry has explicit CFM
+  for(var ci=0; ci<cat.length; ci++){
+    if(cat[ci].btu === selBtu && cat[ci].cfm && cat[ci].cfm > 0){
+      return {cfm: cat[ci].cfm, source: 'unit',
+              label: 'CFM Source: Selected Unit CFM'};
+    }
+  }
+  // Priority 2: BTU-only catalog entry → derive from TR
+  if(selBtu > 0){
+    var selTrVal = selBtu / 12000;
+    var derivedCfm = Math.round(selTrVal * cfmPerTr);
+    if(derivedCfm > 0){
+      return {cfm: derivedCfm, source: 'tr',
+              label: 'CFM Source: Selected TR × ' + cfmPerTr};
+    }
+  }
+  // Priority 3: computed supply CFM
+  return {cfm: Math.max(1, fallbackCfm||0), source: 'calc',
+          label: 'CFM Source: Calculated Supply CFM'};
+}
+
+// Project mode: multiply per-unit CFM by qty (for unit/tr sources)
+function getProjDuctCfm(utKey, selBtu, qty, fallbackTotalCfm, cfmPerTr){
+  cfmPerTr = cfmPerTr || 400;
+  var per = getDuctCfm(utKey, selBtu, 0, cfmPerTr);
+  if(per.source === 'unit' || per.source === 'tr'){
+    var totalCfm = per.cfm * Math.max(1, qty||1);
+    return {cfm: totalCfm, source: per.source,
+            label: per.label + ' × ' + Math.max(1,qty||1) + ' units'};
+  }
+  return {cfm: Math.max(1, fallbackTotalCfm||0), source: 'calc',
+          label: 'CFM Source: Calculated Total CFM'};
+}
+
 // ══════════════════════════════════════════════════════════════════
 // B) PROJECT MODE STATE
 // ══════════════════════════════════════════════════════════════════
@@ -2224,16 +2319,46 @@ function renderProjBlock(){
   // Duct sizing
   var ductBlock = G('proj-duct-block');
   if(ductBlock){
-    if(isDucted(curUT) && totalCfm > 0){
+    if(isDucted(curUT) && (totalCfm > 0 || projState.selBtu > 0)){
       ductBlock.style.display='';
       var vSup = parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
       var vRet = parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
-      var supDuct = calcDuctSize(totalCfm, vSup);
-      var retDuct = calcDuctSize(totalCfm*0.9, vRet); // return ~90% of supply
+      var _cfmPerTr = parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
+      var _pDuctCfm = getProjDuctCfm(curUT, projState.selBtu, projState.qty, totalCfm, _cfmPerTr);
+      var _pCfm = _pDuctCfm.cfm;
+      var supDuct = calcDuctSize(_pCfm, vSup);
+      var retDuct = calcDuctSize(Math.round(_pCfm*0.9), vRet);
       var supLabel = supDuct ? ductSizeLabel(supDuct.std||supDuct.calc) : '—';
       var retLabel = retDuct ? ductSizeLabel(retDuct.std||retDuct.calc) : '—';
       setV('duct-sup-val', supLabel);
       setV('duct-ret-val', retLabel);
+      // Show/hide CFM/TR dropdown: only when NOT a CFM-based catalog item
+      var cfmTrRow = G('duct-cfm-per-tr-row');
+      if(cfmTrRow) cfmTrRow.style.display = (_pDuctCfm.source==='unit') ? 'none' : '';
+      // Show exactly ONE CFM source line
+      var cfmSrcEl = G('duct-cfm-src');
+      if(cfmSrcEl){
+        var cfmLblAr, cfmLblEn;
+        if(_pDuctCfm.source==='unit'){
+          cfmLblAr = 'مصدر CFM: السعة المختارة (CFM)';
+          cfmLblEn = 'CFM Source: Selected Capacity (CFM)';
+        } else if(_pDuctCfm.source==='tr'){
+          cfmLblAr = 'مصدر CFM: TR × ' + _cfmPerTr;
+          cfmLblEn = 'CFM Source: TR × ' + _cfmPerTr;
+        } else {
+          cfmLblAr = 'مصدر CFM: إجمالي التدفق المحسوب';
+          cfmLblEn = 'CFM Source: Calculated Total Flow';
+        }
+        var _qStr = Number(_pCfm).toLocaleString();
+        if(lang==='ar'){
+          cfmSrcEl.innerHTML =
+            '<span dir="rtl">' + cfmLblAr + '</span>' +
+            '<span dir="ltr" style="font-family:var(--fe)"> — Q = ' + _qStr + ' CFM</span>';
+        } else {
+          cfmSrcEl.innerHTML =
+            '<span>' + cfmLblEn + ' — Q = ' + _qStr + ' CFM</span>';
+        }
+      }
     } else {
       ductBlock.style.display='none';
     }
@@ -2262,6 +2387,7 @@ function updateProjLabels(){
   sl('duct-sup-lbl','مجرى الإمداد الرئيسي:','Main Supply Duct:');
   sl('duct-ret-lbl','مجرى الرجوع الرئيسي:','Main Return Duct:');
   sl('duct-note-txt','تصميم أولي — يجب التحقق من الضغط الساكن والمخطط.','Preliminary sizing — verify with static pressure & layout.');
+  sl('duct-cfmtr-lbl','CFM/TR','CFM/TR');
   sl('proj-lt-lbl','إجمالي السطر','Line Total');
   sl('mode-lbl-room','🏠 وحدة لكل غرفة','🏠 Unit per Room');
   sl('mode-lbl-proj','🏢 وحدة للمشروع','🏢 One Unit for Project');
@@ -2407,8 +2533,16 @@ buildPage2 = function(c){
   if(quoteMode==='proj' && isDucted(curUT) && totalCfm>0){
     var vSup=parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
     var vRet=parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
-    var supD=calcDuctSize(totalCfm,vSup);
-    var retD=calcDuctSize(totalCfm*0.9,vRet);
+    var _p2CfmPerTr=parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
+    var _p2DuctCfm=getProjDuctCfm(curUT,projState.selBtu,projState.qty,totalCfm2,_p2CfmPerTr);
+    var _p2Cfm=_p2DuctCfm.cfm;
+    var _p2CfmSrcLbl=c.isAr
+      ?(_p2DuctCfm.source==='unit'?'CFM من سعة الوحدة المختارة'
+       :_p2DuctCfm.source==='tr'?'CFM = TR × '+_p2CfmPerTr
+       :'إجمالي CFM المحسوب')
+      :_p2DuctCfm.label;
+    var supD=calcDuctSize(_p2Cfm,vSup);
+    var retD=calcDuctSize(Math.round(_p2Cfm*0.9),vRet);
     var sd=supD?supD.std||supD.calc:null, rd=retD?retD.std||retD.calc:null;
     extra+='<div style="border:1px solid #bbf7d0;border-radius:8px;padding:14px;margin-bottom:12px;background:#f0fdf4">'+
       '<div style="font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">'+
@@ -2421,8 +2555,9 @@ buildPage2 = function(c){
         '<th>'+(c.isAr?'الحجم المختار':'Selected Size')+'</th>'+
         '<th>'+(c.isAr?'نسبة الأبعاد':'Aspect Ratio')+'</th>'+
       '</tr></thead><tbody>'+
-      (sd?'<tr><td>'+(c.isAr?'إمداد رئيسي':'Supply Main')+'</td><td>'+Math.round(totalCfm).toLocaleString()+'</td><td>'+vSup+'</td><td>'+(sd.area_required||'—').toLocaleString()+'</td><td style="font-weight:700;color:#059669">'+sd.w+'×'+sd.h+' mm</td><td>1:'+sd.ratio+'</td></tr>':'<tr><td colspan="6">—</td></tr>')+
-      (rd?'<tr><td>'+(c.isAr?'رجوع رئيسي':'Return Main')+'</td><td>'+Math.round(totalCfm*0.9).toLocaleString()+'</td><td>'+vRet+'</td><td>'+(rd.area_required||'—').toLocaleString()+'</td><td style="font-weight:700;color:#059669">'+rd.w+'×'+rd.h+' mm</td><td>1:'+rd.ratio+'</td></tr>':'<tr><td colspan="6">—</td></tr>')+
+      '<tr><td colspan="6" style="background:#f0fdf4;padding:4px 8px;font-size:10px;color:#166534;font-weight:600">'+_p2CfmSrcLbl+' — Q = '+Number(_p2Cfm).toLocaleString()+' CFM</td></tr>'+
+      (sd?'<tr><td>'+(c.isAr?'إمداد رئيسي':'Supply Main')+'</td><td>'+Math.round(_p2Cfm).toLocaleString()+'</td><td>'+vSup+'</td><td>'+(sd.area_required||'—').toLocaleString()+'</td><td style="font-weight:700;color:#059669">'+sd.w+'×'+sd.h+' mm</td><td>1:'+sd.ratio+'</td></tr>':'<tr><td colspan="6">—</td></tr>')+
+      (rd?'<tr><td>'+(c.isAr?'رجوع رئيسي':'Return Main')+'</td><td>'+Math.round(_p2Cfm*0.9).toLocaleString()+'</td><td>'+vRet+'</td><td>'+(rd.area_required||'—').toLocaleString()+'</td><td style="font-weight:700;color:#059669">'+rd.w+'×'+rd.h+' mm</td><td>1:'+rd.ratio+'</td></tr>':'<tr><td colspan="6">—</td></tr>')+
       '</tbody></table>'+
       '<div style="font-size:10px;color:#6b7280;margin-top:6px;font-style:italic">'+(c.isAr?'⚠ تصميم أولي للمجاري — يجب التحقق من الضغط الساكن والمخطط التفصيلي.':'⚠ Preliminary duct sizing — confirm with static pressure analysis & detailed layout.')+'</div>'+
     '</div>';
