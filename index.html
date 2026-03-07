@@ -273,13 +273,18 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .qi-cap-lbl{font-size:10px;color:var(--tm);font-family:var(--fe);letter-spacing:.5px;white-space:nowrap;}
 .qi-cap-sel{background:var(--s3);border:1px solid var(--b);border-radius:4px;padding:4px 8px;color:var(--tb);font-family:var(--fa);font-size:11px;outline:none;cursor:pointer;flex:1;min-width:110px;max-width:200px;}
 .qi-cap-sel:focus{border-color:var(--a);}
-.qi-cap-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--fm);white-space:nowrap;}
-.qi-cap-badge.ok{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.3);}
-.qi-cap-badge.over{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25);}
-.qi-cap-badge.warn{background:rgba(251,191,36,.13);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
-.qi-warn{background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.35);border-radius:6px;padding:8px 12px;margin:0 0 8px;font-size:11px;line-height:1.55;color:#fcd34d;font-family:var(--fa);}
-.qi-warn-head{font-weight:700;font-size:12px;margin-bottom:3px;display:flex;align-items:center;gap:6px;}
-.qi-warn-margin{margin-top:4px;font-size:10px;opacity:.85;}
+.qi-cap-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--fm);white-space:nowrap;gap:4px;}
+.qi-cap-badge.matched{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.35);}
+.qi-cap-badge.deficit-mild{background:rgba(251,191,36,.18);color:#fbbf24;border:1px solid rgba(251,191,36,.5);}
+.qi-cap-badge.deficit-severe{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.45);}
+.qi-cap-badge.oversize-ok{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.3);}
+.qi-cap-badge.oversize-high{background:rgba(156,163,175,.12);color:#9ca3af;border:1px solid rgba(156,163,175,.3);}
+.qi-warn{border-radius:6px;padding:10px 13px;margin:0 0 8px;font-size:11px;line-height:1.65;font-family:var(--fa);}
+.qi-warn.mild{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.4);color:#fcd34d;}
+.qi-warn.severe{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.4);color:#fca5a5;}
+.qi-warn-head{font-weight:700;font-size:12px;margin-bottom:4px;}
+.qi-warn-row{margin-top:3px;opacity:.9;}
+.qi-warn-tip{margin-top:7px;opacity:.7;font-size:10px;border-top:1px solid rgba(255,255,255,.12);padding-top:5px;}
 
 @media(min-width:480px){.app{padding:24px;padding-bottom:120px;}}
 </style>
@@ -1126,23 +1131,51 @@ function renderQuote(){
       +'<select class="qi-cap-sel" onchange="setSelBtu('+i+',this.value)">'+btuStepOpts+'</select>'
       +'<span class="qi-cap-badge-slot"></span></div>';
     var effCap = selBtu * qty;
-    var marginPct = Math.round((effCap / reqBtu - 1) * 100);
+    // Delta% = ((effCap - reqBtu) / reqBtu) * 100  (negative = deficit)
+    var deltaPct = reqBtu > 0 ? ((effCap - reqBtu) / reqBtu * 100) : 0;
+    var deltaPctRnd = Math.round(deltaPct);
     var warnHtml = '';
     var capBadge = '';
     if(reqBtu > 0){
-      if(effCap < reqBtu){
-        var shortfallPct = Math.abs(marginPct);
-        var reqTR = (reqBtu/12000).toFixed(1), selTR = (effCap/12000).toFixed(1);
-        var warnMsg = lang==='ar'
-          ? 'تنبيه: السعة المختارة أقل من الحمل المطلوب. المطلوب ≈ '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR) بينما المختار '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR). يُنصح برفع السعة أو تقسيم الحمل على أكثر من وحدة.'
-          : 'Warning: Selected capacity is below the required load. Required ≈ '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR) but selected '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR). Consider increasing capacity or splitting the load across multiple units.';
-        var marginLabel = lang==='ar' ? 'عجز: '+shortfallPct+'%' : 'Shortfall: '+shortfallPct+'%';
-        warnHtml = '<div class="qi-warn"><div class="qi-warn-head">⚠ '+warnMsg+'</div><div class="qi-warn-margin">'+marginLabel+'</div></div>';
-        capBadge = '<span class="qi-cap-badge warn">⚠ '+(lang==='ar'?'عجز':'Shortfall')+' '+shortfallPct+'%</span>';
-      } else if(effCap <= reqBtu * 1.20){
-        capBadge = '<span class="qi-cap-badge ok">'+(lang==='ar'?'✓ مطابق':'✓ OK')+'</span>';
+      var reqTR  = (reqBtu/12000).toFixed(1);
+      var selTR  = (effCap/12000).toFixed(1);
+      var absDelta = Math.abs(deltaPctRnd);
+      if(deltaPct < -15){
+        // SEVERE DEFICIT
+        var defMsg = lang==='ar'
+          ? 'تنبيه: السعة المختارة أقل من الحمل المطلوب.\nالعجز: '+absDelta+'%\nالمطلوب: '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR)\nالمختار: '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR)\nيُنصح برفع السعة أو تقسيم الحمل على أكثر من وحدة.'
+          : 'Warning: Selected capacity is below the required load.\nDeficit: '+absDelta+'%\nRequired: '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR)\nSelected: '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR)\nConsider increasing capacity or splitting the load.';
+        var defLines = defMsg.split('\n');
+        warnHtml = '<div class="qi-warn severe"><div class="qi-warn-head">⛔ '+defLines[0]+'</div>'
+          +defLines.slice(1).map(function(l){return '<div class="qi-warn-row">'+l+'</div>';}).join('')
+          +'</div>';
+        capBadge = '<span class="qi-cap-badge deficit-severe">⛔ '+(lang==='ar'?'عجز شديد':'Severe Deficit')+' '+absDelta+'%</span>';
+      } else if(deltaPct < -5){
+        // MILD DEFICIT
+        var mildMsg = lang==='ar'
+          ? 'تنبيه: العجز الطفيف.\nالعجز: '+absDelta+'%\nالمطلوب: '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR)\nالمختار: '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR)\nيُنصح برفع السعة أو تقسيم الحمل.'
+          : 'Mild deficit: capacity slightly below required.\nDeficit: '+absDelta+'%\nRequired: '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR)\nSelected: '+Number(effCap).toLocaleString()+' BTU/h (≈ '+selTR+' TR)\nConsider increasing capacity.';
+        var mildLines = mildMsg.split('\n');
+        warnHtml = '<div class="qi-warn mild"><div class="qi-warn-head">⚠ '+mildLines[0]+'</div>'
+          +mildLines.slice(1).map(function(l){return '<div class="qi-warn-row">'+l+'</div>';}).join('')
+          +'</div>';
+        capBadge = '<span class="qi-cap-badge deficit-mild">⚠ '+(lang==='ar'?'عجز':'Deficit')+' '+absDelta+'%</span>';
+      } else if(deltaPct <= 10){
+        // MATCHED -5% to +10%
+        var matchLbl = lang==='ar' ? 'مطابقة (±5%)' : 'Matched (±5%)';
+        if(deltaPctRnd > 0) matchLbl = lang==='ar' ? 'مطابقة +'+deltaPctRnd+'%' : 'Matched +'+deltaPctRnd+'%';
+        else if(deltaPctRnd < 0) matchLbl = lang==='ar' ? 'مطابقة −'+absDelta+'%' : 'Matched −'+absDelta+'%';
+        capBadge = '<span class="qi-cap-badge matched">✓ '+matchLbl+'</span>';
+      } else if(deltaPct <= 30){
+        // OVERSIZE ACCEPTABLE +10% to +30%
+        capBadge = '<span class="qi-cap-badge oversize-ok">'+(lang==='ar'?'سعة زائدة +':'Oversized +')+deltaPctRnd+'%</span>';
       } else {
-        capBadge = '<span class="qi-cap-badge over">'+(lang==='ar'?'سعة زائدة':'Oversized')+'</span>';
+        // HIGH OVERSIZE >+30%
+        var highOvMsg = lang==='ar'
+          ? 'ملاحظة: السعة أعلى من المطلوب بنسبة كبيرة (+'+deltaPctRnd+'%) — احتمال short cycling.'
+          : 'Note: Capacity exceeds load by +'+deltaPctRnd+'% — short cycling risk.';
+        warnHtml = '<div class="qi-warn mild"><div class="qi-warn-head">ℹ '+highOvMsg+'</div></div>';
+        capBadge = '<span class="qi-cap-badge oversize-high">'+(lang==='ar'?'سعة عالية +':'High Oversize +')+deltaPctRnd+'%</span>';
       }
     }
     capHtml = capHtml.replace('<span class="qi-cap-badge-slot"></span>', capBadge);
@@ -1376,6 +1409,20 @@ function buildPage1(c){
       +'<td>'+getQty(i)+'</td>'
       +'<td>'+c.cur+' '+money(getUP(i))+'</td>'
       +'<td style="color:#059669;font-weight:700">'+c.cur+' '+money(lt)+'</td>'
+      +(function(){
+        var _rb=parseInt(h.btu)||0;
+        var _sb=getSelBtu(i)||acRoundBtu(_rb,'btu');
+        var _ef=_sb*getQty(i);
+        var _dp=_rb>0?((_ef-_rb)/_rb*100):0;
+        var _dr=Math.round(_dp), _da=Math.abs(_dr);
+        var _bc,_bt;
+        if(_dp<-15){_bc='#dc2626';_bt='⛔ '+(c.isAr?'عجز شديد':'Severe Deficit')+' '+_da+'%';}
+        else if(_dp<-5){_bc='#d97706';_bt='⚠ '+(c.isAr?'عجز':'Deficit')+' '+_da+'%';}
+        else if(_dp<=10){_bc='#059669';_bt='✓ '+(c.isAr?'مطابقة':'Matched')+(_dr>=0?'+'+_dr:'−'+_da)+'%';}
+        else if(_dp<=30){_bc='#4f46e5';_bt=(c.isAr?'زائد +':'Ovrsz +')+_dr+'%';}
+        else{_bc='#6b7280';_bt=(c.isAr?'عالي +':'High +')+_dr+'%';}
+        return '<td style="text-align:center"><span style="font-size:10px;font-weight:700;color:'+_bc+'">'+_bt+'</span></td>';
+      })()
       +'</tr>';
   }
   var vatRowHtml = vatOn
@@ -1415,6 +1462,7 @@ function buildPage1(c){
         +'<th style="'+thC+'">'+(c.isAr?'الكمية':'Qty')+'</th>'
         +'<th style="'+thC+'">'+(c.isAr?'سعر الوحدة':'Unit Price')+'</th>'
         +'<th style="'+thC+'">'+(c.isAr?'الإجمالي':'Total')+'</th>'
+        +'<th style="'+thC+'">'+(c.isAr?'الحالة':'Status')+'</th>'
       +'</tr></thead>'
       +'<tbody>'+rows+'</tbody>'
     +'</table>'
@@ -1442,23 +1490,30 @@ function buildPage2(c){
     var selBtu=getSelBtu(i)||acRoundBtu(reqBtu,'btu');
     var effCap=selBtu*getQty(i);
     var marginPct=reqBtu>0?Math.round((effCap/reqBtu-1)*100):0;
-    var isUnder=reqBtu>0&&effCap<reqBtu;
-    if(isUnder) anyUndersized=true;
+    if(reqBtu>0&&effCap<reqBtu) anyUndersized=true;
     var reqTR=(reqBtu/12000).toFixed(1), effTR=(effCap/12000).toFixed(1);
     var selTR=(selBtu/12000).toFixed(1);
     // Warning or badge
     var warnHtml='';
-    if(isUnder){
-      var shortfallPct=Math.abs(marginPct);
-      var wMsg=c.isAr
-        ?'تنبيه: السعة المختارة أقل من الحمل المطلوب. المطلوب ≈ '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR) بينما المختار '+Number(effCap).toLocaleString()+' BTU/h (≈ '+effTR+' TR). يُنصح برفع السعة أو تقسيم الحمل على أكثر من وحدة.'
-        :'Warning: Selected capacity is below the required load. Required ≈ '+Number(reqBtu).toLocaleString()+' BTU/h (≈ '+reqTR+' TR) but selected '+Number(effCap).toLocaleString()+' BTU/h (≈ '+effTR+' TR). Consider increasing capacity or splitting the load across multiple units.';
-      var marginLabel=c.isAr?'عجز: '+shortfallPct+'%':'Shortfall: '+shortfallPct+'%';
-      warnHtml='<div class="warn-inline">⚠ '+wMsg+'<br><strong>'+marginLabel+'</strong></div>';
-    } else if(marginPct>=0 && marginPct<=20){
-      warnHtml='<span class="badge-ok">✓ '+(c.isAr?'مطابق':'OK')+' +'+marginPct+'%</span>';
-    } else if(marginPct>20){
-      warnHtml='<span class="badge-over">'+(c.isAr?'سعة زائدة':'Oversized')+' +'+marginPct+'%</span>';
+    var delta2=reqBtu>0?((effCap-reqBtu)/reqBtu*100):0;
+    var delta2Rnd=Math.round(delta2);
+    var abs2=Math.abs(delta2Rnd);
+    if(delta2 < -15){
+      var d2msg=c.isAr
+        ?'عجز شديد: السعة المختارة أقل من الحمل المطلوب. العجز: '+abs2+'% | المطلوب: '+Number(reqBtu).toLocaleString()+' BTU/h ('+reqTR+' TR) | المختار: '+Number(effCap).toLocaleString()+' BTU/h ('+effTR+' TR)'
+        :'Severe Deficit: '+abs2+'% below required. Required: '+Number(reqBtu).toLocaleString()+' BTU/h ('+reqTR+' TR). Selected: '+Number(effCap).toLocaleString()+' BTU/h ('+effTR+' TR).';
+      warnHtml='<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:4px;padding:8px 10px;font-size:11px;color:#dc2626">⛔ '+d2msg+'</div>';
+    } else if(delta2 < -5){
+      var d2msg2=c.isAr
+        ?'عجز طفيف: '+abs2+'% | المطلوب: '+Number(reqBtu).toLocaleString()+' BTU/h ('+reqTR+' TR) | المختار: '+Number(effCap).toLocaleString()+' BTU/h ('+effTR+' TR)'
+        :'Mild Deficit: '+abs2+'%. Required: '+Number(reqBtu).toLocaleString()+' BTU/h ('+reqTR+' TR). Selected: '+Number(effCap).toLocaleString()+' BTU/h ('+effTR+' TR).';
+      warnHtml='<div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:4px;padding:8px 10px;font-size:11px;color:#d97706">⚠ '+d2msg2+'</div>';
+    } else if(delta2 <= 10){
+      warnHtml='<span class="badge-ok">✓ '+(c.isAr?'مطابقة':'Matched')+(delta2Rnd>=0?' +'+delta2Rnd:'−'+abs2)+'%</span>';
+    } else if(delta2 <= 30){
+      warnHtml='<span class="badge-over">'+(c.isAr?'سعة زائدة +':'Oversized +')+delta2Rnd+'%</span>';
+    } else {
+      warnHtml='<span style="display:inline-block;background:#ede9fe;color:#7c3aed;border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700">'+(c.isAr?'سعة عالية +':'High Oversize +')+delta2Rnd+'%</span>';
     }
     // HC details
     var hcHtml='';
@@ -1488,8 +1543,12 @@ function buildPage2(c){
           +'<div class="stat-item"><div class="stat-lbl">'+(c.isAr?'تدفق الهواء':'Supply CFM')+'</div><div class="stat-val">'+Number(h.cfm).toLocaleString()+'</div></div>'
           +'<div class="stat-item"><div class="stat-lbl">Market BTU</div><div class="stat-val">'+Number(h.mkt).toLocaleString()+'</div></div>'
         +'</div>'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        +'<span style="font-size:10px;color:#64748b;font-weight:600">'+(c.isAr?'الحالة':'Status')+':</span>'
+        +warnHtml
+        +'<span style="font-size:10px;color:#94a3b8;margin-'+( c.isAr?'right':'left')+':auto">'+Number(selBtu).toLocaleString()+' BTU × '+getQty(i)+(getQty(i)>1?' = '+Number(effCap).toLocaleString()+' BTU/h':'')+' </span>'
+        +'</div>'
         +hcHtml+devHtml
-        +'<div style="margin-top:8px">'+warnHtml+'</div>'
       +'</div>'
     +'</div>';
   }
