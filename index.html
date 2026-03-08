@@ -289,6 +289,10 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 
 /* ── PROJECT MODE TOGGLE ── */
 .mode-toggle-row{display:flex;gap:6px;margin-bottom:12px;background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:5px;}
+.bundle-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.35);border-radius:var(--rads);}
+.bundle-toggle-btn{padding:4px 14px;border-radius:4px;border:1px solid rgba(251,191,36,.6);background:rgba(251,191,36,.15);color:#d97706;font-size:10px;font-family:var(--fe);cursor:pointer;font-weight:700;transition:all .2s;}
+.bundle-toggle-btn.on{background:rgba(251,191,36,.35);color:#92400e;border-color:#f59e0b;}
+.bundle-lock-note{font-size:10px;color:#92400e;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:4px;padding:4px 8px;margin-top:4px;}
 .mode-btn{flex:1;padding:8px 4px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:var(--tm);font-family:var(--fe);}
 .mode-btn.active{background:var(--a);color:#fff;box-shadow:0 2px 8px rgba(14,165,233,.35);}
 /* ── PROJECT BLOCK (one-unit mode) ── */
@@ -458,6 +462,15 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
         <div class="cum-item"><div class="cum-lbl">Total CFM</div><div class="cum-val" id="cum-cfm">0</div><div class="cum-unit">CFM</div></div>
         <div class="cum-item"><div class="cum-lbl">Total BTU/h</div><div class="cum-val" id="cum-btu">0</div><div class="cum-unit">BTU/h</div></div>
         <div class="cum-item"><div class="cum-lbl">Market BTU</div><div class="cum-val" id="cum-mkt">0</div><div class="cum-unit">BTU</div></div>
+      </div>
+    </div>
+        <!-- BUNDLE TOGGLE (show/hide per-room locking) -->
+    <div class="bundle-row" id="bundle-row" style="display:none">
+      <button class="bundle-toggle-btn" id="bundle-btn" onclick="toggleBundle()" style="flex-shrink:0">
+        <span id="bundle-btn-lbl">🔓 تفعيل التجميع</span>
+      </button>
+      <div style="font-size:10px;color:#78716c;line-height:1.4" id="bundle-desc">
+        يعطّل اختيار الوحدات لكل غرفة ويعتمد على وحدة المشروع فقط
       </div>
     </div>
         <!-- MODE TOGGLE -->
@@ -1313,7 +1326,18 @@ function renderQuote(){
     var devLine=h.devSum?'<div class="qi-devline">⚡ '+h.devSum+'</div>':'';
     var UT_KEYS=['split','floor','ducted','cassette','package','vrf','chiller_air','chiller_water','fcu','ahu','window'];
     var utSelOpts=UT_KEYS.map(function(k){ return '<option value="'+k+'"'+(getUT(i)===k?' selected':'')+'>'+utLabel(k)+'</option>'; }).join('');
-    var utHtml='<div class="qi-utype"><span class="qi-utype-lbl">'+(lang==='ar'?'نوع الوحدة':'Unit Type')+'</span><select class="qi-utype-sel" onchange="setUnitType('+i+',this.value)">'+utSelOpts+'</select></div>';
+    // ── Bundle lock: disable per-room unit controls when bundleOn=true ──
+    var _bundleLocked = bundleOn && quoteMode==='proj';
+    var _lockNote = _bundleLocked
+      ? '<div class="bundle-lock-note">'+(lang==='ar'
+          ? '🔒 تم تعطيل اختيار الوحدات لكل غرفة بسبب تفعيل التجميع'
+          : '🔒 Per-room unit selection is locked because Bundle is enabled')+'</div>'
+      : '';
+    var utHtml='<div class="qi-utype"><span class="qi-utype-lbl">'+(lang==='ar'?'نوع الوحدة':'Unit Type')+'</span>'+
+      (_bundleLocked
+        ? '<select class="qi-utype-sel" disabled style="opacity:.45;cursor:not-allowed">'+utSelOpts+'</select>'
+        : '<select class="qi-utype-sel" onchange="setUnitType('+i+',this.value)">'+utSelOpts+'</select>')+
+      '</div>';
     var reqBtu = parseInt(h.btu)||0;
     var curUT = getUT(i);
     var catItems = getCatalog(curUT);
@@ -1328,10 +1352,13 @@ function renderQuote(){
       var lbl = lang==='ar' ? c.label.ar : c.label.en;
       return '<option value="'+c.btu+'"'+(selBtu===c.btu?' selected':'')+'>'+lbl+'</option>';
     }).join('');
-    var capHtml = '<div class="qi-cap-row"><span class="qi-cap-lbl">'+(lang==='ar'?'السعة المختارة':'Selected Capacity')+'</span>'
-      +'<select class="qi-cap-sel" onchange="setSelBtu('+i+',this.value)">'+btuStepOpts+'</select>'
-      +'<span class="qi-cap-badge-slot"></span></div>';
-    var effCap = selBtu * qty;
+    var capHtml = '<div class="qi-cap-row"><span class="qi-cap-lbl">'+(lang==='ar'?'السعة المختارة':'Selected Capacity')+'</span>'+
+      (_bundleLocked
+        ? '<select class="qi-cap-sel" disabled style="opacity:.45;cursor:not-allowed">'+btuStepOpts+'</select>'
+        : '<select class="qi-cap-sel" onchange="setSelBtu('+i+',this.value)">'+btuStepOpts+'</select>')+
+      '<span class="qi-cap-badge-slot"></span></div>';
+    // In bundle mode: per-room warnings are suppressed (project-level shown separately)
+    var effCap = _bundleLocked ? reqBtu : selBtu * qty; // neutralise per-room warnings in bundle mode
     // Delta% = ((selBtu*qty - reqBtu) / reqBtu) * 100 — TRUE percentage
     var warnHtml = '';
     var capBadge = '';
@@ -1375,7 +1402,8 @@ function renderQuote(){
         capBadge = '<span class="qi-cap-badge oversize-high">'+(lang==='ar'?'سعة عالية':'High oversize')+' '+pctStr+'</span>';
       }
     }
-    capHtml = capHtml.replace('<span class="qi-cap-badge-slot"></span>', capBadge);
+    if(!_bundleLocked) capHtml = capHtml.replace('<span class="qi-cap-badge-slot"></span>', capBadge);
+    else capHtml = capHtml.replace('<span class="qi-cap-badge-slot"></span>', '');
 
     // Duct sizing for this room (if ducted) — Q only, no load change
     var roomDuctHtml = '';
@@ -1401,7 +1429,7 @@ function renderQuote(){
           : 'CFM Source: Calculated Total Flow';
       }
       var _dSup = calcDuctSize(_rCfm, _vSup);
-      var _dRet = calcDuctSize(Math.round(_rCfm*0.9), _vRet);
+      var _dRet = calcDuctSize(_rCfm, _vRet); // Return uses same CFM with own velocity
       var _supLbl = _dSup ? ductSizeLabel(_dSup.std||_dSup.calc) : '—';
       var _retLbl = _dRet ? ductSizeLabel(_dRet.std||_dRet.calc) : '—';
       // Only show CFM/TR note when source is 'tr'
@@ -1455,7 +1483,7 @@ function renderQuote(){
     }
 
     item.innerHTML=
-      '<div class="qi-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+utHtml+
+      '<div class="qi-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+utHtml+_lockNote+
       '<div class="qi-body">'+
         '<div class="qi-tech">'+
           '<div class="qi-stat"><div class="qi-slbl">m³</div><div class="qi-sval">'+h.vol+'</div></div>'+
@@ -1466,7 +1494,7 @@ function renderQuote(){
           '<div class="qi-stat"><div class="qi-slbl">Mkt BTU</div><div class="qi-sval">'+Number(h.mkt).toLocaleString()+'</div></div>'+
           (h.devBtu>0?'<div class="qi-stat"><div class="qi-slbl">Dev</div><div class="qi-sval cam">'+Number(h.devBtu).toLocaleString()+'</div></div>':'')+
         '</div>'+
-        devLine+hcLine+capHtml+warnHtml+roomDuctHtml+
+        devLine+hcLine+capHtml+(_bundleLocked?'':warnHtml)+roomDuctHtml+
         '<div class="qi-price-row">'+
           '<div>'+
             '<div class="qi-plbl">'+(lang==='ar'?'الكمية':'Qty')+'</div>'+
@@ -1629,7 +1657,7 @@ function invCommon(){
     : '<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">';
   var bodyFont = isAr ? "'Cairo', Arial, sans-serif" : "'Segoe UI', Arial, sans-serif";
   var utLbls={}; Object.keys(UT_LABELS_AR).forEach(function(k){utLbls[k]=isAr?UT_LABELS_AR[k]:UT_LABELS_EN[k];}); utLbls['chillerfcu']=isAr?'وحدة مناولة / FCU':'FCU (Chilled Water)'; utLbls['chiller']=isAr?'تشيلر هوائي':'Chiller (Air-Cooled)';
-  return {proj:proj,qno:qno,today:today,ip:ip,validDays:validDays,validLabel:validLabel,notes:notes,isAr:isAr,dir:dir,cur:cur,subtotal:subtotal,totalQty:totalQty,instAmt:instAmt,vatBase:vatBase,vatAmt:vatAmt,grand:grand,fontLink:fontLink,bodyFont:bodyFont,utLbls:utLbls};
+  return {proj:proj,qno:qno,today:today,ip:ip,validDays:validDays,validLabel:validLabel,notes:notes,isAr:isAr,dir:dir,cur:cur,subtotal:subtotal,totalQty:totalQty,instAmt:instAmt,vatBase:vatBase,vatAmt:vatAmt,grand:grand,fontLink:fontLink,bodyFont:bodyFont,utLbls:utLbls,isBundleProj:(bundleOn&&quoteMode==='proj')};
 }
 
 function invSharedCss(c){
@@ -1782,10 +1810,12 @@ function buildPage2(c){
     var name=_nm.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}]/gu,'').trim();
     var utKey=getUT(i); var utLbl=c.utLbls[utKey]||utKey;
     var reqBtu=parseInt(h.btu)||0;
-    var selBtu=getSelBtu(i)||acRoundBtu(reqBtu,'btu');
-    var effCap=selBtu*getQty(i);
+    // In project/bundle mode, per-room selBtu is irrelevant — use reqBtu to neutralise room warnings
+    var _isBundleMode = (quoteMode==='proj') || bundleOn;
+    var selBtu = _isBundleMode ? acRoundBtu(reqBtu,'btu') : (getSelBtu(i)||acRoundBtu(reqBtu,'btu'));
+    var effCap = _isBundleMode ? reqBtu : selBtu*getQty(i);
     var marginPct=reqBtu>0?Math.round((effCap/reqBtu-1)*100):0;
-    if(reqBtu>0&&effCap<reqBtu){ anyUndersized=true; undersizedCount++; }
+    if(!_isBundleMode && reqBtu>0&&effCap<reqBtu){ anyUndersized=true; undersizedCount++; }
     var reqTR=(reqBtu/12000).toFixed(1), effTR=(effCap/12000).toFixed(1);
     var selTR=(selBtu/12000).toFixed(1);
     // Warning or badge
@@ -1798,7 +1828,7 @@ function buildPage2(c){
       var d2bgc=d2abs>15?'#fef2f2':'#fffbeb';
       var d2bc=d2abs>15?'#fca5a5':'#fbbf24';
       var d2tc=d2abs>15?'#dc2626':'#d97706';
-      var d2lbl=c.isAr?(d2abs>15?'عجز شديد':'عجز طفيف'):(d2abs>15?'Severe Deficit':'Mild Deficit');
+      var d2lbl=c.isAr?(d2abs>15?'عجز سعة BTU شديد':'عجز سعة BTU طفيف'):(d2abs>15?'Severe BTU Deficit':'Mild BTU Deficit');
       warnHtml='<div style="background:'+d2bgc+';border:1px solid '+d2bc+';border-radius:4px;padding:8px 10px;font-size:11px;color:'+d2tc+'">'+d2icon+' '+d2lbl+': '+d2rnd.toFixed(1)+'% | '+(c.isAr?'المطلوب':'Req')+': '+Number(reqBtu).toLocaleString()+' BTU | '+(c.isAr?'المختار':'Sel')+': '+Number(effCap).toLocaleString()+' BTU</div>';
     } else if(d2raw <= 5){
       warnHtml='<span class="badge-ok">✓ '+(c.isAr?'مطابقة':'Match')+' '+d2pct+'</span>';
@@ -1831,15 +1861,22 @@ function buildPage2(c){
       var _tvSup=parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
       var _tvRet=parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
       var _tCfmPerTr=parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
-      var _techDuctCfm=getDuctCfm(_techUT,selBtu,_techCfm,_tCfmPerTr);
-      var _usedCfm=_techDuctCfm.cfm;
-      var _techCfmSrcLbl=c.isAr
-        ?(_techDuctCfm.source==='unit'?'CFM من سعة الوحدة'
-         :_techDuctCfm.source==='tr'?'CFM = TR × '+_tCfmPerTr
-         :'CFM المحسوب للغرفة')
-        :_techDuctCfm.label;
+      // In bundle mode: per-room duct uses required CFM (h.cfm); otherwise use getDuctCfm
+      var _usedCfm, _techCfmSrcLbl;
+      if(_isBundleMode && _techCfm > 0){
+        _usedCfm = _techCfm;
+        _techCfmSrcLbl = c.isAr ? 'CFM المطلوب للغرفة' : 'Required Room CFM';
+      } else {
+        var _techDuctCfm=getDuctCfm(_techUT,selBtu,_techCfm,_tCfmPerTr);
+        _usedCfm=_techDuctCfm.cfm;
+        _techCfmSrcLbl=c.isAr
+          ?(_techDuctCfm.source==='unit'?'CFM من سعة الوحدة'
+           :_techDuctCfm.source==='tr'?'CFM = TR × '+_tCfmPerTr
+           :'CFM المحسوب للغرفة')
+          :_techDuctCfm.label;
+      }
       var _tdSup=calcDuctSize(_usedCfm,_tvSup);
-      var _tdRet=calcDuctSize(Math.round(_usedCfm*0.9),_tvRet);
+      var _tdRet=calcDuctSize(_usedCfm,_tvRet);
       var _tds=_tdSup?_tdSup.std||_tdSup.calc:null;
       var _tdr=_tdRet?_tdRet.std||_tdRet.calc:null;
       // ── Actual velocity = Q / area_required × velocity_fpm (recalc from area)
@@ -1896,10 +1933,13 @@ function buildPage2(c){
           (c.isAr?'* حدود ASHRAE 170 للغرف الصحية مُطبَّقة':'* ASHRAE 170 healthcare velocity limits applied')+'</div>':'')+
       '</div>';
     }
+    var _headCapLbl = _isBundleMode
+      ? (c.isAr?'حمل الغرفة: ':'Room Load: ')+Number(reqBtu).toLocaleString()+' BTU ('+reqTR+' TR)'
+      : Number(selBtu).toLocaleString()+' BTU / '+selTR+' TR';
     cards+='<div class="room-tech-card">'
       +'<div class="room-tech-head">'
         +'<span style="font-weight:700">#'+(i+1)+' '+name+'</span>'
-        +'<span style="font-size:11px;opacity:.8">'+utLbl+' — '+Number(selBtu).toLocaleString()+' BTU / '+selTR+' TR</span>'
+        +'<span style="font-size:11px;opacity:.8">'+(_isBundleMode?'':''+utLbl+' — ')+_headCapLbl+'</span>'
       +'</div>'
       +'<div class="room-tech-body">'
         +'<div class="stat-grid">'
@@ -1908,22 +1948,78 @@ function buildPage2(c){
           +'<div class="stat-item"><div class="stat-lbl">'+(c.isAr?'تدفق الهواء':'Supply CFM')+'</div><div class="stat-val">'+Number(h.cfm).toLocaleString()+'</div></div>'
           +'<div class="stat-item"><div class="stat-lbl">Market BTU</div><div class="stat-val">'+Number(h.mkt).toLocaleString()+'</div></div>'
         +'</div>'
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        +(c.isBundleProj?'':'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
         +'<span style="font-size:10px;color:#64748b;font-weight:600">'+(c.isAr?'الحالة':'Status')+':</span>'
         +warnHtml
         +'<span style="font-size:10px;color:#94a3b8;margin-'+( c.isAr?'right':'left')+':auto">'+Number(selBtu).toLocaleString()+' BTU × '+getQty(i)+(getQty(i)>1?' = '+Number(effCap).toLocaleString()+' BTU/h':'')+' </span>'
-        +'</div>'
+        +'</div>')
         +hcHtml+devHtml+techDuctHtml
       +'</div>'
     +'</div>';
   }
   var globalWarn='';
-  if(anyUndersized){
-    globalWarn='<div class="warn-box">⚠️ <strong>'+(c.isAr?'تحذير':'Warning')+':</strong> '
-      +(c.isAr
+  var _isBM = (quoteMode==='proj')||bundleOn;
+  if(_isBM){
+    // Project/Bundle mode: show project-level BTU + CFM summary instead of per-room warnings
+    var _bmReqBtu=0, _bmReqCfm=0;
+    for(var _bi=0;_bi<hist.length;_bi++){ _bmReqBtu+=parseInt(hist[_bi].btu)||0; _bmReqCfm+=parseInt(hist[_bi].cfm)||0; }
+    var _bmSelBtu=projState.selBtu*projState.qty;
+    var _bmSelTr=(_bmSelBtu/12000).toFixed(2);
+    var _bmReqTr=(_bmReqBtu/12000).toFixed(2);
+    var _bmBtuDelta=_bmReqBtu>0?Math.round((_bmSelBtu-_bmReqBtu)/_bmReqBtu*1000)/10:0;
+    var _bmBtuSign=_bmBtuDelta>=0?'+':'';
+    var _bmBtuClr=_bmBtuDelta<0?'#dc2626':(_bmBtuDelta>25?'#6b7280':(_bmBtuDelta>5?'#4f46e5':'#059669'));
+    var _bmBtuBadge=_bmBtuDelta<0?(c.isAr?'⚠ عجز سعة BTU':'⚠ BTU Deficit'):(c.isAr?'✅ سعة مناسبة':'✅ BTU OK');
+    // CFM comparison
+    var _bmCfmPerTr=parseInt((typeof G==='function'&&G('duct-cfm-per-tr')?G('duct-cfm-per-tr').value:400))||400;
+    var _bmUnitCfm=projState.selBtu>0?Math.round((projState.selBtu/12000)*_bmCfmPerTr)*projState.qty:0;
+    var _bmCfmDelta=_bmReqCfm>0&&_bmUnitCfm>0?Math.round((_bmUnitCfm-_bmReqCfm)/_bmReqCfm*1000)/10:0;
+    var _bmCfmSign=_bmCfmDelta>=0?'+':'';
+    var _bmCfmClr=_bmCfmDelta<0?'#dc2626':(_bmCfmDelta>0?'#059669':'#059669');
+    var _bmCfmBadge=_bmCfmDelta<0?(c.isAr?'⚠ تنبيه تدفق الهواء':'⚠ Airflow Warning'):(c.isAr?'✅ تدفق مناسب':'✅ Airflow OK');
+    globalWarn=
+      '<div style="border:1px solid #bfdbfe;border-radius:8px;padding:14px;margin-bottom:12px;background:#eff6ff;page-break-inside:avoid">'+
+        '<div style="font-size:12px;font-weight:700;color:#1e40af;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #bfdbfe">'+
+          '📊 '+(c.isAr?'ملخص مستوى المشروع — Project Summary':'Project-Level Summary')+'</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">'+
+          '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:10px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'BTU مطلوب':'Required BTU')+'</div>'+
+            '<div style="font-size:13px;font-weight:700;color:#0f172a;font-family:monospace">'+Number(_bmReqBtu).toLocaleString()+'</div>'+
+            '<div style="font-size:9px;color:#94a3b8">'+_bmReqTr+' TR</div>'+
+          '</div>'+
+          '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:10px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'BTU المختار':'Selected BTU')+'</div>'+
+            '<div style="font-size:13px;font-weight:700;color:'+_bmBtuClr+';font-family:monospace">'+Number(_bmSelBtu).toLocaleString()+'</div>'+
+            '<div style="font-size:9px;color:#94a3b8">'+_bmSelTr+' TR | '+_bmBtuSign+_bmBtuDelta+'%</div>'+
+          '</div>'+
+          '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:10px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'حالة BTU':'BTU Status')+'</div>'+
+            '<div style="font-size:11px;font-weight:700;color:'+_bmBtuClr+';margin-top:4px">'+_bmBtuBadge+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">'+
+          '<div style="background:#fff;border:1px solid #dcfce7;border-radius:6px;padding:10px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'CFM المطلوب':'Required CFM')+'</div>'+
+            '<div style="font-size:13px;font-weight:700;color:#0f172a;font-family:monospace">'+(_bmReqCfm>0?Number(_bmReqCfm).toLocaleString():'—')+'</div>'+
+            '<div style="font-size:9px;color:#94a3b8">CFM</div>'+
+          '</div>'+
+          '<div style="background:#fff;border:1px solid #dcfce7;border-radius:6px;padding:10px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'CFM الوحدة':'Unit CFM')+'</div>'+
+            '<div style="font-size:13px;font-weight:700;color:'+_bmCfmClr+';font-family:monospace">'+(_bmUnitCfm>0?Number(_bmUnitCfm).toLocaleString():'—')+'</div>'+
+            '<div style="font-size:9px;color:#94a3b8">'+(_bmCfmDelta!==0?_bmCfmSign+_bmCfmDelta+'%':'')+'</div>'+
+          '</div>'+
+          '<div style="background:#fff;border:1px solid #dcfce7;border-radius:6px;padding:10px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'حالة تدفق الهواء':'Airflow Status')+'</div>'+
+            '<div style="font-size:11px;font-weight:700;color:'+_bmCfmClr+';margin-top:4px">'+_bmCfmBadge+'</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+  } else if(anyUndersized){
+    globalWarn='<div class="warn-box">⚠️ <strong>'+(c.isAr?'تحذير':'Warning')+':</strong> '+
+      (c.isAr
         ?'عدد البنود ناقصة السعة: <strong>'+undersizedCount+'</strong> من <strong>'+hist.length+'</strong> — يرجى مراجعة السعات قبل الاعتماد.'
-        :'Undersized items: <strong>'+undersizedCount+'</strong> of <strong>'+hist.length+'</strong> — please review capacities before approval.')
-      +'</div>';
+        :'Undersized items: <strong>'+undersizedCount+'</strong> of <strong>'+hist.length+'</strong> — please review capacities before approval.')+
+      '</div>';
   }
   return '<div class="inv-page" id="pdf-page2">'
     +'<div class="inv-header">'
@@ -2307,44 +2403,67 @@ function isDucted(utKey){
 }
 
 // Standard rectangular duct candidates [w, h] in mm
-var DUCT_STD = [
-  [200,200],[250,200],[300,200],[350,200],[400,200],[450,200],[500,200],
-  [600,250],[700,250],[800,250],
-  [900,300],[1000,300],[1100,350],[1200,350],[1500,400]
-];
+// Standard Saudi market duct sizes — widths × heights (mm)
+// Sorted by area ascending; calcDuctSize picks smallest valid size
+var _DUCT_WIDTHS  = [150,200,250,300,350,400,450,500,600,700,800,900,1000,1100,1200];
+var _DUCT_HEIGHTS = [100,150,200,250,300,350,400,450,500,600,700,800];
+var DUCT_STD = (function(){
+  var arr = [];
+  for(var wi=0;wi<_DUCT_WIDTHS.length;wi++){
+    for(var hi=0;hi<_DUCT_HEIGHTS.length;hi++){
+      var w=_DUCT_WIDTHS[wi], h=_DUCT_HEIGHTS[hi];
+      var ratio = w >= h ? w/h : h/w;
+      if(ratio <= 4) arr.push([w,h]);
+    }
+  }
+  arr.sort(function(a,b){ return (a[0]*a[1])-(b[0]*b[1]); });
+  return arr;
+})();
 
 // Compute duct size from CFM and velocity (fpm)
-// Returns {w,h,area_required_mm2,area_actual_mm2,ratio,std,method}
+// Returns {calc, std} where each has {w,h,area_required,area_actual,ratio,method,actualFpm}
 function calcDuctSize(cfm, velocityFpm){
   if(!cfm || cfm <= 0) return null;
   var areaFt2 = cfm / velocityFpm;
   var areaMm2 = areaFt2 * 92903.04; // 1 ft² = 92903.04 mm²
-  // Try preferred heights
-  var heights = [200,250,300,350,400,450,500];
+  var minSide = 150; // mm minimum
+
+  // ── Find best from full DUCT_STD (already sorted by area asc) ──
+  var stdBest = null;
+  for(var si=0; si<DUCT_STD.length; si++){
+    var sw=DUCT_STD[si][0], sh=DUCT_STD[si][1];
+    if(sw >= minSide && sh >= minSide && sw*sh >= areaMm2){
+      var _aFt2 = (sw*sh)/92903.04;
+      stdBest = {w:sw, h:sh, area_required:Math.round(areaMm2), area_actual:sw*sh,
+                 ratio:Math.max(sw,sh)/Math.min(sw,sh)|0, method:'std',
+                 actualFpm: _aFt2>0?Math.round(cfm/_aFt2):velocityFpm};
+      break;
+    }
+  }
+
+  // ── Fallback: calc from preferred heights ──
   var best = null;
+  var heights = [200,250,300,350,400,450,500,600];
   for(var hi=0; hi<heights.length; hi++){
     var h = heights[hi];
     var wRaw = areaMm2 / h;
-    var w = Math.ceil(wRaw / 50) * 50; // round up to 50mm
+    var w = Math.ceil(wRaw / 50) * 50;
+    if(w < minSide) w = minSide;
     var ratio = w/h;
     if(w <= 1500 && ratio <= 4){
-      best = {w:w, h:h, area_required:Math.round(areaMm2), area_actual:w*h, ratio:ratio.toFixed(2), method:'calc'};
+      var _aFt2c = (w*h)/92903.04;
+      best = {w:w, h:h, area_required:Math.round(areaMm2), area_actual:w*h,
+              ratio:ratio.toFixed(2), method:'calc',
+              actualFpm: _aFt2c>0?Math.round(cfm/_aFt2c):velocityFpm};
       break;
     }
   }
   if(!best){
-    // Fallback: large duct
-    var h2 = 600, wRaw2 = areaMm2/h2, w2=Math.ceil(wRaw2/50)*50;
-    best = {w:w2, h:h2, area_required:Math.round(areaMm2), area_actual:w2*h2, ratio:(w2/h2).toFixed(2), method:'calc'};
-  }
-  // Also find nearest standard size that meets or exceeds required area
-  var stdBest = null;
-  for(var si=0; si<DUCT_STD.length; si++){
-    var sw=DUCT_STD[si][0], sh=DUCT_STD[si][1];
-    if(sw*sh >= areaMm2){
-      stdBest = {w:sw, h:sh, area_required:Math.round(areaMm2), area_actual:sw*sh, ratio:(sw/sh).toFixed(2), method:'std'};
-      break;
-    }
+    var h2=600, wRaw2=areaMm2/h2, w2=Math.max(minSide,Math.ceil(wRaw2/50)*50);
+    var _aFt2f=(w2*h2)/92903.04;
+    best={w:w2,h:h2,area_required:Math.round(areaMm2),area_actual:w2*h2,
+          ratio:(w2/h2).toFixed(2),method:'calc',
+          actualFpm:_aFt2f>0?Math.round(cfm/_aFt2f):velocityFpm};
   }
   return {calc:best, std:stdBest||best};
 }
@@ -2407,6 +2526,53 @@ function setDuctBasis(basis){
 // ══════════════════════════════════════════════════════════════════
 // B) PROJECT MODE STATE
 // ══════════════════════════════════════════════════════════════════
+// ── Bundle mode (per-room locking) ────────────────────────────────
+var bundleOn = false;
+// bundleConfig stores project unit config when bundle is ON (persisted)
+var bundleConfig = {
+  unitType: 'package',
+  selectedBtu: 0,
+  qty: 1,
+  unitPrice: 0,
+  designBasis: 'required',
+  supplyFpm: 1000,
+  returnFpm: 800,
+  cfmPerTr: 400
+};
+(function(){
+  try{
+    var _bc=localStorage.getItem('ac_bundleConfig');
+    if(_bc){ var o=JSON.parse(_bc); Object.keys(o).forEach(function(k){ bundleConfig[k]=o[k]; }); }
+  }catch(e){}
+})();
+function saveBundleConfig(){
+  try{ localStorage.setItem('ac_bundleConfig',JSON.stringify(bundleConfig)); }catch(e){}
+}
+function _updateBundleUI(){
+  var btn=G('bundle-btn'), lbl=G('bundle-btn-lbl'), desc=G('bundle-desc');
+  var ar=lang==='ar';
+  if(bundleOn){
+    if(btn) btn.classList.add('on');
+    if(lbl) lbl.textContent = ar ? '🔒 إيقاف التجميع' : '🔒 Disable Bundle';
+    if(desc) desc.textContent = ar
+      ? 'التجميع مفعّل — اختيار الوحدات لكل غرفة معطّل، يُستخدم إعداد وحدة المشروع فقط'
+      : 'Bundle ON — per-room unit selection locked, uses project unit settings only';
+  } else {
+    if(btn) btn.classList.remove('on');
+    if(lbl) lbl.textContent = ar ? '🔓 تفعيل التجميع' : '🔓 Enable Bundle';
+    if(desc) desc.textContent = ar
+      ? 'يعطّل اختيار الوحدات لكل غرفة ويعتمد على وحدة المشروع فقط'
+      : 'Locks per-room unit selection, uses project unit only';
+  }
+  // show bundle row only in proj mode
+  var row=G('bundle-row');
+  if(row) row.style.display = (quoteMode==='proj') ? '' : 'none';
+}
+function toggleBundle(){
+  bundleOn = !bundleOn;
+  _updateBundleUI();
+  if(quoteMode==='proj'){ renderProjBlock(); } else { renderQuote(); }
+}
 var quoteMode = 'room'; // 'room' | 'proj'
 var projState = {
   sysType: 'split',
@@ -2414,16 +2580,23 @@ var projState = {
   qty: 1,
   up: 0
 };
+// Restore quoteMode from localStorage on page load
+try{ var _qm9=localStorage.getItem('acp9mode'); if(_qm9==='proj') quoteMode='proj'; }catch(e){}
 
 function setQuoteMode(mode){
   quoteMode = mode;
+  try{ localStorage.setItem('acp9mode', mode); }catch(e){}
   var btnRoom = G('mode-btn-room'), btnProj = G('mode-btn-proj');
   var qiList = G('qi-list'), projBlock = G('proj-block');
+  var bundleRow = G('bundle-row');
   if(mode === 'proj'){
     if(btnRoom) btnRoom.classList.remove('active');
     if(btnProj) btnProj.classList.add('active');
     if(qiList) qiList.style.display = 'none';
     if(projBlock) projBlock.style.display = '';
+    // Show bundle toggle only in proj mode
+    if(bundleRow) bundleRow.style.display = '';
+    _updateBundleUI();
     renderProjBlock();
     refreshGrandTotal();
   } else {
@@ -2431,6 +2604,9 @@ function setQuoteMode(mode){
     if(btnProj) btnProj.classList.remove('active');
     if(qiList) qiList.style.display = '';
     if(projBlock) projBlock.style.display = 'none';
+    // Hide bundle in room mode
+    if(bundleRow) bundleRow.style.display = 'none';
+    _updateBundleUI();
     renderQuote();
     refreshGrandTotal();
   }
@@ -2589,15 +2765,16 @@ function renderProjBlock(){
       }
       var unitCFM = _unitCfmPerUnit * Math.max(1, projState.qty);
 
-      // ── Q_design = requiredCFM ALWAYS — toggle is display-only ──
-      var Q_design = requiredCFM;
+      // ── Read sizing basis toggle ──
+      var _basis = (typeof window._ductBasis !== 'undefined') ? window._ductBasis : 'required';
+      // Q_design: required basis → use project required CFM; unit basis → use unit CFM
+      var Q_design = (_basis === 'unit' && unitCFM > 0) ? unitCFM : requiredCFM;
 
       // ── Show/hide CFM/TR row ──
       var cfmTrRow = G('duct-cfm-per-tr-row');
       if(cfmTrRow) cfmTrRow.style.display = (_isCfmBased && totalCfm > 0) ? 'none' : '';
 
-      // ── Toggle button styles (cosmetic only — does not change Q_design) ──
-      var _basis = (typeof window._ductBasis !== 'undefined') ? window._ductBasis : 'required';
+      // ── Toggle button styles ──
       var _btnReq = G('duct-basis-req'), _btnSel = G('duct-basis-sel');
       if(_btnReq && _btnSel){
         if(_basis === 'required'){
@@ -2696,9 +2873,11 @@ function renderProjBlock(){
 
       // ── Size ducts using Q_design (requiredCFM) ALWAYS ──
       var supDuct = calcDuctSize(Q_design, vSup);
-      var retDuct = calcDuctSize(Math.round(Q_design * 0.9), vRet);
-      setV('duct-sup-val', supDuct ? ductSizeLabel(supDuct.std||supDuct.calc) : '—');
-      setV('duct-ret-val', retDuct ? ductSizeLabel(retDuct.std||retDuct.calc) : '—');
+      var retDuct = calcDuctSize(Q_design, vRet); // Return uses same Q_design but its own velocity
+      var _sd = supDuct ? (supDuct.std||supDuct.calc) : null;
+      var _rd = retDuct ? (retDuct.std||retDuct.calc) : null;
+      setV('duct-sup-val', _sd ? ductSizeLabel(_sd)+(_sd.actualFpm?' ('+_sd.actualFpm+' fpm)':'') : '—');
+      setV('duct-ret-val', _rd ? ductSizeLabel(_rd)+(_rd.actualFpm?' ('+_rd.actualFpm+' fpm)':'') : '—');
 
       // ── Basis label ──
       var _bLbl = G('duct-basis-lbl');
@@ -2876,14 +3055,86 @@ buildPage2 = function(c){
   var totalTr2  = getProjTotalTr();
   var totalBtu2 = getProjTotalBtu();
 
-  // ══ PROJECT MODE: Full Duct Sizing Summary section ══════════════════════
-  if(quoteMode==='proj' && isDucted(curUT)){
+  // ══ BUNDLE+PROJ: Project-level capacity & airflow summary banner ══════════
+  if(c.isBundleProj){
+    var _bSelBtu2 = projState.selBtu * Math.max(1,projState.qty);
+    var _bCapDelta2 = totalBtu2>0?((_bSelBtu2-totalBtu2)/totalBtu2*100):0;
+    var _bCapRnd2 = Math.round(_bCapDelta2*10)/10;
+    var _bCapColor2 = Math.abs(_bCapDelta2)<5?'#166534':(_bCapDelta2>0?'#1d4ed8':'#dc2626');
+    var _bCapLbl2 = c.isAr
+      ? (Math.abs(_bCapDelta2)<5?'✅ مطابقة':(_bCapDelta2>0?'سعة BTU زائدة +'+_bCapRnd2+'%':'⚠ عجز سعة BTU '+_bCapRnd2+'%'))
+      : (Math.abs(_bCapDelta2)<5?'✅ Match':(_bCapDelta2>0?'BTU Oversize +'+_bCapRnd2+'%':'⚠ BTU Deficit '+_bCapRnd2+'%'));
+    var _bCfmPerTr2=parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
+    var _bReqCfm2 = totalCfm>0?Math.round(totalCfm):Math.round(totalTr2*_bCfmPerTr2);
+    var _bCatD2=getCatalog(curUT); var _bSE2=null;
+    for(var _bi2=0;_bi2<_bCatD2.length;_bi2++){ if(_bCatD2[_bi2].btu===projState.selBtu){_bSE2=_bCatD2[_bi2];break;} }
+    var _bUnitCfmP2=(_bSE2&&_bSE2.cfm>0)?_bSE2.cfm:Math.round((projState.selBtu/12000)*_bCfmPerTr2);
+    var _bUnitCfm2=_bUnitCfmP2*Math.max(1,projState.qty);
+    var _bCfmDelta2=_bReqCfm2>0?((_bUnitCfm2-_bReqCfm2)/_bReqCfm2*100):0;
+    var _bCfmRnd2=Math.round(_bCfmDelta2*10)/10;
+    var _bCfmColor2=_bCfmDelta2<-5?'#dc2626':(_bCfmDelta2>25?'#d97706':'#166534');
+    var _bCfmLbl2=c.isAr
+      ?(_bCfmDelta2<-5?'⚠ تنبيه تدفق '+_bCfmRnd2+'%':(_bCfmDelta2>25?'تدفق زائد +'+_bCfmRnd2+'%':'✅ تدفق مناسب'))
+      :(_bCfmDelta2<-5?'⚠ Airflow Warning '+_bCfmRnd2+'%':(_bCfmDelta2>25?'Excess Airflow +'+_bCfmRnd2+'%':'✅ Airflow OK'));
+    var _bUtLbl2=c.utLbls[curUT]||curUT;
+    extra+=
+      '<div style="border:1px solid #fbbf24;border-radius:8px;padding:14px;margin-bottom:12px;background:#fffbeb;page-break-inside:avoid">'+
+        '<div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #fde68a">'+
+          '🏢 '+(c.isAr?'ملخص وحدة المشروع (وضع التجميع)':'Project Unit Summary (Bundle Mode)')+'</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">'+
+          '<div style="background:#fff;border:1px solid #fde68a;border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:2px">'+(c.isAr?'نوع النظام':'System')+'</div>'+
+            '<div style="font-size:12px;font-weight:700;color:#0ea5e9">'+_bUtLbl2+'</div></div>'+
+          '<div style="background:#fff;border:1px solid #fde68a;border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:2px">'+(c.isAr?'السعة × الكمية':'Capacity × Qty')+'</div>'+
+            '<div style="font-size:11px;font-weight:700;color:#0ea5e9;font-family:monospace">'+Number(projState.selBtu).toLocaleString()+' × '+projState.qty+'</div></div>'+
+          '<div style="background:#fff;border:1px solid #fde68a;border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:2px">'+(c.isAr?'حالة BTU':'BTU Status')+'</div>'+
+            '<div style="font-size:11px;font-weight:700;color:'+_bCapColor2+'">'+_bCapLbl2+'</div></div>'+
+          '<div style="background:#fff;border:1px solid #fde68a;border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:2px">'+(c.isAr?'تدفق الهواء':'Airflow')+'</div>'+
+            '<div style="font-size:11px;font-weight:700;color:'+_bCfmColor2+'">'+_bCfmLbl2+'</div></div>'+
+        '</div>'+
+        '<table style="width:100%;border-collapse:collapse;font-size:10px;margin:0"><thead>'+
+          '<tr style="background:#fef3c7">'+
+            '<th style="padding:5px 8px;border:1px solid #fde68a;text-align:center">'+(c.isAr?'البيان':'Item')+'</th>'+
+            '<th style="padding:5px 8px;border:1px solid #fde68a;text-align:center">'+(c.isAr?'المطلوب':'Required')+'</th>'+
+            '<th style="padding:5px 8px;border:1px solid #fde68a;text-align:center">'+(c.isAr?'حسب الوحدة':'By Unit')+'</th>'+
+            '<th style="padding:5px 8px;border:1px solid #fde68a;text-align:center">'+(c.isAr?'الفرق %':'Delta %')+'</th>'+
+          '</tr></thead><tbody>'+
+          '<tr>'+
+            '<td style="padding:6px 8px;border:1px solid #fde68a;font-weight:600;text-align:center">BTU/h</td>'+
+            '<td style="padding:6px 8px;border:1px solid #fde68a;text-align:center;font-family:monospace">'+Number(totalBtu2).toLocaleString()+'</td>'+
+            '<td style="padding:6px 8px;border:1px solid #fde68a;text-align:center;font-family:monospace">'+Number(_bSelBtu2).toLocaleString()+'</td>'+
+            '<td style="padding:6px 8px;border:1px solid #fde68a;text-align:center;color:'+_bCapColor2+';font-weight:700">'+(_bCapRnd2>=0?'+':'')+_bCapRnd2.toFixed(1)+'%</td>'+
+          '</tr>'+
+          '<tr>'+
+            '<td style="padding:6px 8px;border:1px solid #fde68a;font-weight:600;text-align:center">CFM</td>'+
+            '<td style="padding:6px 8px;border:1px solid #fde68a;text-align:center;font-family:monospace">'+Number(_bReqCfm2).toLocaleString()+'</td>'+
+            '<td style="padding:6px 8px;border:1px solid #fde68a;text-align:center;font-family:monospace">'+Number(_bUnitCfm2).toLocaleString()+'</td>'+
+            '<td style="padding:6px 8px;border:1px solid #fde68a;text-align:center;color:'+_bCfmColor2+';font-weight:700">'+(_bCfmRnd2>=0?'+':'')+_bCfmRnd2.toFixed(1)+'%</td>'+
+          '</tr>'+
+        '</tbody></table>'+
+        '<div style="font-size:9px;color:#92400e;margin-top:6px">'+
+          (c.isAr?'⚠ التجميع مفعّل: تعمل غرف المشروع كلها بوحدة واحدة. المقارنة على مستوى المشروع الكلي.':'⚠ Bundle Mode: All rooms share one project unit. Comparison is at project level.')+'</div>'+
+      '</div>';
+  }
+
+  // ══ PROJECT/BUNDLE MODE: Full Duct Sizing Summary section ══════════════════════
+  if((quoteMode==='proj'||bundleOn) && isDucted(curUT)){
     var vSup=parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
     var vRet=parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
     var _p2CfmPerTr=parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
-    // Q_design for PDF = requiredCFM ALWAYS (same logic as UI)
+    // Q_design for PDF: follows the basis toggle
     var _p2RequiredCFM = (totalCfm > 0) ? Math.round(totalCfm) : Math.round(getProjTotalTr() * _p2CfmPerTr);
-    var _p2Cfm = _p2RequiredCFM; // duct sizing always uses required CFM
+    var _p2Basis2 = (typeof window._ductBasis !== 'undefined') ? window._ductBasis : 'required';
+    // Compute unitCFM for comparison
+    var _p2CatD2 = getCatalog(curUT);
+    var _p2SE2 = null;
+    for(var _p2k=0;_p2k<_p2CatD2.length;_p2k++){ if(_p2CatD2[_p2k].btu===projState.selBtu){_p2SE2=_p2CatD2[_p2k];break;} }
+    var _p2UCpu2 = (_p2SE2&&_p2SE2.cfm>0)?_p2SE2.cfm:(projState.selBtu>0?Math.round((projState.selBtu/12000)*_p2CfmPerTr):0);
+    var _p2UnitCFM2 = _p2UCpu2 * Math.max(1,projState.qty);
+    var _p2Cfm = (_p2Basis2==='unit' && _p2UnitCFM2>0) ? _p2UnitCFM2 : _p2RequiredCFM;
     // unitCFM for display comparison
     var _p2CatD = getCatalog(curUT);
     var _p2SelEntry = null;
@@ -2894,9 +3145,13 @@ buildPage2 = function(c){
       ? _p2SelEntry.cfm
       : (projState.selBtu > 0 ? Math.round((projState.selBtu/12000) * _p2CfmPerTr) : 0);
     var _p2UnitCFM = _p2UnitCfmPerUnit * Math.max(1, projState.qty);
-    var _p2Basis = 'required'; // always required in PDF
-    var _p2BasisLbl = c.isAr ? 'حسب الاحتياج — Q المطلوب' : 'Required CFM (Project Load)';
-    var _p2CfmSrcLbl = c.isAr ? 'إجمالي CFM المطلوب' : 'Required Total CFM';
+    var _p2Basis = _p2Basis2; // follows UI toggle
+    var _p2BasisLbl = c.isAr
+      ? (_p2Basis==='unit' ? 'حسب الوحدة — Q الوحدة' : 'حسب الاحتياج — Q المطلوب')
+      : (_p2Basis==='unit' ? 'Unit CFM' : 'Required CFM (Project Load)');
+    var _p2CfmSrcLbl = c.isAr
+      ? (_p2Basis==='unit' ? 'CFM الوحدة المختارة' : 'إجمالي CFM المطلوب')
+      : (_p2Basis==='unit' ? 'Selected Unit CFM' : 'Required Total CFM');
     // BTU Capacity status (separate from airflow)
     var _selBtu2 = projState.selBtu * Math.max(1,projState.qty);
     var _capDelta = totalBtu2>0 ? ((_selBtu2-totalBtu2)/totalBtu2*100) : 0;
@@ -2915,7 +3170,7 @@ buildPage2 = function(c){
 
     // Duct calculations
     var supD=calcDuctSize(_p2Cfm>0?_p2Cfm:1,vSup);
-    var retD=calcDuctSize(_p2Cfm>0?Math.round(_p2Cfm*0.9):1,vRet);
+    var retD=calcDuctSize(_p2Cfm>0?_p2Cfm:1,vRet); // Return uses same Q_design with own velocity
     var sd=supD?supD.std||supD.calc:null, rd=retD?retD.std||retD.calc:null;
     var _p2SupRt = getDuctVelocityRating(vSup,'supply',false);
     var _p2RetRt = getDuctVelocityRating(vRet,'return',false);
@@ -2967,31 +3222,35 @@ buildPage2 = function(c){
         '<table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:0">'+
           '<thead>'+
             '<tr style="background:#dcfce7">'+
-              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:'+(c.isAr?'right':'left')+';color:#166534">'+(c.isAr?'البند / النظام':'System / Scope')+'</th>'+
-              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'أساس التصميم':'Basis')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:'+(c.isAr?'right':'left')+';color:#166534">'+(c.isAr?'أساس التصميم':'Design Basis')+'</th>'+
               '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">Q (CFM)</th>'+
-              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'سر. الإمداد':'Sup. Vel.')+'</th>'+
-              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'سر. الرجوع':'Ret. Vel.')+'</th>'+
-              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'مجرى الإمداد':'Supply Main')+'</th>'+
-              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'مجرى الرجوع':'Return Main')+'</th>'+
-              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'تقييم الإمداد':'Sup. Rating')+'</th>'+
-              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'تقييم الرجوع':'Ret. Rating')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'سر. الإمداد (fpm)':'Supply FPM')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'سر. الرجوع (fpm)':'Return FPM')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'مجرى الإمداد (mm)':'Supply Duct (mm)')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'مجرى الرجوع (mm)':'Return Duct (mm)')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'سرعة فعلية إمداد':'Act. Sup. FPM')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'سرعة فعلية رجوع':'Act. Ret. FPM')+'</th>'+
               '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'ملاحظة':'Notes')+'</th>'+
             '</tr>'+
           '</thead>'+
           '<tbody>'+
-            '<tr>'+
-              '<td style="padding:7px 8px;border:1px solid #bbf7d0;font-weight:600;text-align:'+(c.isAr?'right':'left')+'">'+_sysName+'</td>'+
-              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-size:9px">'+_p2BasisLbl+'</td>'+
-              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-weight:700;font-family:monospace">'+(_p2Cfm>0?Math.round(_p2Cfm).toLocaleString():'—')+'</td>'+
-              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+vSup+' fpm</td>'+
-              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+vRet+' fpm</td>'+
-              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+(sd?sd.w+'×'+sd.h+' mm':'—')+'</td>'+
-              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+(rd?rd.w+'×'+rd.h+' mm':'—')+'</td>'+
-              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center">'+ratingBadge(_p2SupRt,c.isAr)+'</td>'+
-              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center">'+ratingBadge(_p2RetRt,c.isAr)+'</td>'+
-              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:'+(c.isAr?'right':'left')+';font-size:9px;color:#64748b">'+(c.isAr?'تصميم أولي — تحقق من الضغط الساكن':'Preliminary — verify static pressure')+'</td>'+
-            '</tr>'+
+            (function(){
+              var _actSupFpm=sd&&sd.actualFpm?sd.actualFpm:sd?(Math.round(_p2Cfm/(sd.w*sd.h/92903.04))):vSup;
+              var _actRetFpm=rd&&rd.actualFpm?rd.actualFpm:rd?(Math.round(_p2Cfm/(rd.w*rd.h/92903.04))):vRet;
+              var _supActClr=Math.abs(_actSupFpm-vSup)>vSup*0.1?'#f59e0b':'#059669';
+              var _retActClr=Math.abs(_actRetFpm-vRet)>vRet*0.1?'#f59e0b':'#059669';
+              return '<tr>'+
+                '<td style="padding:7px 8px;border:1px solid #bbf7d0;font-weight:600;text-align:'+(c.isAr?'right':'left')+'">'+(c.isAr?'وحدة المشروع — '+_utLbl:'Project Unit — '+_utLbl)+'<div style="font-size:9px;font-weight:400;color:#64748b">'+_p2BasisLbl+'</div></td>'+
+                '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-weight:700;font-family:monospace">'+(_p2Cfm>0?Math.round(_p2Cfm).toLocaleString():'—')+'</td>'+
+                '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+vSup+'</td>'+
+                '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+vRet+'</td>'+
+                '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+(sd?sd.w+'×'+sd.h+' mm':'—')+'</td>'+
+                '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+(rd?rd.w+'×'+rd.h+' mm':'—')+'</td>'+
+                '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-family:monospace;color:'+_supActClr+'">'+_actSupFpm+'</td>'+
+                '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-family:monospace;color:'+_retActClr+'">'+_actRetFpm+'</td>'+
+                '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:'+(c.isAr?'right':'left')+';font-size:9px;color:#64748b">'+(c.isAr?'تصميم أولي — يجب التحقق من الضغط الساكن والمخطط':'Preliminary — verify ESP/static pressure & layout')+'</td>'+
+              '</tr>';
+            })()+
           '</tbody>'+
         '</table>'+
         '<div style="margin-top:8px;padding:7px 10px;border-radius:6px;background:'+(_p2WorstHigh?'#fef3c7':'#f0fdf4')+';border:1px solid '+(_p2WorstHigh?'#fcd34d':'#bbf7d0')+';font-size:10px;color:#374151">'+
@@ -3008,7 +3267,7 @@ buildPage2 = function(c){
   }
 
   // ══ BOTH MODES: Air Distribution by Room table ════════════════════════
-  if(quoteMode==='proj' && hist.length>0){
+  if((quoteMode==='proj'||bundleOn) && hist.length>0){
     var totalCfm2=getProjTotalCfm();
     var rows2='';
     for(var i=0;i<hist.length;i++){
