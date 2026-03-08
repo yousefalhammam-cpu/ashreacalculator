@@ -1775,7 +1775,7 @@ function buildPage1(c){
 function buildPage2(c){
   // Technician Detail Page
   var cards='';
-  var anyUndersized=false;
+  var anyUndersized=false, undersizedCount=0;
   for(var i=0;i<hist.length;i++){
     var h=hist[i];
     var _nm=c.isAr?(h.ar||h.en):(h.en||h.ar);
@@ -1785,7 +1785,7 @@ function buildPage2(c){
     var selBtu=getSelBtu(i)||acRoundBtu(reqBtu,'btu');
     var effCap=selBtu*getQty(i);
     var marginPct=reqBtu>0?Math.round((effCap/reqBtu-1)*100):0;
-    if(reqBtu>0&&effCap<reqBtu) anyUndersized=true;
+    if(reqBtu>0&&effCap<reqBtu){ anyUndersized=true; undersizedCount++; }
     var reqTR=(reqBtu/12000).toFixed(1), effTR=(effCap/12000).toFixed(1);
     var selTR=(selBtu/12000).toFixed(1);
     // Warning or badge
@@ -1920,8 +1920,9 @@ function buildPage2(c){
   var globalWarn='';
   if(anyUndersized){
     globalWarn='<div class="warn-box">⚠️ <strong>'+(c.isAr?'تحذير':'Warning')+':</strong> '
-      +(c.isAr?'بعض البنود سعتها أقل من الحمل المطلوب—يرجى مراجعة السعات قبل الاعتماد.'
-               :'Some line items are undersized vs required load—please review capacities before approval.')
+      +(c.isAr
+        ?'عدد البنود ناقصة السعة: <strong>'+undersizedCount+'</strong> من <strong>'+hist.length+'</strong> — يرجى مراجعة السعات قبل الاعتماد.'
+        :'Undersized items: <strong>'+undersizedCount+'</strong> of <strong>'+hist.length+'</strong> — please review capacities before approval.')
       +'</div>';
   }
   return '<div class="inv-page" id="pdf-page2">'
@@ -2843,93 +2844,166 @@ buildPage2 = function(c){
   var extra = '';
   var sysTypeSel=G('proj-systype'); var curUT=(sysTypeSel&&sysTypeSel.value)||projState.sysType;
   var totalCfm = getProjTotalCfm();
-  // Duct sizing in project mode
-  if(quoteMode==='proj' && isDucted(curUT) && totalCfm>0){
+  var totalTr2  = getProjTotalTr();
+  var totalBtu2 = getProjTotalBtu();
+
+  // ══ PROJECT MODE: Full Duct Sizing Summary section ══════════════════════
+  if(quoteMode==='proj' && isDucted(curUT)){
     var vSup=parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
     var vRet=parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
     var _p2CfmPerTr=parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
     var _p2DuctCfm=getProjDuctCfm(curUT,projState.selBtu,projState.qty,totalCfm,_p2CfmPerTr);
     var _p2Cfm=_p2DuctCfm.cfm;
+    var _p2Basis = (typeof window._ductBasis !== 'undefined') ? window._ductBasis : 'required';
+    var _p2BasisLbl = c.isAr
+      ? (_p2Basis==='required'?'حسب الاحتياج (Required)':'حسب الوحدة (Selected Unit)')
+      : (_p2Basis==='required'?'Required (Project Load)':'Selected Unit');
     var _p2CfmSrcLbl=c.isAr
       ?(_p2DuctCfm.source==='unit'?'CFM من سعة الوحدة المختارة'
        :_p2DuctCfm.source==='tr'?'CFM = TR × '+_p2CfmPerTr
        :'إجمالي CFM المحسوب')
       :_p2DuctCfm.label;
-    var supD=calcDuctSize(_p2Cfm,vSup);
-    var retD=calcDuctSize(Math.round(_p2Cfm*0.9),vRet);
+    // Capacity status
+    var _selBtu2 = projState.selBtu * Math.max(1,projState.qty);
+    var _capDelta = totalBtu2>0 ? ((_selBtu2-totalBtu2)/totalBtu2*100) : 0;
+    var _capDeltaRnd = Math.round(_capDelta*10)/10;
+    var _capStatusAr, _capStatusEn, _capColor;
+    if(Math.abs(_capDelta)<5){ _capStatusAr='مطابقة ✅'; _capStatusEn='Match ✅'; _capColor='#166534'; }
+    else if(_capDelta>0){ _capStatusAr='سعة زائدة +'+_capDeltaRnd+'%'; _capStatusEn='Oversize +'+_capDeltaRnd+'%'; _capColor='#1d4ed8'; }
+    else { _capStatusAr='عجز '+_capDeltaRnd+'%'; _capStatusEn='Deficit '+_capDeltaRnd+'%'; _capColor='#dc2626'; }
+
+    // Duct calculations
+    var supD=calcDuctSize(_p2Cfm>0?_p2Cfm:1,vSup);
+    var retD=calcDuctSize(_p2Cfm>0?Math.round(_p2Cfm*0.9):1,vRet);
     var sd=supD?supD.std||supD.calc:null, rd=retD?retD.std||retD.calc:null;
-    // Velocity ratings for main duct (project = general, not healthcare)
     var _p2SupRt = getDuctVelocityRating(vSup,'supply',false);
     var _p2RetRt = getDuctVelocityRating(vRet,'return',false);
     var _p2Rec = ductRecommendation(_p2SupRt,_p2RetRt,c.isAr);
     var _p2WorstHigh = (_p2SupRt&&(_p2SupRt.r==='High'||_p2SupRt.r==='Critical'))||(_p2RetRt&&(_p2RetRt.r==='High'||_p2RetRt.r==='Critical'));
-    extra+='<div style="border:1px solid #bbf7d0;border-radius:8px;padding:14px;margin-bottom:12px;background:#f0fdf4">'+
-      '<div style="font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">'+
-        (c.isAr?'جدول مجاري الهواء الرئيسية — Duct Schedule':'Main Duct Schedule')+'</div>'+
-      '<div style="margin-bottom:8px"><span style="font-size:10px;background:#dcfce7;color:#166534;border-radius:10px;padding:2px 8px;font-weight:600">'+_p2CfmSrcLbl+'</span>'+
-      ' <span style="font-size:10px;color:#374151;font-weight:700">Q = '+Number(_p2Cfm).toLocaleString()+' CFM</span></div>'+
-      '<table style="width:100%;border-collapse:collapse;font-size:10px"><thead><tr style="background:#e8f9f0">'+
-        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:'+(c.isAr?'right':'left')+'">'+( c.isAr?'المجرى':'Duct')+'</th>'+
-        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">CFM</th>'+
-        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">'+(c.isAr?'الحجم المختار':'Selected Size')+'</th>'+
-        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">'+(c.isAr?'السرعة (fpm)':'Velocity (fpm)')+'</th>'+
-        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">'+(c.isAr?'المساحة (mm²)':'Area (mm²)')+'</th>'+
-        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">'+(c.isAr?'النسبة':'Ratio')+'</th>'+
-        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">'+(c.isAr?'تقييم السرعة':'Vel. Rating')+'</th>'+
-      '</tr></thead><tbody>'+
-      (sd?'<tr>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;font-weight:600;color:#059669">'+(c.isAr?'إمداد رئيسي':'Supply Main')+'</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+Math.round(_p2Cfm).toLocaleString()+'</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+sd.w+'×'+sd.h+' mm</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+vSup+' fpm</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">'+(sd.area_required||'—').toLocaleString()+'</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">1:'+sd.ratio+'</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">'+ratingBadge(_p2SupRt,c.isAr)+'</td>'+
-      '</tr>':'<tr><td colspan="7" style="text-align:center;padding:5px;border:1px solid #bbf7d0">—</td></tr>')+
-      (rd?'<tr>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;font-weight:600;color:#0284c7">'+(c.isAr?'رجوع رئيسي':'Return Main')+'</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+Math.round(_p2Cfm*0.9).toLocaleString()+'</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+rd.w+'×'+rd.h+' mm</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+vRet+' fpm</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">'+(rd.area_required||'—').toLocaleString()+'</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">1:'+rd.ratio+'</td>'+
-        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">'+ratingBadge(_p2RetRt,c.isAr)+'</td>'+
-      '</tr>':'<tr><td colspan="7" style="text-align:center;padding:5px;border:1px solid #bbf7d0">—</td></tr>')+
-      '</tbody></table>'+
-      '<div style="margin-top:8px;padding:6px 10px;border-radius:5px;background:'+(_p2WorstHigh?'#fef3c7':'#f0fdf4')+';border:1px solid '+(_p2WorstHigh?'#fcd34d':'#bbf7d0')+';font-size:10px;color:#374151">'+_p2Rec+'</div>'+
-      '<div style="font-size:9px;color:#6b7280;margin-top:5px;font-style:italic">'+(c.isAr?'⚠ تصميم أولي — يجب التحقق من الضغط الساكن والمخطط التفصيلي.':'⚠ Preliminary sizing — confirm with static pressure analysis & detailed layout.')+'</div>'+
-    '</div>';
+    var _utLbl = c.utLbls[curUT]||curUT;
+    var _sysName = c.isAr?('وحدة '+_utLbl):((_utLbl)+' Unit');
+
+    extra +=
+      // ── Design Basis Summary box ──────────────────────────────────────
+      '<div style="border:1px solid #bfdbfe;border-radius:8px;padding:14px;margin-bottom:10px;background:#eff6ff;page-break-inside:avoid">'+
+        '<div style="font-size:12px;font-weight:700;color:#1e40af;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #bfdbfe;display:flex;align-items:center;gap:6px">'+
+          '📐 '+(c.isAr?'أساس التصميم — Design Basis':'Design Basis')+'</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">'+
+          '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'إجمالي CFM المطلوب':'Total CFM (Req.)')+'</div>'+
+            '<div style="font-size:14px;font-weight:700;color:#0ea5e9;font-family:monospace">'+(totalCfm>0?Math.round(totalCfm).toLocaleString():'—')+'</div>'+
+            '<div style="font-size:9px;color:#94a3b8">CFM</div>'+
+          '</div>'+
+          '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'إجمالي TR':'Total TR')+'</div>'+
+            '<div style="font-size:14px;font-weight:700;color:#0ea5e9;font-family:monospace">'+totalTr2.toFixed(2)+'</div>'+
+            '<div style="font-size:9px;color:#94a3b8">TR</div>'+
+          '</div>'+
+          '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">CFM/TR</div>'+
+            '<div style="font-size:14px;font-weight:700;color:#0ea5e9;font-family:monospace">'+_p2CfmPerTr+'</div>'+
+            '<div style="font-size:9px;color:#94a3b8">fpm/TR</div>'+
+          '</div>'+
+          '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'أساس التصميم':'Sizing Basis')+'</div>'+
+            '<div style="font-size:10px;font-weight:700;color:#1d4ed8;margin-top:2px">'+_p2BasisLbl+'</div>'+
+          '</div>'+
+          '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'حالة السعة':'Capacity Status')+'</div>'+
+            '<div style="font-size:10px;font-weight:700;color:'+_capColor+';margin-top:2px">'+(c.isAr?_capStatusAr:_capStatusEn)+'</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+
+      // ── Main Duct Sizing Summary Table ─────────────────────────────────
+      '<div style="border:1px solid #bbf7d0;border-radius:8px;padding:14px;margin-bottom:12px;background:#f0fdf4;page-break-inside:avoid">'+
+        '<div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #bbf7d0;display:flex;align-items:center;gap:6px">'+
+          '🌬 '+(c.isAr?'جدول تصميم مجاري الهواء الرئيسية':'Duct Sizing Summary')+'</div>'+
+        '<table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:0">'+
+          '<thead>'+
+            '<tr style="background:#dcfce7">'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:'+(c.isAr?'right':'left')+';color:#166534">'+(c.isAr?'البند / النظام':'System / Scope')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'أساس التصميم':'Basis')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">Q (CFM)</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'سر. الإمداد':'Sup. Vel.')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'سر. الرجوع':'Ret. Vel.')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'مجرى الإمداد':'Supply Main')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'مجرى الرجوع':'Return Main')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'تقييم الإمداد':'Sup. Rating')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'تقييم الرجوع':'Ret. Rating')+'</th>'+
+              '<th style="padding:6px 8px;border:1px solid #86efac;text-align:center;color:#166534">'+(c.isAr?'ملاحظة':'Notes')+'</th>'+
+            '</tr>'+
+          '</thead>'+
+          '<tbody>'+
+            '<tr>'+
+              '<td style="padding:7px 8px;border:1px solid #bbf7d0;font-weight:600;text-align:'+(c.isAr?'right':'left')+'">'+_sysName+'</td>'+
+              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-size:9px">'+_p2BasisLbl+'</td>'+
+              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-weight:700;font-family:monospace">'+(_p2Cfm>0?Math.round(_p2Cfm).toLocaleString():'—')+'</td>'+
+              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+vSup+' fpm</td>'+
+              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+vRet+' fpm</td>'+
+              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+(sd?sd.w+'×'+sd.h+' mm':'—')+'</td>'+
+              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+(rd?rd.w+'×'+rd.h+' mm':'—')+'</td>'+
+              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center">'+ratingBadge(_p2SupRt,c.isAr)+'</td>'+
+              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:center">'+ratingBadge(_p2RetRt,c.isAr)+'</td>'+
+              '<td style="padding:7px 8px;border:1px solid #bbf7d0;text-align:'+(c.isAr?'right':'left')+';font-size:9px;color:#64748b">'+(c.isAr?'تصميم أولي — تحقق من الضغط الساكن':'Preliminary — verify static pressure')+'</td>'+
+            '</tr>'+
+          '</tbody>'+
+        '</table>'+
+        '<div style="margin-top:8px;padding:7px 10px;border-radius:6px;background:'+(_p2WorstHigh?'#fef3c7':'#f0fdf4')+';border:1px solid '+(_p2WorstHigh?'#fcd34d':'#bbf7d0')+';font-size:10px;color:#374151">'+
+          _p2Rec+
+        '</div>'+
+        (_p2Cfm>0?
+          '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;font-size:9px;color:#374151">'+
+            '<span style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px"><strong>'+_p2CfmSrcLbl+'</strong></span>'+
+            (sd?'<span style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px">'+(c.isAr?'مساحة الإمداد: ':'Supply area: ')+Number(sd.area_required||0).toLocaleString()+' mm²</span>':'')+''+
+            (rd?'<span style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px">'+(c.isAr?'مساحة الرجوع: ':'Return area: ')+Number(rd.area_required||0).toLocaleString()+' mm²</span>':'')+''+
+            (sd?'<span style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:2px 8px">'+(c.isAr?'نسبة الإمداد: ':'Supply ratio: ')+'1:'+sd.ratio+'</span>':'')+''+
+          '</div>':'')+
+      '</div>';
   }
-  // Distribution table in project mode
+
+  // ══ BOTH MODES: Air Distribution by Room table ════════════════════════
   if(quoteMode==='proj' && hist.length>0){
     var totalCfm2=getProjTotalCfm();
     var rows2='';
     for(var i=0;i<hist.length;i++){
       var h2=hist[i]; var rCfm=parseInt(h2.cfm)||0;
       var pct=totalCfm2>0?((rCfm/totalCfm2)*100).toFixed(1):0;
-      var allocCfm=totalCfm2>0?Math.round(totalCfm*(rCfm/totalCfm2)):0;
+      var allocCfm=totalCfm2>0&&_p2Cfm>0?Math.round(_p2Cfm*(rCfm/totalCfm2)):0;
       var nm=c.isAr?(h2.ar||h2.en):(h2.en||h2.ar);
-      rows2+='<tr><td>'+(i+1)+'</td><td style="text-align:'+(c.isAr?'right':'left')+'">'+nm+'</td>'+
-        '<td>'+rCfm.toLocaleString()+'</td>'+
-        '<td>'+pct+'%</td>'+
-        '<td>'+allocCfm.toLocaleString()+'</td></tr>';
+      var rCfmPct = totalCfm2>0?((rCfm/totalCfm2)*100).toFixed(0):0;
+      rows2+='<tr>'+
+        '<td style="text-align:center;color:#64748b">'+(i+1)+'</td>'+
+        '<td style="text-align:'+(c.isAr?'right':'left')+';font-weight:600">'+nm+'</td>'+
+        '<td style="text-align:center;font-family:monospace">'+rCfm.toLocaleString()+'</td>'+
+        '<td style="text-align:center">'+
+          '<div style="background:#e0f2fe;border-radius:3px;height:8px;width:100%;max-width:60px;display:inline-block;vertical-align:middle;margin:'+(c.isAr?'0 4px 0 0':'0 0 0 4px')+'">'+
+            '<div style="background:#0284c7;height:8px;border-radius:3px;width:'+Math.min(100,rCfmPct)+'%"></div>'+
+          '</div>'+
+          '<span style="font-size:9px;font-family:monospace">'+pct+'%</span>'+
+        '</td>'+
+        '<td style="text-align:center;font-weight:600;color:#059669;font-family:monospace">'+allocCfm.toLocaleString()+'</td>'+
+      '</tr>';
     }
-    extra+='<div style="border:1px solid #dbeafe;border-radius:8px;padding:14px;margin-bottom:12px;background:#eff6ff">'+
-      '<div style="font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">'+
-        (c.isAr?'توزيع تدفق الهواء على الغرف':'Air Distribution by Room')+'</div>'+
-      '<table><thead><tr>'+
-        '<th>#</th>'+
-        '<th>'+(c.isAr?'الغرفة':'Room')+'</th>'+
-        '<th>'+(c.isAr?'CFM الغرفة':'Room CFM')+'</th>'+
-        '<th>'+(c.isAr?'النسبة %':'Share %')+'</th>'+
-        '<th>'+(c.isAr?'CFM المخصص':'Allocated CFM')+'</th>'+
-      '</tr></thead><tbody>'+rows2+'</tbody></table>'+
-      '<div style="font-size:10px;color:#6b7280;margin-top:6px;font-style:italic">'+(c.isAr?'التوزيع تناسبي بناءً على CFM كل غرفة.':'Distribution is proportional to each room\'s CFM.')+'</div>'+
+    extra+='<div style="border:1px solid #dbeafe;border-radius:8px;padding:14px;margin-bottom:12px;background:#eff6ff;page-break-inside:avoid">'+
+      '<div style="font-size:12px;font-weight:700;color:#1e40af;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #bfdbfe">'+
+        '📊 '+(c.isAr?'توزيع تدفق الهواء على الغرف':'Air Distribution by Room')+'</div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:0"><thead>'+
+        '<tr style="background:#dbeafe">'+
+          '<th style="padding:6px;border:1px solid #93c5fd;text-align:center;color:#1d4ed8">#</th>'+
+          '<th style="padding:6px;border:1px solid #93c5fd;text-align:'+(c.isAr?'right':'left')+';color:#1d4ed8">'+(c.isAr?'الغرفة':'Room')+'</th>'+
+          '<th style="padding:6px;border:1px solid #93c5fd;text-align:center;color:#1d4ed8">'+(c.isAr?'CFM الغرفة':'Room CFM')+'</th>'+
+          '<th style="padding:6px;border:1px solid #93c5fd;text-align:center;color:#1d4ed8">'+(c.isAr?'النسبة %':'Share %')+'</th>'+
+          '<th style="padding:6px;border:1px solid #93c5fd;text-align:center;color:#1d4ed8">'+(c.isAr?'CFM المخصص':'Allocated CFM')+'</th>'+
+        '</tr></thead>'+
+        '<tbody>'+rows2+'</tbody>'+
+      '</table>'+
+      '<div style="font-size:9px;color:#6b7280;margin-top:6px;font-style:italic">'+(c.isAr?'التوزيع تناسبي بناءً على CFM كل غرفة. / CFM المخصص = Q_duct × نسبة الغرفة.':'Distribution is proportional to each room CFM. Allocated CFM = Q_duct × room share.')+'</div>'+
     '</div>';
   }
   if(!extra) return base;
-  // Insert before closing </div> of pdf-page2
-  return base.replace('</div>', extra+'</div>');
+  // Insert before last closing </div> of pdf-page2
+  return base.replace(/<\/div>\s*$/, extra+'</div>');
 };
 
 // ══════════════════════════════════════════════════════════════════
