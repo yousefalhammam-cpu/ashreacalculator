@@ -1362,7 +1362,7 @@ function renderQuote(){
         warnHtml = '<div class="qi-warn '+sev+'"><div class="qi-warn-head">'+icon+' '+defLines[0]+'</div>'
           +defLines.slice(1).map(function(l){return '<div class="qi-warn-row">'+l+'</div>';}).join('')
           +'</div>';
-        capBadge = '<span class="qi-cap-badge '+(absDelta>15?'deficit-severe':'deficit-mild')+'">'+icon+' '+(lang==='ar'?'عجز':'Deficit')+' '+deltaRnd.toFixed(1)+'%</span>';
+        capBadge = '<span class="qi-cap-badge '+(absDelta>15?'deficit-severe':'deficit-mild')+'">'+icon+' '+(lang==='ar'?'عجز سعة':'Deficit')+' '+deltaRnd.toFixed(1)+'%</span>';
       } else if(deltaRaw <= 5){
         capBadge = '<span class="qi-cap-badge matched">✓ '+(lang==='ar'?'مطابقة':'Match')+' '+pctStr+'</span>';
       } else if(deltaRaw <= 25){
@@ -1712,7 +1712,7 @@ function buildPage1(c){
         if(_raw<0){
           var _abs2=Math.abs(_rnd);
           if(_abs2>15){_bc='#dc2626';_bt='⛔ '+(c.isAr?'عجز شديد':'Severe Deficit')+' '+_rnd.toFixed(1)+'%';}
-          else{_bc='#d97706';_bt='⚠ '+(c.isAr?'عجز':'Deficit')+' '+_rnd.toFixed(1)+'%';}
+          else{_bc='#d97706';_bt='⚠ '+(c.isAr?'عجز سعة':'Deficit')+' '+_rnd.toFixed(1)+'%';}
         } else if(_raw<=5){_bc='#059669';_bt='✓ '+(c.isAr?'مطابقة':'Match')+' '+_pct;}
         else if(_raw<=25){_bc='#4f46e5';_bt=(c.isAr?'سعة زائدة':'Slight oversize')+' '+_pct;}
         else{_bc='#6b7280';_bt=(c.isAr?'سعة عالية':'High oversize')+' '+_pct;}
@@ -2535,7 +2535,7 @@ function renderProjBlock(){
     if(deltaRaw < 0){
       var abs2=Math.abs(deltaRnd), sev=abs2>15?'severe':'mild';
       var icon=abs2>15?'⛔':'⚠';
-      badge='<span class="qi-cap-badge '+(abs2>15?'deficit-severe':'deficit-mild')+'">'+icon+' '+(isAr?'عجز':'Deficit')+' '+(-deltaRnd).toFixed(1)+'%</span>';
+      badge='<span class="qi-cap-badge '+(abs2>15?'deficit-severe':'deficit-mild')+'">'+icon+' '+(isAr?'عجز سعة':'Deficit')+' '+(-deltaRnd).toFixed(1)+'%</span>';
       warnDiv='<div class="qi-warn '+sev+'" style="margin-top:8px">'+
         '<div class="qi-warn-head">'+(isAr?'السعة الكلية أقل من الحمل المطلوب':'Total capacity below required load')+'</div>'+
         '<div class="qi-warn-row">'+(isAr?'المطلوب: ':'Required: ')+Math.round(reqBtu).toLocaleString()+' BTU/h — '+
@@ -2561,37 +2561,43 @@ function renderProjBlock(){
       var vRet = parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
       var _cfmPerTr = parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
 
-      // ── Q_required: PRIMARY = project total CFM; FALLBACK = totalTr × cfmPerTr ──
-      var _qReq = (totalCfm > 0) ? Math.round(totalCfm)
-                                  : Math.round(totalTr * _cfmPerTr);
+      // ── requiredCFM: what the project NEEDS (used for duct sizing ALWAYS) ──
+      var requiredCFM = (totalCfm > 0)
+        ? Math.round(totalCfm)
+        : Math.round(totalTr * _cfmPerTr);
       var _qReqSrc = (totalCfm > 0)
-        ? (isAr ? 'من إجمالي CFM' : 'from Total CFM')
-        : (isAr ? ('من الإجمالي TR × ' + _cfmPerTr) : ('from Total TR × ' + _cfmPerTr));
+        ? (isAr ? 'إجمالي CFM المشروع' : 'Project Total CFM')
+        : (isAr ? ('TR × ' + _cfmPerTr + ' CFM/TR') : ('TR × ' + _cfmPerTr + ' CFM/TR'));
 
-      // ── Q_selected: based on chosen catalog entry × qty ──
-      var _qSelPerUnit = 0, _qSelSrcAr = '', _qSelSrcEn = '';
+      // ── unitCFM: what the selected unit configuration provides ──
       var _catD = getCatalog(curUT);
       var _selEntry = null;
       for(var _ci=0; _ci<_catD.length; _ci++){
         if(_catD[_ci].btu === projState.selBtu){ _selEntry = _catD[_ci]; break; }
       }
-      if(_selEntry && _selEntry.cfm && _selEntry.cfm > 0){
-        _qSelPerUnit = _selEntry.cfm;
-        _qSelSrcAr = 'CFM الوحدة × ' + projState.qty;
-        _qSelSrcEn = 'Unit CFM × ' + projState.qty;
+      var _isCfmBased = (_selEntry && _selEntry.cfm > 0);
+      var _unitCfmPerUnit = 0, _qSelSrcAr = '', _qSelSrcEn = '';
+      if(_isCfmBased){
+        _unitCfmPerUnit = _selEntry.cfm;
+        _qSelSrcAr = 'CFM الوحدة × ' + projState.qty + ' وحدة';
+        _qSelSrcEn = 'Unit CFM × ' + projState.qty + ' unit(s)';
       } else if(projState.selBtu > 0){
         var _selTr = projState.selBtu / 12000;
-        _qSelPerUnit = Math.round(_selTr * _cfmPerTr);
+        _unitCfmPerUnit = Math.round(_selTr * _cfmPerTr);
         _qSelSrcAr = _selTr.toFixed(1) + ' TR × ' + _cfmPerTr + ' × ' + projState.qty;
         _qSelSrcEn = _selTr.toFixed(1) + ' TR × ' + _cfmPerTr + ' × ' + projState.qty;
       }
-      var _qSel = _qSelPerUnit * Math.max(1, projState.qty);
+      var unitCFM = _unitCfmPerUnit * Math.max(1, projState.qty);
 
-      // ── Read sizing basis toggle ──
+      // ── Q_design = requiredCFM ALWAYS — toggle is display-only ──
+      var Q_design = requiredCFM;
+
+      // ── Show/hide CFM/TR row ──
+      var cfmTrRow = G('duct-cfm-per-tr-row');
+      if(cfmTrRow) cfmTrRow.style.display = (_isCfmBased && totalCfm > 0) ? 'none' : '';
+
+      // ── Toggle button styles (cosmetic only — does not change Q_design) ──
       var _basis = (typeof window._ductBasis !== 'undefined') ? window._ductBasis : 'required';
-      var _qUsed = (_basis === 'selected' && _qSel > 0) ? _qSel : _qReq;
-
-      // ── Update toggle button styles ──
       var _btnReq = G('duct-basis-req'), _btnSel = G('duct-basis-sel');
       if(_btnReq && _btnSel){
         if(_basis === 'required'){
@@ -2605,69 +2611,92 @@ function renderProjBlock(){
         _btnSel.textContent = isAr ? 'حسب الوحدة' : 'Selected Unit';
       }
 
-      // ── Show/hide CFM/TR row ──
-      var _isCfmBased = (_selEntry && _selEntry.cfm > 0);
-      var cfmTrRow = G('duct-cfm-per-tr-row');
-      if(cfmTrRow) cfmTrRow.style.display = (_isCfmBased && totalCfm > 0) ? 'none' : '';
-
-      // ── Q info panel ──
+      // ── CFM info panel: show both Q_design and unitCFM clearly ──
       var _qInfoEl = G('duct-q-info');
       if(_qInfoEl){
-        var _reqClr = (_basis==='required') ? 'var(--g)' : 'var(--tm)';
-        var _selClr = (_basis==='selected') ? 'var(--a)' : 'var(--tm)';
-        var _reqW = (_basis==='required') ? '700' : '400';
-        var _selW = (_basis==='selected') ? '700' : '400';
-        var _reqMark = (_basis==='required') ? ' ◄' : '';
-        var _selMark = (_basis==='selected') ? ' ◄' : '';
-        var _qHtml;
+        var _cfmDiff = unitCFM > 0 ? ((unitCFM - requiredCFM) / requiredCFM * 100) : 0;
+        var _cfmDiffSign = _cfmDiff >= 0 ? '+' : '';
+        var _cfmMatchColor = unitCFM <= 0 ? 'var(--tm)'
+          : (_cfmDiff < -10 ? '#ef4444' : (_cfmDiff > 25 ? '#f59e0b' : '#34d399'));
+        var _cfmMatchIcon = unitCFM <= 0 ? '' : (_cfmDiff < -10 ? '⚠ ' : (_cfmDiff > 25 ? '⚠ ' : '✅ '));
         if(isAr){
-          _qHtml = '<div class="duct-note" style="margin-bottom:3px;direction:rtl">'+
-            '<span style="color:var(--tm)">Q المطلوب: </span>'+
-            '<span style="font-family:var(--fe);color:'+_reqClr+';font-weight:'+_reqW+'">'+Number(_qReq).toLocaleString()+' CFM</span>'+
-            '<span style="color:var(--tm);font-size:9px"> ('+_qReqSrc+')'+_reqMark+'</span>'+
+          _qInfoEl.innerHTML =
+            '<div class="duct-note" style="margin-bottom:4px;direction:rtl">'+
+              '<span style="color:var(--tm)">مصدر CFM التصميم: </span>'+
+              '<strong style="color:var(--g);font-family:var(--fe)">Q = '+Number(Q_design).toLocaleString()+' CFM</strong>'+
+              '<span style="color:var(--tm);font-size:9px"> ('+_qReqSrc+')</span>'+
             '</div>'+
-            (_qSel>0?'<div class="duct-note" style="direction:rtl">'+
-              '<span style="color:var(--tm)">Q حسب الوحدة: </span>'+
-              '<span style="font-family:var(--fe);color:'+_selClr+';font-weight:'+_selW+'">'+Number(_qSel).toLocaleString()+' CFM</span>'+
-              '<span style="color:var(--tm);font-size:9px"> ('+_qSelSrcAr+')'+_selMark+'</span>'+
-            '</div>':'');
+            (unitCFM>0?
+              '<div class="duct-note" style="direction:rtl">'+
+                '<span style="color:var(--tm)">CFM حسب الوحدة: </span>'+
+                '<span style="font-family:var(--fe);color:var(--tm)">'+Number(unitCFM).toLocaleString()+' CFM</span>'+
+                '<span style="color:var(--tm);font-size:9px"> ('+_qSelSrcAr+')</span>'+
+                '<span style="color:'+_cfmMatchColor+';font-size:9px;margin-right:6px"> '+_cfmDiffSign+_cfmDiff.toFixed(1)+'%</span>'+
+              '</div>':'');
         } else {
-          _qHtml = '<div class="duct-note" style="margin-bottom:3px">'+
-            '<span style="color:var(--tm)">Required Q: </span>'+
-            '<span style="font-family:var(--fe);color:'+_reqClr+';font-weight:'+_reqW+'">'+Number(_qReq).toLocaleString()+' CFM</span>'+
-            '<span style="color:var(--tm);font-size:9px"> ('+_qReqSrc+')'+_reqMark+'</span>'+
+          _qInfoEl.innerHTML =
+            '<div class="duct-note" style="margin-bottom:4px">'+
+              '<span style="color:var(--tm)">Duct Design CFM: </span>'+
+              '<strong style="color:var(--g);font-family:var(--fe)">Q = '+Number(Q_design).toLocaleString()+' CFM</strong>'+
+              '<span style="color:var(--tm);font-size:9px"> ('+_qReqSrc+')</span>'+
             '</div>'+
-            (_qSel>0?'<div class="duct-note">'+
-              '<span style="color:var(--tm)">Selected Q: </span>'+
-              '<span style="font-family:var(--fe);color:'+_selClr+';font-weight:'+_selW+'">'+Number(_qSel).toLocaleString()+' CFM</span>'+
-              '<span style="color:var(--tm);font-size:9px"> ('+_qSelSrcEn+')'+_selMark+'</span>'+
-            '</div>':'');
+            (unitCFM>0?
+              '<div class="duct-note">'+
+                '<span style="color:var(--tm)">Unit airflow: </span>'+
+                '<span style="font-family:var(--fe);color:var(--tm)">'+Number(unitCFM).toLocaleString()+' CFM</span>'+
+                '<span style="color:var(--tm);font-size:9px"> ('+_qSelSrcEn+')</span>'+
+                '<span style="color:'+_cfmMatchColor+';font-size:9px;margin-left:6px"> '+_cfmDiffSign+_cfmDiff.toFixed(1)+'%</span>'+
+              '</div>':'');
         }
-        _qInfoEl.innerHTML = _qHtml;
       }
 
-      // ── Warning logic ──
+      // ── Airflow warning: unitCFM vs requiredCFM (separate from duct sizing) ──
       var _qWarnEl = G('duct-q-warn');
-      if(_qWarnEl && _qReq > 0 && _qSel > 0){
-        var _diffPct = ((_qSel - _qReq) / _qReq) * 100;
-        if(_diffPct > 25){
+      if(_qWarnEl && requiredCFM > 0 && unitCFM > 0){
+        var _diffPct2 = (unitCFM - requiredCFM) / requiredCFM * 100;
+        if(_diffPct2 < -10){
           _qWarnEl.style.display='';
-          _qWarnEl.innerHTML='<div class="duct-note" style="color:#f59e0b;margin-bottom:4px">'+
-            (isAr?'⚠ تنبيه: تدفق الوحدة المختارة أعلى من المطلوب وقد يسبب ضوضاء/فاقد/Short Cycling.':
-                  '⚠ Warning: Selected airflow exceeds required; possible noise/loss/short cycling.')+'</div>';
-        } else if(_diffPct < -10){
+          _qWarnEl.innerHTML =
+            '<div class="duct-note" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.35);border-radius:5px;padding:5px 9px;margin-bottom:4px;direction:'+(isAr?'rtl':'ltr')+'">'+
+            '<span style="color:#ef4444;font-weight:700">'+
+            (isAr?'⚠ تنبيه تدفق الهواء: ':'⚠ Airflow Warning: ')+
+            '</span>'+
+            '<span style="color:#ef4444;font-size:10px">'+
+            (isAr
+              ? 'CFM الوحدة ('+Number(unitCFM).toLocaleString()+') أقل من المطلوب ('+Number(requiredCFM).toLocaleString()+') بنسبة '+Math.abs(_diffPct2).toFixed(1)+'% — قد يؤثر على جودة التهوية/التبريد.'
+              : 'Unit CFM ('+Number(unitCFM).toLocaleString()+') is '+Math.abs(_diffPct2).toFixed(1)+'% below required ('+Number(requiredCFM).toLocaleString()+') — may affect ventilation/cooling performance.')+
+            '</span>'+
+            '<div style="font-size:9px;color:#94a3b8;margin-top:3px">'+
+            (isAr?'* مقاسات المجاري محسوبة دائمًا على أساس CFM المطلوب.':'* Duct dimensions are always sized using required CFM.')+
+            '</div></div>';
+        } else if(_diffPct2 > 25){
           _qWarnEl.style.display='';
-          _qWarnEl.innerHTML='<div class="duct-note" style="color:#ef4444;margin-bottom:4px">'+
-            (isAr?'⚠ تنبيه: تدفق الوحدة المختارة أقل من المطلوب — قد يؤثر على جودة التهوية/التبريد.':
-                  '⚠ Warning: Selected airflow is below required — may impact ventilation/cooling.')+'</div>';
+          _qWarnEl.innerHTML =
+            '<div class="duct-note" style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.35);border-radius:5px;padding:5px 9px;margin-bottom:4px;direction:'+(isAr?'rtl':'ltr')+'">'+
+            '<span style="color:#f59e0b;font-weight:700">'+
+            (isAr?'⚠ ملاحظة تدفق الهواء: ':'⚠ Airflow Note: ')+
+            '</span>'+
+            '<span style="color:#f59e0b;font-size:10px">'+
+            (isAr
+              ? 'CFM الوحدة ('+Number(unitCFM).toLocaleString()+') أعلى من المطلوب بنسبة '+_diffPct2.toFixed(1)+'% — تحقق من الضوضاء/Short Cycling.'
+              : 'Unit CFM ('+Number(unitCFM).toLocaleString()+') exceeds required by '+_diffPct2.toFixed(1)+'% — verify noise/short cycling.')+
+            '</span></div>';
         } else {
-          _qWarnEl.style.display='none'; _qWarnEl.innerHTML='';
+          _qWarnEl.style.display='';
+          _qWarnEl.innerHTML =
+            '<div class="duct-note" style="background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.3);border-radius:5px;padding:5px 9px;margin-bottom:4px;direction:'+(isAr?'rtl':'ltr')+'">'+
+            '<span style="color:#34d399;font-weight:700">✅ </span>'+
+            '<span style="color:#34d399;font-size:10px">'+
+            (isAr
+              ? 'تدفق الوحدة مناسب للمطلوب ('+Number(unitCFM).toLocaleString()+' / '+Number(requiredCFM).toLocaleString()+' CFM)'
+              : 'Unit airflow meets requirement ('+Number(unitCFM).toLocaleString()+' / '+Number(requiredCFM).toLocaleString()+' CFM)')+
+            '</span></div>';
         }
       } else if(_qWarnEl){ _qWarnEl.style.display='none'; }
 
-      // ── Size ducts using _qUsed ──
-      var supDuct = calcDuctSize(_qUsed, vSup);
-      var retDuct = calcDuctSize(Math.round(_qUsed*0.9), vRet);
+      // ── Size ducts using Q_design (requiredCFM) ALWAYS ──
+      var supDuct = calcDuctSize(Q_design, vSup);
+      var retDuct = calcDuctSize(Math.round(Q_design * 0.9), vRet);
       setV('duct-sup-val', supDuct ? ductSizeLabel(supDuct.std||supDuct.calc) : '—');
       setV('duct-ret-val', retDuct ? ductSizeLabel(retDuct.std||retDuct.calc) : '—');
 
@@ -2772,7 +2801,7 @@ buildPage1 = function(c){
   var d3raw=totalReqBtu>0?((effBtu-totalReqBtu)/totalReqBtu*100):0;
   var d3rnd=Math.round(d3raw*10)/10, d3pct=(d3rnd>=0?'+':'')+d3rnd.toFixed(1)+'%';
   var d3bc='#059669',d3bt='✓ '+(c.isAr?'مطابقة':'Match')+' '+d3pct;
-  if(d3raw<0){ var abs3=Math.abs(d3rnd); d3bc=abs3>15?'#dc2626':'#d97706'; d3bt=(abs3>15?'⛔ ':'⚠ ')+(c.isAr?'عجز':'Deficit')+' '+(-d3rnd).toFixed(1)+'%'; }
+  if(d3raw<0){ var abs3=Math.abs(d3rnd); d3bc=abs3>15?'#dc2626':'#d97706'; d3bt=(abs3>15?'⛔ ':'⚠ ')+(c.isAr?'عجز سعة':'Deficit')+' '+(-d3rnd).toFixed(1)+'%'; }
   else if(d3raw>25){ d3bc='#6b7280'; d3bt=(c.isAr?'سعة عالية':'High oversize')+' '+d3pct; }
   else if(d3raw>5){ d3bc='#4f46e5'; d3bt=(c.isAr?'سعة زائدة':'Slight oversize')+' '+d3pct; }
   var row='<tr style="background:#ffffff">'+
@@ -2852,25 +2881,37 @@ buildPage2 = function(c){
     var vSup=parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
     var vRet=parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
     var _p2CfmPerTr=parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
-    var _p2DuctCfm=getProjDuctCfm(curUT,projState.selBtu,projState.qty,totalCfm,_p2CfmPerTr);
-    var _p2Cfm=_p2DuctCfm.cfm;
-    var _p2Basis = (typeof window._ductBasis !== 'undefined') ? window._ductBasis : 'required';
-    var _p2BasisLbl = c.isAr
-      ? (_p2Basis==='required'?'حسب الاحتياج (Required)':'حسب الوحدة (Selected Unit)')
-      : (_p2Basis==='required'?'Required (Project Load)':'Selected Unit');
-    var _p2CfmSrcLbl=c.isAr
-      ?(_p2DuctCfm.source==='unit'?'CFM من سعة الوحدة المختارة'
-       :_p2DuctCfm.source==='tr'?'CFM = TR × '+_p2CfmPerTr
-       :'إجمالي CFM المحسوب')
-      :_p2DuctCfm.label;
-    // Capacity status
+    // Q_design for PDF = requiredCFM ALWAYS (same logic as UI)
+    var _p2RequiredCFM = (totalCfm > 0) ? Math.round(totalCfm) : Math.round(getProjTotalTr() * _p2CfmPerTr);
+    var _p2Cfm = _p2RequiredCFM; // duct sizing always uses required CFM
+    // unitCFM for display comparison
+    var _p2CatD = getCatalog(curUT);
+    var _p2SelEntry = null;
+    for(var _p2ci=0; _p2ci<_p2CatD.length; _p2ci++){
+      if(_p2CatD[_p2ci].btu === projState.selBtu){ _p2SelEntry = _p2CatD[_p2ci]; break; }
+    }
+    var _p2UnitCfmPerUnit = (_p2SelEntry && _p2SelEntry.cfm > 0)
+      ? _p2SelEntry.cfm
+      : (projState.selBtu > 0 ? Math.round((projState.selBtu/12000) * _p2CfmPerTr) : 0);
+    var _p2UnitCFM = _p2UnitCfmPerUnit * Math.max(1, projState.qty);
+    var _p2Basis = 'required'; // always required in PDF
+    var _p2BasisLbl = c.isAr ? 'حسب الاحتياج — Q المطلوب' : 'Required CFM (Project Load)';
+    var _p2CfmSrcLbl = c.isAr ? 'إجمالي CFM المطلوب' : 'Required Total CFM';
+    // BTU Capacity status (separate from airflow)
     var _selBtu2 = projState.selBtu * Math.max(1,projState.qty);
     var _capDelta = totalBtu2>0 ? ((_selBtu2-totalBtu2)/totalBtu2*100) : 0;
     var _capDeltaRnd = Math.round(_capDelta*10)/10;
     var _capStatusAr, _capStatusEn, _capColor;
     if(Math.abs(_capDelta)<5){ _capStatusAr='مطابقة ✅'; _capStatusEn='Match ✅'; _capColor='#166534'; }
-    else if(_capDelta>0){ _capStatusAr='سعة زائدة +'+_capDeltaRnd+'%'; _capStatusEn='Oversize +'+_capDeltaRnd+'%'; _capColor='#1d4ed8'; }
-    else { _capStatusAr='عجز '+_capDeltaRnd+'%'; _capStatusEn='Deficit '+_capDeltaRnd+'%'; _capColor='#dc2626'; }
+    else if(_capDelta>0){ _capStatusAr='سعة BTU زائدة +'+_capDeltaRnd+'%'; _capStatusEn='BTU Oversize +'+_capDeltaRnd+'%'; _capColor='#1d4ed8'; }
+    else { _capStatusAr='عجز سعة BTU '+_capDeltaRnd+'%'; _capStatusEn='BTU Deficit '+_capDeltaRnd+'%'; _capColor='#dc2626'; }
+    // Airflow (CFM) status — separate comparison
+    var _cfmDeltaPdf = _p2UnitCFM>0 && _p2RequiredCFM>0 ? ((_p2UnitCFM-_p2RequiredCFM)/_p2RequiredCFM*100) : 0;
+    var _cfmStatusAr, _cfmStatusEn, _cfmStatusColor;
+    if(_p2UnitCFM <= 0){ _cfmStatusAr='—'; _cfmStatusEn='—'; _cfmStatusColor='#64748b'; }
+    else if(_cfmDeltaPdf < -10){ _cfmStatusAr='⚠ تنبيه تدفق الهواء '+_cfmDeltaPdf.toFixed(1)+'%'; _cfmStatusEn='⚠ Airflow Warning '+_cfmDeltaPdf.toFixed(1)+'%'; _cfmStatusColor='#dc2626'; }
+    else if(_cfmDeltaPdf > 25){ _cfmStatusAr='تدفق زائد +'+_cfmDeltaPdf.toFixed(1)+'%'; _cfmStatusEn='Excess Airflow +'+_cfmDeltaPdf.toFixed(1)+'%'; _cfmStatusColor='#d97706'; }
+    else { _cfmStatusAr='✅ تدفق مناسب'; _cfmStatusEn='✅ Airflow OK'; _cfmStatusColor='#166534'; }
 
     // Duct calculations
     var supD=calcDuctSize(_p2Cfm>0?_p2Cfm:1,vSup);
@@ -2888,7 +2929,7 @@ buildPage2 = function(c){
       '<div style="border:1px solid #bfdbfe;border-radius:8px;padding:14px;margin-bottom:10px;background:#eff6ff;page-break-inside:avoid">'+
         '<div style="font-size:12px;font-weight:700;color:#1e40af;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #bfdbfe;display:flex;align-items:center;gap:6px">'+
           '📐 '+(c.isAr?'أساس التصميم — Design Basis':'Design Basis')+'</div>'+
-        '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">'+
+        '<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">'+
           '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:8px;text-align:center">'+
             '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'إجمالي CFM المطلوب':'Total CFM (Req.)')+'</div>'+
             '<div style="font-size:14px;font-weight:700;color:#0ea5e9;font-family:monospace">'+(totalCfm>0?Math.round(totalCfm).toLocaleString():'—')+'</div>'+
@@ -2909,8 +2950,12 @@ buildPage2 = function(c){
             '<div style="font-size:10px;font-weight:700;color:#1d4ed8;margin-top:2px">'+_p2BasisLbl+'</div>'+
           '</div>'+
           '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:8px;text-align:center">'+
-            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'حالة السعة':'Capacity Status')+'</div>'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'حالة BTU':'BTU Status')+'</div>'+
             '<div style="font-size:10px;font-weight:700;color:'+_capColor+';margin-top:2px">'+(c.isAr?_capStatusAr:_capStatusEn)+'</div>'+
+          '</div>'+
+          '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:8px;text-align:center">'+
+            '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'حالة تدفق الهواء':'Airflow Status')+'</div>'+
+            '<div style="font-size:10px;font-weight:700;color:'+_cfmStatusColor+';margin-top:2px">'+(c.isAr?_cfmStatusAr:_cfmStatusEn)+'</div>'+
           '</div>'+
         '</div>'+
       '</div>'+
