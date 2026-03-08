@@ -1231,6 +1231,68 @@ function getUT(i){ return (qlines[i]||{}).unitType||'split'; }
 function getSelBtu(i){ return parseInt((qlines[i]||{}).selectedBtu)||0; }
 function setSelBtu(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0,unitType:'split',selectedBtu:0}; qlines[i].selectedBtu=parseInt(v)||0; save(); renderQuote(); }
 
+
+// ── DUCT VELOCITY RATING ─────────────────────────────────────────────────
+// Returns {rating, badge, color, bg, border} for a given actual velocity
+// ductType: 'supply' | 'return'
+// isHealthcare: bool (room has h.sup ASHRAE 170 data)
+function getDuctVelocityRating(actualFpm, ductType, isHealthcare){
+  if(!actualFpm || actualFpm <= 0) return null;
+  var lims;
+  if(ductType === 'supply'){
+    lims = isHealthcare
+      ? [{max:600,r:'Low',e:'🔵',c:'#1d4ed8',bg:'#dbeafe',bd:'#93c5fd'},
+         {max:800,r:'Excellent',e:'✅',c:'#166534',bg:'#dcfce7',bd:'#86efac'},
+         {max:1000,r:'Acceptable',e:'🟡',c:'#374151',bg:'#f3f4f6',bd:'#d1d5db'},
+         {max:1200,r:'High',e:'⚠',c:'#92400e',bg:'#fef3c7',bd:'#fcd34d'},
+         {max:9999,r:'Critical',e:'⛔',c:'#991b1b',bg:'#fee2e2',bd:'#fca5a5'}]
+      : [{max:700,r:'Low',e:'🔵',c:'#1d4ed8',bg:'#dbeafe',bd:'#93c5fd'},
+         {max:900,r:'Excellent',e:'✅',c:'#166534',bg:'#dcfce7',bd:'#86efac'},
+         {max:1100,r:'Acceptable',e:'🟡',c:'#374151',bg:'#f3f4f6',bd:'#d1d5db'},
+         {max:1400,r:'High',e:'⚠',c:'#92400e',bg:'#fef3c7',bd:'#fcd34d'},
+         {max:9999,r:'Critical',e:'⛔',c:'#991b1b',bg:'#fee2e2',bd:'#fca5a5'}];
+  } else {
+    lims = isHealthcare
+      ? [{max:450,r:'Low',e:'🔵',c:'#1d4ed8',bg:'#dbeafe',bd:'#93c5fd'},
+         {max:650,r:'Excellent',e:'✅',c:'#166534',bg:'#dcfce7',bd:'#86efac'},
+         {max:850,r:'Acceptable',e:'🟡',c:'#374151',bg:'#f3f4f6',bd:'#d1d5db'},
+         {max:1000,r:'High',e:'⚠',c:'#92400e',bg:'#fef3c7',bd:'#fcd34d'},
+         {max:9999,r:'Critical',e:'⛔',c:'#991b1b',bg:'#fee2e2',bd:'#fca5a5'}]
+      : [{max:500,r:'Low',e:'🔵',c:'#1d4ed8',bg:'#dbeafe',bd:'#93c5fd'},
+         {max:700,r:'Excellent',e:'✅',c:'#166534',bg:'#dcfce7',bd:'#86efac'},
+         {max:900,r:'Acceptable',e:'🟡',c:'#374151',bg:'#f3f4f6',bd:'#d1d5db'},
+         {max:1100,r:'High',e:'⚠',c:'#92400e',bg:'#fef3c7',bd:'#fcd34d'},
+         {max:9999,r:'Critical',e:'⛔',c:'#991b1b',bg:'#fee2e2',bd:'#fca5a5'}];
+  }
+  for(var k=0;k<lims.length;k++){
+    if(actualFpm <= lims[k].max) return lims[k];
+  }
+  return lims[lims.length-1];
+}
+// Build an inline badge HTML string for rating display
+function ratingBadge(rt, isAr){
+  if(!rt) return '—';
+  var lbl = isAr ? {
+    'Excellent':'ممتاز','Acceptable':'مقبول','High':'مرتفع','Critical':'حرج','Low':'منخفض'
+  }[rt.r]||rt.r : rt.r;
+  return '<span style="display:inline-flex;align-items:center;gap:3px;background:'+rt.bg+';color:'+rt.c+';border:1px solid '+rt.bd+';border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap">'+rt.e+' '+lbl+'</span>';
+}
+// Recommendation text based on worst rating
+function ductRecommendation(supRt, retRt, isAr){
+  var worst = 'Excellent';
+  var order = ['Low','Excellent','Acceptable','High','Critical'];
+  var sr = supRt?supRt.r:'Excellent', rr = retRt?retRt.r:'Excellent';
+  if(order.indexOf(sr) > order.indexOf(worst)) worst = sr;
+  if(order.indexOf(rr) > order.indexOf(worst)) worst = rr;
+  if(worst === 'High' || worst === 'Critical'){
+    return isAr
+      ? '⚠ يُفضَّل زيادة مقاس المجرى لتقليل الضوضاء والضغط الساكن.'
+      : '⚠ Consider increasing duct size to reduce noise & static pressure.';
+  }
+  return isAr
+    ? '✅ السرعة مناسبة من الناحية الفنية.'
+    : '✅ Velocity is within acceptable engineering limits.';
+}
 function renderQuote(){
   var list=G('qi-list'); list.innerHTML='';
   if(!hist.length){
@@ -1780,17 +1842,58 @@ function buildPage2(c){
       var _tdRet=calcDuctSize(Math.round(_usedCfm*0.9),_tvRet);
       var _tds=_tdSup?_tdSup.std||_tdSup.calc:null;
       var _tdr=_tdRet?_tdRet.std||_tdRet.calc:null;
-      techDuctHtml='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 10px;margin-top:8px;font-size:11px">'+
-        '<div style="font-weight:700;color:#166534;margin-bottom:5px">'+(c.isAr?'مجاري الهواء':'Duct Sizing')+'</div>'+
-        '<div style="margin-bottom:6px"><span style="font-size:10px;background:#dcfce7;color:#166534;border-radius:10px;padding:2px 8px;font-weight:600">'+_techCfmSrcLbl+'</span>'+
+      // ── Actual velocity = Q / area_required × velocity_fpm (recalc from area)
+      var _tActSupFpm = (_tds && _tds.area_required > 0)
+        ? Math.round(_usedCfm * 2.118 / (_tds.area_required / 92903.04))  // mm²→ft² /2.118 for CFM→ft³/min
+        : _tvSup;
+      var _tActRetFpm = (_tdr && _tdr.area_required > 0)
+        ? Math.round(Math.round(_usedCfm*0.9) * 2.118 / (_tdr.area_required / 92903.04))
+        : _tvRet;
+      // Use design velocity directly (selected duct is sized for it)
+      var _tActSupFpm2 = _tvSup, _tActRetFpm2 = _tvRet;
+      var _isHC = !!(h.sup);  // healthcare room has ASHRAE 170 sup/ret/exh fields
+      var _supRt = getDuctVelocityRating(_tActSupFpm2, 'supply', _isHC);
+      var _retRt = getDuctVelocityRating(_tActRetFpm2, 'return', _isHC);
+      var _recTxt = ductRecommendation(_supRt, _retRt, c.isAr);
+      techDuctHtml='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:10px 12px;margin-top:8px;font-size:11px">'+
+        '<div style="font-weight:700;color:#166534;margin-bottom:6px;font-size:12px">'+(c.isAr?'🌬 جدول مجاري الهواء':'🌬 Duct Schedule')+'</div>'+
+        '<div style="margin-bottom:8px"><span style="font-size:10px;background:#dcfce7;color:#166534;border-radius:10px;padding:2px 8px;font-weight:600">'+_techCfmSrcLbl+'</span>'+
         ' <span style="font-size:10px;color:#374151;font-weight:700">Q = '+Number(_usedCfm).toLocaleString()+' CFM</span></div>'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+
-          '<div><div style="color:#6b7280;font-size:10px">'+(c.isAr?'إمداد رئيسي':'Supply Main')+'</div><div style="font-weight:700;color:#059669">'+(_tds?_tds.w+'×'+_tds.h+' mm':'—')+'</div></div>'+
-          '<div><div style="color:#6b7280;font-size:10px">'+(c.isAr?'رجوع رئيسي':'Return Main')+'</div><div style="font-weight:700;color:#059669">'+(_tdr?_tdr.w+'×'+_tdr.h+' mm':'—')+'</div></div>'+
-          '<div><div style="color:#6b7280;font-size:10px">'+(c.isAr?'المساحة المطلوبة':'Required Area')+'</div><div style="font-weight:700">'+(_tds?Number(_tds.area_required).toLocaleString():'—')+' mm²</div></div>'+
-          '<div><div style="color:#6b7280;font-size:10px">'+(c.isAr?'نسبة الأبعاد':'Aspect Ratio')+'</div><div style="font-weight:700">1:'+(_tds?_tds.ratio:'—')+'</div></div>'+
-        '</div>'+
-        '<div style="font-size:9px;color:#6b7280;margin-top:5px;font-style:italic">'+(c.isAr?'تصميم أولي للمجاري — يجب التحقق من الضغط الساكن.':'Preliminary duct sizing — confirm with static pressure analysis.')+'</div>'+
+        '<table style="width:100%;border-collapse:collapse;font-size:10px">'+
+          '<thead><tr style="background:#f0fdf4">'+
+            '<th style="padding:4px 6px;border:1px solid #bbf7d0;text-align:'+(c.isAr?'right':'left')+';color:#374151">'+(c.isAr?'المجرى':'Duct')+'</th>'+
+            '<th style="padding:4px 6px;border:1px solid #bbf7d0;text-align:center;color:#374151">CFM</th>'+
+            '<th style="padding:4px 6px;border:1px solid #bbf7d0;text-align:center;color:#374151">'+(c.isAr?'الحجم':'Size')+'</th>'+
+            '<th style="padding:4px 6px;border:1px solid #bbf7d0;text-align:center;color:#374151">'+(c.isAr?'السرعة':'Vel.')+'</th>'+
+            '<th style="padding:4px 6px;border:1px solid #bbf7d0;text-align:center;color:#374151">'+(c.isAr?'النسبة':'Ratio')+'</th>'+
+            '<th style="padding:4px 6px;border:1px solid #bbf7d0;text-align:center;color:#374151">'+(c.isAr?'التقييم':'Rating')+'</th>'+
+          '</tr></thead>'+
+          '<tbody>'+
+            '<tr>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;font-weight:600;color:#059669">'+(c.isAr?'إمداد':'Supply')+'</td>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+Math.round(_usedCfm).toLocaleString()+'</td>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+(_tds?_tds.w+'×'+_tds.h+' mm':'—')+'</td>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+_tActSupFpm2+' fpm</td>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;text-align:center">'+(_tds?'1:'+_tds.ratio:'—')+'</td>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;text-align:center">'+ratingBadge(_supRt,c.isAr)+'</td>'+
+            '</tr>'+
+            '<tr>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;font-weight:600;color:#0284c7">'+(c.isAr?'رجوع':'Return')+'</td>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+Math.round(_usedCfm*0.9).toLocaleString()+'</td>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+(_tdr?_tdr.w+'×'+_tdr.h+' mm':'—')+'</td>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+_tActRetFpm2+' fpm</td>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;text-align:center">'+(_tdr?'1:'+_tdr.ratio:'—')+'</td>'+
+              '<td style="padding:5px 6px;border:1px solid #bbf7d0;text-align:center">'+ratingBadge(_retRt,c.isAr)+'</td>'+
+            '</tr>'+
+          '</tbody>'+
+        '</table>'+
+        '<div style="margin-top:7px;padding:5px 8px;border-radius:5px;background:'+
+          ((_supRt&&(_supRt.r==='High'||_supRt.r==='Critical'))||(_retRt&&(_retRt.r==='High'||_retRt.r==='Critical'))?'#fef3c7':'#f0fdf4')+
+          ';border:1px solid '+
+          ((_supRt&&(_supRt.r==='High'||_supRt.r==='Critical'))||(_retRt&&(_retRt.r==='High'||_retRt.r==='Critical'))?'#fcd34d':'#bbf7d0')+
+          ';font-size:10px;color:#374151">'+_recTxt+'</div>'+
+        (_isHC?'<div style="font-size:9px;color:#6b7280;margin-top:4px">'+
+          (c.isAr?'* حدود ASHRAE 170 للغرف الصحية مُطبَّقة':'* ASHRAE 170 healthcare velocity limits applied')+'</div>':'')+
       '</div>';
     }
     cards+='<div class="room-tech-card">'
@@ -2755,22 +2858,46 @@ buildPage2 = function(c){
     var supD=calcDuctSize(_p2Cfm,vSup);
     var retD=calcDuctSize(Math.round(_p2Cfm*0.9),vRet);
     var sd=supD?supD.std||supD.calc:null, rd=retD?retD.std||retD.calc:null;
+    // Velocity ratings for main duct (project = general, not healthcare)
+    var _p2SupRt = getDuctVelocityRating(vSup,'supply',false);
+    var _p2RetRt = getDuctVelocityRating(vRet,'return',false);
+    var _p2Rec = ductRecommendation(_p2SupRt,_p2RetRt,c.isAr);
+    var _p2WorstHigh = (_p2SupRt&&(_p2SupRt.r==='High'||_p2SupRt.r==='Critical'))||(_p2RetRt&&(_p2RetRt.r==='High'||_p2RetRt.r==='Critical'));
     extra+='<div style="border:1px solid #bbf7d0;border-radius:8px;padding:14px;margin-bottom:12px;background:#f0fdf4">'+
-      '<div style="font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">'+
-        (c.isAr?'تصميم مجاري الهواء الرئيسية':'Main Duct Sizing')+'</div>'+
-      '<table><thead><tr>'+
-        '<th>'+( c.isAr?'المجرى':'Duct')+'</th>'+
-        '<th>CFM</th>'+
-        '<th>'+(c.isAr?'السرعة (fpm)':'Velocity (fpm)')+'</th>'+
-        '<th>'+(c.isAr?'المساحة المطلوبة (mm²)':'Required Area (mm²)')+'</th>'+
-        '<th>'+(c.isAr?'الحجم المختار':'Selected Size')+'</th>'+
-        '<th>'+(c.isAr?'نسبة الأبعاد':'Aspect Ratio')+'</th>'+
+      '<div style="font-size:11px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">'+
+        (c.isAr?'جدول مجاري الهواء الرئيسية — Duct Schedule':'Main Duct Schedule')+'</div>'+
+      '<div style="margin-bottom:8px"><span style="font-size:10px;background:#dcfce7;color:#166534;border-radius:10px;padding:2px 8px;font-weight:600">'+_p2CfmSrcLbl+'</span>'+
+      ' <span style="font-size:10px;color:#374151;font-weight:700">Q = '+Number(_p2Cfm).toLocaleString()+' CFM</span></div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:10px"><thead><tr style="background:#e8f9f0">'+
+        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:'+(c.isAr?'right':'left')+'">'+( c.isAr?'المجرى':'Duct')+'</th>'+
+        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">CFM</th>'+
+        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">'+(c.isAr?'الحجم المختار':'Selected Size')+'</th>'+
+        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">'+(c.isAr?'السرعة (fpm)':'Velocity (fpm)')+'</th>'+
+        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">'+(c.isAr?'المساحة (mm²)':'Area (mm²)')+'</th>'+
+        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">'+(c.isAr?'النسبة':'Ratio')+'</th>'+
+        '<th style="padding:5px 7px;border:1px solid #86efac;text-align:center">'+(c.isAr?'تقييم السرعة':'Vel. Rating')+'</th>'+
       '</tr></thead><tbody>'+
-      '<tr><td colspan="6" style="background:#f0fdf4;padding:4px 8px;font-size:10px;color:#166534;font-weight:600">'+_p2CfmSrcLbl+' — Q = '+Number(_p2Cfm).toLocaleString()+' CFM</td></tr>'+
-      (sd?'<tr><td>'+(c.isAr?'إمداد رئيسي':'Supply Main')+'</td><td>'+Math.round(_p2Cfm).toLocaleString()+'</td><td>'+vSup+'</td><td>'+(sd.area_required||'—').toLocaleString()+'</td><td style="font-weight:700;color:#059669">'+sd.w+'×'+sd.h+' mm</td><td>1:'+sd.ratio+'</td></tr>':'<tr><td colspan="6">—</td></tr>')+
-      (rd?'<tr><td>'+(c.isAr?'رجوع رئيسي':'Return Main')+'</td><td>'+Math.round(_p2Cfm*0.9).toLocaleString()+'</td><td>'+vRet+'</td><td>'+(rd.area_required||'—').toLocaleString()+'</td><td style="font-weight:700;color:#059669">'+rd.w+'×'+rd.h+' mm</td><td>1:'+rd.ratio+'</td></tr>':'<tr><td colspan="6">—</td></tr>')+
+      (sd?'<tr>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;font-weight:600;color:#059669">'+(c.isAr?'إمداد رئيسي':'Supply Main')+'</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+Math.round(_p2Cfm).toLocaleString()+'</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+sd.w+'×'+sd.h+' mm</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+vSup+' fpm</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">'+(sd.area_required||'—').toLocaleString()+'</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">1:'+sd.ratio+'</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">'+ratingBadge(_p2SupRt,c.isAr)+'</td>'+
+      '</tr>':'<tr><td colspan="7" style="text-align:center;padding:5px;border:1px solid #bbf7d0">—</td></tr>')+
+      (rd?'<tr>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;font-weight:600;color:#0284c7">'+(c.isAr?'رجوع رئيسي':'Return Main')+'</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+Math.round(_p2Cfm*0.9).toLocaleString()+'</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-weight:700;color:#059669">'+rd.w+'×'+rd.h+' mm</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center;font-family:monospace">'+vRet+' fpm</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">'+(rd.area_required||'—').toLocaleString()+'</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">1:'+rd.ratio+'</td>'+
+        '<td style="padding:5px 7px;border:1px solid #bbf7d0;text-align:center">'+ratingBadge(_p2RetRt,c.isAr)+'</td>'+
+      '</tr>':'<tr><td colspan="7" style="text-align:center;padding:5px;border:1px solid #bbf7d0">—</td></tr>')+
       '</tbody></table>'+
-      '<div style="font-size:10px;color:#6b7280;margin-top:6px;font-style:italic">'+(c.isAr?'⚠ تصميم أولي للمجاري — يجب التحقق من الضغط الساكن والمخطط التفصيلي.':'⚠ Preliminary duct sizing — confirm with static pressure analysis & detailed layout.')+'</div>'+
+      '<div style="margin-top:8px;padding:6px 10px;border-radius:5px;background:'+(_p2WorstHigh?'#fef3c7':'#f0fdf4')+';border:1px solid '+(_p2WorstHigh?'#fcd34d':'#bbf7d0')+';font-size:10px;color:#374151">'+_p2Rec+'</div>'+
+      '<div style="font-size:9px;color:#6b7280;margin-top:5px;font-style:italic">'+(c.isAr?'⚠ تصميم أولي — يجب التحقق من الضغط الساكن والمخطط التفصيلي.':'⚠ Preliminary sizing — confirm with static pressure analysis & detailed layout.')+'</div>'+
     '</div>';
   }
   // Distribution table in project mode
