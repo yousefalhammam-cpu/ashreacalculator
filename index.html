@@ -508,6 +508,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
       <!-- Duct sizing (shown only for ducted types) -->
       <div class="duct-block" id="proj-duct-block" style="display:none">
         <div class="duct-block-ttl" id="proj-duct-ttl">🌬 تصميم مجاري الهواء</div>
+        <!-- Velocity row -->
         <div class="duct-row">
           <span class="duct-lbl" id="duct-vel-sup-lbl">سرعة الإمداد (fpm)</span>
           <select class="duct-sel" id="duct-vel-sup" onchange="renderProjBlock();if(quoteMode==='room')renderQuote();">
@@ -522,6 +523,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
             <option value="900">900</option>
           </select>
         </div>
+        <!-- CFM/TR setting (hidden for CFM-based systems) -->
         <div class="duct-row" id="duct-cfm-per-tr-row">
           <span class="duct-lbl" id="duct-cfmtr-lbl">CFM/TR</span>
           <select class="duct-sel" id="duct-cfm-per-tr" onchange="renderProjBlock();if(quoteMode==='room')renderQuote();">
@@ -531,9 +533,21 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
             <option value="500">500</option>
           </select>
         </div>
-        <div class="duct-row" id="duct-cfm-src-row">
-          <span id="duct-cfm-src" dir="rtl" style="font-size:10px;color:var(--a);background:var(--ad);padding:2px 8px;border-radius:10px;font-family:var(--fe);white-space:nowrap;display:inline-flex;align-items:center;gap:4px">—</span>
+        <!-- Sizing basis toggle -->
+        <div class="duct-row" id="duct-basis-row" style="margin-bottom:6px">
+          <span class="duct-lbl" id="duct-basis-lbl">أساس التصميم:</span>
+          <div style="display:flex;gap:4px">
+            <button id="duct-basis-req" onclick="setDuctBasis('required')"
+              style="padding:3px 10px;border-radius:4px;border:1px solid var(--g);background:rgba(52,211,153,.18);color:var(--g);font-size:10px;font-family:var(--fe);cursor:pointer;font-weight:700">حسب الاحتياج</button>
+            <button id="duct-basis-sel" onclick="setDuctBasis('selected')"
+              style="padding:3px 10px;border-radius:4px;border:1px solid var(--b);background:var(--s3);color:var(--tm);font-size:10px;font-family:var(--fe);cursor:pointer">حسب الوحدة</button>
+          </div>
         </div>
+        <!-- Q values display -->
+        <div id="duct-q-info" style="margin-bottom:6px"></div>
+        <!-- Warning line -->
+        <div id="duct-q-warn" style="display:none"></div>
+        <!-- Duct sizes result -->
         <div class="duct-row">
           <span class="duct-lbl" id="duct-sup-lbl">مجرى الإمداد الرئيسي:</span>
           <span class="duct-val" id="duct-sup-val">—</span>
@@ -780,6 +794,15 @@ var DEVS = [
   {id:'surglight',g:'health',e:'🔦',ar:'لمبة عمليات',en:'Surgical Light',w:300}
 ];
 
+// ── ERROR REPORTER (debug) ─────────────────────────────────────────────
+window.onerror = function(msg, src, line, col, err){
+  var div = document.getElementById('_err_dbg');
+  if(!div){ div=document.createElement('div'); div.id='_err_dbg';
+    div.style.cssText='position:fixed;bottom:80px;left:8px;right:8px;background:#7f1d1d;color:#fca5a5;padding:10px;border-radius:8px;font-size:11px;z-index:99999;font-family:monospace;word-break:break-all;';
+    document.body.appendChild(div); }
+  div.textContent = (msg||'?') + ' | L:' + line + ' C:' + col + ' | ' + (err&&err.stack?err.stack.split('\n')[0]:'');
+  return false;
+};
 // ── STATE ─────────────────────────────────────────────────────────────────
 var lang = 'ar';
 var curRoom = ROOMS['r_office'];
@@ -1314,8 +1337,8 @@ function renderQuote(){
       var _cfmSrcLbl;
       if(_ductCfmObj.source==='unit'){
         _cfmSrcLbl = lang==='ar'
-          ? 'مصدر CFM: السعة المختارة (CFM)'
-          : 'CFM Source: Selected Capacity (CFM)';
+          ? 'مصدر CFM: السعة المختارة'
+          : 'CFM Source: Selected Capacity';
       } else if(_ductCfmObj.source==='tr'){
         _cfmSrcLbl = lang==='ar'
           ? 'مصدر CFM: TR × ' + _cfmPerTr
@@ -1350,6 +1373,31 @@ function renderQuote(){
           '</span>'+
         '</div>'+
         _cfmTrNote+
+        (function(){
+          if(_ductCfmObj.source==='unit' && (parseInt(h.cfm)||0) > 0){
+            var _rCalcCfm = parseInt(h.cfm)||0;
+            var _rdPct = ((_rCfm - _rCalcCfm) / _rCalcCfm) * 100;
+            var _rdR = Math.round(_rdPct * 10) / 10;
+            var _rdSign = _rdR >= 0 ? '+' : '';
+            var _rdStr = _rdSign + _rdR.toFixed(1) + '%';
+            var _rdNote = '';
+            if(_rdR > 25){
+              _rdNote = '<div class="duct-note" style="color:#f59e0b;margin-top:2px">⚠️ ملاحظة: التدفق المختار أعلى من المطلوب—قد يلزم ضبط المخارج/دمبرز لتفادي السرعات العالية.</div>';
+            } else if(_rdR < 0){
+              _rdNote = '<div class="duct-note" style="color:#ef4444;margin-top:2px">⚠️ تنبيه: التدفق المختار أقل من المطلوب—قد يقل الأداء.</div>';
+            }
+            return '<div class="duct-note" style="margin-top:5px">' +
+              '<span style="color:var(--tm)">التدفق المطلوب (من الحساب): </span>' +
+              '<span style="font-family:var(--fe)">' + Number(_rCalcCfm).toLocaleString() + ' CFM</span>' +
+              '</div>' +
+              '<div class="duct-note">' +
+              '<span style="color:var(--tm)">التدفق المختار (الوحدة): </span>' +
+              '<span style="font-family:var(--fe);color:var(--g)">' + Number(_rCfm).toLocaleString() + ' CFM</span>' +
+              '<span style="margin-right:5px;font-family:var(--fe);color:' + (_rdR < 0 ? '#ef4444' : _rdR > 25 ? '#f59e0b' : 'var(--g)') + '"> (' + _rdStr + ')</span>' +
+              '</div>' + _rdNote;
+          }
+          return '';
+        })()+
         '<div class="duct-note">'+(lang==='ar'?'سرعة الإمداد: ':'Sup vel: ')+_vSup+' fpm | '+(lang==='ar'?'الرجوع: ':'Ret: ')+_vRet+' fpm</div>'+
       '</div>';
     }
@@ -1912,35 +1960,61 @@ function exportPDF(){
 // Each entry: { btu: <BTU/h>, cfm: <optional CFM for FCU/AHU>, label: {ar, en} }
 var AC_CATALOG = {
   split: [
-    {btu:9000,  label:{ar:'9,000 BTU (0.75 TR — 9k)',   en:'9,000 BTU (0.75 TR — 9k)'}},
+    {btu:6000,  label:{ar:'6,000 BTU (0.5 TR)',          en:'6,000 BTU (0.5 TR)'}},
+    {btu:7000,  label:{ar:'7,000 BTU (0.58 TR)',         en:'7,000 BTU (0.58 TR)'}},
+    {btu:8000,  label:{ar:'8,000 BTU (0.67 TR)',         en:'8,000 BTU (0.67 TR)'}},
+    {btu:9000,  label:{ar:'9,000 BTU (0.75 TR — 9k)',    en:'9,000 BTU (0.75 TR — 9k)'}},
+    {btu:10000, label:{ar:'10,000 BTU (0.83 TR)',        en:'10,000 BTU (0.83 TR)'}},
+    {btu:11000, label:{ar:'11,000 BTU (0.92 TR)',        en:'11,000 BTU (0.92 TR)'}},
     {btu:12000, label:{ar:'12,000 BTU (1 TR — 12k)',     en:'12,000 BTU (1 TR — 12k)'}},
+    {btu:13000, label:{ar:'13,000 BTU (1.08 TR)',        en:'13,000 BTU (1.08 TR)'}},
+    {btu:14000, label:{ar:'14,000 BTU (1.17 TR)',        en:'14,000 BTU (1.17 TR)'}},
+    {btu:15000, label:{ar:'15,000 BTU (1.25 TR)',        en:'15,000 BTU (1.25 TR)'}},
+    {btu:16000, label:{ar:'16,000 BTU (1.33 TR)',        en:'16,000 BTU (1.33 TR)'}},
     {btu:18000, label:{ar:'18,000 BTU (1.5 TR — 18k)',   en:'18,000 BTU (1.5 TR — 18k)'}},
+    {btu:20000, label:{ar:'20,000 BTU (1.67 TR)',        en:'20,000 BTU (1.67 TR)'}},
+    {btu:22000, label:{ar:'22,000 BTU (1.83 TR)',        en:'22,000 BTU (1.83 TR)'}},
     {btu:24000, label:{ar:'24,000 BTU (2 TR — 24k)',     en:'24,000 BTU (2 TR — 24k)'}},
     {btu:30000, label:{ar:'30,000 BTU (2.5 TR — 30k)',   en:'30,000 BTU (2.5 TR — 30k)'}},
     {btu:36000, label:{ar:'36,000 BTU (3 TR — 36k)',     en:'36,000 BTU (3 TR — 36k)'}}
   ],
   floor: [
+    {btu:18000, label:{ar:'18,000 BTU (1.5 TR — 18k)',   en:'18,000 BTU (1.5 TR — 18k)'}},
+    {btu:24000, label:{ar:'24,000 BTU (2 TR — 24k)',     en:'24,000 BTU (2 TR — 24k)'}},
+    {btu:30000, label:{ar:'30,000 BTU (2.5 TR — 30k)',   en:'30,000 BTU (2.5 TR — 30k)'}},
     {btu:36000, label:{ar:'36,000 BTU (3 TR — 36k)',     en:'36,000 BTU (3 TR — 36k)'}},
+    {btu:42000, label:{ar:'42,000 BTU (3.5 TR — 42k)',   en:'42,000 BTU (3.5 TR — 42k)'}},
     {btu:48000, label:{ar:'48,000 BTU (4 TR — 48k)',     en:'48,000 BTU (4 TR — 48k)'}},
-    {btu:60000, label:{ar:'60,000 BTU (5 TR — 60k)',     en:'60,000 BTU (5 TR — 60k)'}}
+    {btu:54000, label:{ar:'54,000 BTU (4.5 TR)',         en:'54,000 BTU (4.5 TR)'}},
+    {btu:60000, label:{ar:'60,000 BTU (5 TR — 60k)',     en:'60,000 BTU (5 TR — 60k)'}},
+    {btu:72000, label:{ar:'72,000 BTU (6 TR)',           en:'72,000 BTU (6 TR)'}}
   ],
   ducted: [
+    {btu:18000, label:{ar:'18,000 BTU (1.5 TR — 18k)',   en:'18,000 BTU (1.5 TR — 18k)'}},
     {btu:24000, label:{ar:'24,000 BTU (2 TR — 24k)',     en:'24,000 BTU (2 TR — 24k)'}},
     {btu:30000, label:{ar:'30,000 BTU (2.5 TR — 30k)',   en:'30,000 BTU (2.5 TR — 30k)'}},
     {btu:36000, label:{ar:'36,000 BTU (3 TR — 36k)',     en:'36,000 BTU (3 TR — 36k)'}},
     {btu:42000, label:{ar:'42,000 BTU (3.5 TR — 42k)',   en:'42,000 BTU (3.5 TR — 42k)'}},
     {btu:48000, label:{ar:'48,000 BTU (4 TR — 48k)',     en:'48,000 BTU (4 TR — 48k)'}},
-    {btu:60000, label:{ar:'60,000 BTU (5 TR — 60k)',     en:'60,000 BTU (5 TR — 60k)'}}
+    {btu:54000, label:{ar:'54,000 BTU (4.5 TR)',         en:'54,000 BTU (4.5 TR)'}},
+    {btu:60000, label:{ar:'60,000 BTU (5 TR — 60k)',     en:'60,000 BTU (5 TR — 60k)'}},
+    {btu:72000, label:{ar:'72,000 BTU (6 TR)',           en:'72,000 BTU (6 TR)'}}
   ],
   cassette: [
+    {btu:18000, label:{ar:'18,000 BTU (1.5 TR — 18k)',   en:'18,000 BTU (1.5 TR — 18k)'}},
     {btu:24000, label:{ar:'24,000 BTU (2 TR — 24k)',     en:'24,000 BTU (2 TR — 24k)'}},
     {btu:30000, label:{ar:'30,000 BTU (2.5 TR — 30k)',   en:'30,000 BTU (2.5 TR — 30k)'}},
     {btu:36000, label:{ar:'36,000 BTU (3 TR — 36k)',     en:'36,000 BTU (3 TR — 36k)'}},
     {btu:42000, label:{ar:'42,000 BTU (3.5 TR — 42k)',   en:'42,000 BTU (3.5 TR — 42k)'}},
-    {btu:48000, label:{ar:'48,000 BTU (4 TR — 48k)',     en:'48,000 BTU (4 TR — 48k)'}}
+    {btu:48000, label:{ar:'48,000 BTU (4 TR — 48k)',     en:'48,000 BTU (4 TR — 48k)'}},
+    {btu:54000, label:{ar:'54,000 BTU (4.5 TR)',         en:'54,000 BTU (4.5 TR)'}},
+    {btu:60000, label:{ar:'60,000 BTU (5 TR — 60k)',     en:'60,000 BTU (5 TR — 60k)'}}
   ],
   package: [
+    {btu:36000,  label:{ar:'36,000 BTU (3 TR)',          en:'36,000 BTU (3 TR)'}},
+    {btu:48000,  label:{ar:'48,000 BTU (4 TR)',          en:'48,000 BTU (4 TR)'}},
     {btu:60000,  label:{ar:'60,000 BTU (5 TR)',          en:'60,000 BTU (5 TR)'}},
+    {btu:72000,  label:{ar:'72,000 BTU (6 TR)',          en:'72,000 BTU (6 TR)'}},
     {btu:90000,  label:{ar:'90,000 BTU (7.5 TR)',        en:'90,000 BTU (7.5 TR)'}},
     {btu:120000, label:{ar:'120,000 BTU (10 TR)',        en:'120,000 BTU (10 TR)'}},
     {btu:150000, label:{ar:'150,000 BTU (12.5 TR)',      en:'150,000 BTU (12.5 TR)'}},
@@ -1959,22 +2033,40 @@ var AC_CATALOG = {
     {btu:168000, label:{ar:'168,000 BTU (14 TR)',        en:'168,000 BTU (14 TR)'}},
     {btu:192000, label:{ar:'192,000 BTU (16 TR)',        en:'192,000 BTU (16 TR)'}},
     {btu:216000, label:{ar:'216,000 BTU (18 TR)',        en:'216,000 BTU (18 TR)'}},
-    {btu:240000, label:{ar:'240,000 BTU (20 TR)',        en:'240,000 BTU (20 TR)'}}
+    {btu:240000, label:{ar:'240,000 BTU (20 TR)',        en:'240,000 BTU (20 TR)'}},
+    {btu:264000, label:{ar:'264,000 BTU (22 TR)',        en:'264,000 BTU (22 TR)'}},
+    {btu:288000, label:{ar:'288,000 BTU (24 TR)',        en:'288,000 BTU (24 TR)'}},
+    {btu:312000, label:{ar:'312,000 BTU (26 TR)',        en:'312,000 BTU (26 TR)'}},
+    {btu:336000, label:{ar:'336,000 BTU (28 TR)',        en:'336,000 BTU (28 TR)'}},
+    {btu:360000, label:{ar:'360,000 BTU (30 TR)',        en:'360,000 BTU (30 TR)'}}
   ],
   chiller_air: [
     {btu:240000,  label:{ar:'240,000 BTU (20 TR)',       en:'240,000 BTU (20 TR)'}},
     {btu:300000,  label:{ar:'300,000 BTU (25 TR)',       en:'300,000 BTU (25 TR)'}},
     {btu:360000,  label:{ar:'360,000 BTU (30 TR)',       en:'360,000 BTU (30 TR)'}},
+    {btu:420000,  label:{ar:'420,000 BTU (35 TR)',       en:'420,000 BTU (35 TR)'}},
     {btu:480000,  label:{ar:'480,000 BTU (40 TR)',       en:'480,000 BTU (40 TR)'}},
+    {btu:540000,  label:{ar:'540,000 BTU (45 TR)',       en:'540,000 BTU (45 TR)'}},
     {btu:600000,  label:{ar:'600,000 BTU (50 TR)',       en:'600,000 BTU (50 TR)'}},
     {btu:720000,  label:{ar:'720,000 BTU (60 TR)',       en:'720,000 BTU (60 TR)'}},
+    {btu:840000,  label:{ar:'840,000 BTU (70 TR)',       en:'840,000 BTU (70 TR)'}},
     {btu:960000,  label:{ar:'960,000 BTU (80 TR)',       en:'960,000 BTU (80 TR)'}},
+    {btu:1080000, label:{ar:'1,080,000 BTU (90 TR)',    en:'1,080,000 BTU (90 TR)'}},
     {btu:1200000, label:{ar:'1,200,000 BTU (100 TR)',   en:'1,200,000 BTU (100 TR)'}},
-    {btu:1440000, label:{ar:'1,440,000 BTU (120 TR)',   en:'1,440,000 BTU (120 TR)'}}
+    {btu:1440000, label:{ar:'1,440,000 BTU (120 TR)',   en:'1,440,000 BTU (120 TR)'}},
+    {btu:1800000, label:{ar:'1,800,000 BTU (150 TR)',   en:'1,800,000 BTU (150 TR)'}},
+    {btu:2400000, label:{ar:'2,400,000 BTU (200 TR)',   en:'2,400,000 BTU (200 TR)'}}
   ],
   chiller_water: [
+    {btu:360000,  label:{ar:'360,000 BTU (30 TR)',       en:'360,000 BTU (30 TR)'}},
+    {btu:420000,  label:{ar:'420,000 BTU (35 TR)',       en:'420,000 BTU (35 TR)'}},
+    {btu:480000,  label:{ar:'480,000 BTU (40 TR)',       en:'480,000 BTU (40 TR)'}},
+    {btu:540000,  label:{ar:'540,000 BTU (45 TR)',       en:'540,000 BTU (45 TR)'}},
     {btu:600000,  label:{ar:'600,000 BTU (50 TR)',       en:'600,000 BTU (50 TR)'}},
+    {btu:720000,  label:{ar:'720,000 BTU (60 TR)',       en:'720,000 BTU (60 TR)'}},
+    {btu:840000,  label:{ar:'840,000 BTU (70 TR)',       en:'840,000 BTU (70 TR)'}},
     {btu:960000,  label:{ar:'960,000 BTU (80 TR)',       en:'960,000 BTU (80 TR)'}},
+    {btu:1080000, label:{ar:'1,080,000 BTU (90 TR)',    en:'1,080,000 BTU (90 TR)'}},
     {btu:1200000, label:{ar:'1,200,000 BTU (100 TR)',   en:'1,200,000 BTU (100 TR)'}},
     {btu:1440000, label:{ar:'1,440,000 BTU (120 TR)',   en:'1,440,000 BTU (120 TR)'}},
     {btu:1800000, label:{ar:'1,800,000 BTU (150 TR)',   en:'1,800,000 BTU (150 TR)'}},
@@ -1983,30 +2075,49 @@ var AC_CATALOG = {
     {btu:3600000, label:{ar:'3,600,000 BTU (300 TR)',   en:'3,600,000 BTU (300 TR)'}}
   ],
   fcu: [
-    {btu:Math.round(1.08*300*20), cfm:300,  label:{ar:'300 CFM (≈6,480 BTU/h)',  en:'300 CFM (≈6,480 BTU/h)'}},
-    {btu:Math.round(1.08*400*20), cfm:400,  label:{ar:'400 CFM (≈8,640 BTU/h)',  en:'400 CFM (≈8,640 BTU/h)'}},
-    {btu:Math.round(1.08*600*20), cfm:600,  label:{ar:'600 CFM (≈12,960 BTU/h)', en:'600 CFM (≈12,960 BTU/h)'}},
-    {btu:Math.round(1.08*800*20), cfm:800,  label:{ar:'800 CFM (≈17,280 BTU/h)', en:'800 CFM (≈17,280 BTU/h)'}},
-    {btu:Math.round(1.08*1000*20),cfm:1000, label:{ar:'1,000 CFM (≈21,600 BTU/h)',en:'1,000 CFM (≈21,600 BTU/h)'}},
-    {btu:Math.round(1.08*1200*20),cfm:1200, label:{ar:'1,200 CFM (≈25,920 BTU/h)',en:'1,200 CFM (≈25,920 BTU/h)'}},
-    {btu:Math.round(1.08*1500*20),cfm:1500, label:{ar:'1,500 CFM (≈32,400 BTU/h)',en:'1,500 CFM (≈32,400 BTU/h)'}},
-    {btu:Math.round(1.08*2000*20),cfm:2000, label:{ar:'2,000 CFM (≈43,200 BTU/h)',en:'2,000 CFM (≈43,200 BTU/h)'}}
+    {btu:Math.round(1.08*200*20),  cfm:200,  label:{ar:'200 CFM (≈4,320 BTU/h)',    en:'200 CFM (≈4,320 BTU/h)'}},
+    {btu:Math.round(1.08*300*20),  cfm:300,  label:{ar:'300 CFM (≈6,480 BTU/h)',    en:'300 CFM (≈6,480 BTU/h)'}},
+    {btu:Math.round(1.08*400*20),  cfm:400,  label:{ar:'400 CFM (≈8,640 BTU/h)',    en:'400 CFM (≈8,640 BTU/h)'}},
+    {btu:Math.round(1.08*500*20),  cfm:500,  label:{ar:'500 CFM (≈10,800 BTU/h)',   en:'500 CFM (≈10,800 BTU/h)'}},
+    {btu:Math.round(1.08*600*20),  cfm:600,  label:{ar:'600 CFM (≈12,960 BTU/h)',   en:'600 CFM (≈12,960 BTU/h)'}},
+    {btu:Math.round(1.08*700*20),  cfm:700,  label:{ar:'700 CFM (≈15,120 BTU/h)',   en:'700 CFM (≈15,120 BTU/h)'}},
+    {btu:Math.round(1.08*800*20),  cfm:800,  label:{ar:'800 CFM (≈17,280 BTU/h)',   en:'800 CFM (≈17,280 BTU/h)'}},
+    {btu:Math.round(1.08*900*20),  cfm:900,  label:{ar:'900 CFM (≈19,440 BTU/h)',   en:'900 CFM (≈19,440 BTU/h)'}},
+    {btu:Math.round(1.08*1000*20), cfm:1000, label:{ar:'1,000 CFM (≈21,600 BTU/h)', en:'1,000 CFM (≈21,600 BTU/h)'}},
+    {btu:Math.round(1.08*1200*20), cfm:1200, label:{ar:'1,200 CFM (≈25,920 BTU/h)', en:'1,200 CFM (≈25,920 BTU/h)'}},
+    {btu:Math.round(1.08*1400*20), cfm:1400, label:{ar:'1,400 CFM (≈30,240 BTU/h)', en:'1,400 CFM (≈30,240 BTU/h)'}},
+    {btu:Math.round(1.08*1500*20), cfm:1500, label:{ar:'1,500 CFM (≈32,400 BTU/h)', en:'1,500 CFM (≈32,400 BTU/h)'}},
+    {btu:Math.round(1.08*1800*20), cfm:1800, label:{ar:'1,800 CFM (≈38,880 BTU/h)', en:'1,800 CFM (≈38,880 BTU/h)'}},
+    {btu:Math.round(1.08*2000*20), cfm:2000, label:{ar:'2,000 CFM (≈43,200 BTU/h)', en:'2,000 CFM (≈43,200 BTU/h)'}}
   ],
   ahu: [
-    {btu:Math.round(1.08*2000*20), cfm:2000,  label:{ar:'2,000 CFM (≈43,200 BTU/h)',   en:'2,000 CFM (≈43,200 BTU/h)'}},
-    {btu:Math.round(1.08*2500*20), cfm:2500,  label:{ar:'2,500 CFM (≈54,000 BTU/h)',   en:'2,500 CFM (≈54,000 BTU/h)'}},
-    {btu:Math.round(1.08*3000*20), cfm:3000,  label:{ar:'3,000 CFM (≈64,800 BTU/h)',   en:'3,000 CFM (≈64,800 BTU/h)'}},
-    {btu:Math.round(1.08*4000*20), cfm:4000,  label:{ar:'4,000 CFM (≈86,400 BTU/h)',   en:'4,000 CFM (≈86,400 BTU/h)'}},
-    {btu:Math.round(1.08*5000*20), cfm:5000,  label:{ar:'5,000 CFM (≈108,000 BTU/h)',  en:'5,000 CFM (≈108,000 BTU/h)'}},
-    {btu:Math.round(1.08*6000*20), cfm:6000,  label:{ar:'6,000 CFM (≈129,600 BTU/h)',  en:'6,000 CFM (≈129,600 BTU/h)'}},
-    {btu:Math.round(1.08*8000*20), cfm:8000,  label:{ar:'8,000 CFM (≈172,800 BTU/h)',  en:'8,000 CFM (≈172,800 BTU/h)'}},
-    {btu:Math.round(1.08*10000*20),cfm:10000, label:{ar:'10,000 CFM (≈216,000 BTU/h)', en:'10,000 CFM (≈216,000 BTU/h)'}}
+    {btu:Math.round(1.08*1500*20),  cfm:1500,  label:{ar:'1,500 CFM (≈32,400 BTU/h)',   en:'1,500 CFM (≈32,400 BTU/h)'}},
+    {btu:Math.round(1.08*2000*20),  cfm:2000,  label:{ar:'2,000 CFM (≈43,200 BTU/h)',   en:'2,000 CFM (≈43,200 BTU/h)'}},
+    {btu:Math.round(1.08*2500*20),  cfm:2500,  label:{ar:'2,500 CFM (≈54,000 BTU/h)',   en:'2,500 CFM (≈54,000 BTU/h)'}},
+    {btu:Math.round(1.08*3000*20),  cfm:3000,  label:{ar:'3,000 CFM (≈64,800 BTU/h)',   en:'3,000 CFM (≈64,800 BTU/h)'}},
+    {btu:Math.round(1.08*3500*20),  cfm:3500,  label:{ar:'3,500 CFM (≈75,600 BTU/h)',   en:'3,500 CFM (≈75,600 BTU/h)'}},
+    {btu:Math.round(1.08*4000*20),  cfm:4000,  label:{ar:'4,000 CFM (≈86,400 BTU/h)',   en:'4,000 CFM (≈86,400 BTU/h)'}},
+    {btu:Math.round(1.08*4500*20),  cfm:4500,  label:{ar:'4,500 CFM (≈97,200 BTU/h)',   en:'4,500 CFM (≈97,200 BTU/h)'}},
+    {btu:Math.round(1.08*5000*20),  cfm:5000,  label:{ar:'5,000 CFM (≈108,000 BTU/h)',  en:'5,000 CFM (≈108,000 BTU/h)'}},
+    {btu:Math.round(1.08*6000*20),  cfm:6000,  label:{ar:'6,000 CFM (≈129,600 BTU/h)',  en:'6,000 CFM (≈129,600 BTU/h)'}},
+    {btu:Math.round(1.08*7000*20),  cfm:7000,  label:{ar:'7,000 CFM (≈151,200 BTU/h)',  en:'7,000 CFM (≈151,200 BTU/h)'}},
+    {btu:Math.round(1.08*8000*20),  cfm:8000,  label:{ar:'8,000 CFM (≈172,800 BTU/h)',  en:'8,000 CFM (≈172,800 BTU/h)'}},
+    {btu:Math.round(1.08*9000*20),  cfm:9000,  label:{ar:'9,000 CFM (≈194,400 BTU/h)',  en:'9,000 CFM (≈194,400 BTU/h)'}},
+    {btu:Math.round(1.08*10000*20), cfm:10000, label:{ar:'10,000 CFM (≈216,000 BTU/h)', en:'10,000 CFM (≈216,000 BTU/h)'}},
+    {btu:Math.round(1.08*12000*20), cfm:12000, label:{ar:'12,000 CFM (≈259,200 BTU/h)', en:'12,000 CFM (≈259,200 BTU/h)'}},
+    {btu:Math.round(1.08*15000*20), cfm:15000, label:{ar:'15,000 CFM (≈324,000 BTU/h)', en:'15,000 CFM (≈324,000 BTU/h)'}}
   ],
   window: [
-    {btu:9000,  label:{ar:'9,000 BTU (0.75 TR)',  en:'9,000 BTU (0.75 TR)'}},
-    {btu:12000, label:{ar:'12,000 BTU (1 TR)',    en:'12,000 BTU (1 TR)'}},
-    {btu:18000, label:{ar:'18,000 BTU (1.5 TR)',  en:'18,000 BTU (1.5 TR)'}},
-    {btu:24000, label:{ar:'24,000 BTU (2 TR)',    en:'24,000 BTU (2 TR)'}}
+    {btu:6000,  label:{ar:'6,000 BTU (0.5 TR)',          en:'6,000 BTU (0.5 TR)'}},
+    {btu:8000,  label:{ar:'8,000 BTU (0.67 TR)',         en:'8,000 BTU (0.67 TR)'}},
+    {btu:9000,  label:{ar:'9,000 BTU (0.75 TR)',         en:'9,000 BTU (0.75 TR)'}},
+    {btu:10000, label:{ar:'10,000 BTU (0.83 TR)',        en:'10,000 BTU (0.83 TR)'}},
+    {btu:12000, label:{ar:'12,000 BTU (1 TR)',           en:'12,000 BTU (1 TR)'}},
+    {btu:14000, label:{ar:'14,000 BTU (1.17 TR)',        en:'14,000 BTU (1.17 TR)'}},
+    {btu:15000, label:{ar:'15,000 BTU (1.25 TR)',        en:'15,000 BTU (1.25 TR)'}},
+    {btu:16000, label:{ar:'16,000 BTU (1.33 TR)',        en:'16,000 BTU (1.33 TR)'}},
+    {btu:18000, label:{ar:'18,000 BTU (1.5 TR)',         en:'18,000 BTU (1.5 TR)'}},
+    {btu:24000, label:{ar:'24,000 BTU (2 TR)',           en:'24,000 BTU (2 TR)'}}
   ]
 };
 
@@ -2041,8 +2152,14 @@ function getCatalog(utKey){
 }
 
 // Get best default capacity from catalog >= reqBtu
-function defaultCapForUT(utKey, reqBtu){
+function defaultCapForUT(utKey, reqBtu, reqCfm){
   var cat = getCatalog(utKey);
+  // For CFM-based catalogs (fcu/ahu) and a valid reqCfm, pick smallest cfm >= reqCfm
+  if(reqCfm && reqCfm > 0 && cat.length > 0 && cat[0].cfm){
+    for(var i=0;i<cat.length;i++){ if((cat[i].cfm||0) >= reqCfm) return cat[i].btu; }
+    return cat[cat.length-1].btu;
+  }
+  // BTU-based catalogs: pick smallest btu >= reqBtu
   for(var i=0;i<cat.length;i++){ if(cat[i].btu >= reqBtu) return cat[i].btu; }
   return cat[cat.length-1].btu;
 }
@@ -2170,6 +2287,13 @@ function getProjDuctCfm(utKey, selBtu, qty, fallbackTotalCfm, cfmPerTr){
           label: 'CFM Source: Calculated Total CFM'};
 }
 
+// ── Duct sizing basis toggle state ──
+window._ductBasis = 'required'; // 'required' | 'selected'
+function setDuctBasis(basis){
+  window._ductBasis = basis;
+  renderProjBlock();
+}
+
 // ══════════════════════════════════════════════════════════════════
 // B) PROJECT MODE STATE
 // ══════════════════════════════════════════════════════════════════
@@ -2216,7 +2340,8 @@ function onProjSysTypeChange(){
     return '<option value="'+c.btu+'">'+lbl+'</option>';
   }).join('');
   // Auto-select best capacity
-  projState.selBtu = defaultCapForUT(projState.sysType, Math.ceil(totalBtu / Math.max(1, projState.qty)));
+  var _reqCfmForCat = (totalCfm > 0) ? Math.ceil(totalCfm / Math.max(1, projState.qty)) : 0;
+  projState.selBtu = defaultCapForUT(projState.sysType, Math.ceil(totalBtu / Math.max(1, projState.qty)), _reqCfmForCat);
   // Set dropdown
   capSel.value = projState.selBtu;
   if(!capSel.value && cat.length) { capSel.selectedIndex=0; projState.selBtu=cat[0].btu; }
@@ -2275,7 +2400,8 @@ function renderProjBlock(){
       // Auto pick
       var needed = totalBtu;
       var perUnit = Math.ceil(needed / Math.max(1,projState.qty));
-      projState.selBtu = defaultCapForUT(curUT, perUnit);
+      var _reqCfmAuto = (totalCfm > 0) ? Math.ceil(totalCfm / Math.max(1, projState.qty)) : 0;
+      projState.selBtu = defaultCapForUT(curUT, perUnit, _reqCfmAuto);
       capSel.value = projState.selBtu;
       if(!capSel.value && cat2.length){ capSel.selectedIndex=0; projState.selBtu=cat2[0].btu; }
     }
@@ -2316,7 +2442,7 @@ function renderProjBlock(){
     statusRow.innerHTML = badge + warnDiv;
   } else if(statusRow){ statusRow.innerHTML=''; }
 
-  // Duct sizing
+  // ── DUCT SIZING ─────────────────────────────────────────────────
   var ductBlock = G('proj-duct-block');
   if(ductBlock){
     if(isDucted(curUT) && (totalCfm > 0 || projState.selBtu > 0)){
@@ -2324,47 +2450,125 @@ function renderProjBlock(){
       var vSup = parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
       var vRet = parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
       var _cfmPerTr = parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
-      var _pDuctCfm = getProjDuctCfm(curUT, projState.selBtu, projState.qty, totalCfm, _cfmPerTr);
-      var _pCfm = _pDuctCfm.cfm;
-      var supDuct = calcDuctSize(_pCfm, vSup);
-      var retDuct = calcDuctSize(Math.round(_pCfm*0.9), vRet);
-      var supLabel = supDuct ? ductSizeLabel(supDuct.std||supDuct.calc) : '—';
-      var retLabel = retDuct ? ductSizeLabel(retDuct.std||retDuct.calc) : '—';
-      setV('duct-sup-val', supLabel);
-      setV('duct-ret-val', retLabel);
-      // Show/hide CFM/TR dropdown: only when NOT a CFM-based catalog item
-      var cfmTrRow = G('duct-cfm-per-tr-row');
-      if(cfmTrRow) cfmTrRow.style.display = (_pDuctCfm.source==='unit') ? 'none' : '';
-      // Show exactly ONE CFM source line
-      var cfmSrcEl = G('duct-cfm-src');
-      if(cfmSrcEl){
-        var cfmLblAr, cfmLblEn;
-        if(_pDuctCfm.source==='unit'){
-          cfmLblAr = 'مصدر CFM: السعة المختارة (CFM)';
-          cfmLblEn = 'CFM Source: Selected Capacity (CFM)';
-        } else if(_pDuctCfm.source==='tr'){
-          cfmLblAr = 'مصدر CFM: TR × ' + _cfmPerTr;
-          cfmLblEn = 'CFM Source: TR × ' + _cfmPerTr;
-        } else {
-          cfmLblAr = 'مصدر CFM: إجمالي التدفق المحسوب';
-          cfmLblEn = 'CFM Source: Calculated Total Flow';
-        }
-        var _qStr = Number(_pCfm).toLocaleString();
-        if(lang==='ar'){
-          cfmSrcEl.innerHTML =
-            '<span dir="rtl">' + cfmLblAr + '</span>' +
-            '<span dir="ltr" style="font-family:var(--fe)"> — Q = ' + _qStr + ' CFM</span>';
-        } else {
-          cfmSrcEl.innerHTML =
-            '<span>' + cfmLblEn + ' — Q = ' + _qStr + ' CFM</span>';
-        }
+
+      // ── Q_required: PRIMARY = project total CFM; FALLBACK = totalTr × cfmPerTr ──
+      var _qReq = (totalCfm > 0) ? Math.round(totalCfm)
+                                  : Math.round(totalTr * _cfmPerTr);
+      var _qReqSrc = (totalCfm > 0)
+        ? (isAr ? 'من إجمالي CFM' : 'from Total CFM')
+        : (isAr ? ('من الإجمالي TR × ' + _cfmPerTr) : ('from Total TR × ' + _cfmPerTr));
+
+      // ── Q_selected: based on chosen catalog entry × qty ──
+      var _qSelPerUnit = 0, _qSelSrcAr = '', _qSelSrcEn = '';
+      var _catD = getCatalog(curUT);
+      var _selEntry = null;
+      for(var _ci=0; _ci<_catD.length; _ci++){
+        if(_catD[_ci].btu === projState.selBtu){ _selEntry = _catD[_ci]; break; }
       }
+      if(_selEntry && _selEntry.cfm && _selEntry.cfm > 0){
+        _qSelPerUnit = _selEntry.cfm;
+        _qSelSrcAr = 'CFM الوحدة × ' + projState.qty;
+        _qSelSrcEn = 'Unit CFM × ' + projState.qty;
+      } else if(projState.selBtu > 0){
+        var _selTr = projState.selBtu / 12000;
+        _qSelPerUnit = Math.round(_selTr * _cfmPerTr);
+        _qSelSrcAr = _selTr.toFixed(1) + ' TR × ' + _cfmPerTr + ' × ' + projState.qty;
+        _qSelSrcEn = _selTr.toFixed(1) + ' TR × ' + _cfmPerTr + ' × ' + projState.qty;
+      }
+      var _qSel = _qSelPerUnit * Math.max(1, projState.qty);
+
+      // ── Read sizing basis toggle ──
+      var _basis = (typeof window._ductBasis !== 'undefined') ? window._ductBasis : 'required';
+      var _qUsed = (_basis === 'selected' && _qSel > 0) ? _qSel : _qReq;
+
+      // ── Update toggle button styles ──
+      var _btnReq = G('duct-basis-req'), _btnSel = G('duct-basis-sel');
+      if(_btnReq && _btnSel){
+        if(_basis === 'required'){
+          _btnReq.style.cssText='padding:3px 10px;border-radius:4px;border:1px solid rgba(52,211,153,.6);background:rgba(52,211,153,.18);color:var(--g);font-size:10px;font-family:var(--fe);cursor:pointer;font-weight:700';
+          _btnSel.style.cssText='padding:3px 10px;border-radius:4px;border:1px solid var(--b);background:var(--s3);color:var(--tm);font-size:10px;font-family:var(--fe);cursor:pointer;font-weight:400';
+        } else {
+          _btnSel.style.cssText='padding:3px 10px;border-radius:4px;border:1px solid rgba(56,189,248,.6);background:rgba(56,189,248,.18);color:var(--a);font-size:10px;font-family:var(--fe);cursor:pointer;font-weight:700';
+          _btnReq.style.cssText='padding:3px 10px;border-radius:4px;border:1px solid var(--b);background:var(--s3);color:var(--tm);font-size:10px;font-family:var(--fe);cursor:pointer;font-weight:400';
+        }
+        _btnReq.textContent = isAr ? 'حسب الاحتياج' : 'Required';
+        _btnSel.textContent = isAr ? 'حسب الوحدة' : 'Selected Unit';
+      }
+
+      // ── Show/hide CFM/TR row ──
+      var _isCfmBased = (_selEntry && _selEntry.cfm > 0);
+      var cfmTrRow = G('duct-cfm-per-tr-row');
+      if(cfmTrRow) cfmTrRow.style.display = (_isCfmBased && totalCfm > 0) ? 'none' : '';
+
+      // ── Q info panel ──
+      var _qInfoEl = G('duct-q-info');
+      if(_qInfoEl){
+        var _reqClr = (_basis==='required') ? 'var(--g)' : 'var(--tm)';
+        var _selClr = (_basis==='selected') ? 'var(--a)' : 'var(--tm)';
+        var _reqW = (_basis==='required') ? '700' : '400';
+        var _selW = (_basis==='selected') ? '700' : '400';
+        var _reqMark = (_basis==='required') ? ' ◄' : '';
+        var _selMark = (_basis==='selected') ? ' ◄' : '';
+        var _qHtml;
+        if(isAr){
+          _qHtml = '<div class="duct-note" style="margin-bottom:3px;direction:rtl">'+
+            '<span style="color:var(--tm)">Q المطلوب: </span>'+
+            '<span style="font-family:var(--fe);color:'+_reqClr+';font-weight:'+_reqW+'">'+Number(_qReq).toLocaleString()+' CFM</span>'+
+            '<span style="color:var(--tm);font-size:9px"> ('+_qReqSrc+')'+_reqMark+'</span>'+
+            '</div>'+
+            (_qSel>0?'<div class="duct-note" style="direction:rtl">'+
+              '<span style="color:var(--tm)">Q حسب الوحدة: </span>'+
+              '<span style="font-family:var(--fe);color:'+_selClr+';font-weight:'+_selW+'">'+Number(_qSel).toLocaleString()+' CFM</span>'+
+              '<span style="color:var(--tm);font-size:9px"> ('+_qSelSrcAr+')'+_selMark+'</span>'+
+            '</div>':'');
+        } else {
+          _qHtml = '<div class="duct-note" style="margin-bottom:3px">'+
+            '<span style="color:var(--tm)">Required Q: </span>'+
+            '<span style="font-family:var(--fe);color:'+_reqClr+';font-weight:'+_reqW+'">'+Number(_qReq).toLocaleString()+' CFM</span>'+
+            '<span style="color:var(--tm);font-size:9px"> ('+_qReqSrc+')'+_reqMark+'</span>'+
+            '</div>'+
+            (_qSel>0?'<div class="duct-note">'+
+              '<span style="color:var(--tm)">Selected Q: </span>'+
+              '<span style="font-family:var(--fe);color:'+_selClr+';font-weight:'+_selW+'">'+Number(_qSel).toLocaleString()+' CFM</span>'+
+              '<span style="color:var(--tm);font-size:9px"> ('+_qSelSrcEn+')'+_selMark+'</span>'+
+            '</div>':'');
+        }
+        _qInfoEl.innerHTML = _qHtml;
+      }
+
+      // ── Warning logic ──
+      var _qWarnEl = G('duct-q-warn');
+      if(_qWarnEl && _qReq > 0 && _qSel > 0){
+        var _diffPct = ((_qSel - _qReq) / _qReq) * 100;
+        if(_diffPct > 25){
+          _qWarnEl.style.display='';
+          _qWarnEl.innerHTML='<div class="duct-note" style="color:#f59e0b;margin-bottom:4px">'+
+            (isAr?'⚠ تنبيه: تدفق الوحدة المختارة أعلى من المطلوب وقد يسبب ضوضاء/فاقد/Short Cycling.':
+                  '⚠ Warning: Selected airflow exceeds required; possible noise/loss/short cycling.')+'</div>';
+        } else if(_diffPct < -10){
+          _qWarnEl.style.display='';
+          _qWarnEl.innerHTML='<div class="duct-note" style="color:#ef4444;margin-bottom:4px">'+
+            (isAr?'⚠ تنبيه: تدفق الوحدة المختارة أقل من المطلوب — قد يؤثر على جودة التهوية/التبريد.':
+                  '⚠ Warning: Selected airflow is below required — may impact ventilation/cooling.')+'</div>';
+        } else {
+          _qWarnEl.style.display='none'; _qWarnEl.innerHTML='';
+        }
+      } else if(_qWarnEl){ _qWarnEl.style.display='none'; }
+
+      // ── Size ducts using _qUsed ──
+      var supDuct = calcDuctSize(_qUsed, vSup);
+      var retDuct = calcDuctSize(Math.round(_qUsed*0.9), vRet);
+      setV('duct-sup-val', supDuct ? ductSizeLabel(supDuct.std||supDuct.calc) : '—');
+      setV('duct-ret-val', retDuct ? ductSizeLabel(retDuct.std||retDuct.calc) : '—');
+
+      // ── Basis label ──
+      var _bLbl = G('duct-basis-lbl');
+      if(_bLbl) _bLbl.textContent = isAr ? 'أساس التصميم:' : 'Sizing basis:';
+
     } else {
       ductBlock.style.display='none';
     }
-  }
-
-  // Line total
+  }// Line total
   var lt = projState.qty * projState.selBtu > 0 ? projState.qty * projState.up : 0;
   lt = projState.qty * projState.up;
   setV('proj-lt-val', (G('cur-sym')?G('cur-sym').textContent:t('cur'))+' '+money(lt));
@@ -2388,6 +2592,7 @@ function updateProjLabels(){
   sl('duct-ret-lbl','مجرى الرجوع الرئيسي:','Main Return Duct:');
   sl('duct-note-txt','تصميم أولي — يجب التحقق من الضغط الساكن والمخطط.','Preliminary sizing — verify with static pressure & layout.');
   sl('duct-cfmtr-lbl','CFM/TR','CFM/TR');
+  sl('duct-basis-lbl','أساس التصميم:','Sizing basis:');
   sl('proj-lt-lbl','إجمالي السطر','Line Total');
   sl('mode-lbl-room','🏠 وحدة لكل غرفة','🏠 Unit per Room');
   sl('mode-lbl-proj','🏢 وحدة للمشروع','🏢 One Unit for Project');
@@ -2534,7 +2739,7 @@ buildPage2 = function(c){
     var vSup=parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
     var vRet=parseInt((G('duct-vel-ret')||{value:'800'}).value)||800;
     var _p2CfmPerTr=parseInt((G('duct-cfm-per-tr')||{value:'400'}).value)||400;
-    var _p2DuctCfm=getProjDuctCfm(curUT,projState.selBtu,projState.qty,totalCfm2,_p2CfmPerTr);
+    var _p2DuctCfm=getProjDuctCfm(curUT,projState.selBtu,projState.qty,totalCfm,_p2CfmPerTr);
     var _p2Cfm=_p2DuctCfm.cfm;
     var _p2CfmSrcLbl=c.isAr
       ?(_p2DuctCfm.source==='unit'?'CFM من سعة الوحدة المختارة'
