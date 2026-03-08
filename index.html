@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Air Calc Pro</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- PDF libs loaded on-demand when user clicks Export PDF -->
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0e17;--s1:#111827;--s2:#1a2234;--s3:#1e2a40;--b:rgba(99,179,237,.15);--bb:rgba(99,179,237,.4);--a:#38bdf8;--a2:#0ea5e9;--ag:rgba(56,189,248,.25);--ad:rgba(56,189,248,.1);--g:#34d399;--gd:rgba(52,211,153,.12);--am:#fbbf24;--amd:rgba(251,191,36,.12);--r:#f87171;--rd:rgba(248,113,113,.1);--t:#e2e8f0;--tm:#64748b;--tb:#f8fafc;--rad:12px;--rads:8px;--fa:'Cairo',sans-serif;--fe:'Rajdhani',sans-serif;--fm:'JetBrains Mono',monospace;}
@@ -439,13 +438,13 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
       <div class="br-row"><span class="br-lbl" id="hcl-exh">Exhaust CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-exh">—</span><span class="badge bam">CFM</span></div></div>
       <div class="br-row" id="hc-note-row" style="display:none"><span class="br-lbl">Note</span><span class="br-val" id="hcv-note" style="font-size:11px;color:var(--tm)">—</span></div>
     </div>
-  </div>
 
-  <!-- ADD TO QUOTE BUTTON -->
+  <!-- ADD TO QUOTE BUTTON — inside p-calc so goPanel() hides it with the panel -->
   <div id="add-quote-wrap" style="display:none;margin-top:6px">
     <button class="calc-btn" id="btn-add-quote" onclick="addToQuote()" style="background:linear-gradient(135deg,rgba(52,211,153,.18),rgba(52,211,153,.08));border-color:rgba(52,211,153,.5);color:var(--g)">
       ✅ <span id="lbl-add-quote">أضف للعرض</span>
     </button>
+  </div>
   </div>
 
   <!-- HIST + QUOTATION PANEL -->
@@ -696,7 +695,7 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 </div>
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ── DATA ──────────────────────────────────────────────────────────────────
 var ROOMS = {
   r_office:{id:'r_office',mode:'rot',cat:'general',ar:'مكتب',en:'Office',factor:400},
@@ -794,15 +793,6 @@ var DEVS = [
   {id:'surglight',g:'health',e:'🔦',ar:'لمبة عمليات',en:'Surgical Light',w:300}
 ];
 
-// ── ERROR REPORTER (debug) ─────────────────────────────────────────────
-window.onerror = function(msg, src, line, col, err){
-  var div = document.getElementById('_err_dbg');
-  if(!div){ div=document.createElement('div'); div.id='_err_dbg';
-    div.style.cssText='position:fixed;bottom:80px;left:8px;right:8px;background:#7f1d1d;color:#fca5a5;padding:10px;border-radius:8px;font-size:11px;z-index:99999;font-family:monospace;word-break:break-all;';
-    document.body.appendChild(div); }
-  div.textContent = (msg||'?') + ' | L:' + line + ' C:' + col + ' | ' + (err&&err.stack?err.stack.split('\n')[0]:'');
-  return false;
-};
 // ── STATE ─────────────────────────────────────────────────────────────────
 var lang = 'ar';
 var curRoom = ROOMS['r_office'];
@@ -1860,12 +1850,28 @@ function buildInvoiceHTML(){
     +'<body>'+page1+'</body></html>';
 }
 
+
 function exportPDF(){
   if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف':'⚠️ No rooms saved'); return; }
-  if(typeof html2canvas==='undefined'||typeof window.jspdf==='undefined'){
-    toast(lang==='ar'?'⚠️ المكتبات لم تُحمَّل بعد، أعد المحاولة':'⚠️ Libraries not loaded, retry');
-    return;
+  // Lazy-load PDF libraries on first use
+  var h2cReady = typeof html2canvas !== 'undefined';
+  var jspdfReady = typeof window.jspdf !== 'undefined';
+  if(h2cReady && jspdfReady){ _doExportPDF(); return; }
+  var btn=G('btn-pdf');
+  if(btn){ btn.disabled=true; btn.textContent=lang==='ar'?'جارٍ تحميل المكتبات...':'Loading libraries...'; }
+  var loaded=0, failed=0;
+  function onLoad(){ loaded++; if(loaded+failed>=2){ if(btn){btn.disabled=false;btn.textContent=lang==='ar'?'📥 تحميل PDF':'📥 Download PDF';} if(failed===0) _doExportPDF(); else toast(lang==='ar'?'⚠️ فشل تحميل مكتبة PDF':'⚠️ PDF library failed to load'); } }
+  function onErr(name){ failed++; console.warn(name+' failed'); onLoad(); }
+  function loadLib(url, name, ready){
+    if(ready){ loaded++; return; }
+    var s=document.createElement('script'); s.src=url; s.crossOrigin='anonymous';
+    s.onload=onLoad; s.onerror=function(){ onErr(name); };
+    document.body.appendChild(s);
   }
+  loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','html2canvas',h2cReady);
+  loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js','jsPDF',jspdfReady);
+}
+function _doExportPDF(){
   var btn=G('btn-pdf');
   if(btn){ btn.disabled=true; btn.textContent=lang==='ar'?'جارٍ التحميل...':'Generating...'; }
 
@@ -2340,7 +2346,7 @@ function onProjSysTypeChange(){
     return '<option value="'+c.btu+'">'+lbl+'</option>';
   }).join('');
   // Auto-select best capacity
-  var _reqCfmForCat = (totalCfm > 0) ? Math.ceil(totalCfm / Math.max(1, projState.qty)) : 0;
+  var _tc=getProjTotalCfm(); var _reqCfmForCat = (_tc > 0) ? Math.ceil(_tc / Math.max(1, projState.qty)) : 0;
   projState.selBtu = defaultCapForUT(projState.sysType, Math.ceil(totalBtu / Math.max(1, projState.qty)), _reqCfmForCat);
   // Set dropdown
   capSel.value = projState.selBtu;
