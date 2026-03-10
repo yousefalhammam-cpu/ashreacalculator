@@ -53,6 +53,9 @@ function initApp(){
     var _bc=localStorage.getItem('ac_bundleConfig');
     if(_bc){ var o=JSON.parse(_bc); Object.keys(o).forEach(function(k){ bundleConfig[k]=o[k]; }); }
   }catch(e){}
+  // Restore theme
+  try{ var _t9=localStorage.getItem('acp9theme'); if(_t9==='light') _theme='light'; }catch(e){}
+  _applyTheme();
   // Initialize UI
   curRoom = ROOMS['r_office'] || Object.values(ROOMS)[0];
   applyLang();
@@ -259,6 +262,23 @@ function applyLang(){
   renderHist();
 }
 function toggleLang(){ lang=lang==='ar'?'en':'ar'; applyLang(); }
+
+var _theme = 'dark';
+function toggleTheme(){
+  _theme = _theme === 'dark' ? 'light' : 'dark';
+  _applyTheme();
+  try{ localStorage.setItem('acp9theme', _theme); }catch(e){}
+}
+function _applyTheme(){
+  var btn = G('themeBtn');
+  if(_theme === 'light'){
+    document.body.classList.add('light-theme');
+    if(btn) btn.textContent = '☀️';
+  } else {
+    document.body.classList.remove('light-theme');
+    if(btn) btn.textContent = '🌙';
+  }
+}
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────
 function goPanel(name){
@@ -519,6 +539,7 @@ function resetApp(){
     localStorage.removeItem('acp9qs');
     localStorage.removeItem('acp9mode');
     localStorage.removeItem('ac_bundleConfig');
+    localStorage.removeItem('acp9theme');
   } catch(e){}
 
   // ── 3. Reset runtime variables to factory defaults ────────────────
