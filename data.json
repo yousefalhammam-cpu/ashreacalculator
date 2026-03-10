@@ -1,54 +1,2202 @@
 {
-  "categories": [
-    {
-      "name_ar": "المستشفيات (ASHRAE 170)",
-      "name_en": "Hospitals (ASHRAE 170)",
-      "items": [
-        { "id": "h1", "ar": "غرفة عمليات (OR)", "en": "Operating Room (OR)", "ach": 20, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h2", "ar": "غرفة عمليات هجينة", "en": "Hybrid OR", "ach": 20, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h3", "ar": "مختبر قسطرة", "en": "Cath Lab", "ach": 15, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h4", "ar": "غرفة المناظير", "en": "Endoscopy Room", "ach": 15, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h5", "ar": "العناية المركزة (ICU)", "en": "ICU", "ach": 12, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h6", "ar": "عزل ضغط سالب (AIIR)", "en": "AIIR (Negative Pressure)", "ach": 12, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h7", "ar": "عزل ضغط موجب (PE)", "en": "Protective Environment", "ach": 12, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h8", "ar": "غرفة الطوارئ (ترياج)", "en": "Emergency (Triage)", "ach": 12, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h9", "ar": "غرفة فحص عامة", "en": "Examination Room", "ach": 6, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h10", "ar": "غرفة تنويم مريض", "en": "Patient Room", "ach": 6, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h11", "ar": "مختبر عام", "en": "General Laboratory", "ach": 6, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h12", "ar": "مختبر أحياء دقيقة", "en": "Microbiology Lab", "ach": 10, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h13", "ar": "الأشعة التشخيصية", "en": "Diagnostic X-Ray", "ach": 6, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h14", "ar": "غرفة رنين MRI", "en": "MRI Room", "ach": 6, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h15", "ar": "غرفة الولادة (LDR)", "en": "Delivery Room (LDR)", "ach": 15, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" },
-        { "id": "h16", "ar": "الصيدلية", "en": "Pharmacy", "ach": 4, "std": "ASHRAE 170", "std_ar": "ASHRAE 170 (صحي)", "std_en": "ASHRAE 170 (Healthcare)" }
-      ]
+  "ROOMS": {
+    "r_office": {
+      "id": "r_office",
+      "mode": "rot",
+      "cat": "general",
+      "ar": "مكتب",
+      "en": "Office",
+      "factor": 400
     },
-    {
-      "name_ar": "التجاري (ASHRAE 62.1)",
-      "name_en": "Commercial (ASHRAE 62.1)",
-      "items": [
-        { "id": "c1", "ar": "مكاتب مفتوحة", "en": "Open Offices", "ach": 4, "std": "ASHRAE 62.1", "std_ar": "ASHRAE 62.1 (تجاري)", "std_en": "ASHRAE 62.1 (Commercial)" },
-        { "id": "c2", "ar": "غرفة اجتماعات", "en": "Conference Room", "ach": 10, "std": "ASHRAE 62.1", "std_ar": "ASHRAE 62.1 (تجاري)", "std_en": "ASHRAE 62.1 (Commercial)" },
-        { "id": "c3", "ar": "ردهة استقبال", "en": "Lobby / Reception", "ach": 4, "std": "ASHRAE 62.1", "std_ar": "ASHRAE 62.1 (تجاري)", "std_en": "ASHRAE 62.1 (Commercial)" },
-        { "id": "c4", "ar": "محل تجاري", "en": "Retail Store", "ach": 6, "std": "ASHRAE 62.1", "std_ar": "ASHRAE 62.1 (تجاري)", "std_en": "ASHRAE 62.1 (Commercial)" },
-        { "id": "c5", "ar": "مطعم - صالة طعام", "en": "Restaurant Dining", "ach": 10, "std": "ASHRAE 62.1", "std_ar": "ASHRAE 62.1 (تجاري)", "std_en": "ASHRAE 62.1 (Commercial)" },
-        { "id": "c6", "ar": "مطبخ تجاري", "en": "Commercial Kitchen", "ach": 30, "std": "ASHRAE 62.1", "std_ar": "ASHRAE 62.1 (تجاري)", "std_en": "ASHRAE 62.1 (Commercial)" },
-        { "id": "c7", "ar": "نادي رياضي", "en": "Gym", "ach": 8, "std": "ASHRAE 62.1", "std_ar": "ASHRAE 62.1 (تجاري)", "std_en": "ASHRAE 62.1 (Commercial)" },
-        { "id": "c8", "ar": "قاعة محاضرات", "en": "Auditorium", "ach": 15, "std": "ASHRAE 62.1", "std_ar": "ASHRAE 62.1 (تجاري)", "std_en": "ASHRAE 62.1 (Commercial)" },
-        { "id": "c9", "ar": "مكتبة", "en": "Library", "ach": 4, "std": "ASHRAE 62.1", "std_ar": "ASHRAE 62.1 (تجاري)", "std_en": "ASHRAE 62.1 (Commercial)" }
-      ]
+    "r_residential": {
+      "id": "r_residential",
+      "mode": "rot",
+      "cat": "home",
+      "ar": "سكني",
+      "en": "Residential",
+      "factor": 350
     },
-    {
-      "name_ar": "السكني (ASHRAE 62.2)",
-      "name_en": "Residential (ASHRAE 62.2)",
-      "items": [
-        { "id": "r1", "ar": "غرفة نوم", "en": "Bedroom", "ach": 2, "std": "ASHRAE 62.2", "std_ar": "ASHRAE 62.2 (سكني)", "std_en": "ASHRAE 62.2 (Residential)" },
-        { "id": "r2", "ar": "غرفة معيشة", "en": "Living Room", "ach": 4, "std": "ASHRAE 62.2", "std_ar": "ASHRAE 62.2 (سكني)", "std_en": "ASHRAE 62.2 (Residential)" },
-        { "id": "r3", "ar": "مجلس ضيوف", "en": "Majlis", "ach": 5, "std": "ASHRAE 62.2", "std_ar": "ASHRAE 62.2 (سكني)", "std_en": "ASHRAE 62.2 (Residential)" },
-        { "id": "r4", "ar": "مطبخ منزلي", "en": "Domestic Kitchen", "ach": 6, "std": "ASHRAE 62.2", "std_ar": "ASHRAE 62.2 (سكني)", "std_en": "ASHRAE 62.2 (Residential)" },
-        { "id": "r5", "ar": "دورة مياه", "en": "Bathroom", "ach": 10, "std": "ASHRAE 62.2", "std_ar": "ASHRAE 62.2 (سكني)", "std_en": "ASHRAE 62.2 (Residential)" },
-        { "id": "r6", "ar": "صالة طعام", "en": "Dining Room", "ach": 4, "std": "ASHRAE 62.2", "std_ar": "ASHRAE 62.2 (سكني)", "std_en": "ASHRAE 62.2 (Residential)" },
-        { "id": "r7", "ar": "ممر داخلي", "en": "Corridor", "ach": 2, "std": "ASHRAE 62.2", "std_ar": "ASHRAE 62.2 (سكني)", "std_en": "ASHRAE 62.2 (Residential)" }
-      ]
+    "r_retail": {
+      "id": "r_retail",
+      "mode": "rot",
+      "cat": "commercial",
+      "ar": "محل",
+      "en": "Retail",
+      "factor": 500
+    },
+    "r_kitchen": {
+      "id": "r_kitchen",
+      "mode": "rot",
+      "cat": "commercial",
+      "ar": "مطبخ",
+      "en": "Kitchen",
+      "factor": 600
+    },
+    "r_server": {
+      "id": "r_server",
+      "mode": "rot",
+      "cat": "commercial",
+      "ar": "سيرفر",
+      "en": "Server Room",
+      "factor": 700
+    },
+    "r_classroom": {
+      "id": "r_classroom",
+      "mode": "rot",
+      "cat": "commercial",
+      "ar": "قاعة",
+      "en": "Classroom",
+      "factor": 450
+    },
+    "r_gym": {
+      "id": "r_gym",
+      "mode": "rot",
+      "cat": "commercial",
+      "ar": "صالة",
+      "en": "Gym",
+      "factor": 550
+    },
+    "r_mosque": {
+      "id": "r_mosque",
+      "mode": "rot",
+      "cat": "commercial",
+      "ar": "مسجد",
+      "en": "Mosque",
+      "factor": 400
+    },
+    "r_restaurant": {
+      "id": "r_restaurant",
+      "mode": "rot",
+      "cat": "commercial",
+      "ar": "مطعم",
+      "en": "Restaurant",
+      "factor": 500
+    },
+    "h_patient_room": {
+      "id": "h_patient_room",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "غرفة المريض",
+      "en": "Patient Room",
+      "oach": 2,
+      "tach": 6,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_corridor": {
+      "id": "h_corridor",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "ممر المرضى",
+      "en": "Patient Corridor",
+      "oach": 2,
+      "tach": 4,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_or": {
+      "id": "h_or",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "غرفة العمليات",
+      "en": "Operating Room",
+      "oach": 4,
+      "tach": 20,
+      "pres": "positive",
+      "tr": [
+        18,
+        26
+      ],
+      "rh": [
+        20,
+        60
+      ],
+      "note": "Operating room."
+    },
+    "h_or_sub": {
+      "id": "h_or_sub",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "تعقيم العمليات",
+      "en": "OR Sub-sterile",
+      "oach": 2,
+      "tach": 10,
+      "pres": "positive",
+      "tr": [
+        20,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_icu": {
+      "id": "h_icu",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "🫁 العناية المركزة",
+      "en": "🫁 ICU",
+      "oach": 2,
+      "tach": 8,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_ccu": {
+      "id": "h_ccu",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "🫀 رعاية القلب",
+      "en": "🫀 CCU",
+      "oach": 2,
+      "tach": 8,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_emergency": {
+      "id": "h_emergency",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "الطوارئ",
+      "en": "Emergency",
+      "oach": 2,
+      "tach": 12,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_exam": {
+      "id": "h_exam",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "🩺 غرفة الفحص",
+      "en": "🩺 Examination Room",
+      "oach": 2,
+      "tach": 6,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_treatment": {
+      "id": "h_treatment",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "غرفة العلاج",
+      "en": "Treatment Room",
+      "oach": 2,
+      "tach": 6,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_medication": {
+      "id": "h_medication",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "غرفة الأدوية",
+      "en": "Medication Room",
+      "oach": 2,
+      "tach": 4,
+      "pres": "positive",
+      "tr": [
+        20,
+        23
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_isolation": {
+      "id": "h_isolation",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "غرفة العزل",
+      "en": "Isolation Room",
+      "oach": 2,
+      "tach": 12,
+      "pres": "negative",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_airborne": {
+      "id": "h_airborne",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "عزل الهواء",
+      "en": "Airborne Precaution",
+      "oach": 2,
+      "tach": 12,
+      "pres": "negative",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_protective": {
+      "id": "h_protective",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "العزل الوقائي",
+      "en": "Protective Environment",
+      "oach": 2,
+      "tach": 12,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_nicu": {
+      "id": "h_nicu",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "حديثي الولادة",
+      "en": "NICU",
+      "oach": 2,
+      "tach": 6,
+      "pres": "positive",
+      "tr": [
+        22,
+        26
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_nursery": {
+      "id": "h_nursery",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "حضانة الأطفال",
+      "en": "Newborn Nursery",
+      "oach": 2,
+      "tach": 6,
+      "pres": "neutral",
+      "tr": [
+        22,
+        26
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_labor": {
+      "id": "h_labor",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "غرفة الولادة",
+      "en": "Labor & Delivery",
+      "oach": 2,
+      "tach": 6,
+      "pres": "neutral",
+      "tr": [
+        20,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_lab": {
+      "id": "h_lab",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "المختبر",
+      "en": "Laboratory",
+      "oach": 2,
+      "tach": 6,
+      "pres": "negative",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_pathology": {
+      "id": "h_pathology",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "الباثولوجيا",
+      "en": "Pathology Lab",
+      "oach": 2,
+      "tach": 10,
+      "pres": "negative",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_autopsy": {
+      "id": "h_autopsy",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "غرفة التشريح",
+      "en": "Autopsy Room",
+      "oach": 2,
+      "tach": 12,
+      "pres": "negative",
+      "tr": [
+        16,
+        21
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_radiology": {
+      "id": "h_radiology",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "🩻 قسم الأشعة",
+      "en": "🩻 Radiology",
+      "oach": 2,
+      "tach": 6,
+      "pres": "neutral",
+      "tr": [
+        20,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_mri": {
+      "id": "h_mri",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "الرنين المغناطيسي",
+      "en": "MRI Room",
+      "oach": 3,
+      "tach": 8,
+      "pres": "neutral",
+      "tr": [
+        18,
+        22
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_dialysis": {
+      "id": "h_dialysis",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "🩸 الغسيل الكلوي",
+      "en": "🩸 Dialysis",
+      "oach": 2,
+      "tach": 6,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_sterile_decontam": {
+      "id": "h_sterile_decontam",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "إزالة التلوث",
+      "en": "Sterile Decontam",
+      "oach": 2,
+      "tach": 10,
+      "pres": "negative",
+      "tr": [
+        16,
+        18
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_sterile_clean": {
+      "id": "h_sterile_clean",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "التجميع النظيف",
+      "en": "Sterile Clean Assembly",
+      "oach": 2,
+      "tach": 4,
+      "pres": "positive",
+      "tr": [
+        20,
+        23
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_sterile_storage": {
+      "id": "h_sterile_storage",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "تخزين المعقم",
+      "en": "Sterile Storage",
+      "oach": 2,
+      "tach": 4,
+      "pres": "positive",
+      "tr": [
+        18,
+        22
+      ],
+      "rh": [
+        30,
+        50
+      ],
+      "note": ""
+    },
+    "h_dental": {
+      "id": "h_dental",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "كرسي الأسنان",
+      "en": "Dental Operatory",
+      "oach": 2,
+      "tach": 15,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_physio": {
+      "id": "h_physio",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "العلاج الطبيعي",
+      "en": "Physical Therapy",
+      "oach": 2,
+      "tach": 6,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_waiting": {
+      "id": "h_waiting",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "غرفة الانتظار",
+      "en": "Waiting Room",
+      "oach": 2,
+      "tach": 8,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_nurse": {
+      "id": "h_nurse",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "محطة التمريض",
+      "en": "Nurse Station",
+      "oach": 2,
+      "tach": 4,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_pharmacy": {
+      "id": "h_pharmacy",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "الصيدلية",
+      "en": "Pharmacy",
+      "oach": 2,
+      "tach": 6,
+      "pres": "positive",
+      "tr": [
+        18,
+        22
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_hkitchen": {
+      "id": "h_hkitchen",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "مطبخ المستشفى",
+      "en": "Hospital Kitchen",
+      "oach": 2,
+      "tach": 15,
+      "pres": "negative",
+      "tr": [
+        18,
+        26
+      ],
+      "rh": [
+        30,
+        65
+      ],
+      "note": ""
+    },
+    "h_soiled": {
+      "id": "h_soiled",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "النفايات الملوثة",
+      "en": "Soiled Utility",
+      "oach": 2,
+      "tach": 10,
+      "pres": "negative",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_clean": {
+      "id": "h_clean",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "الخدمات النظيفة",
+      "en": "Clean Utility",
+      "oach": 2,
+      "tach": 4,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
+    },
+    "h_toilet": {
+      "id": "h_toilet",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "حمام المريض",
+      "en": "Patient Toilet",
+      "oach": 0,
+      "tach": 10,
+      "pres": "negative",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        65
+      ],
+      "note": "Exhaust only."
+    },
+    "h_records": {
+      "id": "h_records",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "السجلات الطبية",
+      "en": "Medical Records",
+      "oach": 2,
+      "tach": 4,
+      "pres": "neutral",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        30,
+        60
+      ],
+      "note": ""
     }
+  },
+  "DEVS": [
+    {
+      "id": "led",
+      "g": "light",
+      "e": "💡",
+      "ar": "إضاءة LED",
+      "en": "LED Light",
+      "w": 15
+    },
+    {
+      "id": "fluor",
+      "g": "light",
+      "e": "🔦",
+      "ar": "فلورسنت",
+      "en": "Fluorescent",
+      "w": 40
+    },
+    {
+      "id": "spot",
+      "g": "light",
+      "e": "🔆",
+      "ar": "سبوت لايت",
+      "en": "Spotlight",
+      "w": 50
+    },
+    {
+      "id": "ledpanel",
+      "g": "light",
+      "e": "🟦",
+      "ar": "لوحة LED 60x60",
+      "en": "LED Panel 60x60",
+      "w": 36
+    },
+    {
+      "id": "dispenser",
+      "g": "office",
+      "e": "🚰",
+      "ar": "واتر كولر",
+      "en": "Water Dispenser",
+      "w": 500
+    },
+    {
+      "id": "phone",
+      "g": "office",
+      "e": "📱",
+      "ar": "شاحن جوال",
+      "en": "Phone Charger",
+      "w": 20
+    },
+    {
+      "id": "pc",
+      "g": "office",
+      "e": "💻",
+      "ar": "كمبيوتر مكتبي",
+      "en": "Desktop PC",
+      "w": 300
+    },
+    {
+      "id": "laptop",
+      "g": "office",
+      "e": "💻",
+      "ar": "لابتوب",
+      "en": "Laptop",
+      "w": 65
+    },
+    {
+      "id": "monitor",
+      "g": "office",
+      "e": "🖥️",
+      "ar": "شاشة",
+      "en": "Monitor",
+      "w": 40
+    },
+    {
+      "id": "printer",
+      "g": "office",
+      "e": "🖨️",
+      "ar": "طابعة ليزر",
+      "en": "Laser Printer",
+      "w": 500
+    },
+    {
+      "id": "server",
+      "g": "office",
+      "e": "🗄️",
+      "ar": "سيرفر",
+      "en": "Server",
+      "w": 500
+    },
+    {
+      "id": "router",
+      "g": "office",
+      "e": "📡",
+      "ar": "راوتر",
+      "en": "Router/Switch",
+      "w": 20
+    },
+    {
+      "id": "ups",
+      "g": "office",
+      "e": "🔋",
+      "ar": "UPS",
+      "en": "UPS",
+      "w": 600
+    },
+    {
+      "id": "projector",
+      "g": "office",
+      "e": "📽️",
+      "ar": "بروجكتور",
+      "en": "Projector",
+      "w": 300
+    },
+    {
+      "id": "copier",
+      "g": "office",
+      "e": "📠",
+      "ar": "آلة تصوير",
+      "en": "Copier/Scanner",
+      "w": 1200
+    },
+    {
+      "id": "tv",
+      "g": "home",
+      "e": "📺",
+      "ar": "تلفزيون",
+      "en": "TV",
+      "w": 150
+    },
+    {
+      "id": "fridge",
+      "g": "home",
+      "e": "🧊",
+      "ar": "ثلاجة",
+      "en": "Refrigerator",
+      "w": 150
+    },
+    {
+      "id": "fridgelg",
+      "g": "home",
+      "e": "🏠",
+      "ar": "ثلاجة كبيرة",
+      "en": "Side-by-Side Fridge",
+      "w": 250
+    },
+    {
+      "id": "microwave",
+      "g": "home",
+      "e": "📦",
+      "ar": "ميكروويف",
+      "en": "Microwave",
+      "w": 1000
+    },
+    {
+      "id": "coffee",
+      "g": "home",
+      "e": "☕",
+      "ar": "ماكينة قهوة",
+      "en": "Coffee Machine",
+      "w": 1500
+    },
+    {
+      "id": "oven",
+      "g": "home",
+      "e": "🔥",
+      "ar": "فرن كهربائي",
+      "en": "Electric Oven",
+      "w": 2000
+    },
+    {
+      "id": "washer",
+      "g": "home",
+      "e": "👕",
+      "ar": "غسالة",
+      "en": "Washing Machine",
+      "w": 500
+    },
+    {
+      "id": "dryer",
+      "g": "home",
+      "e": "🌀",
+      "ar": "مجفف",
+      "en": "Clothes Dryer",
+      "w": 5000
+    },
+    {
+      "id": "dishwasher",
+      "g": "home",
+      "e": "🍽️",
+      "ar": "غسالة صحون",
+      "en": "Dishwasher",
+      "w": 1800
+    },
+    {
+      "id": "iron",
+      "g": "home",
+      "e": "♨️",
+      "ar": "مكواة",
+      "en": "Clothes Iron",
+      "w": 2200
+    },
+    {
+      "id": "vacuum",
+      "g": "home",
+      "e": "🌪️",
+      "ar": "مكنسة",
+      "en": "Vacuum Cleaner",
+      "w": 1200
+    },
+    {
+      "id": "hairdryer",
+      "g": "home",
+      "e": "💨",
+      "ar": "مجفف شعر",
+      "en": "Hair Dryer",
+      "w": 1800
+    },
+    {
+      "id": "kettle",
+      "g": "home",
+      "e": "🫖",
+      "ar": "غلاية ماء",
+      "en": "Electric Kettle",
+      "w": 2000
+    },
+    {
+      "id": "xray",
+      "g": "health",
+      "e": "🩻",
+      "ar": "جهاز أشعة",
+      "en": "X-Ray Machine",
+      "w": 5000
+    },
+    {
+      "id": "mri",
+      "g": "health",
+      "e": "🧲",
+      "ar": "جهاز MRI",
+      "en": "MRI Machine",
+      "w": 35000
+    },
+    {
+      "id": "ct",
+      "g": "health",
+      "e": "🔬",
+      "ar": "جهاز CT",
+      "en": "CT Scanner",
+      "w": 30000
+    },
+    {
+      "id": "ultrasound",
+      "g": "health",
+      "e": "🩺",
+      "ar": "سونار",
+      "en": "Ultrasound",
+      "w": 500
+    },
+    {
+      "id": "ventilator",
+      "g": "health",
+      "e": "🫁",
+      "ar": "تنفس اصطناعي",
+      "en": "Ventilator",
+      "w": 150
+    },
+    {
+      "id": "ecg",
+      "g": "health",
+      "e": "💓",
+      "ar": "رسم القلب",
+      "en": "ECG Machine",
+      "w": 40
+    },
+    {
+      "id": "defib",
+      "g": "health",
+      "e": "⚡",
+      "ar": "صدمة كهربائية",
+      "en": "Defibrillator",
+      "w": 200
+    },
+    {
+      "id": "infusion",
+      "g": "health",
+      "e": "💉",
+      "ar": "مضخة تسريب",
+      "en": "IV Infusion Pump",
+      "w": 12
+    },
+    {
+      "id": "patmon",
+      "g": "health",
+      "e": "📊",
+      "ar": "مراقب المريض",
+      "en": "Patient Monitor",
+      "w": 150
+    },
+    {
+      "id": "autoclave",
+      "g": "health",
+      "e": "🧼",
+      "ar": "أوتوكلاف",
+      "en": "Autoclave Sterilizer",
+      "w": 3000
+    },
+    {
+      "id": "incubator",
+      "g": "health",
+      "e": "🍼",
+      "ar": "حاضنة أطفال",
+      "en": "Infant Incubator",
+      "w": 500
+    },
+    {
+      "id": "bloodbank",
+      "g": "health",
+      "e": "🩸",
+      "ar": "ثلاجة بنك الدم",
+      "en": "Blood Bank Fridge",
+      "w": 800
+    },
+    {
+      "id": "anesthesia",
+      "g": "health",
+      "e": "😷",
+      "ar": "جهاز تخدير",
+      "en": "Anesthesia Machine",
+      "w": 500
+    },
+    {
+      "id": "dental",
+      "g": "health",
+      "e": "🦷",
+      "ar": "كرسي أسنان",
+      "en": "Dental Unit",
+      "w": 750
+    },
+    {
+      "id": "centrifuge",
+      "g": "health",
+      "e": "🧪",
+      "ar": "طرد مركزي",
+      "en": "Centrifuge",
+      "w": 300
+    },
+    {
+      "id": "pcr",
+      "g": "health",
+      "e": "🧬",
+      "ar": "جهاز PCR",
+      "en": "PCR Machine",
+      "w": 1200
+    },
+    {
+      "id": "pharmfridge",
+      "g": "health",
+      "e": "💊",
+      "ar": "ثلاجة أدوية",
+      "en": "Pharmacy Fridge",
+      "w": 600
+    },
+    {
+      "id": "surglight",
+      "g": "health",
+      "e": "🔦",
+      "ar": "لمبة عمليات",
+      "en": "Surgical Light",
+      "w": 300
+    }
+  ],
+  "AC_CATALOG": {
+    "split": [
+      {
+        "btu": 6000,
+        "label": {
+          "ar": "6,000 BTU (0.5 TR)",
+          "en": "6,000 BTU (0.5 TR)"
+        }
+      },
+      {
+        "btu": 7000,
+        "label": {
+          "ar": "7,000 BTU (0.58 TR)",
+          "en": "7,000 BTU (0.58 TR)"
+        }
+      },
+      {
+        "btu": 8000,
+        "label": {
+          "ar": "8,000 BTU (0.67 TR)",
+          "en": "8,000 BTU (0.67 TR)"
+        }
+      },
+      {
+        "btu": 9000,
+        "label": {
+          "ar": "9,000 BTU (0.75 TR — 9k)",
+          "en": "9,000 BTU (0.75 TR — 9k)"
+        }
+      },
+      {
+        "btu": 10000,
+        "label": {
+          "ar": "10,000 BTU (0.83 TR)",
+          "en": "10,000 BTU (0.83 TR)"
+        }
+      },
+      {
+        "btu": 11000,
+        "label": {
+          "ar": "11,000 BTU (0.92 TR)",
+          "en": "11,000 BTU (0.92 TR)"
+        }
+      },
+      {
+        "btu": 12000,
+        "label": {
+          "ar": "12,000 BTU (1 TR — 12k)",
+          "en": "12,000 BTU (1 TR — 12k)"
+        }
+      },
+      {
+        "btu": 13000,
+        "label": {
+          "ar": "13,000 BTU (1.08 TR)",
+          "en": "13,000 BTU (1.08 TR)"
+        }
+      },
+      {
+        "btu": 14000,
+        "label": {
+          "ar": "14,000 BTU (1.17 TR)",
+          "en": "14,000 BTU (1.17 TR)"
+        }
+      },
+      {
+        "btu": 15000,
+        "label": {
+          "ar": "15,000 BTU (1.25 TR)",
+          "en": "15,000 BTU (1.25 TR)"
+        }
+      },
+      {
+        "btu": 16000,
+        "label": {
+          "ar": "16,000 BTU (1.33 TR)",
+          "en": "16,000 BTU (1.33 TR)"
+        }
+      },
+      {
+        "btu": 18000,
+        "label": {
+          "ar": "18,000 BTU (1.5 TR — 18k)",
+          "en": "18,000 BTU (1.5 TR — 18k)"
+        }
+      },
+      {
+        "btu": 20000,
+        "label": {
+          "ar": "20,000 BTU (1.67 TR)",
+          "en": "20,000 BTU (1.67 TR)"
+        }
+      },
+      {
+        "btu": 22000,
+        "label": {
+          "ar": "22,000 BTU (1.83 TR)",
+          "en": "22,000 BTU (1.83 TR)"
+        }
+      },
+      {
+        "btu": 24000,
+        "label": {
+          "ar": "24,000 BTU (2 TR — 24k)",
+          "en": "24,000 BTU (2 TR — 24k)"
+        }
+      },
+      {
+        "btu": 30000,
+        "label": {
+          "ar": "30,000 BTU (2.5 TR — 30k)",
+          "en": "30,000 BTU (2.5 TR — 30k)"
+        }
+      },
+      {
+        "btu": 36000,
+        "label": {
+          "ar": "36,000 BTU (3 TR — 36k)",
+          "en": "36,000 BTU (3 TR — 36k)"
+        }
+      }
+    ],
+    "floor": [
+      {
+        "btu": 18000,
+        "label": {
+          "ar": "18,000 BTU (1.5 TR — 18k)",
+          "en": "18,000 BTU (1.5 TR — 18k)"
+        }
+      },
+      {
+        "btu": 24000,
+        "label": {
+          "ar": "24,000 BTU (2 TR — 24k)",
+          "en": "24,000 BTU (2 TR — 24k)"
+        }
+      },
+      {
+        "btu": 30000,
+        "label": {
+          "ar": "30,000 BTU (2.5 TR — 30k)",
+          "en": "30,000 BTU (2.5 TR — 30k)"
+        }
+      },
+      {
+        "btu": 36000,
+        "label": {
+          "ar": "36,000 BTU (3 TR — 36k)",
+          "en": "36,000 BTU (3 TR — 36k)"
+        }
+      },
+      {
+        "btu": 42000,
+        "label": {
+          "ar": "42,000 BTU (3.5 TR — 42k)",
+          "en": "42,000 BTU (3.5 TR — 42k)"
+        }
+      },
+      {
+        "btu": 48000,
+        "label": {
+          "ar": "48,000 BTU (4 TR — 48k)",
+          "en": "48,000 BTU (4 TR — 48k)"
+        }
+      },
+      {
+        "btu": 54000,
+        "label": {
+          "ar": "54,000 BTU (4.5 TR)",
+          "en": "54,000 BTU (4.5 TR)"
+        }
+      },
+      {
+        "btu": 60000,
+        "label": {
+          "ar": "60,000 BTU (5 TR — 60k)",
+          "en": "60,000 BTU (5 TR — 60k)"
+        }
+      },
+      {
+        "btu": 72000,
+        "label": {
+          "ar": "72,000 BTU (6 TR)",
+          "en": "72,000 BTU (6 TR)"
+        }
+      }
+    ],
+    "ducted": [
+      {
+        "btu": 18000,
+        "label": {
+          "ar": "18,000 BTU (1.5 TR — 18k)",
+          "en": "18,000 BTU (1.5 TR — 18k)"
+        }
+      },
+      {
+        "btu": 24000,
+        "label": {
+          "ar": "24,000 BTU (2 TR — 24k)",
+          "en": "24,000 BTU (2 TR — 24k)"
+        }
+      },
+      {
+        "btu": 30000,
+        "label": {
+          "ar": "30,000 BTU (2.5 TR — 30k)",
+          "en": "30,000 BTU (2.5 TR — 30k)"
+        }
+      },
+      {
+        "btu": 36000,
+        "label": {
+          "ar": "36,000 BTU (3 TR — 36k)",
+          "en": "36,000 BTU (3 TR — 36k)"
+        }
+      },
+      {
+        "btu": 42000,
+        "label": {
+          "ar": "42,000 BTU (3.5 TR — 42k)",
+          "en": "42,000 BTU (3.5 TR — 42k)"
+        }
+      },
+      {
+        "btu": 48000,
+        "label": {
+          "ar": "48,000 BTU (4 TR — 48k)",
+          "en": "48,000 BTU (4 TR — 48k)"
+        }
+      },
+      {
+        "btu": 54000,
+        "label": {
+          "ar": "54,000 BTU (4.5 TR)",
+          "en": "54,000 BTU (4.5 TR)"
+        }
+      },
+      {
+        "btu": 60000,
+        "label": {
+          "ar": "60,000 BTU (5 TR — 60k)",
+          "en": "60,000 BTU (5 TR — 60k)"
+        }
+      },
+      {
+        "btu": 72000,
+        "label": {
+          "ar": "72,000 BTU (6 TR)",
+          "en": "72,000 BTU (6 TR)"
+        }
+      }
+    ],
+    "cassette": [
+      {
+        "btu": 18000,
+        "label": {
+          "ar": "18,000 BTU (1.5 TR — 18k)",
+          "en": "18,000 BTU (1.5 TR — 18k)"
+        }
+      },
+      {
+        "btu": 24000,
+        "label": {
+          "ar": "24,000 BTU (2 TR — 24k)",
+          "en": "24,000 BTU (2 TR — 24k)"
+        }
+      },
+      {
+        "btu": 30000,
+        "label": {
+          "ar": "30,000 BTU (2.5 TR — 30k)",
+          "en": "30,000 BTU (2.5 TR — 30k)"
+        }
+      },
+      {
+        "btu": 36000,
+        "label": {
+          "ar": "36,000 BTU (3 TR — 36k)",
+          "en": "36,000 BTU (3 TR — 36k)"
+        }
+      },
+      {
+        "btu": 42000,
+        "label": {
+          "ar": "42,000 BTU (3.5 TR — 42k)",
+          "en": "42,000 BTU (3.5 TR — 42k)"
+        }
+      },
+      {
+        "btu": 48000,
+        "label": {
+          "ar": "48,000 BTU (4 TR — 48k)",
+          "en": "48,000 BTU (4 TR — 48k)"
+        }
+      },
+      {
+        "btu": 54000,
+        "label": {
+          "ar": "54,000 BTU (4.5 TR)",
+          "en": "54,000 BTU (4.5 TR)"
+        }
+      },
+      {
+        "btu": 60000,
+        "label": {
+          "ar": "60,000 BTU (5 TR — 60k)",
+          "en": "60,000 BTU (5 TR — 60k)"
+        }
+      }
+    ],
+    "package": [
+      {
+        "btu": 36000,
+        "label": {
+          "ar": "36,000 BTU (3 TR)",
+          "en": "36,000 BTU (3 TR)"
+        }
+      },
+      {
+        "btu": 48000,
+        "label": {
+          "ar": "48,000 BTU (4 TR)",
+          "en": "48,000 BTU (4 TR)"
+        }
+      },
+      {
+        "btu": 60000,
+        "label": {
+          "ar": "60,000 BTU (5 TR)",
+          "en": "60,000 BTU (5 TR)"
+        }
+      },
+      {
+        "btu": 72000,
+        "label": {
+          "ar": "72,000 BTU (6 TR)",
+          "en": "72,000 BTU (6 TR)"
+        }
+      },
+      {
+        "btu": 90000,
+        "label": {
+          "ar": "90,000 BTU (7.5 TR)",
+          "en": "90,000 BTU (7.5 TR)"
+        }
+      },
+      {
+        "btu": 120000,
+        "label": {
+          "ar": "120,000 BTU (10 TR)",
+          "en": "120,000 BTU (10 TR)"
+        }
+      },
+      {
+        "btu": 150000,
+        "label": {
+          "ar": "150,000 BTU (12.5 TR)",
+          "en": "150,000 BTU (12.5 TR)"
+        }
+      },
+      {
+        "btu": 180000,
+        "label": {
+          "ar": "180,000 BTU (15 TR)",
+          "en": "180,000 BTU (15 TR)"
+        }
+      },
+      {
+        "btu": 240000,
+        "label": {
+          "ar": "240,000 BTU (20 TR)",
+          "en": "240,000 BTU (20 TR)"
+        }
+      },
+      {
+        "btu": 300000,
+        "label": {
+          "ar": "300,000 BTU (25 TR)",
+          "en": "300,000 BTU (25 TR)"
+        }
+      },
+      {
+        "btu": 360000,
+        "label": {
+          "ar": "360,000 BTU (30 TR)",
+          "en": "360,000 BTU (30 TR)"
+        }
+      }
+    ],
+    "vrf": [
+      {
+        "btu": 48000,
+        "label": {
+          "ar": "48,000 BTU (4 TR)",
+          "en": "48,000 BTU (4 TR)"
+        }
+      },
+      {
+        "btu": 60000,
+        "label": {
+          "ar": "60,000 BTU (5 TR)",
+          "en": "60,000 BTU (5 TR)"
+        }
+      },
+      {
+        "btu": 72000,
+        "label": {
+          "ar": "72,000 BTU (6 TR)",
+          "en": "72,000 BTU (6 TR)"
+        }
+      },
+      {
+        "btu": 96000,
+        "label": {
+          "ar": "96,000 BTU (8 TR)",
+          "en": "96,000 BTU (8 TR)"
+        }
+      },
+      {
+        "btu": 120000,
+        "label": {
+          "ar": "120,000 BTU (10 TR)",
+          "en": "120,000 BTU (10 TR)"
+        }
+      },
+      {
+        "btu": 144000,
+        "label": {
+          "ar": "144,000 BTU (12 TR)",
+          "en": "144,000 BTU (12 TR)"
+        }
+      },
+      {
+        "btu": 168000,
+        "label": {
+          "ar": "168,000 BTU (14 TR)",
+          "en": "168,000 BTU (14 TR)"
+        }
+      },
+      {
+        "btu": 192000,
+        "label": {
+          "ar": "192,000 BTU (16 TR)",
+          "en": "192,000 BTU (16 TR)"
+        }
+      },
+      {
+        "btu": 216000,
+        "label": {
+          "ar": "216,000 BTU (18 TR)",
+          "en": "216,000 BTU (18 TR)"
+        }
+      },
+      {
+        "btu": 240000,
+        "label": {
+          "ar": "240,000 BTU (20 TR)",
+          "en": "240,000 BTU (20 TR)"
+        }
+      },
+      {
+        "btu": 264000,
+        "label": {
+          "ar": "264,000 BTU (22 TR)",
+          "en": "264,000 BTU (22 TR)"
+        }
+      },
+      {
+        "btu": 288000,
+        "label": {
+          "ar": "288,000 BTU (24 TR)",
+          "en": "288,000 BTU (24 TR)"
+        }
+      },
+      {
+        "btu": 312000,
+        "label": {
+          "ar": "312,000 BTU (26 TR)",
+          "en": "312,000 BTU (26 TR)"
+        }
+      },
+      {
+        "btu": 336000,
+        "label": {
+          "ar": "336,000 BTU (28 TR)",
+          "en": "336,000 BTU (28 TR)"
+        }
+      },
+      {
+        "btu": 360000,
+        "label": {
+          "ar": "360,000 BTU (30 TR)",
+          "en": "360,000 BTU (30 TR)"
+        }
+      }
+    ],
+    "chiller_air": [
+      {
+        "btu": 240000,
+        "label": {
+          "ar": "240,000 BTU (20 TR)",
+          "en": "240,000 BTU (20 TR)"
+        }
+      },
+      {
+        "btu": 300000,
+        "label": {
+          "ar": "300,000 BTU (25 TR)",
+          "en": "300,000 BTU (25 TR)"
+        }
+      },
+      {
+        "btu": 360000,
+        "label": {
+          "ar": "360,000 BTU (30 TR)",
+          "en": "360,000 BTU (30 TR)"
+        }
+      },
+      {
+        "btu": 420000,
+        "label": {
+          "ar": "420,000 BTU (35 TR)",
+          "en": "420,000 BTU (35 TR)"
+        }
+      },
+      {
+        "btu": 480000,
+        "label": {
+          "ar": "480,000 BTU (40 TR)",
+          "en": "480,000 BTU (40 TR)"
+        }
+      },
+      {
+        "btu": 540000,
+        "label": {
+          "ar": "540,000 BTU (45 TR)",
+          "en": "540,000 BTU (45 TR)"
+        }
+      },
+      {
+        "btu": 600000,
+        "label": {
+          "ar": "600,000 BTU (50 TR)",
+          "en": "600,000 BTU (50 TR)"
+        }
+      },
+      {
+        "btu": 720000,
+        "label": {
+          "ar": "720,000 BTU (60 TR)",
+          "en": "720,000 BTU (60 TR)"
+        }
+      },
+      {
+        "btu": 840000,
+        "label": {
+          "ar": "840,000 BTU (70 TR)",
+          "en": "840,000 BTU (70 TR)"
+        }
+      },
+      {
+        "btu": 960000,
+        "label": {
+          "ar": "960,000 BTU (80 TR)",
+          "en": "960,000 BTU (80 TR)"
+        }
+      },
+      {
+        "btu": 1080000,
+        "label": {
+          "ar": "1,080,000 BTU (90 TR)",
+          "en": "1,080,000 BTU (90 TR)"
+        }
+      },
+      {
+        "btu": 1200000,
+        "label": {
+          "ar": "1,200,000 BTU (100 TR)",
+          "en": "1,200,000 BTU (100 TR)"
+        }
+      },
+      {
+        "btu": 1440000,
+        "label": {
+          "ar": "1,440,000 BTU (120 TR)",
+          "en": "1,440,000 BTU (120 TR)"
+        }
+      },
+      {
+        "btu": 1800000,
+        "label": {
+          "ar": "1,800,000 BTU (150 TR)",
+          "en": "1,800,000 BTU (150 TR)"
+        }
+      },
+      {
+        "btu": 2400000,
+        "label": {
+          "ar": "2,400,000 BTU (200 TR)",
+          "en": "2,400,000 BTU (200 TR)"
+        }
+      }
+    ],
+    "chiller_water": [
+      {
+        "btu": 360000,
+        "label": {
+          "ar": "360,000 BTU (30 TR)",
+          "en": "360,000 BTU (30 TR)"
+        }
+      },
+      {
+        "btu": 420000,
+        "label": {
+          "ar": "420,000 BTU (35 TR)",
+          "en": "420,000 BTU (35 TR)"
+        }
+      },
+      {
+        "btu": 480000,
+        "label": {
+          "ar": "480,000 BTU (40 TR)",
+          "en": "480,000 BTU (40 TR)"
+        }
+      },
+      {
+        "btu": 540000,
+        "label": {
+          "ar": "540,000 BTU (45 TR)",
+          "en": "540,000 BTU (45 TR)"
+        }
+      },
+      {
+        "btu": 600000,
+        "label": {
+          "ar": "600,000 BTU (50 TR)",
+          "en": "600,000 BTU (50 TR)"
+        }
+      },
+      {
+        "btu": 720000,
+        "label": {
+          "ar": "720,000 BTU (60 TR)",
+          "en": "720,000 BTU (60 TR)"
+        }
+      },
+      {
+        "btu": 840000,
+        "label": {
+          "ar": "840,000 BTU (70 TR)",
+          "en": "840,000 BTU (70 TR)"
+        }
+      },
+      {
+        "btu": 960000,
+        "label": {
+          "ar": "960,000 BTU (80 TR)",
+          "en": "960,000 BTU (80 TR)"
+        }
+      },
+      {
+        "btu": 1080000,
+        "label": {
+          "ar": "1,080,000 BTU (90 TR)",
+          "en": "1,080,000 BTU (90 TR)"
+        }
+      },
+      {
+        "btu": 1200000,
+        "label": {
+          "ar": "1,200,000 BTU (100 TR)",
+          "en": "1,200,000 BTU (100 TR)"
+        }
+      },
+      {
+        "btu": 1440000,
+        "label": {
+          "ar": "1,440,000 BTU (120 TR)",
+          "en": "1,440,000 BTU (120 TR)"
+        }
+      },
+      {
+        "btu": 1800000,
+        "label": {
+          "ar": "1,800,000 BTU (150 TR)",
+          "en": "1,800,000 BTU (150 TR)"
+        }
+      },
+      {
+        "btu": 2400000,
+        "label": {
+          "ar": "2,400,000 BTU (200 TR)",
+          "en": "2,400,000 BTU (200 TR)"
+        }
+      },
+      {
+        "btu": 3000000,
+        "label": {
+          "ar": "3,000,000 BTU (250 TR)",
+          "en": "3,000,000 BTU (250 TR)"
+        }
+      },
+      {
+        "btu": 3600000,
+        "label": {
+          "ar": "3,600,000 BTU (300 TR)",
+          "en": "3,600,000 BTU (300 TR)"
+        }
+      }
+    ],
+    "fcu": [
+      {
+        "btu": 4320,
+        "cfm": 200,
+        "label": {
+          "ar": "200 CFM (≈4,320 BTU/h)",
+          "en": "200 CFM (≈4,320 BTU/h)"
+        }
+      },
+      {
+        "btu": 6480,
+        "cfm": 300,
+        "label": {
+          "ar": "300 CFM (≈6,480 BTU/h)",
+          "en": "300 CFM (≈6,480 BTU/h)"
+        }
+      },
+      {
+        "btu": 8640,
+        "cfm": 400,
+        "label": {
+          "ar": "400 CFM (≈8,640 BTU/h)",
+          "en": "400 CFM (≈8,640 BTU/h)"
+        }
+      },
+      {
+        "btu": 10800,
+        "cfm": 500,
+        "label": {
+          "ar": "500 CFM (≈10,800 BTU/h)",
+          "en": "500 CFM (≈10,800 BTU/h)"
+        }
+      },
+      {
+        "btu": 12960,
+        "cfm": 600,
+        "label": {
+          "ar": "600 CFM (≈12,960 BTU/h)",
+          "en": "600 CFM (≈12,960 BTU/h)"
+        }
+      },
+      {
+        "btu": 15120,
+        "cfm": 700,
+        "label": {
+          "ar": "700 CFM (≈15,120 BTU/h)",
+          "en": "700 CFM (≈15,120 BTU/h)"
+        }
+      },
+      {
+        "btu": 17280,
+        "cfm": 800,
+        "label": {
+          "ar": "800 CFM (≈17,280 BTU/h)",
+          "en": "800 CFM (≈17,280 BTU/h)"
+        }
+      },
+      {
+        "btu": 19440,
+        "cfm": 900,
+        "label": {
+          "ar": "900 CFM (≈19,440 BTU/h)",
+          "en": "900 CFM (≈19,440 BTU/h)"
+        }
+      },
+      {
+        "btu": 21600,
+        "cfm": 1000,
+        "label": {
+          "ar": "1,000 CFM (≈21,600 BTU/h)",
+          "en": "1,000 CFM (≈21,600 BTU/h)"
+        }
+      },
+      {
+        "btu": 25920,
+        "cfm": 1200,
+        "label": {
+          "ar": "1,200 CFM (≈25,920 BTU/h)",
+          "en": "1,200 CFM (≈25,920 BTU/h)"
+        }
+      },
+      {
+        "btu": 30240,
+        "cfm": 1400,
+        "label": {
+          "ar": "1,400 CFM (≈30,240 BTU/h)",
+          "en": "1,400 CFM (≈30,240 BTU/h)"
+        }
+      },
+      {
+        "btu": 32400,
+        "cfm": 1500,
+        "label": {
+          "ar": "1,500 CFM (≈32,400 BTU/h)",
+          "en": "1,500 CFM (≈32,400 BTU/h)"
+        }
+      },
+      {
+        "btu": 38880,
+        "cfm": 1800,
+        "label": {
+          "ar": "1,800 CFM (≈38,880 BTU/h)",
+          "en": "1,800 CFM (≈38,880 BTU/h)"
+        }
+      },
+      {
+        "btu": 43200,
+        "cfm": 2000,
+        "label": {
+          "ar": "2,000 CFM (≈43,200 BTU/h)",
+          "en": "2,000 CFM (≈43,200 BTU/h)"
+        }
+      }
+    ],
+    "ahu": [
+      {
+        "btu": 32400,
+        "cfm": 1500,
+        "label": {
+          "ar": "1,500 CFM (≈32,400 BTU/h)",
+          "en": "1,500 CFM (≈32,400 BTU/h)"
+        }
+      },
+      {
+        "btu": 43200,
+        "cfm": 2000,
+        "label": {
+          "ar": "2,000 CFM (≈43,200 BTU/h)",
+          "en": "2,000 CFM (≈43,200 BTU/h)"
+        }
+      },
+      {
+        "btu": 54000,
+        "cfm": 2500,
+        "label": {
+          "ar": "2,500 CFM (≈54,000 BTU/h)",
+          "en": "2,500 CFM (≈54,000 BTU/h)"
+        }
+      },
+      {
+        "btu": 64800,
+        "cfm": 3000,
+        "label": {
+          "ar": "3,000 CFM (≈64,800 BTU/h)",
+          "en": "3,000 CFM (≈64,800 BTU/h)"
+        }
+      },
+      {
+        "btu": 75600,
+        "cfm": 3500,
+        "label": {
+          "ar": "3,500 CFM (≈75,600 BTU/h)",
+          "en": "3,500 CFM (≈75,600 BTU/h)"
+        }
+      },
+      {
+        "btu": 86400,
+        "cfm": 4000,
+        "label": {
+          "ar": "4,000 CFM (≈86,400 BTU/h)",
+          "en": "4,000 CFM (≈86,400 BTU/h)"
+        }
+      },
+      {
+        "btu": 97200,
+        "cfm": 4500,
+        "label": {
+          "ar": "4,500 CFM (≈97,200 BTU/h)",
+          "en": "4,500 CFM (≈97,200 BTU/h)"
+        }
+      },
+      {
+        "btu": 108000,
+        "cfm": 5000,
+        "label": {
+          "ar": "5,000 CFM (≈108,000 BTU/h)",
+          "en": "5,000 CFM (≈108,000 BTU/h)"
+        }
+      },
+      {
+        "btu": 129600,
+        "cfm": 6000,
+        "label": {
+          "ar": "6,000 CFM (≈129,600 BTU/h)",
+          "en": "6,000 CFM (≈129,600 BTU/h)"
+        }
+      },
+      {
+        "btu": 151200,
+        "cfm": 7000,
+        "label": {
+          "ar": "7,000 CFM (≈151,200 BTU/h)",
+          "en": "7,000 CFM (≈151,200 BTU/h)"
+        }
+      },
+      {
+        "btu": 172800,
+        "cfm": 8000,
+        "label": {
+          "ar": "8,000 CFM (≈172,800 BTU/h)",
+          "en": "8,000 CFM (≈172,800 BTU/h)"
+        }
+      },
+      {
+        "btu": 194400,
+        "cfm": 9000,
+        "label": {
+          "ar": "9,000 CFM (≈194,400 BTU/h)",
+          "en": "9,000 CFM (≈194,400 BTU/h)"
+        }
+      },
+      {
+        "btu": 216000,
+        "cfm": 10000,
+        "label": {
+          "ar": "10,000 CFM (≈216,000 BTU/h)",
+          "en": "10,000 CFM (≈216,000 BTU/h)"
+        }
+      },
+      {
+        "btu": 259200,
+        "cfm": 12000,
+        "label": {
+          "ar": "12,000 CFM (≈259,200 BTU/h)",
+          "en": "12,000 CFM (≈259,200 BTU/h)"
+        }
+      },
+      {
+        "btu": 324000,
+        "cfm": 15000,
+        "label": {
+          "ar": "15,000 CFM (≈324,000 BTU/h)",
+          "en": "15,000 CFM (≈324,000 BTU/h)"
+        }
+      }
+    ],
+    "window": [
+      {
+        "btu": 6000,
+        "label": {
+          "ar": "6,000 BTU (0.5 TR)",
+          "en": "6,000 BTU (0.5 TR)"
+        }
+      },
+      {
+        "btu": 8000,
+        "label": {
+          "ar": "8,000 BTU (0.67 TR)",
+          "en": "8,000 BTU (0.67 TR)"
+        }
+      },
+      {
+        "btu": 9000,
+        "label": {
+          "ar": "9,000 BTU (0.75 TR)",
+          "en": "9,000 BTU (0.75 TR)"
+        }
+      },
+      {
+        "btu": 10000,
+        "label": {
+          "ar": "10,000 BTU (0.83 TR)",
+          "en": "10,000 BTU (0.83 TR)"
+        }
+      },
+      {
+        "btu": 12000,
+        "label": {
+          "ar": "12,000 BTU (1 TR)",
+          "en": "12,000 BTU (1 TR)"
+        }
+      },
+      {
+        "btu": 14000,
+        "label": {
+          "ar": "14,000 BTU (1.17 TR)",
+          "en": "14,000 BTU (1.17 TR)"
+        }
+      },
+      {
+        "btu": 15000,
+        "label": {
+          "ar": "15,000 BTU (1.25 TR)",
+          "en": "15,000 BTU (1.25 TR)"
+        }
+      },
+      {
+        "btu": 16000,
+        "label": {
+          "ar": "16,000 BTU (1.33 TR)",
+          "en": "16,000 BTU (1.33 TR)"
+        }
+      },
+      {
+        "btu": 18000,
+        "label": {
+          "ar": "18,000 BTU (1.5 TR)",
+          "en": "18,000 BTU (1.5 TR)"
+        }
+      },
+      {
+        "btu": 24000,
+        "label": {
+          "ar": "24,000 BTU (2 TR)",
+          "en": "24,000 BTU (2 TR)"
+        }
+      }
+    ]
+  },
+  "UT_TO_CAT": {
+    "split": "split",
+    "floor": "floor",
+    "ducted": "ducted",
+    "cassette": "cassette",
+    "package": "package",
+    "vrf": "vrf",
+    "chiller_air": "chiller_air",
+    "chiller_water": "chiller_water",
+    "fcu": "fcu",
+    "ahu": "ahu",
+    "window": "window",
+    "chillerfcu": "fcu",
+    "chiller": "chiller_air"
+  },
+  "UT_LABELS_AR": {
+    "split": "سبليت جداري",
+    "floor": "سبليت دولابي",
+    "ducted": "مخفي (دكتد سبليت)",
+    "cassette": "كاسيت",
+    "package": "باكج روف توب",
+    "vrf": "VRF / VRV",
+    "chiller_air": "تشيلر هوائي",
+    "chiller_water": "تشيلر مائي",
+    "fcu": "وحدة مناولة / FCU",
+    "ahu": "وحدة مناولة هواء / AHU",
+    "window": "تكييف شباك"
+  },
+  "UT_LABELS_EN": {
+    "split": "Split (Wall)",
+    "floor": "Split (Floor Standing)",
+    "ducted": "Ducted Split",
+    "cassette": "Cassette",
+    "package": "Package (Rooftop)",
+    "vrf": "VRF/VRV",
+    "chiller_air": "Chiller (Air-Cooled)",
+    "chiller_water": "Chiller (Water-Cooled)",
+    "fcu": "FCU (Chilled Water)",
+    "ahu": "AHU (Chilled Water)",
+    "window": "Window AC"
+  },
+  "DUCT_WIDTHS": [
+    150,
+    200,
+    250,
+    300,
+    350,
+    400,
+    450,
+    500,
+    600,
+    700,
+    800,
+    900,
+    1000,
+    1100,
+    1200
+  ],
+  "DUCT_HEIGHTS": [
+    100,
+    150,
+    200,
+    250,
+    300,
+    350,
+    400,
+    450,
+    500,
+    600,
+    700,
+    800
   ]
 }
