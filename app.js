@@ -70,7 +70,11 @@ function initApp(){
   }
 }
 
-// ── FETCH DATA AND BOOT ─────────────────────────────────────────────────
+// ── BOOTSTRAP ────────────────────────────────────────────────────────────
+// NOTE: The DOMContentLoaded boot block below is DISABLED.
+// Bootstrapping is now handled by main.js which calls loadAppData() + initApp().
+// Do NOT re-enable this block — it would cause double initialisation.
+/*
 document.addEventListener('DOMContentLoaded', function(){
   fetch('./data.json')
     .then(function(r){
@@ -89,6 +93,7 @@ document.addEventListener('DOMContentLoaded', function(){
       document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#f87171;font-family:sans-serif"><h2>⚠️ Error loading app data</h2><p>' + err.message + '</p><p>Check that data.json is accessible.</p><button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:16px">Retry</button></div>';
     });
 });
+*/
 
 
 // ── DATA ──────────────────────────────────────────────────────────────────
@@ -171,7 +176,7 @@ var T = {
       qqty:'الكمية',qup:'سعر الوحدة',qlt:'إجمالي السطر',
       qtqty:'إجمالي الكمية',qtgrand:'الإجمالي النهائي',
       qempty:'لا توجد غرف — احسب غرفة أولاً',
-      qexport:'تصدير عرض السعر (CSV)',qdel:'🗑️ تم الحذف',qsttl:'⚙️ إعدادات عرض السعر',qsinst:'نسبة التركيب',qsvat:'تفعيل ضريبة القيمة المضافة',qsvalid:'مدة صلاحية العرض',qsnotes:'ملاحظات',qsnph:'مثال: العرض شامل التوريد والتركيب داخل المدينة.',v7:'7 أيام',v14:'14 يوم',v30:'30 يوم',qssubl:'المجموع الفرعي (المعدات)',qsinstl:'التركيب',qsvatl:'ضريبة القيمة المضافة 15%',qsqtyl:'إجمالي الكمية',expcsv:'📊 CSV',exphtml:'🖨️ فاتورة HTML',exppdf:'📥 تحميل PDF',cur:'ر.س',invtitle:'فاتورة / عرض سعر',invvalid:'صلاحية العرض',invdate:'التاريخ',invnotes:'ملاحظات',invroom:'نوع الغرفة',invvol:'الحجم',invppl:'أشخاص',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'الكمية',invup:'سعر الوحدة',invlt:'إجمالي السطر',invsubt:'المجموع الفرعي',invinst:'التركيب',invvat:'ضريبة 15%',invgrand:'الإجمالي النهائي',invdiscl:'تقدير أولي — لا يُعتمد للتصميم النهائي'},
+      qexport:'تصدير عرض السعر (CSV)',qdel:'🗑️ تم الحذف',qsttl:'⚙️ إعدادات عرض السعر',qsinst:'نسبة التركيب',qsvat:'تفعيل ضريبة القيمة المضافة',qsvalid:'مدة صلاحية العرض',qsnotes:'ملاحظات',qsnph:'مثال: العرض شامل التوريد والتركيب داخل المدينة.',v7:'7 أيام',v14:'14 يوم',v30:'30 يوم',qssubl:'المجموع الفرعي (المعدات)',qsinstl:'التركيب',qsvatl:'ضريبة القيمة المضافة 15%',qsqtyl:'إجمالي الكمية',expcsv:'📊 CSV',exphtml:'🖨️ فاتورة HTML',exppdf:'📥 تحميل PDF',exptechpdf:'🛠️ تقرير فني',invtitle:'فاتورة / عرض سعر',invvalid:'صلاحية العرض',invdate:'التاريخ',invnotes:'ملاحظات',invroom:'نوع الغرفة',invvol:'الحجم',invppl:'أشخاص',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'الكمية',invup:'سعر الوحدة',invlt:'إجمالي السطر',invsubt:'المجموع الفرعي',invinst:'التركيب',invvat:'ضريبة 15%',invgrand:'الإجمالي النهائي',invdiscl:'تقدير أولي — لا يُعتمد للتصميم النهائي'},
   en:{calc:'Calculate ▶',hclr:'Clear History',ncalc:'Calc',nhist:'Quotation',ncontact:'Contact',nset:'Settings',
       mltr:'Cooling Load',mlcfm:'Supply CFM',mlbtu:'Heat Load',mlmkt:'Market BTU',
       acttl:'Recommended AC Selection',
@@ -199,7 +204,7 @@ var T = {
       qqty:'Quantity',qup:'Unit Price',qlt:'Line Total',
       qtqty:'Total Quantity',qtgrand:'Grand Total',
       qempty:'No rooms saved — calculate a room first',
-      qexport:'Export Quotation (CSV)',qdel:'🗑️ Deleted',qsttl:'⚙️ Quotation Settings',qsinst:'Installation %',qsvat:'Enable VAT',qsvalid:'Quotation Validity',qsnotes:'Notes',qsnph:'Example: Price includes supply & installation within city limits.',v7:'7 days',v14:'14 days',v30:'30 days',qssubl:'Equipment Subtotal',qsinstl:'Installation',qsvatl:'VAT 15%',qsqtyl:'Total Quantity',expcsv:'📊 CSV',exphtml:'🖨️ Invoice HTML',exppdf:'📥 Download PDF',cur:'SAR',invtitle:'Quotation / Invoice',invvalid:'Validity',invdate:'Date',invnotes:'Notes',invroom:'Room Type',invvol:'Volume m³',invppl:'Persons',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'Qty',invup:'Unit Price',invlt:'Line Total',invsubt:'Equipment Subtotal',invinst:'Installation',invvat:'VAT 15%',invgrand:'Grand Total',invdiscl:'Preliminary estimate — not for final design submittal'}
+      qexport:'Export Quotation (CSV)',qdel:'🗑️ Deleted',qsttl:'⚙️ Quotation Settings',qsinst:'Installation %',qsvat:'Enable VAT',qsvalid:'Quotation Validity',qsnotes:'Notes',qsnph:'Example: Price includes supply & installation within city limits.',v7:'7 days',v14:'14 days',v30:'30 days',qssubl:'Equipment Subtotal',qsinstl:'Installation',qsvatl:'VAT 15%',qsqtyl:'Total Quantity',expcsv:'📊 CSV',exphtml:'🖨️ Invoice HTML',exppdf:'📥 Download PDF',exptechpdf:'🛠️ Tech Report',invtitle:'Quotation / Invoice',invvalid:'Validity',invdate:'Date',invnotes:'Notes',invroom:'Room Type',invvol:'Volume m³',invppl:'Persons',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'Qty',invup:'Unit Price',invlt:'Line Total',invsubt:'Equipment Subtotal',invinst:'Installation',invvat:'VAT 15%',invgrand:'Grand Total',invdiscl:'Preliminary estimate — not for final design submittal'}
 };
 function t(k){ return T[lang][k]||k; }
 
@@ -223,6 +228,7 @@ function applyLang(){
     'lbl-export':'expcsv',
     'lbl-export2':'exphtml',
     'lbl-export3':'exppdf',
+    'lbl-export4':'exptechpdf',
     'ml-tr':'mltr','ml-cfm':'mlcfm','ml-btu':'mlbtu','ml-mkt':'mlmkt',
     'ac-ttl':'acttl','lbl-add-quote':'laddquote',
     'ac-lbl-sys':'aclsys','ac-lbl-mode':'aclmode','ac-lbl-round':'aclround',
@@ -1554,7 +1560,105 @@ function _doExportPDF(){
 
 
 
-// ── AC SELECTION ──────────────────────────────────────────────────────────
+// ── TECH REPORT PDF EXPORT ────────────────────────────────────────────────
+function exportTechPDF(){
+  if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف':'⚠️ No rooms'); return; }
+  var h2cReady = typeof html2canvas !== 'undefined';
+  var jspdfReady = typeof window.jspdf !== 'undefined';
+  if(h2cReady && jspdfReady){ _doExportTechPDF(); return; }
+  var btn=G('btn-techpdf');
+  if(btn){ btn.disabled=true; btn.textContent=lang==='ar'?'جارٍ تحميل المكتبات...':'Loading libraries...'; }
+  var loaded=0, failed=0;
+  function onLoad(){ loaded++; if(loaded+failed>=2){ if(btn){btn.disabled=false;btn.innerHTML='🛠️ <span id="lbl-export4">'+(lang==='ar'?'تقرير فني':'Tech Report')+'</span>';} if(failed===0) _doExportTechPDF(); else toast(lang==='ar'?'⚠️ فشل تحميل مكتبة PDF':'⚠️ PDF library failed to load'); } }
+  function onErr(name){ failed++; console.warn(name+' failed'); onLoad(); }
+  function loadLib(url, name, ready){
+    if(ready){ loaded++; return; }
+    var s=document.createElement('script'); s.src=url; s.crossOrigin='anonymous';
+    s.onload=onLoad; s.onerror=function(){ onErr(name); };
+    document.body.appendChild(s);
+  }
+  loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','html2canvas',h2cReady);
+  loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js','jsPDF',jspdfReady);
+}
+function _doExportTechPDF(){
+  var btn=G('btn-techpdf');
+  if(btn){ btn.disabled=true; btn.textContent=lang==='ar'?'جارٍ التحميل...':'Generating...'; }
+
+  var c=invCommon();
+  var css=invSharedCss(c);
+  var page2Html=buildPage2(c);
+
+  var wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;left:-9999px;top:0;width:794px;background:#fff;z-index:-1;';
+  wrap.innerHTML=page2Html;
+  document.body.appendChild(wrap);
+
+  var styleEl=document.createElement('style');
+  styleEl.textContent=css;
+  wrap.prepend(styleEl);
+
+  var fontLink=document.createElement('link');
+  fontLink.rel='stylesheet';
+  fontLink.href='https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap';
+  wrap.prepend(fontLink);
+
+  var A4W=794, SCALE=2;
+  var jsPDF=window.jspdf.jsPDF;
+  var pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var pageW_mm=210, pageH_mm=297;
+
+  var pageEl=wrap.querySelector('#pdf-page2');
+
+  var doCapture=function(){
+    html2canvas(pageEl,{
+      scale:SCALE, useCORS:true, allowTaint:true,
+      backgroundColor:'#ffffff', width:A4W, windowWidth:A4W,
+      scrollX:0, scrollY:0, logging:false
+    }).then(function(canvas){
+      document.body.removeChild(wrap);
+      var canvH_mm=(canvas.height/canvas.width)*pageW_mm;
+      if(canvH_mm<=pageH_mm){
+        pdf.addImage(canvas.toDataURL('image/jpeg',0.93),'JPEG',0,0,pageW_mm,canvH_mm);
+      } else {
+        var sliceH_px=Math.floor((pageH_mm/pageW_mm)*canvas.width);
+        var yOff=0, isFirst=true;
+        while(yOff<canvas.height){
+          var sc=document.createElement('canvas');
+          sc.width=canvas.width;
+          var rem=canvas.height-yOff;
+          sc.height=Math.min(sliceH_px,rem);
+          var ctx=sc.getContext('2d');
+          ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,sc.width,sc.height);
+          ctx.drawImage(canvas,0,-yOff);
+          var sliceH_mm=(sc.height/canvas.width)*pageW_mm;
+          if(!isFirst) pdf.addPage();
+          pdf.addImage(sc.toDataURL('image/jpeg',0.93),'JPEG',0,0,pageW_mm,sliceH_mm);
+          isFirst=false; yOff+=sliceH_px;
+        }
+      }
+      var qno=(G('quote-no')||{value:''}).value.trim()||'';
+      var fname=qno ? 'TechReport_'+qno : 'TechReport_AirCalc';
+      pdf.save(fname+'.pdf');
+      toast(lang==='ar'?'📄 تم استخراج التقرير الفني':'📄 Technical report exported');
+      if(btn){ btn.disabled=false; btn.innerHTML='🛠️ <span id="lbl-export4">'+(lang==='ar'?'تقرير فني':'Tech Report')+'</span>'; }
+    }).catch(function(err){
+      document.body.removeChild(wrap);
+      console.error('TechPDF error:',err);
+      toast(lang==='ar'?'❌ فشل استخراج التقرير':'❌ Export failed');
+      if(btn){ btn.disabled=false; btn.innerHTML='🛠️ <span id="lbl-export4">'+(lang==='ar'?'تقرير فني':'Tech Report')+'</span>'; }
+    });
+  };
+
+  if(document.fonts&&document.fonts.ready){
+    document.fonts.ready.then(function(){
+      setTimeout(doCapture, lang==='ar' ? 800 : 400);
+    });
+  } else {
+    setTimeout(doCapture, lang==='ar' ? 1000 : 600);
+  }
+}
+
+
 // ── AC SYSTEM CATALOG (Saudi market) ────────────────────────────────────
 // Each entry: { btu: <BTU/h>, cfm: <optional CFM for FCU/AHU>, label: {ar, en} }
 // [DATA: AC_CATALOG loaded from data.json]
@@ -2707,3 +2811,4 @@ function initProjDropdowns(){
     });
   }
 }
+

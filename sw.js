@@ -3,7 +3,7 @@
 //   Network-first for index.html (always get latest shell)
 //   Cache-first for all other static assets
 
-const CACHE_NAME = 'aircalcpro-v1';
+const CACHE_NAME = 'aircalcpro-v2';
 
 const PRECACHE_ASSETS = [
   './index.html',
@@ -11,6 +11,9 @@ const PRECACHE_ASSETS = [
   './app.js',
   './data.json',
   './manifest.webmanifest',
+  './core/state.js',
+  './core/helpers.js',
+  './main.js',
   './icon-192.png',
   './icon-512.png',
   './icon-1024.png'
