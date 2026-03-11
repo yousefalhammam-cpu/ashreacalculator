@@ -440,13 +440,16 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<!-- Core foundation (sync — globals must exist before app.js) -->
+<!-- Phase 3: core foundation (sync) -->
 <script src="./core.js"></script>
-<!-- Phase 2: modules (sync — window.AppDuct etc must exist before app.js) -->
+<!-- Phase 3: modules (sync — window.App* must exist before app.js defer) -->
+<script src="./modules/devices.js"></script>
+<script src="./modules/history.js"></script>
 <script src="./modules/duct.js"></script>
 <script src="./modules/calc.js"></script>
 <script src="./modules/quote.js"></script>
-<!-- Legacy app logic (deferred — uses globals set above) -->
+<script src="./modules/pdf.js"></script>
+<!-- Legacy app logic (deferred — overwrites module globals with live-state versions) -->
 <script src="./app.js" defer></script>
 <!-- Bootstrap (deferred — runs after app.js defines loadAppData/initApp) -->
 <script src="./main.js" defer></script>
