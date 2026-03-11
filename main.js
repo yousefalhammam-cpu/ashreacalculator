@@ -1,7 +1,6 @@
 // ── AirCalc Pro — main.js ────────────────────────────────────────────────
-// New bootstrap entry point.
-// Replaces the DOMContentLoaded block that was inside app.js.
-// app.js DOMContentLoaded block must be commented out to avoid double-init.
+// Bootstrap entry point. Runs after DOM ready.
+// Phase 3: uses AppStorage directly instead of raw localStorage calls.
 
 (function() {
   'use strict';
@@ -29,52 +28,72 @@
     ].join('');
   }
 
-  // ── Restore localStorage state into AppState ─────────────────────────
+  // ── Restore state via AppStorage ─────────────────────────────────────────
+  // Phase 3: delegates entirely to AppStorage — no raw localStorage here.
   function restoreState() {
-    // History & quotation lines
-    S.hist   = H.safeJSONParse(localStorage.getItem('acp9h'), []);
-    S.qlines = H.safeJSONParse(localStorage.getItem('acp9q'), []);
-
-    // Pad qlines to match hist length
-    while (S.qlines.length < S.hist.length) {
-      var last = S.qlines.length > 0 ? S.qlines[S.qlines.length - 1] : {};
-      S.qlines.push({
-        qty: 1,
-        up: last.up || 0,
-        unitType: last.unitType || 'split',
-        selectedBtu: last.selectedBtu || 0
-      });
+    var AS = window.AppStorage;
+    if (!AS) {
+      console.warn('[AirCalc] AppStorage not available — falling back to raw localStorage');
+      _restoreStateLegacy();
+      return;
     }
-    S.qlines = S.qlines.slice(0, S.hist.length);
 
-    // Quotation settings
-    var qs = H.safeJSONParse(localStorage.getItem('acp9qs'), {});
+    // History + qlines
+    var histData = AS.restoreHistory();
+    S.hist   = histData.hist;
+    S.qlines = histData.qlines;
+
+    // Quote settings
+    var qs = AS.restoreQuoteSettings();
     if (qs.vatOn      !== undefined) S.vatOn      = qs.vatOn;
     if (qs.instPct)                  S.instPct    = qs.instPct;
     if (qs.qsValidity)               S.qsValidity = qs.qsValidity;
     if (qs.qsNotes    !== undefined) S.qsNotes    = qs.qsNotes;
 
     // Quote mode
-    var qm = localStorage.getItem('acp9mode');
-    if (qm === 'proj') S.quoteMode = 'proj';
+    S.quoteMode = AS.restoreQuoteMode();
 
     // Theme
-    var th = localStorage.getItem('acp9theme');
-    if (th === 'light') S.theme = 'light';
+    S.theme = AS.restoreTheme();
 
     // Bundle config
-    var bc = H.safeJSONParse(localStorage.getItem('ac_bundleConfig'), null);
+    var bc = AS.restoreBundleConfig();
     if (bc && typeof bc === 'object') {
-      Object.keys(bc).forEach(function(k) {
+      Object.keys(bc).forEach(function (k) {
         if (k in S.bundleConfig) S.bundleConfig[k] = bc[k];
       });
     }
 
-    console.log('[AirCalc] State restored —',
+    console.log('[AirCalc] State restored via AppStorage —',
       S.hist.length, 'history records,',
       'mode:', S.quoteMode,
       'theme:', S.theme
     );
+  }
+
+  // ── Legacy fallback (only if AppStorage unavailable) ─────────────────────
+  function _restoreStateLegacy() {
+    S.hist   = H.safeJSONParse(localStorage.getItem('acp9h'), []);
+    S.qlines = H.safeJSONParse(localStorage.getItem('acp9q'), []);
+    while (S.qlines.length < S.hist.length) {
+      var last = S.qlines.length > 0 ? S.qlines[S.qlines.length - 1] : {};
+      S.qlines.push({ qty:1, up: last.up||0, unitType: last.unitType||'split', selectedBtu: last.selectedBtu||0 });
+    }
+    S.qlines = S.qlines.slice(0, S.hist.length);
+    var qs = H.safeJSONParse(localStorage.getItem('acp9qs'), {});
+    if (qs.vatOn !== undefined) S.vatOn = qs.vatOn;
+    if (qs.instPct)             S.instPct = qs.instPct;
+    if (qs.qsValidity)          S.qsValidity = qs.qsValidity;
+    if (qs.qsNotes !== undefined) S.qsNotes = qs.qsNotes;
+    var qm = localStorage.getItem('acp9mode');
+    if (qm === 'proj') S.quoteMode = 'proj';
+    var th = localStorage.getItem('acp9theme');
+    if (th === 'light') S.theme = 'light';
+    var bc = H.safeJSONParse(localStorage.getItem('ac_bundleConfig'), null);
+    if (bc && typeof bc === 'object') {
+      Object.keys(bc).forEach(function (k) { if (k in S.bundleConfig) S.bundleConfig[k] = bc[k]; });
+    }
+    console.log('[AirCalc] State restored via legacy fallback —', S.hist.length, 'records');
   }
 
   // ── Register service worker ───────────────────────────────────────────
