@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0a0e17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AirCalc Pro">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png">
 <title>AirCalc Pro</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./styles.css">
@@ -323,10 +328,11 @@
         <div class="q-sr"><span class="q-sl" id="qt-qty-lbl">إجمالي الكمية</span><span class="q-sv" id="qt-total-qty">0</span></div>
         <div class="q-sr grow"><span class="q-sl" id="qt-grand-lbl">الإجمالي النهائي</span><span class="q-sv" id="qt-grand">0.00</span></div>
       </div>
-      <div class="exp-row" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="exp-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
         <button class="exp-btn-csv" onclick="exportCSV()">📊 <span id="lbl-export">CSV</span></button>
         <button class="exp-btn-inv" onclick="exportInvoiceHTML()">🖨️ <span id="lbl-export2">فاتورة HTML</span></button>
         <button class="exp-btn-pdf" id="btn-pdf" onclick="exportPDF()">📥 <span id="lbl-export3">تحميل PDF</span></button>
+        <button class="exp-btn-tech" id="btn-techpdf" onclick="exportTechPDF()">🛠️ <span id="lbl-export4">تقرير فني</span></button>
       </div>
     </div>
 
