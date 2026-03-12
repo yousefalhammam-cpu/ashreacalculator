@@ -14,13 +14,13 @@
   "categories": ["utilities", "productivity"],
   "screenshots": [
     {
-      "src": "./screenshots/home.png",
+      "src": "./home.png",
       "sizes": "1290x2796",
       "type": "image/png",
       "form_factor": "narrow"
     },
     {
-      "src": "./screenshots/quotation.png",
+      "src": "./quotation.png",
       "sizes": "1290x2796",
       "type": "image/png",
       "form_factor": "narrow"
