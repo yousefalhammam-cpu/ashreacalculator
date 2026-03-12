@@ -176,7 +176,7 @@ var T = {
       qqty:'الكمية',qup:'سعر الوحدة',qlt:'إجمالي السطر',
       qtqty:'إجمالي الكمية',qtgrand:'الإجمالي النهائي',
       qempty:'لا توجد غرف — احسب غرفة أولاً',
-      qexport:'تصدير عرض السعر (CSV)',qdel:'🗑️ تم الحذف',qsttl:'⚙️ إعدادات عرض السعر',qsinst:'نسبة التركيب',qsvat:'تفعيل ضريبة القيمة المضافة',qsvalid:'مدة صلاحية العرض',qsnotes:'ملاحظات',qsnph:'مثال: العرض شامل التوريد والتركيب داخل المدينة.',v7:'7 أيام',v14:'14 يوم',v30:'30 يوم',qssubl:'المجموع الفرعي (المعدات)',qsinstl:'التركيب',qsvatl:'ضريبة القيمة المضافة 15%',qsqtyl:'إجمالي الكمية',expcsv:'📊 CSV',exphtml:'🖨️ فاتورة HTML',exppdf:'📥 تحميل PDF',exptechpdf:'🛠️ تقرير فني',invtitle:'فاتورة / عرض سعر',invvalid:'صلاحية العرض',invdate:'التاريخ',invnotes:'ملاحظات',invroom:'نوع الغرفة',invvol:'الحجم',invppl:'أشخاص',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'الكمية',invup:'سعر الوحدة',invlt:'إجمالي السطر',invsubt:'المجموع الفرعي',invinst:'التركيب',invvat:'ضريبة 15%',invgrand:'الإجمالي النهائي',invdiscl:'تقدير أولي — لا يُعتمد للتصميم النهائي'},
+      qexport:'تصدير عرض السعر (CSV)',qdel:'🗑️ تم الحذف',qsttl:'⚙️ إعدادات عرض السعر',qsinst:'نسبة التركيب',qsvat:'تفعيل ضريبة القيمة المضافة',qsvalid:'مدة صلاحية العرض',qsnotes:'ملاحظات',qsnph:'مثال: العرض شامل التوريد والتركيب داخل المدينة.',v7:'7 أيام',v14:'14 يوم',v30:'30 يوم',qssubl:'المجموع الفرعي (المعدات)',qsinstl:'التركيب',qsvatl:'ضريبة القيمة المضافة 15%',qsqtyl:'إجمالي الكمية',expcsv:'CSV',exphtml:'فاتورة HTML',exppdf:'تحميل PDF',exptechpdf:'تقرير فني',invtitle:'فاتورة / عرض سعر',invvalid:'صلاحية العرض',invdate:'التاريخ',invnotes:'ملاحظات',invroom:'نوع الغرفة',invvol:'الحجم',invppl:'أشخاص',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'الكمية',invup:'سعر الوحدة',invlt:'إجمالي السطر',invsubt:'المجموع الفرعي',invinst:'التركيب',invvat:'ضريبة 15%',invgrand:'الإجمالي النهائي',invdiscl:'تقدير أولي — لا يُعتمد للتصميم النهائي'},
   en:{calc:'Calculate ▶',hclr:'Clear History',ncalc:'Calc',nhist:'Quotation',ncontact:'Contact',nset:'Settings',nprojects:'Projects',
       mltr:'Cooling Load',mlcfm:'Supply CFM',mlbtu:'Heat Load',mlmkt:'Market BTU',
       acttl:'Recommended AC Selection',
@@ -204,7 +204,7 @@ var T = {
       qqty:'Quantity',qup:'Unit Price',qlt:'Line Total',
       qtqty:'Total Quantity',qtgrand:'Grand Total',
       qempty:'No rooms saved — calculate a room first',
-      qexport:'Export Quotation (CSV)',qdel:'🗑️ Deleted',qsttl:'⚙️ Quotation Settings',qsinst:'Installation %',qsvat:'Enable VAT',qsvalid:'Quotation Validity',qsnotes:'Notes',qsnph:'Example: Price includes supply & installation within city limits.',v7:'7 days',v14:'14 days',v30:'30 days',qssubl:'Equipment Subtotal',qsinstl:'Installation',qsvatl:'VAT 15%',qsqtyl:'Total Quantity',expcsv:'📊 CSV',exphtml:'🖨️ Invoice HTML',exppdf:'📥 Download PDF',exptechpdf:'🛠️ Tech Report',invtitle:'Quotation / Invoice',invvalid:'Validity',invdate:'Date',invnotes:'Notes',invroom:'Room Type',invvol:'Volume m³',invppl:'Persons',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'Qty',invup:'Unit Price',invlt:'Line Total',invsubt:'Equipment Subtotal',invinst:'Installation',invvat:'VAT 15%',invgrand:'Grand Total',invdiscl:'Preliminary estimate — not for final design submittal'}
+      qexport:'Export Quotation (CSV)',qdel:'🗑️ Deleted',qsttl:'⚙️ Quotation Settings',qsinst:'Installation %',qsvat:'Enable VAT',qsvalid:'Quotation Validity',qsnotes:'Notes',qsnph:'Example: Price includes supply & installation within city limits.',v7:'7 days',v14:'14 days',v30:'30 days',qssubl:'Equipment Subtotal',qsinstl:'Installation',qsvatl:'VAT 15%',qsqtyl:'Total Quantity',expcsv:'CSV',exphtml:'Invoice HTML',exppdf:'Download PDF',exptechpdf:'Tech Report',invtitle:'Quotation / Invoice',invvalid:'Validity',invdate:'Date',invnotes:'Notes',invroom:'Room Type',invvol:'Volume m³',invppl:'Persons',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'Qty',invup:'Unit Price',invlt:'Line Total',invsubt:'Equipment Subtotal',invinst:'Installation',invvat:'VAT 15%',invgrand:'Grand Total',invdiscl:'Preliminary estimate — not for final design submittal'}
 };
 function t(k){ return T[lang][k]||k; }
 
@@ -1502,7 +1502,7 @@ function _doExportPDF(){
       else if(proj) fname=proj.replace(/[^a-zA-Z0-9\u0600-\u06FF_-]/g,'_');
       pdf.save(fname+'.pdf');
       toast(lang==='ar'?'📥 تم تحميل PDF':'📥 PDF downloaded');
-      if(btn){ btn.disabled=false; btn.innerHTML='📥 <span id="lbl-export3">'+(lang==='ar'?'تحميل PDF':'Download PDF')+'</span>'; }
+      if(btn){ btn.disabled=false; btn.innerHTML='<span id="lbl-export3">'+(lang==='ar'?'تحميل PDF':'Download PDF')+'</span>'; }
       return;
     }
     var pageEl=pages[pageIdx];
@@ -1539,7 +1539,7 @@ function _doExportPDF(){
       document.body.removeChild(wrap);
       console.error('PDF error:',err);
       toast(lang==='ar'?'❌ فشل التحميل':'❌ PDF failed');
-      if(btn){ btn.disabled=false; btn.innerHTML='📥 <span id="lbl-export3">'+(lang==='ar'?'تحميل PDF':'Download PDF')+'</span>'; }
+      if(btn){ btn.disabled=false; btn.innerHTML='<span id="lbl-export3">'+(lang==='ar'?'تحميل PDF':'Download PDF')+'</span>'; }
     });
   };
 
@@ -1569,7 +1569,7 @@ function exportTechPDF(){
   var btn=G('btn-techpdf');
   if(btn){ btn.disabled=true; btn.textContent=lang==='ar'?'جارٍ تحميل المكتبات...':'Loading libraries...'; }
   var loaded=0, failed=0;
-  function onLoad(){ loaded++; if(loaded+failed>=2){ if(btn){btn.disabled=false;btn.innerHTML='🛠️ <span id="lbl-export4">'+(lang==='ar'?'تقرير فني':'Tech Report')+'</span>';} if(failed===0) _doExportTechPDF(); else toast(lang==='ar'?'⚠️ فشل تحميل مكتبة PDF':'⚠️ PDF library failed to load'); } }
+  function onLoad(){ loaded++; if(loaded+failed>=2){ if(btn){btn.disabled=false;btn.innerHTML='<span id="lbl-export4">'+(lang==='ar'?'تقرير فني':'Tech Report')+'</span>';} if(failed===0) _doExportTechPDF(); else toast(lang==='ar'?'⚠️ فشل تحميل مكتبة PDF':'⚠️ PDF library failed to load'); } }
   function onErr(name){ failed++; console.warn(name+' failed'); onLoad(); }
   function loadLib(url, name, ready){
     if(ready){ loaded++; return; }
@@ -1640,12 +1640,12 @@ function _doExportTechPDF(){
       var fname=qno ? 'TechReport_'+qno : 'TechReport_AirCalc';
       pdf.save(fname+'.pdf');
       toast(lang==='ar'?'📄 تم استخراج التقرير الفني':'📄 Technical report exported');
-      if(btn){ btn.disabled=false; btn.innerHTML='🛠️ <span id="lbl-export4">'+(lang==='ar'?'تقرير فني':'Tech Report')+'</span>'; }
+      if(btn){ btn.disabled=false; btn.innerHTML='<span id="lbl-export4">'+(lang==='ar'?'تقرير فني':'Tech Report')+'</span>'; }
     }).catch(function(err){
       document.body.removeChild(wrap);
       console.error('TechPDF error:',err);
       toast(lang==='ar'?'❌ فشل استخراج التقرير':'❌ Export failed');
-      if(btn){ btn.disabled=false; btn.innerHTML='🛠️ <span id="lbl-export4">'+(lang==='ar'?'تقرير فني':'Tech Report')+'</span>'; }
+      if(btn){ btn.disabled=false; btn.innerHTML='<span id="lbl-export4">'+(lang==='ar'?'تقرير فني':'Tech Report')+'</span>'; }
     });
   };
 
