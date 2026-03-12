@@ -1,4 +1,5 @@
 {
+  "id": "/ashreacalculator/",
   "name": "AirCalc Pro",
   "short_name": "AirCalc",
   "description": "HVAC Engineering Suite for cooling load, airflow, quotation, duct sizing, and technical reports.",
@@ -11,6 +12,20 @@
   "lang": "ar",
   "dir": "rtl",
   "categories": ["utilities", "productivity"],
+  "screenshots": [
+    {
+      "src": "./screenshots/home.png",
+      "sizes": "1290x2796",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "./screenshots/quotation.png",
+      "sizes": "1290x2796",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
   "icons": [
     {
       "src": "./icon-192.png",
