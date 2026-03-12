@@ -2817,40 +2817,25 @@ function initProjDropdowns(){
 // H) PROJECTS MODULE — integration patches
 // ══════════════════════════════════════════════════════════════════
 
-// H1) Patch applyLang to refresh projects panel labels
+// H1) applyLang: update Projects panel labels and re-render if visible
 (function(){
   var _alOrig = applyLang;
   applyLang = function(){
     _alOrig();
     if(window.AppProjects) window.AppProjects.updateProjMgrLabels();
-    // Re-render if projects panel is visible
-    var pp = G('p-projects');
-    if(pp && pp.classList.contains('on')){
-      if(window.AppProjects) window.AppProjects.renderProjects();
-    }
+    var pp=G('p-projects');
+    if(pp && pp.classList.contains('on') && window.AppProjects) window.AppProjects.renderProjects();
   };
 })();
 
-// H2) Patch saveHist so every calculation auto-updates open project
+// H2) Optional auto-refresh for currently open project only
 (function(){
   var _shOrig = saveHist;
   saveHist = function(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     _shOrig(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata);
-    // If a project name is set, silently update/create the project
-    var projNameEl = G('quote-project');
-    if(projNameEl && projNameEl.value.trim() && window.AppProjects){
-      // Defer so hist/qlines are fully updated first
+    if (window.AppProjects && localStorage.getItem('aircalc_current_project_id')) {
       setTimeout(function(){
-        var name = projNameEl.value.trim();
-        var all  = window.AppProjects.getProjects();
-        var found = false;
-        for(var i=0;i<all.length;i++){
-          if(all[i].name.trim().toLowerCase()===name.toLowerCase()){
-            found=true; break;
-          }
-        }
-        // Only auto-update if project already exists (don't auto-create)
-        if(found) window.AppProjects.saveCurrentProject();
+        window.AppProjects.saveCurrentProject({ silentNavigate: true });
       }, 100);
     }
   };
