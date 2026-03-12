@@ -149,7 +149,7 @@ function rLabel(r){ return lang==='ar'?r.ar:r.en; }
 
 // ── LANG ──────────────────────────────────────────────────────────────────
 var T = {
-  ar:{calc:'احسب ▶',hclr:'مسح السجل',ncalc:'الحاسبة',nhist:'عرض السعر',ncontact:'تواصل',nset:'الإعدادات',
+  ar:{calc:'احسب ▶',hclr:'مسح السجل',ncalc:'الحاسبة',nhist:'عرض السعر',ncontact:'تواصل',nset:'الإعدادات',nprojects:'المشاريع',
       mltr:'حمل التبريد',mlcfm:'تدفق الإمداد',mlbtu:'حمل الحرارة',mlmkt:'BTU السوق',
       acttl:'اختيار نوع التكييف المقترح',
       laddquote:'أضف للعرض',
@@ -177,7 +177,7 @@ var T = {
       qtqty:'إجمالي الكمية',qtgrand:'الإجمالي النهائي',
       qempty:'لا توجد غرف — احسب غرفة أولاً',
       qexport:'تصدير عرض السعر (CSV)',qdel:'🗑️ تم الحذف',qsttl:'⚙️ إعدادات عرض السعر',qsinst:'نسبة التركيب',qsvat:'تفعيل ضريبة القيمة المضافة',qsvalid:'مدة صلاحية العرض',qsnotes:'ملاحظات',qsnph:'مثال: العرض شامل التوريد والتركيب داخل المدينة.',v7:'7 أيام',v14:'14 يوم',v30:'30 يوم',qssubl:'المجموع الفرعي (المعدات)',qsinstl:'التركيب',qsvatl:'ضريبة القيمة المضافة 15%',qsqtyl:'إجمالي الكمية',expcsv:'📊 CSV',exphtml:'🖨️ فاتورة HTML',exppdf:'📥 تحميل PDF',exptechpdf:'🛠️ تقرير فني',invtitle:'فاتورة / عرض سعر',invvalid:'صلاحية العرض',invdate:'التاريخ',invnotes:'ملاحظات',invroom:'نوع الغرفة',invvol:'الحجم',invppl:'أشخاص',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'الكمية',invup:'سعر الوحدة',invlt:'إجمالي السطر',invsubt:'المجموع الفرعي',invinst:'التركيب',invvat:'ضريبة 15%',invgrand:'الإجمالي النهائي',invdiscl:'تقدير أولي — لا يُعتمد للتصميم النهائي'},
-  en:{calc:'Calculate ▶',hclr:'Clear History',ncalc:'Calc',nhist:'Quotation',ncontact:'Contact',nset:'Settings',
+  en:{calc:'Calculate ▶',hclr:'Clear History',ncalc:'Calc',nhist:'Quotation',ncontact:'Contact',nset:'Settings',nprojects:'Projects',
       mltr:'Cooling Load',mlcfm:'Supply CFM',mlbtu:'Heat Load',mlmkt:'Market BTU',
       acttl:'Recommended AC Selection',
       laddquote:'Add to Quote',
@@ -215,7 +215,7 @@ function applyLang(){
   G('tog-lang').className = 'tog'+(lang==='ar'?' on':'');
   var m = {
     'lbl-calc':'calc','lbl-hclr':'hclr',
-    'nl-calc':'ncalc','nl-hist':'nhist','nl-contact':'ncontact','nl-settings':'nset',
+    'nl-calc':'ncalc','nl-hist':'nhist','nl-contact':'ncontact','nl-settings':'nset','nl-projects':'nprojects',
     'lbl-vol':'lvol','lbl-type':'ltype','lbl-ppl':'lppl',
     'lbl-add':'ladd','lbl-modal':'lmodal','lbl-dtot':'ldtot',
     'st-room':'sroom','st-dev':'sdev',
@@ -2812,3 +2812,62 @@ function initProjDropdowns(){
   }
 }
 
+
+// ══════════════════════════════════════════════════════════════════
+// H) PROJECTS MODULE — integration patches
+// ══════════════════════════════════════════════════════════════════
+
+// H1) Patch applyLang to refresh projects panel labels
+(function(){
+  var _alOrig = applyLang;
+  applyLang = function(){
+    _alOrig();
+    if(window.AppProjects) window.AppProjects.updateProjMgrLabels();
+    // Re-render if projects panel is visible
+    var pp = G('p-projects');
+    if(pp && pp.classList.contains('on')){
+      if(window.AppProjects) window.AppProjects.renderProjects();
+    }
+  };
+})();
+
+// H2) Patch saveHist so every calculation auto-updates open project
+(function(){
+  var _shOrig = saveHist;
+  saveHist = function(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
+    _shOrig(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata);
+    // If a project name is set, silently update/create the project
+    var projNameEl = G('quote-project');
+    if(projNameEl && projNameEl.value.trim() && window.AppProjects){
+      // Defer so hist/qlines are fully updated first
+      setTimeout(function(){
+        var name = projNameEl.value.trim();
+        var all  = window.AppProjects.getProjects();
+        var found = false;
+        for(var i=0;i<all.length;i++){
+          if(all[i].name.trim().toLowerCase()===name.toLowerCase()){
+            found=true; break;
+          }
+        }
+        // Only auto-update if project already exists (don't auto-create)
+        if(found) window.AppProjects.saveCurrentProject();
+      }, 100);
+    }
+  };
+})();
+
+// H3) goPanel patch — render projects list when switching to projects tab
+(function(){
+  var _gpOrig = goPanel;
+  goPanel = function(name){
+    _gpOrig(name);
+    if(name==='projects' && window.AppProjects){
+      window.AppProjects.updateProjMgrLabels();
+      window.AppProjects.renderProjects();
+    }
+  };
+})();
+
+// H4) Add "Save as New Project" button behaviour via Quotation save button
+// When user clicks save from projects panel it calls saveCurrentProject()
+// which is already wired. No extra patch needed.
