@@ -15,13 +15,13 @@
   "screenshots": [
     {
       "src": "./home.png",
-      "sizes": "1290x2796",
+      "sizes": "1260x2507",
       "type": "image/png",
       "form_factor": "narrow"
     },
     {
       "src": "./quotation.png",
-      "sizes": "1290x2796",
+      "sizes": "1260x2532",
       "type": "image/png",
       "form_factor": "narrow"
     }
