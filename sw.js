@@ -1,17 +1,12 @@
-// AirCalc Pro — Service Worker v3
+// AirCalc Pro — Service Worker
 // Cache strategy:
-//   Network-first for index.html (always get latest shell)
-//   Cache-first for all other static assets
-//
-// PRECACHE_ASSETS lists only files that actually exist in the repo.
-// core/state.js and core/helpers.js are NOT listed because the app
-// loads ./core.js as a single combined file. Listing non-existent
-// paths causes cache.addAll() to throw, aborting the install event
-// and preventing the SW from registering at all.
+//   Network-first for index.html
+//   Cache-first for static assets
 
 const CACHE_NAME = 'aircalcpro-v3';
 
 const PRECACHE_ASSETS = [
+  './',
   './index.html',
   './styles.css',
   './core.js',
@@ -19,97 +14,89 @@ const PRECACHE_ASSETS = [
   './main.js',
   './data.json',
   './manifest.webmanifest',
-  './modules/devices.js',
-  './modules/history.js',
-  './modules/duct.js',
-  './modules/calc.js',
-  './modules/quote.js',
-  './modules/pdf.js',
-  './modules/projects.js',
   './icon-192.png',
   './icon-512.png',
   './icon-1024.png'
 ];
 
-// ── INSTALL: precache all static assets ──────────────────────────────────
-self.addEventListener('install', function(event) {
+// Install
+self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(function(cache) {
+      .then(function (cache) {
         return cache.addAll(PRECACHE_ASSETS);
       })
-      .then(function() {
+      .then(function () {
         return self.skipWaiting();
       })
   );
 });
 
-// ── ACTIVATE: remove stale caches ────────────────────────────────────────
-self.addEventListener('activate', function(event) {
+// Activate
+self.addEventListener('activate', function (event) {
   event.waitUntil(
-    caches.keys()
-      .then(function(cacheNames) {
-        return Promise.all(
-          cacheNames
-            .filter(function(name) { return name !== CACHE_NAME; })
-            .map(function(name)   { return caches.delete(name);  })
-        );
-      })
-      .then(function() {
-        return self.clients.claim();
-      })
+    caches.keys().then(function (cacheNames) {
+      return Promise.all(
+        cacheNames
+          .filter(function (name) { return name !== CACHE_NAME; })
+          .map(function (name) { return caches.delete(name); })
+      );
+    }).then(function () {
+      return self.clients.claim();
+    })
   );
 });
 
-// ── FETCH: hybrid strategy ────────────────────────────────────────────────
-self.addEventListener('fetch', function(event) {
-  var url = event.request.url;
-
-  // Only handle same-origin GET requests
+// Fetch
+self.addEventListener('fetch', function (event) {
   if (event.request.method !== 'GET') return;
-  if (!url.startsWith(self.location.origin)) return;
 
-  var isHTML = url.endsWith('.html') ||
-               url.endsWith('/') ||
-               url === self.location.origin + '/ashreacalculator/';
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
+  const pathname = url.pathname;
+  const isHTML =
+    pathname.endsWith('.html') ||
+    pathname.endsWith('/') ||
+    pathname === '/ashreacalculator/' ||
+    pathname === '/ashreacalculator';
 
   if (isHTML) {
-    // Network-first: always try to get the freshest shell
     event.respondWith(
       fetch(event.request)
-        .then(function(response) {
+        .then(function (response) {
           if (response && response.status === 200) {
-            var clone = response.clone();
-            caches.open(CACHE_NAME).then(function(cache) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(function (cache) {
               cache.put(event.request, clone);
+              cache.put('./index.html', clone.clone());
             });
           }
           return response;
         })
-        .catch(function() {
+        .catch(function () {
           return caches.match(event.request)
-            .then(function(cached) {
-              return cached || caches.match('./index.html');
+            .then(function (cached) {
+              return cached || caches.match('./index.html') || caches.match('./');
             });
         })
     );
-  } else {
-    // Cache-first: serve instantly from cache, update in background
-    event.respondWith(
-      caches.match(event.request)
-        .then(function(cached) {
-          if (cached) return cached;
-          return fetch(event.request)
-            .then(function(response) {
-              if (response && response.status === 200) {
-                var clone = response.clone();
-                caches.open(CACHE_NAME).then(function(cache) {
-                  cache.put(event.request, clone);
-                });
-              }
-              return response;
-            });
-        })
-    );
+    return;
   }
+
+  event.respondWith(
+    caches.match(event.request).then(function (cached) {
+      if (cached) return cached;
+
+      return fetch(event.request).then(function (response) {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(function (cache) {
+            cache.put(event.request, clone);
+          });
+        }
+        return response;
+      });
+    })
+  );
 });
