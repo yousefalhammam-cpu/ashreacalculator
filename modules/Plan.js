@@ -1,464 +1,296 @@
-(function () {
-  'use strict';
+/**
+ * plan.js — AirCalc plan management module
+ * localStorage key: aircalc_plan
+ * Default plan: free
+ */
 
-  var PLAN_KEY = 'aircalc_plan';
-  var PRICE_KEY = 'aircalc_selected_price_plan';
-  var DEFAULT_PLAN = 'free';
-  var GUARDS_APPLIED = false;
+const PLAN_STORAGE_KEY = 'aircalc_plan';
 
-  function G(id){ return document.getElementById(id); }
+const FEATURE_ACCESS = {
+  free: {
+    basicCalculations: true,
+    exportCSV:         false,
+    exportPDF:         false,
+    unlimitedHistory:  false,
+    multiCurrency:     false,
+    advancedCharts:    false,
+    apiAccess:         false,
+    teamSharing:       false,
+    prioritySupport:   false,
+    customBranding:    false,
+  },
+  pro: {
+    basicCalculations: true,
+    exportCSV:         true,
+    exportPDF:         true,
+    unlimitedHistory:  true,
+    multiCurrency:     true,
+    advancedCharts:    true,
+    apiAccess:         true,
+    teamSharing:       false,
+    prioritySupport:   true,
+    customBranding:    false,
+  },
+  team: {
+    basicCalculations: true,
+    exportCSV:         true,
+    exportPDF:         true,
+    unlimitedHistory:  true,
+    multiCurrency:     true,
+    advancedCharts:    true,
+    apiAccess:         true,
+    teamSharing:       true,
+    prioritySupport:   true,
+    customBranding:    true,
+  },
+};
 
-  function isAr(){
-    return (typeof lang !== 'undefined' ? lang : 'ar') === 'ar';
+// Track selected billing period inside upgrade sheet
+let _selectedPriceType = 'annual';
+
+// ─── Core getters / setters ───────────────────────────────────────────────────
+
+/**
+ * Returns the user's current plan ('free' | 'pro' | 'team').
+ */
+export function getCurrentPlan() {
+  try {
+    const stored = localStorage.getItem(PLAN_STORAGE_KEY);
+    if (stored && FEATURE_ACCESS[stored]) return stored;
+  } catch (e) {
+    console.warn('[plan] localStorage unavailable, defaulting to free', e);
   }
+  return 'free';
+}
 
-  function toastMsg(msg){
-    if (typeof toast === 'function') toast(msg);
-    else alert(msg);
+/**
+ * Persists the current plan and refreshes all plan-aware UI.
+ * @param {'free'|'pro'|'team'} plan
+ */
+export function setCurrentPlan(plan) {
+  if (!FEATURE_ACCESS[plan]) {
+    console.error(`[plan] Unknown plan "${plan}". Valid values: ${Object.keys(FEATURE_ACCESS).join(', ')}`);
+    return;
   }
-
-  function normalizePlan(plan){
-    var p = String(plan || '').toLowerCase().trim();
-    if (['free', 'pro', 'monthly', 'yearly', 'lifetime'].indexOf(p) === -1) return DEFAULT_PLAN;
-    return p;
+  try {
+    localStorage.setItem(PLAN_STORAGE_KEY, plan);
+  } catch (e) {
+    console.warn('[plan] Could not persist plan to localStorage', e);
   }
+  updatePlanUI();
+  document.dispatchEvent(new CustomEvent('planChanged', { detail: { plan } }));
+}
 
-  function getCurrentPlan(){
-    try {
-      return normalizePlan(localStorage.getItem(PLAN_KEY) || DEFAULT_PLAN);
-    } catch(e){
-      return DEFAULT_PLAN;
+// ─── Feature access helpers ───────────────────────────────────────────────────
+
+/**
+ * Returns the full feature-access map for a given plan.
+ * @param {'free'|'pro'|'team'} plan
+ * @returns {Object}
+ */
+export function getFeatureAccess(plan) {
+  return FEATURE_ACCESS[plan] ?? FEATURE_ACCESS['free'];
+}
+
+/**
+ * Returns true if the user's current plan includes the given feature.
+ * @param {string} featureKey
+ * @returns {boolean}
+ */
+export function hasAccess(featureKey) {
+  const plan    = getCurrentPlan();
+  const access  = getFeatureAccess(plan);
+  return access[featureKey] === true;
+}
+
+/**
+ * Guards a feature gate. If the user doesn't have access, opens the upgrade
+ * sheet (with an optional custom message) and throws to halt execution.
+ * @param {string} featureKey
+ * @param {string} [message]
+ */
+export function requireFeature(featureKey, message) {
+  if (hasAccess(featureKey)) return;
+
+  const defaultMsg = `This feature requires a higher plan. Upgrade to unlock "${featureKey}".`;
+  const displayMsg = message || defaultMsg;
+
+  // Surface the message in the upgrade sheet subtitle if the element exists
+  const subtitle = document.querySelector('#upgrade-sheet .upgrade-subtitle');
+  if (subtitle) subtitle.textContent = displayMsg;
+
+  openUpgradeSheet();
+  throw new Error(`[plan] Access denied for feature "${featureKey}": ${displayMsg}`);
+}
+
+// ─── UI helpers ──────────────────────────────────────────────────────────────
+
+/**
+ * Refreshes every plan-aware element in the DOM:
+ *  - [data-plan-badge]          → text content set to current plan label
+ *  - [data-requires-feature]    → 'locked' class toggled based on access
+ *  - [data-plan-visible]        → element shown only when on the named plan
+ */
+export function updatePlanUI() {
+  const plan = getCurrentPlan();
+
+  // Update plan badge elements
+  document.querySelectorAll('[data-plan-badge]').forEach(el => {
+    el.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+    el.dataset.plan = plan;
+  });
+
+  // Toggle locked state on feature-gated elements
+  document.querySelectorAll('[data-requires-feature]').forEach(el => {
+    const feature = el.dataset.requiresFeature;
+    const locked  = !hasAccess(feature);
+    el.classList.toggle('locked', locked);
+    el.setAttribute('aria-disabled', String(locked));
+  });
+
+  // Show / hide plan-specific elements
+  document.querySelectorAll('[data-plan-visible]').forEach(el => {
+    const visibleFor = el.dataset.planVisible.split(',').map(s => s.trim());
+    el.hidden = !visibleFor.includes(plan);
+  });
+
+  // Mark active plan pill inside upgrade sheet (if already open)
+  document.querySelectorAll('[data-plan-option]').forEach(el => {
+    el.classList.toggle('active', el.dataset.planOption === plan);
+  });
+}
+
+// ─── Upgrade sheet ────────────────────────────────────────────────────────────
+
+/**
+ * Opens the upgrade bottom-sheet / modal.
+ */
+export function openUpgradeSheet() {
+  const sheet = document.getElementById('upgrade-sheet');
+  if (!sheet) {
+    console.warn('[plan] #upgrade-sheet element not found in DOM');
+    return;
+  }
+  sheet.classList.add('open');
+  sheet.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('sheet-open');
+
+  // Restore selected pill state
+  selectPricePill(_selectedPriceType);
+
+  // Trap focus inside sheet for accessibility
+  const firstFocusable = sheet.querySelector('button, [href], input, [tabindex]:not([tabindex="-1"])');
+  if (firstFocusable) firstFocusable.focus();
+}
+
+/**
+ * Closes the upgrade sheet.
+ * Accepts an optional Event so it can be used directly as an event listener.
+ * Clicking on the backdrop (outside the sheet card) also closes the sheet.
+ * @param {Event} [event]
+ */
+export function closeUpgradeSheet(event) {
+  // If triggered by a click, only close when clicking the backdrop, not the card
+  if (event && event.target) {
+    const card = document.querySelector('#upgrade-sheet .sheet-card');
+    if (card && card.contains(event.target) && event.target !== event.currentTarget) {
+      return;
     }
   }
 
-  function setCurrentPlan(plan){
-    var next = normalizePlan(plan);
-    try { localStorage.setItem(PLAN_KEY, next); } catch(e){}
-    updatePlanUI();
+  const sheet = document.getElementById('upgrade-sheet');
+  if (!sheet) return;
 
-    var label = getPlanLabel(next);
-    toastMsg(isAr() ? ('✅ تم تفعيل الخطة: ' + label) : ('✅ Plan activated: ' + label));
-    return next;
+  sheet.classList.remove('open');
+  sheet.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('sheet-open');
+}
+
+// ─── Pricing pill selection ───────────────────────────────────────────────────
+
+/**
+ * Highlights the chosen billing-period pill ('monthly' | 'annual') and
+ * updates any price display elements.
+ * @param {'monthly'|'annual'} type
+ */
+export function selectPricePill(type) {
+  _selectedPriceType = type;
+
+  document.querySelectorAll('[data-price-pill]').forEach(el => {
+    el.classList.toggle('selected', el.dataset.pricePill === type);
+  });
+
+  // Update price display elements if present
+  document.querySelectorAll('[data-price-display]').forEach(el => {
+    const monthly = el.dataset.priceMonthly;
+    const annual  = el.dataset.priceAnnual;
+    if (type === 'annual' && annual)  el.textContent = annual;
+    if (type === 'monthly' && monthly) el.textContent = monthly;
+  });
+
+  // Update savings badge visibility
+  const savingsBadge = document.querySelector('.savings-badge');
+  if (savingsBadge) savingsBadge.hidden = (type !== 'annual');
+}
+
+// ─── Upgrade action ───────────────────────────────────────────────────────────
+
+/**
+ * Handles the "Upgrade to Pro" CTA inside the upgrade sheet.
+ * Swap this body for a real payment/subscription flow as needed.
+ */
+export function upgradeToPro() {
+  const btn = document.querySelector('#upgrade-sheet .upgrade-cta-btn');
+
+  const SIMULATED_NETWORK_MS = 900;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
   }
 
-  function getPlanLabel(plan){
-    plan = normalizePlan(plan);
-    if (plan === 'free') return isAr() ? 'مجاني' : 'Free';
-    if (plan === 'pro') return 'Pro';
-    if (plan === 'monthly') return isAr() ? 'شهري' : 'Monthly';
-    if (plan === 'yearly') return isAr() ? 'سنوي' : 'Yearly';
-    if (plan === 'lifetime') return isAr() ? 'مدى الحياة' : 'Lifetime';
-    return plan;
-  }
-
-  function isPaidPlan(plan){
-    plan = normalizePlan(plan || getCurrentPlan());
-    return plan !== 'free';
-  }
-
-  function getFeatureAccess(plan){
-    plan = normalizePlan(plan || getCurrentPlan());
-
-    if (plan === 'free') {
-      return {
-        exportCSV: true,
-        exportPDF: false,
-        techReport: false,
-        unlimitedProjects: false,
-        projectMode: false,
-        ductSizing: false,
-        espCalc: false
-      };
-    }
-
-    return {
-      exportCSV: true,
-      exportPDF: true,
-      techReport: true,
-      unlimitedProjects: true,
-      projectMode: true,
-      ductSizing: true,
-      espCalc: true
-    };
-  }
-
-  function hasAccess(featureKey){
-    var access = getFeatureAccess(getCurrentPlan());
-    return !!access[featureKey];
-  }
-
-  function requireFeature(featureKey, message){
-    if (hasAccess(featureKey)) return true;
-
-    toastMsg(
-      message ||
-      (isAr()
-        ? 'هذه الميزة متاحة في النسخة المدفوعة فقط'
-        : 'This feature is available in the paid version only')
-    );
-
-    openUpgradeSheet();
-    return false;
-  }
-
-  function getSelectedPricePill(){
-    try {
-      return normalizePlan(localStorage.getItem(PRICE_KEY) || 'lifetime');
-    } catch(e){
-      return 'lifetime';
-    }
-  }
-
-  function selectPricePill(type){
-    var chosen = normalizePlan(type);
-    if (['monthly', 'yearly', 'lifetime'].indexOf(chosen) === -1) chosen = 'lifetime';
-
-    try { localStorage.setItem(PRICE_KEY, chosen); } catch(e){}
-
-    ['lifetime', 'yearly', 'monthly'].forEach(function (key) {
-      var el = G('pp-' + key);
-      if (!el) return;
-      if (key === chosen) el.classList.add('active');
-      else el.classList.remove('active');
-    });
-  }
-
-  function openUpgradeSheet(){
-    var ov = G('upgrade-overlay');
-    if (!ov) return;
-    ov.classList.remove('hidden');
-    ov.style.display = 'flex';
-  }
-
-  function closeUpgradeSheet(event){
-    if (event && event.target && event.target !== G('upgrade-overlay')) return;
-    var ov = G('upgrade-overlay');
-    if (!ov) return;
-    ov.classList.add('hidden');
-    ov.style.display = 'none';
-  }
-
-  function upgradeToPro(){
-    var selected = getSelectedPricePill();
-
-    if (selected === 'monthly') setCurrentPlan('monthly');
-    else if (selected === 'yearly') setCurrentPlan('yearly');
-    else if (selected === 'lifetime') setCurrentPlan('lifetime');
-    else setCurrentPlan('pro');
-
+  // ── Replace the setTimeout block below with your real payment integration ──
+  setTimeout(() => {
+    setCurrentPlan('pro');
     closeUpgradeSheet();
 
-    toastMsg(
-      isAr()
-        ? '⭐ تم تفعيل النسخة المدفوعة للتجربة'
-        : '⭐ Pro version activated for testing'
-    );
-  }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Upgrade to Pro';
+    }
 
-  function setText(id, value){
-    var el = G(id);
-    if (el) el.textContent = value;
-  }
-
-  function setPlanPill(el, plan){
-    if (!el) return;
-    el.classList.remove('free', 'pro', 'monthly', 'yearly', 'lifetime');
-
-    if (plan === 'free') el.classList.add('free');
-    else if (plan === 'monthly') el.classList.add('monthly');
-    else if (plan === 'yearly') el.classList.add('yearly');
-    else if (plan === 'lifetime') el.classList.add('lifetime');
-    else el.classList.add('pro');
-
-    el.textContent = getPlanLabel(plan);
-  }
-
-  function setLockedState(el, locked, lockedText){
-    if (!el) return;
-
-    el.disabled = !!locked;
-    el.classList.toggle('locked', !!locked);
-    el.style.opacity = locked ? '.6' : '';
-    el.style.filter = locked ? 'grayscale(.12)' : '';
-    el.style.cursor = locked ? 'not-allowed' : '';
-
-    if (locked) {
-      el.setAttribute('title', lockedText || (isAr() ? 'ميزة مدفوعة' : 'Paid feature'));
+    // Show a lightweight confirmation
+    const confirmation = document.getElementById('upgrade-confirmation');
+    if (confirmation) {
+      confirmation.hidden = false;
+      setTimeout(() => { confirmation.hidden = true; }, 4000);
     } else {
-      el.removeAttribute('title');
+      console.info('[plan] Successfully upgraded to Pro.');
     }
-  }
+  }, SIMULATED_NETWORK_MS);
+}
 
-  function updateHeaderBadge(plan){
-    var badge = G('header-plan-badge');
-    if (!badge) return;
+// ─── Auto-init ────────────────────────────────────────────────────────────────
 
-    if (plan === 'free') {
-      badge.textContent = 'FREE';
-      badge.style.background = 'linear-gradient(135deg,#cbd5e1,#f8fafc)';
-      badge.style.color = '#0f172a';
-      badge.style.border = '1px solid rgba(148,163,184,.45)';
-      badge.style.boxShadow = '0 0 12px rgba(148,163,184,.15)';
-    } else {
-      badge.textContent = 'PRO';
-      badge.style.background = 'linear-gradient(135deg,#fbbf24,#fde68a)';
-      badge.style.color = '#0f172a';
-      badge.style.border = '1px solid rgba(251,191,36,.55)';
-      badge.style.boxShadow = '0 0 12px rgba(251,191,36,.18)';
-    }
-  }
+/**
+ * Runs once the DOM is ready: initialises UI and wires up keyboard / backdrop
+ * close behaviour for the upgrade sheet.
+ */
+function _init() {
+  updatePlanUI();
 
-  function buildFeatureSummary(plan){
-    var paid = isPaidPlan(plan);
-
-    if (isAr()) {
-      return paid
-        ? 'الخطة المدفوعة مفعلة — جميع المزايا الاحترافية متاحة الآن.'
-        : 'الخطة المجانية مفعلة — الحسابات الأساسية و CSV متاحان، بينما PDF والتقرير الفني ووضع المشروع والمزايا المتقدمة مقفلة.';
-    }
-
-    return paid
-      ? 'Paid plan active — all premium features are available.'
-      : 'Free plan active — basic calculations and CSV are available, while PDF, technical report, project mode, and advanced features are locked.';
-  }
-
-  function buildFeaturesList(plan){
-    var paid = isPaidPlan(plan);
-    var items = paid
-      ? [
-          isAr() ? '✅ PDF متاح' : '✅ PDF enabled',
-          isAr() ? '✅ التقرير الفني متاح' : '✅ Technical report enabled',
-          isAr() ? '✅ مشاريع غير محدودة' : '✅ Unlimited projects',
-          isAr() ? '✅ وضع المشروع متاح' : '✅ Project mode enabled',
-          isAr() ? '✅ Duct Sizing متاح' : '✅ Duct sizing enabled',
-          isAr() ? '✅ ESP متاح' : '✅ ESP enabled'
-        ]
-      : [
-          isAr() ? '✅ CSV متاح' : '✅ CSV enabled',
-          isAr() ? '✅ حتى 3 مشاريع' : '✅ Up to 3 projects',
-          isAr() ? '🔒 PDF مقفل' : '🔒 PDF locked',
-          isAr() ? '🔒 التقرير الفني مقفل' : '🔒 Technical report locked',
-          isAr() ? '🔒 وضع المشروع مقفل' : '🔒 Project mode locked',
-          isAr() ? '🔒 Duct / ESP مقفل' : '🔒 Duct / ESP locked'
-        ];
-
-    var wrap = G('ptg-features');
-    if (!wrap) return;
-    wrap.innerHTML = items.map(function (txt) {
-      return '<div style="font-size:11px;color:var(--tm);padding:6px 8px;background:var(--s2);border:1px solid var(--b);border-radius:8px;">' + txt + '</div>';
-    }).join('');
-  }
-
-  function markActiveTestButton(plan){
-    ['free', 'pro', 'monthly', 'yearly'].forEach(function (key) {
-      var btn = G('tbtn-' + key);
-      if (!btn) return;
-
-      if (key === plan) {
-        btn.classList.add('active');
-        btn.style.border = '1px solid rgba(56,189,248,.5)';
-        btn.style.boxShadow = '0 0 0 2px rgba(56,189,248,.12)';
-        btn.style.opacity = '1';
-      } else {
-        btn.classList.remove('active');
-        btn.style.border = '';
-        btn.style.boxShadow = '';
-        btn.style.opacity = '.9';
-      }
-    });
-  }
-
-  function updatePremiumButtons(plan){
-    var isFree = plan === 'free';
-
-    setLockedState(G('btn-pdf'), isFree, isAr() ? 'PDF متاح في النسخة المدفوعة فقط' : 'PDF is available in Pro only');
-    setLockedState(G('btn-techpdf'), isFree, isAr() ? 'التقرير الفني متاح في النسخة المدفوعة فقط' : 'Technical report is available in Pro only');
-    setLockedState(G('mode-btn-proj'), isFree, isAr() ? 'وضع المشروع متاح في النسخة المدفوعة فقط' : 'Project mode is available in Pro only');
-
-    var ductBlock = G('proj-duct-block');
-    if (ductBlock) ductBlock.style.opacity = isFree ? '.55' : '';
-
-    var espBlock = G('esp-block');
-    if (espBlock) espBlock.style.opacity = isFree ? '.55' : '';
-  }
-
-  function updateUpgradeTexts(plan){
-    var paid = isPaidPlan(plan);
-    setText('sl-upgrade-lbl', paid ? (isAr() ? 'إدارة AirCalc Pro' : 'Manage AirCalc Pro') : (isAr() ? 'الترقية إلى AirCalc Pro' : 'Upgrade to AirCalc Pro'));
-    setText('sl-upgrade-sub', paid ? (isAr() ? 'النسخة المدفوعة مفعلة حالياً' : 'Paid plan is currently active') : (isAr() ? 'افتح PDF، التقرير الفني، مشاريع غير محدودة' : 'Unlock PDF, technical report, and unlimited projects'));
-    setText('ush-cta', paid ? (isAr() ? '✅ الخطة مفعلة' : '✅ Plan Active') : (isAr() ? '⭐ الترقية إلى Pro الآن' : '⭐ Upgrade to Pro Now'));
-  }
-
-  function updatePlanUI(){
-    var plan = getCurrentPlan();
-
-    setPlanPill(G('plan-status-pill'), plan);
-    setPlanPill(G('ptg-live-badge'), plan);
-    updateHeaderBadge(plan);
-
-    setText('ptg-title', isAr() ? 'حالة الخطة' : 'Plan Status');
-    setText('ptg-sub', isAr() ? 'اختبار سريع للخطط' : 'Quick plan testing');
-    setText('ptg-desc', buildFeatureSummary(plan));
-
-    setText('tbtn-free-lbl', 'Free');
-    setText('tbtn-free-sub', isAr() ? 'حساب + CSV' : 'Calc + CSV');
-    setText('tbtn-pro-lbl', 'Pro');
-    setText('tbtn-pro-sub', isAr() ? 'كل المزايا' : 'All features');
-    setText('tbtn-monthly-lbl', 'Monthly');
-    setText('tbtn-monthly-sub', isAr() ? '19 ر.س / شهر' : '19 SAR / month');
-    setText('tbtn-yearly-lbl', 'Yearly');
-    setText('tbtn-yearly-sub', isAr() ? '149 ر.س / سنة' : '149 SAR / year');
-
-    updatePremiumButtons(plan);
-    updateUpgradeTexts(plan);
-    buildFeaturesList(plan);
-    markActiveTestButton(plan);
-    selectPricePill(getSelectedPricePill());
-
-    var note = G('ush-note');
-    if (note) {
-      note.textContent = isAr()
-        ? 'للتجربة فقط — الدفع قيد التطوير'
-        : 'For testing only — billing is under development';
-    }
-  }
-
-  function applyPlanGuards(){
-    if (GUARDS_APPLIED) return;
-    GUARDS_APPLIED = true;
-
-    if (typeof window.exportPDF === 'function' && !window.exportPDF.__planWrapped) {
-      var _exportPDF = window.exportPDF;
-      window.exportPDF = function () {
-        if (!requireFeature('exportPDF', isAr() ? 'تصدير PDF متاح في النسخة المدفوعة فقط' : 'PDF export is available in Pro only')) return;
-        return _exportPDF.apply(this, arguments);
-      };
-      window.exportPDF.__planWrapped = true;
-    }
-
-    if (typeof window.exportTechPDF === 'function' && !window.exportTechPDF.__planWrapped) {
-      var _exportTechPDF = window.exportTechPDF;
-      window.exportTechPDF = function () {
-        if (!requireFeature('techReport', isAr() ? 'التقرير الفني متاح في النسخة المدفوعة فقط' : 'Technical report is available in Pro only')) return;
-        return _exportTechPDF.apply(this, arguments);
-      };
-      window.exportTechPDF.__planWrapped = true;
-    }
-
-    if (typeof window.setQuoteMode === 'function' && !window.setQuoteMode.__planWrapped) {
-      var _setQuoteMode = window.setQuoteMode;
-      window.setQuoteMode = function (mode) {
-        if (mode === 'proj' && !requireFeature('projectMode', isAr() ? 'وضع المشروع متاح في النسخة المدفوعة فقط' : 'Project mode is available in Pro only')) {
-          return;
-        }
-        var res = _setQuoteMode.apply(this, arguments);
-        updatePlanUI();
-        return res;
-      };
-      window.setQuoteMode.__planWrapped = true;
-    }
-
-    if (typeof window.calcESP === 'function' && !window.calcESP.__planWrapped) {
-      var _calcESP = window.calcESP;
-      window.calcESP = function () {
-        if (!requireFeature('espCalc', isAr() ? 'حساب ESP متاح في النسخة المدفوعة فقط' : 'ESP is available in Pro only')) return;
-        return _calcESP.apply(this, arguments);
-      };
-      window.calcESP.__planWrapped = true;
-    }
-
-    if (typeof window.setDuctBasis === 'function' && !window.setDuctBasis.__planWrapped) {
-      var _setDuctBasis = window.setDuctBasis;
-      window.setDuctBasis = function () {
-        if (!requireFeature('ductSizing', isAr() ? 'تصميم الدكت متاح في النسخة المدفوعة فقط' : 'Duct sizing is available in Pro only')) return;
-        return _setDuctBasis.apply(this, arguments);
-      };
-      window.setDuctBasis.__planWrapped = true;
-    }
-
-    if (typeof window.saveCurrentProject === 'function' && !window.saveCurrentProject.__planWrapped) {
-      var _saveCurrentProject = window.saveCurrentProject;
-      window.saveCurrentProject = function () {
-        if (!hasAccess('unlimitedProjects')) {
-          try {
-            var projects = (window.AppProjects && typeof window.AppProjects.getProjects === 'function')
-              ? window.AppProjects.getProjects()
-              : [];
-
-            var currentId = localStorage.getItem('aircalc_current_project_id') || '';
-            var nameEl = G('quote-project');
-            var name = String(nameEl && nameEl.value || '').trim().toLowerCase();
-
-            var isEditingExisting = false;
-
-            if (currentId) {
-              isEditingExisting = projects.some(function (p) { return p.id === currentId; });
-            }
-
-            if (!isEditingExisting && name) {
-              isEditingExisting = projects.some(function (p) {
-                return String(p.name || '').trim().toLowerCase() === name;
-              });
-            }
-
-            if (!isEditingExisting && projects.length >= 3) {
-              toastMsg(isAr() ? 'النسخة المجانية تسمح حتى 3 مشاريع فقط' : 'Free version allows up to 3 projects only');
-              openUpgradeSheet();
-              return;
-            }
-          } catch(e){}
-        }
-
-        return _saveCurrentProject.apply(this, arguments);
-      };
-      window.saveCurrentProject.__planWrapped = true;
-    }
-  }
-
-  function waitAndApplyGuards(){
-    var tries = 0;
-    var timer = setInterval(function () {
-      tries += 1;
-      applyPlanGuards();
-      updatePlanUI();
-
-      if (tries > 20) clearInterval(timer);
-      if (typeof window.exportPDF === 'function' &&
-          typeof window.exportTechPDF === 'function' &&
-          typeof window.setQuoteMode === 'function' &&
-          typeof window.saveCurrentProject === 'function') {
-        clearInterval(timer);
-      }
-    }, 400);
-  }
-
-  window.getCurrentPlan = getCurrentPlan;
-  window.setCurrentPlan = setCurrentPlan;
-  window.getFeatureAccess = getFeatureAccess;
-  window.hasAccess = hasAccess;
-  window.requireFeature = requireFeature;
-  window.updatePlanUI = updatePlanUI;
-  window.openUpgradeSheet = openUpgradeSheet;
-  window.closeUpgradeSheet = closeUpgradeSheet;
-  window.selectPricePill = selectPricePill;
-  window.upgradeToPro = upgradeToPro;
-
-  document.addEventListener('DOMContentLoaded', function () {
-    if (!localStorage.getItem(PLAN_KEY)) {
-      try { localStorage.setItem(PLAN_KEY, DEFAULT_PLAN); } catch(e){}
-    }
-    if (!localStorage.getItem(PRICE_KEY)) {
-      try { localStorage.setItem(PRICE_KEY, 'lifetime'); } catch(e){}
-    }
-
-    updatePlanUI();
-    waitAndApplyGuards();
+  // Close sheet on Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeUpgradeSheet();
   });
 
-  window.addEventListener('load', function () {
-    updatePlanUI();
-    waitAndApplyGuards();
-    setTimeout(updatePlanUI, 600);
-    setTimeout(updatePlanUI, 1500);
-  });
-})();
+  // Close sheet when clicking the backdrop
+  const sheet = document.getElementById('upgrade-sheet');
+  if (sheet) sheet.addEventListener('click', closeUpgradeSheet);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _init);
+} else {
+  _init();
+}
