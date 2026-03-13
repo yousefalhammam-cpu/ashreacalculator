@@ -2856,3 +2856,262 @@ function initProjDropdowns(){
 // H4) Add "Save as New Project" button behaviour via Quotation save button
 // When user clicks save from projects panel it calls saveCurrentProject()
 // which is already wired. No extra patch needed.
+
+
+// ══════════════════════════════════════════════════════════════════
+// I) FREE vs PRO PLAN SYSTEM
+// ══════════════════════════════════════════════════════════════════
+
+// ── I1) Gate exportPDF ────────────────────────────────────────────
+(function(){
+  var _origExportPDF = exportPDF;
+  exportPDF = function(){
+    if (!window.AppPlan || !window.AppPlan.requireFeature('exportPDF')) return;
+    _origExportPDF();
+  };
+  window.exportPDF = exportPDF;
+})();
+
+// ── I2) Gate exportTechPDF ────────────────────────────────────────
+(function(){
+  var _origExportTechPDF = exportTechPDF;
+  exportTechPDF = function(){
+    if (!window.AppPlan || !window.AppPlan.requireFeature('techReport')) return;
+    _origExportTechPDF();
+  };
+  window.exportTechPDF = exportTechPDF;
+})();
+
+// ── I3) Gate setQuoteMode — block 'proj' on free plan ────────────
+(function(){
+  var _origSetQuoteMode = setQuoteMode;
+  setQuoteMode = function(mode){
+    if (mode === 'proj' && window.AppPlan && !window.AppPlan.hasAccess('projectMode')) {
+      window.AppPlan.requireFeature('projectMode');
+      return;
+    }
+    _origSetQuoteMode(mode);
+  };
+  window.setQuoteMode = setQuoteMode;
+})();
+
+// ── I4) updatePlanUI — sync all UI to current plan ────────────────
+function updatePlanUI(){
+  var isPro = window.AppPlan ? window.AppPlan.isPro() : false;
+  var plan  = window.AppPlan ? window.AppPlan.getCurrentPlan() : 'free';
+  var isAr  = lang === 'ar';
+
+  // Header badge
+  var badge = G('header-plan-badge');
+  if (badge) {
+    if (isPro) {
+      badge.textContent = 'PRO';
+      badge.className = 'pro-badge';
+    } else {
+      badge.textContent = isAr ? 'مجاني' : 'FREE';
+      badge.className = 'free-badge';
+    }
+  }
+
+  // Settings status pill
+  var pill = G('plan-status-pill');
+  if (pill) {
+    pill.textContent = isPro ? 'Pro ⭐' : (isAr ? 'مجاني' : 'Free');
+    pill.className = 'plan-status-pill ' + (isPro ? 'pro' : 'free');
+  }
+
+  // Settings upgrade row label
+  var upgLbl = G('sl-upgrade-lbl');
+  if (upgLbl) upgLbl.textContent = isPro
+    ? (isAr ? 'AirCalc Pro — مفعّل ⭐' : 'AirCalc Pro — Active ⭐')
+    : (isAr ? 'الترقية إلى AirCalc Pro' : 'Upgrade to AirCalc Pro');
+
+  var upgSub = G('sl-upgrade-sub');
+  if (upgSub) upgSub.textContent = isPro
+    ? (isAr ? 'تستمتع بكامل المزايا الاحترافية' : 'All Pro features are unlocked')
+    : (isAr ? 'افتح PDF، التقرير الفني، مشاريع غير محدودة' : 'Unlock PDF, Tech Report, unlimited projects');
+
+  // PDF button locked state
+  var btnPdf  = G('btn-pdf');
+  var btnTech = G('btn-techpdf');
+  if (btnPdf)  { btnPdf.classList.toggle('btn-locked',  !isPro); }
+  if (btnTech) { btnTech.classList.toggle('btn-locked', !isPro); }
+
+  // Project mode button locked state
+  var btnProj = G('mode-btn-proj');
+  if (btnProj) { btnProj.classList.toggle('btn-locked', !isPro); }
+
+  // Duct and ESP blocks — lock overlay when free
+  var ductBlock = G('proj-duct-block');
+  if (ductBlock) { ductBlock.classList.toggle('section-locked', !isPro); }
+  var espBlock  = G('esp-block');
+  if (espBlock)  { espBlock.classList.toggle('section-locked',  !isPro); }
+
+  // Test mode buttons — highlight active
+  ['free','pro','monthly','yearly','lifetime'].forEach(function(p){
+    var btn = G('tbtn-' + p);
+    if (btn) btn.classList.toggle('active-plan', plan === p);
+  });
+
+  // ── Plan Status test card ────────────────────────────────────────
+  // Live badge in header of test card
+  var liveBadge = G('ptg-live-badge');
+  if (liveBadge) {
+    liveBadge.textContent = isPro
+      ? 'Pro ⭐'
+      : (isAr ? 'مجاني' : 'Free');
+    liveBadge.className = 'plan-status-pill ' + (isPro ? 'pro' : 'free');
+  }
+
+  // Title & sub
+  var ptgTitle = G('ptg-title');
+  if (ptgTitle) ptgTitle.textContent = isAr ? 'حالة الخطة' : 'Plan Status';
+  var ptgSub = G('ptg-sub');
+  if (ptgSub) ptgSub.textContent = isAr ? 'اختبار سريع للخطط' : 'Quick plan testing';
+
+  // Button subs (language)
+  var btnSubs = {
+    'tbtn-free-sub':    isAr ? 'حساب + CSV'    : 'Calc + CSV',
+    'tbtn-pro-sub':     isAr ? 'كل المزايا'    : 'All features',
+    'tbtn-monthly-sub': isAr ? '19 ر.س / شهر'  : 'SAR 19/mo',
+    'tbtn-yearly-sub':  isAr ? '149 ر.س / سنة' : 'SAR 149/yr'
+  };
+  Object.keys(btnSubs).forEach(function(id){
+    var el = G(id); if (el) el.textContent = btnSubs[id];
+  });
+
+  // Active plan description
+  var descEl = G('ptg-desc');
+  if (descEl) {
+    var planLabels = {
+      free:     isAr ? 'مجاني'         : 'Free',
+      pro:      isAr ? 'Pro (دائم)'    : 'Pro (perpetual)',
+      monthly:  isAr ? 'Pro شهري'      : 'Pro Monthly',
+      yearly:   isAr ? 'Pro سنوي'      : 'Pro Yearly',
+      lifetime: isAr ? 'Pro مدى الحياة': 'Pro Lifetime'
+    };
+    var planLabel = planLabels[plan] || plan;
+    descEl.innerHTML =
+      '<span style="color:var(--a);font-weight:700;">' +
+      (isAr ? 'الخطة الحالية: ' : 'Current plan: ') +
+      '</span>' + planLabel +
+      (isPro
+        ? ' &nbsp;·&nbsp; <span style="color:var(--g);">' + (isAr ? 'كل الميزات مفعّلة' : 'All features unlocked') + '</span>'
+        : ' &nbsp;·&nbsp; <span style="color:var(--am);">' + (isAr ? 'حتى 3 مشاريع، بدون PDF' : 'Up to 3 projects, no PDF') + '</span>'
+      );
+  }
+
+  // Feature access summary grid
+  var featEl = G('ptg-features');
+  if (featEl) {
+    var features = [
+      { key:'exportCSV',         ar:'تصدير CSV',           en:'CSV export' },
+      { key:'exportPDF',         ar:'تصدير PDF',           en:'PDF export' },
+      { key:'techReport',        ar:'التقرير الفني',        en:'Tech Report' },
+      { key:'projectMode',       ar:'وضع المشروع',          en:'Project mode' },
+      { key:'ductSizing',        ar:'تصميم المجاري',        en:'Duct sizing' },
+      { key:'espCalc',           ar:'حساب ESP',             en:'ESP calc' },
+      { key:'unlimitedProjects', ar:'مشاريع غير محدودة',    en:'Unlimited projects' }
+    ];
+    var fa = window.AppPlan ? window.AppPlan.getFeatureAccess(plan) : {};
+    featEl.innerHTML = features.map(function(f){
+      var ok = fa[f.key] === true;
+      return '<div class="ptg-feat ' + (ok?'ok':'no') + '">' +
+        (ok ? '✅' : '❌') + ' ' +
+        (isAr ? f.ar : f.en) +
+      '</div>';
+    }).join('');
+  }
+
+  // Bundle row — only relevant for Pro (project mode)
+  // no need to hide, setQuoteMode guards it
+}
+
+// ── I5) Upgrade sheet controls ────────────────────────────────────
+var _selectedPricePlan = 'lifetime';
+
+function openUpgradeSheet(){
+  var overlay = G('upgrade-overlay');
+  if (overlay) overlay.classList.remove('hidden');
+  _syncUpgradeSheetLang();
+}
+
+function closeUpgradeSheet(e){
+  if (e && e.target !== G('upgrade-overlay')) return;
+  var overlay = G('upgrade-overlay');
+  if (overlay) overlay.classList.add('hidden');
+}
+
+function selectPricePill(planKey){
+  _selectedPricePlan = planKey;
+  ['lifetime','yearly','monthly'].forEach(function(p){
+    var el = G('pp-' + p);
+    if (el) el.classList.toggle('active', p === planKey);
+  });
+}
+
+function upgradeToPro(){
+  // In production this would open payment flow.
+  // For now: simulate unlock with selected price plan.
+  if (window.AppPlan) window.AppPlan.setCurrentPlan(_selectedPricePlan);
+  var overlay = G('upgrade-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  toast(lang==='ar' ? '⭐ تم تفعيل AirCalc Pro!' : '⭐ AirCalc Pro activated!');
+}
+
+function _syncUpgradeSheetLang(){
+  var isAr = lang === 'ar';
+  function sl(id, ar, en){ var el=G(id); if(el) el.textContent = isAr?ar:en; }
+  sl('ush-sub',         'ارفع مستوى عملك الهندسي',                       'Elevate your engineering workflow');
+  sl('pc-free-name',    'مجاني',                                          'Free');
+  sl('pc-pro-name',     'Pro ⭐',                                         'Pro ⭐');
+  sl('pcf1','حساب TR / CFM / BTU',     'TR / CFM / BTU Calc');
+  sl('pcf2','أحمال الأجهزة',           'Device loads');
+  sl('pcf3','عرض سعر أساسي',           'Basic quotation');
+  sl('pcf4','تصدير CSV',               'CSV export');
+  sl('pcf5','حتى 3 مشاريع',            'Up to 3 projects');
+  sl('pcf6','تصدير PDF',               'PDF export');
+  sl('pcf7','التقرير الفني',            'Tech Report');
+  sl('pcf8','Duct / ESP',              'Duct / ESP');
+  sl('pcp1','كل مزايا المجاني',        'All Free features');
+  sl('pcp2','تصدير PDF',               'PDF export');
+  sl('pcp3','التقرير الفني',            'Tech Report');
+  sl('pcp4','مشاريع غير محدودة',        'Unlimited projects');
+  sl('pcp5','وضع وحدة للمشروع',        'Project unit mode');
+  sl('pcp6','Duct Sizing',             'Duct Sizing');
+  sl('pcp7','ESP Calculation',         'ESP Calculation');
+  sl('pcp8','مزايا مستقبلية',           'Future Pro tools');
+  sl('pp-lf-amt','99 ر.س',   'SAR 99');
+  sl('pp-lf-per','مدى الحياة','Lifetime');
+  sl('pp-lf-badge','الأفضل قيمة','Best value');
+  sl('pp-yr-amt','149 ر.س',  'SAR 149');
+  sl('pp-yr-per','سنوياً',    'Yearly');
+  sl('pp-mo-amt','19 ر.س',   'SAR 19');
+  sl('pp-mo-per','شهرياً',    'Monthly');
+  sl('ush-cta',   '⭐ الترقية إلى Pro الآن', '⭐ Upgrade to Pro Now');
+  sl('ush-later', 'متابعة بالنسخة المجانية',  'Continue with Free');
+  sl('ush-note',  'للتجربة فقط — الدفع قيد التطوير', 'Demo only — payment coming soon');
+  sl('sl-upgrade-lbl',
+    window.AppPlan&&window.AppPlan.isPro() ? 'AirCalc Pro — مفعّل ⭐' : 'الترقية إلى AirCalc Pro',
+    window.AppPlan&&window.AppPlan.isPro() ? 'AirCalc Pro — Active ⭐' : 'Upgrade to AirCalc Pro');
+  sl('sl-upgrade-sub',
+    window.AppPlan&&window.AppPlan.isPro() ? 'تستمتع بكامل المزايا' : 'افتح PDF، التقرير الفني، مشاريع غير محدودة',
+    window.AppPlan&&window.AppPlan.isPro() ? 'All Pro features unlocked' : 'Unlock PDF, Tech Report, unlimited projects');
+}
+
+// ── I6) Patch applyLang to also update plan UI labels ─────────────
+(function(){
+  var _alOrig = (typeof applyLang === 'function') ? applyLang : function(){};
+  applyLang = function(){
+    _alOrig();
+    updatePlanUI();
+    _syncUpgradeSheetLang();
+  };
+})();
+
+// ── I7) Init plan UI on first load ────────────────────────────────
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    updatePlanUI();
+  }, 200);
+});
