@@ -280,7 +280,20 @@
         _toast(_t('✅ تم تحديث المشروع: ', '✅ Updated: ') + projName);
       }
     } else {
-      // CREATE new
+      // CREATE new — check free plan project limit first
+      var limit = (window.AppPlan) ? window.AppPlan.getProjectLimit() : Infinity;
+      if (all.length >= limit) {
+        // Free limit hit
+        _toast(_isAr()
+          ? '📁 وصلت للحد الأقصى (3 مشاريع) — رُقِّ إلى Pro لمشاريع غير محدودة'
+          : '📁 Free limit reached (3 projects) — upgrade to Pro for unlimited');
+        // Flash upgrade button
+        setTimeout(function(){
+          var btn2 = document.getElementById('set-upgrade-btn');
+          if (btn2) { btn2.classList.add('upgrade-pulse'); setTimeout(function(){ btn2.classList.remove('upgrade-pulse'); }, 1200); }
+        }, 300);
+        return;
+      }
       var newProj = {
         id:        _uid(),
         name:      projName,
