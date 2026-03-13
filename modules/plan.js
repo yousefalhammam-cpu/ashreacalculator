@@ -70,9 +70,10 @@
 
   /*
    * Lock or unlock an ACTION button (btn-pdf, btn-techpdf).
-   * These buttons are fully disabled on free — clicks do nothing.
-   * app.js gates the actual action with requireFeature() so the
-   * locked visual + disabled state are both needed.
+   * On free: disabled=true + locked classes applied.
+   * On pro:  disabled=false + locked classes removed.
+   * app.js gates the actual action with requireFeature() as a second
+   * layer, but we own the canonical disabled state here.
    */
   function _gateActionButton(node, allowed) {
     if (!node) return;
@@ -87,10 +88,9 @@
 
   /*
    * Lock or unlock a MODE button (mode-btn-proj).
-   * IMPORTANT: mode buttons must NEVER be disabled because clicking
-   * a locked mode button should open the upgrade overlay.
-   * We only apply / remove the visual locked classes; the click
-   * handler in app.js calls requireFeature() which does the rest.
+   * NEVER disabled — clicking a locked mode button must still open
+   * the upgrade overlay via the onclick in app.js → requireFeature().
+   * Only visual locked classes are toggled.
    */
   function _gateModeButton(node, allowed) {
     if (!node) return;
@@ -112,6 +112,42 @@
     } else {
       node.classList.add('section-locked');
     }
+  }
+
+  /*
+   * Force the app back to room mode.
+   *
+   * We call this unconditionally whenever projectMode is revoked —
+   * regardless of what window.quoteMode says — because DOM and state
+   * can diverge during plan switches.
+   *
+   * Strategy (most-to-least reliable):
+   *   1. Call w.setQuoteMode('room') if it exists (app.js function that
+   *      owns both state and DOM wiring).
+   *   2. Direct DOM manipulation as a fallback (e.g. if setQuoteMode
+   *      was not yet exposed at the time of the call).
+   */
+  function _forceRoomMode() {
+    /* Strategy 1 */
+    if (typeof w.setQuoteMode === 'function') {
+      w.setQuoteMode('room');
+      return;
+    }
+
+    /* Strategy 2: direct DOM */
+    var qiList    = _el('qi-list');
+    var projBlock = _el('proj-block');
+    var bundleRow = _el('bundle-row');
+    var btnRoom   = _el('mode-btn-room');
+    var btnProj   = _el('mode-btn-proj');
+
+    if (qiList)    { qiList.style.display   = ''; }
+    if (projBlock) { projBlock.style.display = 'none'; }
+    if (bundleRow) { bundleRow.style.display = 'none'; }
+    if (btnRoom)   { btnRoom.classList.add('active');    btnRoom.classList.remove('inactive'); }
+    if (btnProj)   { btnProj.classList.remove('active'); btnProj.classList.add('inactive');    }
+
+    if (typeof w.quoteMode !== 'undefined') { w.quoteMode = 'room'; }
   }
 
   /* ── 1. getCurrentPlan ──────────────────────────────────────────── */
@@ -160,7 +196,6 @@
   /*
    * Returns true  → caller may proceed.
    * Returns false → access denied; upgrade overlay shown.
-   * Does NOT throw.
    */
 
   function requireFeature(featureKey, message) {
@@ -207,13 +242,14 @@
    * Design rules:
    *   - Uses classList.add/remove exclusively (never toggle) so every
    *     call is fully deterministic regardless of previous plan state.
-   *   - Action buttons (pdf, techpdf) are disabled on free — their
-   *     onclick is gated by requireFeature() in app.js anyway.
-   *   - Mode buttons (mode-btn-proj) are NEVER disabled — clicking a
-   *     locked mode button must still open the upgrade overlay.
-   *   - When downgrading to free while in project mode, room mode is
-   *     restored immediately via setQuoteMode('room') if available,
-   *     or via direct DOM manipulation as a fallback.
+   *   - Every branch is unconditional: free always locks, pro always
+   *     unlocks. No "if currently locked" guards that could leave stale
+   *     state behind after a Pro→Free downgrade.
+   *   - Action buttons (pdf, techpdf) are disabled on free.
+   *   - Mode buttons (mode-btn-proj) are NEVER disabled.
+   *   - When downgrading to free, _forceRoomMode() is called
+   *     unconditionally — not only when quoteMode === 'proj' — because
+   *     DOM and JS state can diverge during plan switches.
    */
 
   function updatePlanUI() {
@@ -299,21 +335,16 @@
       }).join('');
     }
 
-    /* ── Action buttons: disabled on free, enabled on pro ────────── */
-    /*
-     * #btn-pdf and #btn-techpdf are pure action triggers.
-     * Disabling them is correct — there is no interactive locked-click
-     * behaviour needed; app.js re-gates them with requireFeature() too.
-     */
-    _gateActionButton(_el('btn-pdf'),      fa.exportPDF);
-    _gateActionButton(_el('btn-techpdf'),  fa.techReport);
+    /* ══════════════════════════════════════════════════════════════
+       GATING — applied unconditionally on every call so that a
+       Pro→Free switch always fully restores the locked state.
+    ══════════════════════════════════════════════════════════════ */
 
-    /* ── Mode button: visually locked on free, always clickable ───── */
-    /*
-     * #mode-btn-proj must remain clickable even when locked so that
-     * clicking it fires the onclick in app.js → requireFeature() →
-     * upgrade overlay.  Only visual classes are toggled here.
-     */
+    /* ── Action buttons (disabled on free) ───────────────────────── */
+    _gateActionButton(_el('btn-pdf'),     fa.exportPDF);
+    _gateActionButton(_el('btn-techpdf'), fa.techReport);
+
+    /* ── Mode button (visual lock only, never disabled) ─────────── */
     _gateModeButton(_el('mode-btn-proj'), fa.projectMode);
 
     /* ── Section blocks ──────────────────────────────────────────── */
@@ -322,40 +353,14 @@
 
     /* ── Force room mode when projectMode is revoked ─────────────── */
     /*
-     * Strategy (most-to-least reliable):
-     *   1. Call w.setQuoteMode('room') if it exists — app.js function
-     *      that owns mode state and DOM wiring.
-     *   2. If quoteMode global exists and equals 'proj', manipulate
-     *      DOM directly as a fallback.
-     *   3. Always attempt the DOM fallback unconditionally when
-     *      projectMode is false — covers cases where quoteMode global
-     *      is a module-local variable not exposed on window.
+     * Called UNCONDITIONALLY when free (not guarded by a quoteMode
+     * check) because DOM and JS state can diverge mid-switch.
+     * _forceRoomMode() delegates to setQuoteMode('room') in app.js
+     * which is idempotent — calling it when already in room mode is
+     * safe and cheap.
      */
     if (!fa.projectMode) {
-      /* Strategy 1: delegate to app.js */
-      if (typeof w.setQuoteMode === 'function') {
-        /* Only call if actually in proj mode to avoid unnecessary redraws */
-        var currentMode = (typeof w.quoteMode !== 'undefined') ? w.quoteMode : null;
-        if (currentMode === 'proj' || currentMode === null) {
-          w.setQuoteMode('room');
-        }
-      } else {
-        /* Strategy 2 & 3: direct DOM fallback */
-        var qiList    = _el('qi-list');
-        var projBlock = _el('proj-block');
-        var bundleRow = _el('bundle-row');
-        var btnRoom   = _el('mode-btn-room');
-        var btnProj   = _el('mode-btn-proj');
-
-        if (qiList)    { qiList.style.display    = ''; }
-        if (projBlock) { projBlock.style.display  = 'none'; }
-        if (bundleRow) { bundleRow.style.display  = 'none'; }
-        if (btnRoom)   { btnRoom.classList.add('active');    btnRoom.classList.remove('inactive'); }
-        if (btnProj)   { btnProj.classList.remove('active'); btnProj.classList.add('inactive');    }
-
-        /* Write back to window.quoteMode if it is exposed */
-        if (typeof w.quoteMode !== 'undefined') { w.quoteMode = 'room'; }
-      }
+      _forceRoomMode();
     }
 
     /* ── Settings panel labels ───────────────────────────────────── */
