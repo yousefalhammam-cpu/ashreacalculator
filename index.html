@@ -21,7 +21,10 @@
     <div class="logo">
       <img src="./icon-192.png" class="logo-icon" alt="AirCalc Pro" style="width:44px;height:44px;border-radius:12px;object-fit:cover;box-shadow:0 0 16px rgba(56,189,248,.4);">
       <div>
-        <div class="logo-text">Air<span>Calc</span> Pro</div>
+        <div style="display:flex;align-items:center;gap:0;">
+          <div class="logo-text">Air<span>Calc</span> Pro</div>
+          <span class="pro-badge" id="header-plan-badge">PRO</span>
+        </div>
         <div class="logo-sub">HVAC Engineering Suite</div>
       </div>
     </div>
@@ -424,13 +427,167 @@
 
   <!-- SETTINGS PANEL -->
   <div class="panel" id="p-settings">
+    <!-- Language toggle -->
     <div class="set-group">
       <div class="set-item">
         <div><div class="set-lbl" id="sl-lang">اللغة / Language</div><div class="set-sub" id="sl-sub">تبديل واجهة اللغة</div></div>
         <div class="tog on" id="tog-lang" onclick="toggleLang()"></div>
       </div>
     </div>
+
+    <!-- AirCalc Pro upgrade entry -->
+    <div class="set-group">
+      <div class="set-upgrade-row" id="set-upgrade-btn" onclick="openUpgradeSheet()">
+        <div style="display:flex;align-items:center;">
+          <span class="set-upgrade-ico">⭐</span>
+          <div>
+            <div class="set-upgrade-lbl" id="sl-upgrade-lbl">الترقية إلى AirCalc Pro</div>
+            <div class="set-upgrade-sub" id="sl-upgrade-sub">افتح PDF، التقرير الفني، مشاريع غير محدودة</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="plan-status-pill free" id="plan-status-pill">مجاني</span>
+          <span class="set-upgrade-arr">›</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── PLAN STATUS TEST SECTION ─────────────────────────────── -->
+    <div class="set-group" id="plan-test-group">
+
+      <!-- Header row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--b);">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px;">🧪</span>
+          <div>
+            <div class="set-lbl" id="ptg-title" style="font-size:13px;font-weight:700;">حالة الخطة</div>
+            <div class="set-sub" id="ptg-sub">اختبار سريع للخطط</div>
+          </div>
+        </div>
+        <!-- Live plan badge -->
+        <span id="ptg-live-badge" class="plan-status-pill free">مجاني</span>
+      </div>
+
+      <!-- Active plan description -->
+      <div id="ptg-desc" style="padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--b);font-size:11px;color:var(--tm);font-family:var(--fe);line-height:1.6;">
+        <!-- filled by updatePlanUI() -->
+      </div>
+
+      <!-- Plan buttons -->
+      <div style="padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button class="test-plan-btn" id="tbtn-free"
+          onclick="setCurrentPlan('free')">
+          <div style="font-size:14px;margin-bottom:3px;">🆓</div>
+          <div id="tbtn-free-lbl" style="font-size:12px;font-weight:700;">Free</div>
+          <div id="tbtn-free-sub" style="font-size:10px;opacity:.7;margin-top:2px;">حساب + CSV</div>
+        </button>
+        <button class="test-plan-btn" id="tbtn-pro"
+          onclick="setCurrentPlan('pro')">
+          <div style="font-size:14px;margin-bottom:3px;">⭐</div>
+          <div id="tbtn-pro-lbl" style="font-size:12px;font-weight:700;">Pro</div>
+          <div id="tbtn-pro-sub" style="font-size:10px;opacity:.7;margin-top:2px;">كل المزايا</div>
+        </button>
+        <button class="test-plan-btn" id="tbtn-monthly"
+          onclick="setCurrentPlan('monthly')">
+          <div style="font-size:14px;margin-bottom:3px;">📅</div>
+          <div id="tbtn-monthly-lbl" style="font-size:12px;font-weight:700;">Monthly</div>
+          <div id="tbtn-monthly-sub" style="font-size:10px;opacity:.7;margin-top:2px;">19 ر.س / شهر</div>
+        </button>
+        <button class="test-plan-btn" id="tbtn-yearly"
+          onclick="setCurrentPlan('yearly')">
+          <div style="font-size:14px;margin-bottom:3px;">🗓️</div>
+          <div id="tbtn-yearly-lbl" style="font-size:12px;font-weight:700;">Yearly</div>
+          <div id="tbtn-yearly-sub" style="font-size:10px;opacity:.7;margin-top:2px;">149 ر.س / سنة</div>
+        </button>
+      </div>
+
+      <!-- Feature access summary -->
+      <div id="ptg-features" style="padding:0 16px 14px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;">
+        <!-- filled by updatePlanUI() -->
+      </div>
+
+    </div>
+    <!-- ── END PLAN STATUS ────────────────────────────────────────── -->
+
     <div style="text-align:center;color:var(--tm);font-size:12px;padding:16px;font-family:var(--fe)">Air Calc Pro v9.0 · Made in Saudi Arabia 🇸🇦</div>
+  </div>
+</div>
+
+<!-- ── UPGRADE MODAL SHEET ────────────────────────────────────────────── -->
+<div class="upgrade-overlay hidden" id="upgrade-overlay" onclick="closeUpgradeSheet(event)">
+  <div class="upgrade-sheet" onclick="event.stopPropagation()">
+    <div class="upgrade-sheet-handle" onclick="closeUpgradeSheet()"></div>
+    <div style="position:relative;">
+      <button class="upgrade-sheet-close" onclick="closeUpgradeSheet()">✕</button>
+    </div>
+
+    <!-- Hero -->
+    <div class="upgrade-hero">
+      <div class="upgrade-hero-icon">⭐</div>
+      <div class="upgrade-hero-title">AirCalc <span>Pro</span></div>
+      <div class="upgrade-hero-sub" id="ush-sub">ارفع مستوى عملك الهندسي</div>
+    </div>
+
+    <!-- Plan comparison -->
+    <div class="upgrade-plans">
+      <!-- Free -->
+      <div class="plan-card">
+        <div class="plan-card-name" id="pc-free-name">مجاني</div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcf1">حساب TR / CFM / BTU</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcf2">أحمال الأجهزة</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcf3">عرض سعر أساسي</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcf4">تصدير CSV</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcf5">حتى 3 مشاريع</span></div>
+        <div class="plan-feature locked"><span class="pf-ico">🔒</span><span id="pcf6">تصدير PDF</span></div>
+        <div class="plan-feature locked"><span class="pf-ico">🔒</span><span id="pcf7">التقرير الفني</span></div>
+        <div class="plan-feature locked"><span class="pf-ico">🔒</span><span id="pcf8">Duct / ESP</span></div>
+      </div>
+      <!-- Pro -->
+      <div class="plan-card pro">
+        <div class="plan-card-name" id="pc-pro-name">Pro ⭐</div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp1">كل مزايا المجاني</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp2">تصدير PDF</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp3">التقرير الفني</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp4">مشاريع غير محدودة</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp5">وضع وحدة للمشروع</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp6">Duct Sizing</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp7">ESP Calculation</span></div>
+        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp8">مزايا مستقبلية</span></div>
+      </div>
+    </div>
+
+    <!-- Pricing pills -->
+    <div class="upgrade-pricing">
+      <div class="price-row">
+        <div class="price-pill active" id="pp-lifetime" onclick="selectPricePill('lifetime')">
+          <div class="price-pill-amount" id="pp-lf-amt">99 ر.س</div>
+          <div class="price-pill-period" id="pp-lf-per">مدى الحياة</div>
+          <div class="price-pill-badge" id="pp-lf-badge">الأفضل قيمة</div>
+        </div>
+        <div class="price-pill" id="pp-yearly" onclick="selectPricePill('yearly')">
+          <div class="price-pill-amount" id="pp-yr-amt">149 ر.س</div>
+          <div class="price-pill-period" id="pp-yr-per">سنوياً</div>
+          <div class="price-pill-badge"> </div>
+        </div>
+        <div class="price-pill" id="pp-monthly" onclick="selectPricePill('monthly')">
+          <div class="price-pill-amount" id="pp-mo-amt">19 ر.س</div>
+          <div class="price-pill-period" id="pp-mo-per">شهرياً</div>
+          <div class="price-pill-badge"> </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="upgrade-cta">
+      <button class="btn-upgrade-primary" id="btn-upgrade-main" onclick="upgradeToPro()">
+        <span id="ush-cta">⭐ الترقية إلى Pro الآن</span>
+      </button>
+      <button class="btn-upgrade-secondary" onclick="closeUpgradeSheet()">
+        <span id="ush-later">متابعة بالنسخة المجانية</span>
+      </button>
+    </div>
+    <div class="upgrade-note" id="ush-note">للتجربة فقط — الدفع قيد التطوير</div>
   </div>
 </div>
 
@@ -479,6 +636,7 @@
 <!-- Phase 3: core foundation (sync) -->
 <script src="./core.js"></script>
 <!-- Phase 3: modules (sync — window.App* must exist before app.js defer) -->
+<script src="./modules/plan.js"></script>
 <script src="./modules/devices.js"></script>
 <script src="./modules/history.js"></script>
 <script src="./modules/duct.js"></script>
