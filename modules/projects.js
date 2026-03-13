@@ -270,7 +270,7 @@
     }
 
     if (foundIdx >= 0) {
-      // UPDATE existing
+      // UPDATE existing — no plan check needed
       all[foundIdx].name      = projName;   // allow rename via field
       all[foundIdx].snapshot  = snap;
       all[foundIdx].updatedAt = now;
@@ -280,9 +280,9 @@
         _toast(_t('✅ تم تحديث المشروع: ', '✅ Updated: ') + projName);
       }
     } else {
-      // CREATE new — check free plan project limit first
-      var limit = (window.AppPlan) ? window.AppPlan.getProjectLimit() : Infinity;
-      if (all.length >= limit) {
+      // CREATE new — check free plan project limit via canSaveProject
+      var canSave = window.AppPlan ? window.AppPlan.canSaveProject(all, false) : true;
+      if (!canSave) {
         // Free limit hit
         _toast(_isAr()
           ? '📁 وصلت للحد الأقصى (3 مشاريع) — رُقِّ إلى Pro لمشاريع غير محدودة'
