@@ -270,7 +270,7 @@
     }
 
     if (foundIdx >= 0) {
-      // UPDATE existing — no plan check needed
+      // UPDATE existing
       all[foundIdx].name      = projName;   // allow rename via field
       all[foundIdx].snapshot  = snap;
       all[foundIdx].updatedAt = now;
@@ -280,9 +280,9 @@
         _toast(_t('✅ تم تحديث المشروع: ', '✅ Updated: ') + projName);
       }
     } else {
-      // CREATE new — check free plan project limit via canSaveProject
-      var canSave = window.AppPlan ? window.AppPlan.canSaveProject(all, false) : true;
-      if (!canSave) {
+      // CREATE new — check free plan project limit first
+      var limit = (window.AppPlan) ? window.AppPlan.getProjectLimit() : Infinity;
+      if (all.length >= limit) {
         // Free limit hit
         _toast(_isAr()
           ? '📁 وصلت للحد الأقصى (3 مشاريع) — رُقِّ إلى Pro لمشاريع غير محدودة'
@@ -325,6 +325,7 @@
 
     // Always refresh projects list
     renderProjects();
+    updateNavDots();
 
     // Navigate to Projects page (unless called silently from H2 auto-save)
     if (!opts.silentNavigate && typeof goPanel === 'function') {
@@ -372,6 +373,7 @@
     if (_getCurrentId() === id) _setCurrentId(null);
 
     renderProjects();
+    updateNavDots();
     _toast(_t('🗑️ تم حذف: ', '🗑️ Deleted: ') + name);
   }
 
@@ -470,6 +472,7 @@
         '</div>';
     });
     list.innerHTML = html;
+    updateNavDots();
   }
 
   // ── updateProjMgrLabels ───────────────────────────────────────────────
@@ -483,6 +486,33 @@
     var si = G('pm-search'); if(si) si.placeholder = isAr ? 'بحث في المشاريع...' : 'Search projects...';
     var btn = G('quote-save-btn') || G('qp-save-btn');
     if (btn) btn.title = isAr ? 'حفظ المشروع' : 'Save Project';
+  }
+
+  // ── Nav red dots ──────────────────────────────────────────────────────
+  function _isPanelActive(panelId) {
+    var el = document.getElementById(panelId);
+    return el && el.classList.contains('on');
+  }
+
+  function updateProjectsDot() {
+    var dot = G('projects-dot');
+    if (!dot) return;
+    var hasSaved = _loadAll().length > 0;
+    var panelOpen = _isPanelActive('p-projects');
+    dot.style.display = (hasSaved && !panelOpen) ? '' : 'none';
+  }
+
+  function updateHistDot() {
+    var dot = G('hist-dot');
+    if (!dot) return;
+    var histLen = (typeof hist !== 'undefined') ? hist.length : 0;
+    var panelOpen = _isPanelActive('p-hist');
+    dot.style.display = (histLen > 0 && !panelOpen) ? '' : 'none';
+  }
+
+  function updateNavDots() {
+    updateProjectsDot();
+    updateHistDot();
   }
 
   // ── Delete confirm ────────────────────────────────────────────────────
@@ -508,6 +538,9 @@
       deleteProject:       deleteProject,
       renderProjects:      renderProjects,
       updateProjMgrLabels: updateProjMgrLabels,
+      updateProjectsDot:   updateProjectsDot,
+      updateHistDot:       updateHistDot,
+      updateNavDots:       updateNavDots,
       getProjects:         _loadAll,
       snapshot:            _snapshot
     };
@@ -520,6 +553,9 @@
   document.addEventListener('DOMContentLoaded', function(){
     setTimeout(_bindWindow, 0);   // tick 0: after defer scripts
 
+    // Initial dot state on page load
+    setTimeout(updateNavDots, 200);
+
     // Patch goPanel once (needs goPanel to exist from app.js defer)
     setTimeout(function(){
       if (typeof goPanel === 'function' && !goPanel._pmPatched) {
@@ -530,6 +566,8 @@
             updateProjMgrLabels();
             renderProjects();
           }
+          // Always refresh dots on any panel switch
+          updateNavDots();
         };
         goPanel._pmPatched = true;
         window.goPanel = goPanel;
