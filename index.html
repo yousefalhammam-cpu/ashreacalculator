@@ -309,6 +309,85 @@
       </div>
     </div>
 
+    <!-- CALC MODE SWITCH (Basic / Advanced) -->
+    <div class="calc-mode-row" id="calc-mode-row">
+      <button class="calc-mode-btn active" id="calc-mode-btn-basic" onclick="setCalcMode('basic')">
+        <span id="calc-mode-lbl-basic">سريع</span>
+      </button>
+      <button class="calc-mode-btn" id="calc-mode-btn-advanced" onclick="setCalcMode('advanced')">
+        <span id="calc-mode-lbl-advanced">متقدم</span>
+      </button>
+    </div>
+
+    <!-- ADVANCED DUCT ANALYSIS BLOCK (Pro only, hidden by default) -->
+    <div class="adv-duct-block" id="adv-duct-block" style="display:none">
+      <div class="adv-duct-header">
+        <span class="adv-duct-title" id="adv-duct-title">التحليل الهندسي المتقدم للمجاري</span>
+        <span class="adv-duct-ref">ASHRAE Ch.21 · Darcy-Weisbach</span>
+      </div>
+      <!-- Supply duct analysis -->
+      <div class="adv-section-label" id="adv-sup-label">مجرى الإمداد</div>
+      <div class="adv-grid" id="adv-sup-grid">
+        <div class="adv-field">
+          <div class="adv-field-lbl" id="adv-lbl-area-sup">المساحة A</div>
+          <div class="adv-field-val" id="adv-val-area-sup">—</div>
+          <div class="adv-field-unit">ft²</div>
+        </div>
+        <div class="adv-field">
+          <div class="adv-field-lbl" id="adv-lbl-vel-sup">السرعة V</div>
+          <div class="adv-field-val" id="adv-val-vel-sup">—</div>
+          <div class="adv-field-unit">fpm</div>
+        </div>
+        <div class="adv-field">
+          <div class="adv-field-lbl" id="adv-lbl-dh-sup">القطر الهيدروليكي Dh</div>
+          <div class="adv-field-val" id="adv-val-dh-sup">—</div>
+          <div class="adv-field-unit">in</div>
+        </div>
+        <div class="adv-field">
+          <div class="adv-field-lbl" id="adv-lbl-pv-sup">ضغط السرعة Pv</div>
+          <div class="adv-field-val" id="adv-val-pv-sup">—</div>
+          <div class="adv-field-unit">in.w.g.</div>
+        </div>
+        <div class="adv-field adv-field-wide">
+          <div class="adv-field-lbl" id="adv-lbl-dp-sup">فقد الاحتكاك المستقيم</div>
+          <div class="adv-field-val" id="adv-val-dp-sup">—</div>
+          <div class="adv-field-unit" id="adv-unit-dp-sup">in.w.g. / 100ft</div>
+        </div>
+      </div>
+      <!-- Return duct analysis -->
+      <div class="adv-section-label" id="adv-ret-label">مجرى الرجوع</div>
+      <div class="adv-grid" id="adv-ret-grid">
+        <div class="adv-field">
+          <div class="adv-field-lbl" id="adv-lbl-area-ret">المساحة A</div>
+          <div class="adv-field-val" id="adv-val-area-ret">—</div>
+          <div class="adv-field-unit">ft²</div>
+        </div>
+        <div class="adv-field">
+          <div class="adv-field-lbl" id="adv-lbl-vel-ret">السرعة V</div>
+          <div class="adv-field-val" id="adv-val-vel-ret">—</div>
+          <div class="adv-field-unit">fpm</div>
+        </div>
+        <div class="adv-field">
+          <div class="adv-field-lbl" id="adv-lbl-dh-ret">القطر الهيدروليكي Dh</div>
+          <div class="adv-field-val" id="adv-val-dh-ret">—</div>
+          <div class="adv-field-unit">in</div>
+        </div>
+        <div class="adv-field">
+          <div class="adv-field-lbl" id="adv-lbl-pv-ret">ضغط السرعة Pv</div>
+          <div class="adv-field-val" id="adv-val-pv-ret">—</div>
+          <div class="adv-field-unit">in.w.g.</div>
+        </div>
+        <div class="adv-field adv-field-wide">
+          <div class="adv-field-lbl" id="adv-lbl-dp-ret">فقد الاحتكاك المستقيم</div>
+          <div class="adv-field-val" id="adv-val-dp-ret">—</div>
+          <div class="adv-field-unit" id="adv-unit-dp-ret">in.w.g. / 100ft</div>
+        </div>
+      </div>
+      <div class="adv-duct-note" id="adv-duct-note">
+        Darcy-Weisbach · f = 0.02 (galvanised steel) · ASHRAE Standard Air 20°C · Preliminary sizing only
+      </div>
+    </div>
+
     <div class="quote-card">
       <div class="sec-ttl" id="q-ttl">📋 عرض السعر</div>
       <div class="q-hdr-grid">
