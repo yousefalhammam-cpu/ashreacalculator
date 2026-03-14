@@ -468,6 +468,7 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     if(hist.length>100){hist.shift();qlines.shift();}
   }
   save(); renderHist();
+  if(window.AppProjects&&window.AppProjects.updateNavDots) window.AppProjects.updateNavDots();
 }
 
 function renderHist(){
@@ -506,9 +507,10 @@ function renderHist(){
     list.appendChild(row);
   });
   renderQuote();
+  if(window.AppProjects&&window.AppProjects.updateNavDots) window.AppProjects.updateNavDots();
 }
 
-function delRec(idx){ hist.splice(idx,1); qlines.splice(idx,1); save(); renderHist(); toast(t('qdel')); }
+function delRec(idx){ hist.splice(idx,1); qlines.splice(idx,1); save(); renderHist(); toast(t('qdel')); if(window.AppProjects&&window.AppProjects.updateNavDots) window.AppProjects.updateNavDots(); }
 function editRec(idx){
   var h=hist[idx]; if(!h) return;
   goPanel('calc');
@@ -595,7 +597,7 @@ function resetApp(){
   toast(lang === 'ar' ? '✅ تم تصفير التطبيق بالكامل' : '✅ App reset completed');
 }
 
-function clearHist(){ resetApp(); }
+function clearHist(){ resetApp(); if(window.AppProjects&&window.AppProjects.updateNavDots) window.AppProjects.updateNavDots(); }
 
 // ── QUOTATION ─────────────────────────────────────────────────────────────
 function getQty(i){ return Math.max(1,parseInt((qlines[i]||{}).qty)||1); }
