@@ -3117,3 +3117,225 @@ document.addEventListener('DOMContentLoaded', function(){
     updatePlanUI();
   }, 200);
 });
+
+
+// ══════════════════════════════════════════════════════════════════
+// J) CALCULATION MODE SYSTEM (Basic / Advanced)
+// ══════════════════════════════════════════════════════════════════
+
+var calcMode = (function(){
+  try { return localStorage.getItem('aircalc_calc_mode') || 'basic'; }
+  catch(e) { return 'basic'; }
+})();
+
+// ── J1) setCalcMode ────────────────────────────────────────────────
+function setCalcMode(mode) {
+  if (mode === 'advanced') {
+    // Gate: Pro only
+    if (window.AppPlan && !window.AppPlan.requireFeature('advancedDuct')) {
+      // requireFeature already showed the toast — do NOT activate
+      return;
+    }
+  }
+  calcMode = mode;
+  try { localStorage.setItem('aircalc_calc_mode', mode); } catch(e){}
+
+  // Update button states
+  var btnB = G('calc-mode-btn-basic');
+  var btnA = G('calc-mode-btn-advanced');
+  if (btnB) btnB.classList.toggle('active', mode === 'basic');
+  if (btnA) btnA.classList.toggle('active', mode === 'advanced');
+
+  // Show/hide advanced block
+  var advBlock = G('adv-duct-block');
+  if (advBlock) advBlock.style.display = (mode === 'advanced') ? '' : 'none';
+
+  // Re-render to populate/clear advanced fields
+  if (mode === 'advanced') renderAdvancedDuct();
+}
+
+// ── J2) renderAdvancedDuct ─────────────────────────────────────────
+// Runs ASHRAE Ch.21 analysis on current duct sizing results
+// Reads supply and return duct dimensions from the last renderProjBlock/renderQuote output
+function renderAdvancedDuct() {
+  if (calcMode !== 'advanced') return;
+  if (!window.AppDuct || !window.AppDuct.advancedDuctAnalysis) return;
+
+  var isAr = lang === 'ar';
+
+  // ── Resolve Q (supply and return CFM) ────────────────────────────
+  // Use same CFM logic as renderProjBlock / renderQuote
+  var cfmResult, supCfm, retCfm;
+
+  if (quoteMode === 'proj') {
+    var stSel = G('proj-systype');
+    var utKey = stSel ? stSel.value : 'package';
+    var selBtu = projState ? (projState.selBtu || 0) : 0;
+    var qty    = projState ? (projState.qty || 1) : 1;
+    var cfmPTr = parseInt((G('duct-cfm-per-tr') || {value:'400'}).value) || 400;
+    cfmResult  = window.AppDuct.getProjDuctCfm(utKey, selBtu, qty, 0, cfmPTr);
+  } else {
+    // Room mode: sum all hist CFM
+    var totalCfm = 0;
+    if (typeof hist !== 'undefined') hist.forEach(function(h){ totalCfm += (h.cfm || 0); });
+    cfmResult = { cfm: totalCfm };
+  }
+  supCfm = Math.max(0, cfmResult ? cfmResult.cfm : 0);
+  // Return air typically 80-90% of supply (ASHRAE common practice: 90%)
+  retCfm = Math.round(supCfm * 0.9);
+
+  // ── Resolve supply duct dimensions (from DOM duct sizing result) ──
+  var supValEl = G('duct-sup-val');
+  var retValEl = G('duct-ret-val');
+
+  var supW = 0, supH = 0, retW = 0, retH = 0;
+  // Parse "400×300 mm" format
+  function parseDuctDims(el) {
+    if (!el) return { w: 0, h: 0 };
+    var txt = el.textContent || el.innerText || '';
+    var m = txt.match(/(\d+)\s*[×x]\s*(\d+)/);
+    if (m) return { w: parseInt(m[1]), h: parseInt(m[2]) };
+    return { w: 0, h: 0 };
+  }
+  var supDims = parseDuctDims(supValEl);
+  var retDims = parseDuctDims(retValEl);
+  supW = supDims.w; supH = supDims.h;
+  retW = retDims.w; retH = retDims.h;
+
+  // If no dims from DOM yet, derive from velocity + CFM (fallback)
+  if ((supW === 0 || supH === 0) && supCfm > 0) {
+    var vSup = parseInt((G('duct-vel-sup') || {value:'1000'}).value) || 1000;
+    var aFt2 = supCfm / vSup;
+    // Square-ish approximation
+    var side_mm = Math.round(Math.sqrt(aFt2 * 92903.04) / 50) * 50;
+    supW = supH = Math.max(150, side_mm);
+  }
+  if ((retW === 0 || retH === 0) && retCfm > 0) {
+    var vRet = parseInt((G('duct-vel-ret') || {value:'800'}).value) || 800;
+    var aFt2r = retCfm / vRet;
+    var sideR = Math.round(Math.sqrt(aFt2r * 92903.04) / 50) * 50;
+    retW = retH = Math.max(150, sideR);
+  }
+
+  // ESP duct lengths for friction loss calculation
+  var L_sup_m = parseFloat((G('esp-len-sup') || {value:'30'}).value) || 30;
+  var L_ret_m = parseFloat((G('esp-len-ret') || {value:'20'}).value) || 20;
+
+  // ── Run ASHRAE analysis ───────────────────────────────────────────
+  var supAna = (supW > 0 && supH > 0 && supCfm > 0)
+    ? window.AppDuct.advancedDuctAnalysis(supCfm, supW, supH, L_sup_m)
+    : null;
+  var retAna = (retW > 0 && retH > 0 && retCfm > 0)
+    ? window.AppDuct.advancedDuctAnalysis(retCfm, retW, retH, L_ret_m)
+    : null;
+
+  // ── Populate fields ───────────────────────────────────────────────
+  function setField(id, value, fallback) {
+    var el = G(id);
+    if (el) el.textContent = (value !== null && value !== undefined) ? value : (fallback || '—');
+  }
+
+  if (supAna) {
+    setField('adv-val-area-sup', supAna.A_ft2 + ' ft²');
+    setField('adv-val-vel-sup',  supAna.V_fpm  + ' fpm  (' + supAna.V_ms + ' m/s)');
+    setField('adv-val-dh-sup',   supAna.Dh_in  + ' in  (' + supAna.Dh_mm + ' mm)');
+    setField('adv-val-pv-sup',   supAna.Pv_inwg + ' in.w.g.  (' + supAna.Pv_pa + ' Pa)');
+    setField('adv-val-dp-sup',   supAna.dP_per100ft_inwg !== null
+      ? supAna.dP_per100ft_inwg + ' in.w.g./100ft  ·  Run: ' + supAna.dP_inwg + ' in.w.g. (' + supAna.dP_pa + ' Pa)'
+      : '— (enter duct length)');
+  } else {
+    ['adv-val-area-sup','adv-val-vel-sup','adv-val-dh-sup','adv-val-pv-sup','adv-val-dp-sup']
+      .forEach(function(id){ setField(id, '—'); });
+  }
+
+  if (retAna) {
+    setField('adv-val-area-ret', retAna.A_ft2 + ' ft²');
+    setField('adv-val-vel-ret',  retAna.V_fpm  + ' fpm  (' + retAna.V_ms + ' m/s)');
+    setField('adv-val-dh-ret',   retAna.Dh_in  + ' in  (' + retAna.Dh_mm + ' mm)');
+    setField('adv-val-pv-ret',   retAna.Pv_inwg + ' in.w.g.  (' + retAna.Pv_pa + ' Pa)');
+    setField('adv-val-dp-ret',   retAna.dP_per100ft_inwg !== null
+      ? retAna.dP_per100ft_inwg + ' in.w.g./100ft  ·  Run: ' + retAna.dP_inwg + ' in.w.g. (' + retAna.dP_pa + ' Pa)'
+      : '— (enter duct length)');
+  } else {
+    ['adv-val-area-ret','adv-val-vel-ret','adv-val-dh-ret','adv-val-pv-ret','adv-val-dp-ret']
+      .forEach(function(id){ setField(id, '—'); });
+  }
+
+  // Sync labels with language
+  _syncAdvDuctLabels();
+}
+
+// ── J3) Language sync for advanced block ──────────────────────────
+function _syncAdvDuctLabels() {
+  var isAr = lang === 'ar';
+  function sl(id, ar, en){ var el=G(id); if(el) el.textContent = isAr?ar:en; }
+  sl('calc-mode-lbl-basic',    'سريع',    'Basic');
+  sl('calc-mode-lbl-advanced', 'متقدم',   'Advanced');
+  sl('adv-duct-title',  'التحليل الهندسي المتقدم للمجاري', 'Advanced Duct Engineering Analysis');
+  sl('adv-sup-label',   'مجرى الإمداد',  'Supply Duct');
+  sl('adv-ret-label',   'مجرى الرجوع',   'Return Duct');
+  sl('adv-lbl-area-sup',  'المساحة A',              'Area A');
+  sl('adv-lbl-vel-sup',   'السرعة V',               'Velocity V');
+  sl('adv-lbl-dh-sup',    'القطر الهيدروليكي Dh',    'Hydraulic Diam. Dh');
+  sl('adv-lbl-pv-sup',    'ضغط السرعة Pv',           'Velocity Pressure Pv');
+  sl('adv-lbl-dp-sup',    'فقد الاحتكاك المستقيم',   'Straight Friction Loss');
+  sl('adv-lbl-area-ret',  'المساحة A',              'Area A');
+  sl('adv-lbl-vel-ret',   'السرعة V',               'Velocity V');
+  sl('adv-lbl-dh-ret',    'القطر الهيدروليكي Dh',    'Hydraulic Diam. Dh');
+  sl('adv-lbl-pv-ret',    'ضغط السرعة Pv',           'Velocity Pressure Pv');
+  sl('adv-lbl-dp-ret',    'فقد الاحتكاك المستقيم',   'Straight Friction Loss');
+  var noteEl = G('adv-duct-note');
+  if (noteEl) noteEl.textContent = isAr
+    ? 'معادلة دارسي-وايسباخ · f = 0.02 (صاج مجلفن) · هواء قياسي ASHRAE 20°C · تصميم أولي'
+    : 'Darcy-Weisbach · f = 0.02 (galvanised steel) · ASHRAE Standard Air 20°C · Preliminary sizing only';
+}
+
+// ── J4) Patch applyLang to sync advanced block labels ─────────────
+(function(){
+  var _alOrig7 = applyLang;
+  applyLang = function(){
+    _alOrig7();
+    _syncAdvDuctLabels();
+  };
+})();
+
+// ── J5) Patch renderProjBlock and renderQuote to refresh advanced ──
+(function(){
+  if (typeof renderProjBlock === 'function') {
+    var _origRPB = renderProjBlock;
+    renderProjBlock = function(){
+      _origRPB.apply(this, arguments);
+      if (calcMode === 'advanced') setTimeout(renderAdvancedDuct, 50);
+    };
+  }
+})();
+
+// ── J6) updatePlanUI: lock advanced mode button on free plan ──────
+(function(){
+  var _origUPUI = updatePlanUI;
+  updatePlanUI = function(){
+    _origUPUI();
+    var isPro = window.AppPlan ? window.AppPlan.isPro() : false;
+    var btnA = G('calc-mode-btn-advanced');
+    if (btnA) {
+      btnA.classList.toggle('btn-locked', !isPro);
+      // Force back to basic if now on free
+      if (!isPro && calcMode === 'advanced') {
+        calcMode = 'basic';
+        try { localStorage.setItem('aircalc_calc_mode', 'basic'); } catch(e){}
+        var btnB = G('calc-mode-btn-basic');
+        if (btnB) btnB.classList.add('active');
+        btnA.classList.remove('active');
+        var advBlock = G('adv-duct-block');
+        if (advBlock) advBlock.style.display = 'none';
+      }
+    }
+  };
+})();
+
+// ── J7) Init calc mode on page load ───────────────────────────────
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    setCalcMode(calcMode);   // restore saved state
+  }, 250);
+});
