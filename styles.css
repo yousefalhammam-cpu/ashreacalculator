@@ -483,3 +483,6 @@ body.light-theme .exp-btn-tech{color:#0d9488;border-color:rgba(13,148,136,.4);ba
 .ptg-feat{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--fe);padding:3px 0;color:var(--tm);}
 .ptg-feat.ok{color:var(--g);}
 .ptg-feat.no{color:var(--r);opacity:.7;}
+
+/* ── NAV RED DOTS ──────────────────────────────────────────────────────── */
+.nav-red-dot{position:absolute;top:-2px;inset-inline-end:-3px;width:7px;height:7px;background:#ef4444;border-radius:50%;border:1.5px solid var(--bg);pointer-events:none;flex-shrink:0;}
