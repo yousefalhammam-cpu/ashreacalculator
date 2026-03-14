@@ -39,7 +39,7 @@
   function _escHtml(s) {
     return String(s)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      .replace(/>/g,'&gt;').replace(/\"/g,'&quot;');
   }
 
   // ── localStorage helpers ──────────────────────────────────────────────
@@ -445,7 +445,7 @@
 
       // Active border if this is the currently open project
       var cardStyle = isCur
-        ? ' style="border-color:rgba(52,211,153,.5);box-shadow:0 0 0 1px rgba(52,211,153,.2);"'
+        ? ' style="border-color:rgba(52,211،153,.5);box-shadow:0 0 0 1px rgba(52,211,153,.2);"'
         : '';
 
       html +=
