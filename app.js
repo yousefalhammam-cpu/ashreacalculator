@@ -793,8 +793,17 @@ function renderQuote(){
       }
       var _dSup = calcDuctSize(_rCfm, _vSup);
       var _dRet = calcDuctSize(_rCfm, _vRet); // Return uses same CFM with own velocity
-      var _supLbl = _dSup ? ductSizeLabel(_dSup.std||_dSup.calc) : '—';
-      var _retLbl = _dRet ? ductSizeLabel(_dRet.std||_dRet.calc) : '—';
+      var _dSupD = _dSup ? (_dSup.std||_dSup.calc) : null;
+      var _dRetD = _dRet ? (_dRet.std||_dRet.calc) : null;
+      var _supLbl = _dSupD ? ductSizeLabel(_dSupD) : '—';
+      var _retLbl = _dRetD ? ductSizeLabel(_dRetD) : '—';
+      // Cache structured duct data for Advanced Mode (avoids fragile DOM text parsing)
+      window._lastDuctSizing = {
+        supCfm: _rCfm, retCfm: Math.round(_rCfm * 0.9),
+        sup: _dSupD ? { w: _dSupD.w, h: _dSupD.h, actualFpm: _dSupD.actualFpm } : null,
+        ret: _dRetD ? { w: _dRetD.w, h: _dRetD.h, actualFpm: _dRetD.actualFpm } : null,
+        vSup: _vSup, vRet: _vRet
+      };
       // Only show CFM/TR note when source is 'tr'
       var _cfmTrNote = (_ductCfmObj.source==='tr')
         ? '<div class="duct-note" style="color:var(--am)">'+(lang==='ar'?'نسبة CFM/TR قابلة للتعديل في إعدادات المجاري':'Adjust CFM/TR ratio in duct settings')+'</div>'
@@ -2252,6 +2261,13 @@ function renderProjBlock(){
       var retDuct = calcDuctSize(Q_design, vRet); // Return uses same Q_design but its own velocity
       var _sd = supDuct ? (supDuct.std||supDuct.calc) : null;
       var _rd = retDuct ? (retDuct.std||retDuct.calc) : null;
+      // Cache structured duct data for Advanced Mode (avoids fragile DOM text parsing)
+      window._lastDuctSizing = {
+        supCfm: Q_design, retCfm: Math.round(Q_design * 0.9),
+        sup: _sd ? { w: _sd.w, h: _sd.h, actualFpm: _sd.actualFpm } : null,
+        ret: _rd ? { w: _rd.w, h: _rd.h, actualFpm: _rd.actualFpm } : null,
+        vSup: vSup, vRet: vRet
+      };
       // m³/s: 1 CFM = 0.000471947 m³/s
       var _qM3s = (Q_design * 0.000471947).toFixed(3);
       setV('duct-sup-val', _sd ? ductSizeLabel(_sd)+(_sd.actualFpm?' ('+_sd.actualFpm+' fpm)':'') : '—');
@@ -3155,73 +3171,65 @@ function setCalcMode(mode) {
 }
 
 // ── J2) renderAdvancedDuct ─────────────────────────────────────────
-// Runs ASHRAE Ch.21 analysis on current duct sizing results
-// Reads supply and return duct dimensions from the last renderProjBlock/renderQuote output
+// Runs ASHRAE Ch.21 analysis on current duct sizing results.
+// Uses window._lastDuctSizing (set by renderProjBlock / renderQuote)
+// instead of parsing rendered DOM text — robust and reliable.
 function renderAdvancedDuct() {
   if (calcMode !== 'advanced') return;
   if (!window.AppDuct || !window.AppDuct.advancedDuctAnalysis) return;
 
-  var isAr = lang === 'ar';
+  var cache = window._lastDuctSizing || null;
 
-  // ── Resolve Q (supply and return CFM) ────────────────────────────
-  // Use same CFM logic as renderProjBlock / renderQuote
-  var cfmResult, supCfm, retCfm;
-
-  if (quoteMode === 'proj') {
-    var stSel = G('proj-systype');
-    var utKey = stSel ? stSel.value : 'package';
-    var selBtu = projState ? (projState.selBtu || 0) : 0;
-    var qty    = projState ? (projState.qty || 1) : 1;
-    var cfmPTr = parseInt((G('duct-cfm-per-tr') || {value:'400'}).value) || 400;
-    cfmResult  = window.AppDuct.getProjDuctCfm(utKey, selBtu, qty, 0, cfmPTr);
-  } else {
-    // Room mode: sum all hist CFM
-    var totalCfm = 0;
-    if (typeof hist !== 'undefined') hist.forEach(function(h){ totalCfm += (h.cfm || 0); });
-    cfmResult = { cfm: totalCfm };
-  }
-  supCfm = Math.max(0, cfmResult ? cfmResult.cfm : 0);
-  // Return air typically 80-90% of supply (ASHRAE common practice: 90%)
-  retCfm = Math.round(supCfm * 0.9);
-
-  // ── Resolve supply duct dimensions (from DOM duct sizing result) ──
-  var supValEl = G('duct-sup-val');
-  var retValEl = G('duct-ret-val');
-
+  // ── Resolve structured duct dimensions + CFM ──────────────────────
   var supW = 0, supH = 0, retW = 0, retH = 0;
-  // Parse "400×300 mm" format
-  function parseDuctDims(el) {
-    if (!el) return { w: 0, h: 0 };
-    var txt = el.textContent || el.innerText || '';
-    var m = txt.match(/(\d+)\s*[×x]\s*(\d+)/);
-    if (m) return { w: parseInt(m[1]), h: parseInt(m[2]) };
-    return { w: 0, h: 0 };
-  }
-  var supDims = parseDuctDims(supValEl);
-  var retDims = parseDuctDims(retValEl);
-  supW = supDims.w; supH = supDims.h;
-  retW = retDims.w; retH = retDims.h;
+  var supCfm = 0, retCfm = 0;
 
-  // If no dims from DOM yet, derive from velocity + CFM (fallback)
+  if (cache) {
+    supCfm = cache.supCfm || 0;
+    retCfm = cache.retCfm || Math.round(supCfm * 0.9);
+    if (cache.sup) { supW = cache.sup.w || 0; supH = cache.sup.h || 0; }
+    if (cache.ret) { retW = cache.ret.w || 0; retH = cache.ret.h || 0; }
+  }
+
+  // Fallback: rebuild CFM from live state if cache empty
+  if (supCfm <= 0) {
+    if (quoteMode === 'proj') {
+      var stSel = G('proj-systype');
+      var utKey = stSel ? stSel.value : 'package';
+      var selBtu = projState ? (projState.selBtu || 0) : 0;
+      var qty    = projState ? (projState.qty || 1) : 1;
+      var cfmPTr = parseInt((G('duct-cfm-per-tr') || {value:'400'}).value) || 400;
+      var r = window.AppDuct.getProjDuctCfm(utKey, selBtu, qty, 0, cfmPTr);
+      supCfm = r ? r.cfm : 0;
+    } else {
+      if (typeof hist !== 'undefined') hist.forEach(function(h){ supCfm += (h.cfm || 0); });
+    }
+    retCfm = Math.round(supCfm * 0.9);
+  }
+
+  // Fallback: derive dimensions from velocity if duct sizing not yet run
   if ((supW === 0 || supH === 0) && supCfm > 0) {
-    var vSup = parseInt((G('duct-vel-sup') || {value:'1000'}).value) || 1000;
+    var vSup = cache ? (cache.vSup || 1000) : (parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000);
     var aFt2 = supCfm / vSup;
-    // Square-ish approximation
-    var side_mm = Math.round(Math.sqrt(aFt2 * 92903.04) / 50) * 50;
-    supW = supH = Math.max(150, side_mm);
+    var side = Math.round(Math.sqrt(aFt2 * 92903.04) / 50) * 50;
+    supW = supH = Math.max(150, side);
   }
   if ((retW === 0 || retH === 0) && retCfm > 0) {
-    var vRet = parseInt((G('duct-vel-ret') || {value:'800'}).value) || 800;
+    var vRet = cache ? (cache.vRet || 800) : (parseInt((G('duct-vel-ret')||{value:'800'}).value)||800);
     var aFt2r = retCfm / vRet;
     var sideR = Math.round(Math.sqrt(aFt2r * 92903.04) / 50) * 50;
     retW = retH = Math.max(150, sideR);
   }
 
-  // ESP duct lengths for friction loss calculation
+  // ── ESP duct run lengths (from ESP inputs) ────────────────────────
   var L_sup_m = parseFloat((G('esp-len-sup') || {value:'30'}).value) || 30;
   var L_ret_m = parseFloat((G('esp-len-ret') || {value:'20'}).value) || 20;
 
-  // ── Run ASHRAE analysis ───────────────────────────────────────────
+  // ── Run ASHRAE Ch.21 analysis ─────────────────────────────────────
+  // advancedDuctAnalysis(Q_cfm, W_mm, H_mm, L_m)
+  // Formulas:  A=W×H/92903, Dh=4A/P (ASHRAE Eq.21-1),
+  //            Pv=(V/4005)² in.w.g. (ASHRAE Eq.21-2),
+  //            ΔPf=f×(L/Dh)×Pv Darcy-Weisbach f=0.02
   var supAna = (supW > 0 && supH > 0 && supCfm > 0)
     ? window.AppDuct.advancedDuctAnalysis(supCfm, supW, supH, L_sup_m)
     : null;
@@ -3229,39 +3237,38 @@ function renderAdvancedDuct() {
     ? window.AppDuct.advancedDuctAnalysis(retCfm, retW, retH, L_ret_m)
     : null;
 
-  // ── Populate fields ───────────────────────────────────────────────
-  function setField(id, value, fallback) {
+  // ── Populate result fields ────────────────────────────────────────
+  function setField(id, value) {
     var el = G(id);
-    if (el) el.textContent = (value !== null && value !== undefined) ? value : (fallback || '—');
+    if (el) el.textContent = (value !== null && value !== undefined) ? value : '—';
   }
 
   if (supAna) {
-    setField('adv-val-area-sup', supAna.A_ft2 + ' ft²');
-    setField('adv-val-vel-sup',  supAna.V_fpm  + ' fpm  (' + supAna.V_ms + ' m/s)');
-    setField('adv-val-dh-sup',   supAna.Dh_in  + ' in  (' + supAna.Dh_mm + ' mm)');
+    setField('adv-val-area-sup', supAna.A_ft2 + ' ft²  (' + supAna.A_m2 + ' m²)');
+    setField('adv-val-vel-sup',  supAna.V_fpm + ' fpm  (' + supAna.V_ms + ' m/s)');
+    setField('adv-val-dh-sup',   supAna.Dh_in + ' in  (' + supAna.Dh_mm + ' mm)');
     setField('adv-val-pv-sup',   supAna.Pv_inwg + ' in.w.g.  (' + supAna.Pv_pa + ' Pa)');
     setField('adv-val-dp-sup',   supAna.dP_per100ft_inwg !== null
-      ? supAna.dP_per100ft_inwg + ' in.w.g./100ft  ·  Run: ' + supAna.dP_inwg + ' in.w.g. (' + supAna.dP_pa + ' Pa)'
-      : '— (enter duct length)');
+      ? supAna.dP_per100ft_inwg + ' in.w.g./100ft   run: ' + supAna.dP_inwg + ' in.w.g. (' + supAna.dP_pa + ' Pa)'
+      : '—');
   } else {
     ['adv-val-area-sup','adv-val-vel-sup','adv-val-dh-sup','adv-val-pv-sup','adv-val-dp-sup']
       .forEach(function(id){ setField(id, '—'); });
   }
 
   if (retAna) {
-    setField('adv-val-area-ret', retAna.A_ft2 + ' ft²');
-    setField('adv-val-vel-ret',  retAna.V_fpm  + ' fpm  (' + retAna.V_ms + ' m/s)');
-    setField('adv-val-dh-ret',   retAna.Dh_in  + ' in  (' + retAna.Dh_mm + ' mm)');
+    setField('adv-val-area-ret', retAna.A_ft2 + ' ft²  (' + retAna.A_m2 + ' m²)');
+    setField('adv-val-vel-ret',  retAna.V_fpm + ' fpm  (' + retAna.V_ms + ' m/s)');
+    setField('adv-val-dh-ret',   retAna.Dh_in + ' in  (' + retAna.Dh_mm + ' mm)');
     setField('adv-val-pv-ret',   retAna.Pv_inwg + ' in.w.g.  (' + retAna.Pv_pa + ' Pa)');
     setField('adv-val-dp-ret',   retAna.dP_per100ft_inwg !== null
-      ? retAna.dP_per100ft_inwg + ' in.w.g./100ft  ·  Run: ' + retAna.dP_inwg + ' in.w.g. (' + retAna.dP_pa + ' Pa)'
-      : '— (enter duct length)');
+      ? retAna.dP_per100ft_inwg + ' in.w.g./100ft   run: ' + retAna.dP_inwg + ' in.w.g. (' + retAna.dP_pa + ' Pa)'
+      : '—');
   } else {
     ['adv-val-area-ret','adv-val-vel-ret','adv-val-dh-ret','adv-val-pv-ret','adv-val-dp-ret']
       .forEach(function(id){ setField(id, '—'); });
   }
 
-  // Sync labels with language
   _syncAdvDuctLabels();
 }
 
