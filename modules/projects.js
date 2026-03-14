@@ -1,14 +1,18 @@
-// ── AirCalc Pro — modules/projects.js  v3 ─────────────────────────────────
+// ── AirCalc Pro — modules/projects.js  v4 ─────────────────────────────────
 // Project management: save, update, load, delete.
 // Storage keys:
-//   aircalc_projects          — array of project objects
-//   aircalc_current_project_id — id of the currently open project (cleared on load/new)
+//   aircalc_projects             — array of project objects
+//   aircalc_current_project_id   — id of the currently open project
+//   aircalc_projects_seen_count  — how many saved projects have been "seen"
+//   aircalc_hist_seen_count      — how many hist items have been "seen"
 // ─────────────────────────────────────────────────────────────────────────
 (function () {
   'use strict';
 
-  var STORAGE_KEY  = 'aircalc_projects';
-  var CURRENT_KEY  = 'aircalc_current_project_id';
+  var STORAGE_KEY       = 'aircalc_projects';
+  var CURRENT_KEY       = 'aircalc_current_project_id';
+  var PROJECTS_SEEN_KEY = 'aircalc_projects_seen_count';
+  var HIST_SEEN_KEY     = 'aircalc_hist_seen_count';
 
   // ── Tiny helpers ──────────────────────────────────────────────────────
   function G(id)      { return document.getElementById(id); }
@@ -25,7 +29,7 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
-  function _now()    { return new Date().toISOString(); }
+  function _now() { return new Date().toISOString(); }
 
   function _fmtDate(iso) {
     if (!iso) return '';
@@ -40,6 +44,11 @@
     return String(s)
       .replace(/&/g,'&amp;').replace(/</g,'&lt;')
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function _num(v, fallback) {
+    var n = parseInt(v, 10);
+    return isNaN(n) ? (fallback || 0) : n;
   }
 
   // ── localStorage helpers ──────────────────────────────────────────────
@@ -66,6 +75,62 @@
     else    localStorage.removeItem(CURRENT_KEY);
   }
 
+  // ── Seen / unseen helpers ─────────────────────────────────────────────
+  function _getProjectsSeenCount() {
+    try { return _num(localStorage.getItem(PROJECTS_SEEN_KEY), 0); }
+    catch (e) { return 0; }
+  }
+
+  function _setProjectsSeenCount(count) {
+    try { localStorage.setItem(PROJECTS_SEEN_KEY, String(Math.max(0, _num(count, 0)))); }
+    catch (e) {}
+  }
+
+  function _getHistSeenCount() {
+    try { return _num(localStorage.getItem(HIST_SEEN_KEY), 0); }
+    catch (e) { return 0; }
+  }
+
+  function _setHistSeenCount(count) {
+    try { localStorage.setItem(HIST_SEEN_KEY, String(Math.max(0, _num(count, 0)))); }
+    catch (e) {}
+  }
+
+  function _getHistLength() {
+    try {
+      if (typeof hist !== 'undefined' && Array.isArray(hist)) return hist.length;
+    } catch (e) {}
+    return 0;
+  }
+
+  function markProjectsSeen() {
+    _setProjectsSeenCount(_loadAll().length);
+  }
+
+  function markHistSeen() {
+    _setHistSeenCount(_getHistLength());
+  }
+
+  function markProjectsUnseen() {
+    var current = _loadAll().length;
+    var seen = _getProjectsSeenCount();
+    if (current > seen) {
+      // keep seen count as-is so the delta appears as unseen
+      return;
+    }
+    // fallback in odd cases
+    _setProjectsSeenCount(Math.max(0, current - 1));
+  }
+
+  function markHistUnseen() {
+    var current = _getHistLength();
+    var seen = _getHistSeenCount();
+    if (current > seen) {
+      return;
+    }
+    _setHistSeenCount(Math.max(0, current - 1));
+  }
+
   // ── Snapshot — reads all live globals at call-time ────────────────────
   function _snapshot() {
     var snap = {};
@@ -81,8 +146,8 @@
 
     // Quote settings
     snap.vatOn      = (typeof vatOn      !== 'undefined') ? vatOn      : true;
-    snap.instPct    = parseInt((G('qs-inst')     || {value:'10'}).value) || 10;
-    snap.qsValidity = parseInt((G('qs-validity') || {value:'14'}).value) || 14;
+    snap.instPct    = parseInt((G('qs-inst')     || {value:'10'}).value, 10) || 10;
+    snap.qsValidity = parseInt((G('qs-validity') || {value:'14'}).value, 10) || 14;
     snap.qsNotes    = (G('qs-notes') || {value:''}).value || '';
 
     // Modes
@@ -92,18 +157,18 @@
     snap.projState    = (typeof projState    !== 'undefined') ? JSON.parse(JSON.stringify(projState))    : {};
 
     // Duct / ESP
-    snap.ductVelSup   = parseInt((G('duct-vel-sup')    || {value:'1000'}).value) || 1000;
-    snap.ductVelRet   = parseInt((G('duct-vel-ret')    || {value:'800'}).value)  || 800;
-    snap.ductCfmPerTr = parseInt((G('duct-cfm-per-tr') || {value:'400'}).value)  || 400;
-    snap.espLenSup    = parseFloat((G('esp-len-sup')   || {value:'30'}).value)   || 30;
-    snap.espLenRet    = parseFloat((G('esp-len-ret')   || {value:'20'}).value)   || 20;
-    snap.espBends     = parseInt((G('esp-bends')       || {value:'4'}).value)    || 4;
-    snap.espFric      = parseFloat((G('esp-fric')      || {value:'1.0'}).value)  || 1.0;
+    snap.ductVelSup   = parseInt((G('duct-vel-sup')    || {value:'1000'}).value, 10) || 1000;
+    snap.ductVelRet   = parseInt((G('duct-vel-ret')    || {value:'800'}).value, 10)  || 800;
+    snap.ductCfmPerTr = parseInt((G('duct-cfm-per-tr') || {value:'400'}).value, 10)  || 400;
+    snap.espLenSup    = parseFloat((G('esp-len-sup')   || {value:'30'}).value)       || 30;
+    snap.espLenRet    = parseFloat((G('esp-len-ret')   || {value:'20'}).value)       || 20;
+    snap.espBends     = parseInt((G('esp-bends')       || {value:'4'}).value, 10)    || 4;
+    snap.espFric      = parseFloat((G('esp-fric')      || {value:'1.0'}).value)      || 1.0;
 
     // Project-mode unit block
     snap.projSysType = (G('proj-systype') || {value:'split'}).value || 'split';
-    snap.projCap     = parseInt((G('proj-cap') || {value:'0'}).value) || 0;
-    snap.projQty     = parseInt((G('proj-qty') || {value:'1'}).value) || 1;
+    snap.projCap     = parseInt((G('proj-cap') || {value:'0'}).value, 10) || 0;
+    snap.projQty     = parseInt((G('proj-qty') || {value:'1'}).value, 10) || 1;
     snap.projUp      = parseFloat((G('proj-up')|| {value:'0'}).value) || 0;
 
     // Current room id
@@ -112,21 +177,23 @@
     // Language
     snap.lang = _lang();
 
-    // Computed totals (for card display)
+    // Computed totals
     var totTR=0, totBTU=0, totMKT=0, totCFM=0;
     snap.hist.forEach(function(h){
       totTR  += parseFloat(h.tr)  || 0;
-      totBTU += parseInt(h.btu)   || 0;
-      totMKT += parseInt(h.mkt)   || 0;
-      totCFM += parseInt(h.cfm)   || 0;
+      totBTU += parseInt(h.btu, 10)   || 0;
+      totMKT += parseInt(h.mkt, 10)   || 0;
+      totCFM += parseInt(h.cfm, 10)   || 0;
     });
+
     snap.totals = {
       rooms: snap.hist.length,
       tr:    Math.round(totTR * 100) / 100,
-      btu:   totBTU, mkt: totMKT, cfm: totCFM
+      btu:   totBTU,
+      mkt:   totMKT,
+      cfm:   totCFM
     };
 
-    // Grand total string
     var gtEl = G('qt-grand');
     snap.grandTotalStr = gtEl ? gtEl.textContent.trim() : '';
 
@@ -137,7 +204,6 @@
   function _restore(snap) {
     if (!snap) return;
 
-    // JS globals
     if (typeof hist   !== 'undefined') hist   = JSON.parse(JSON.stringify(snap.hist   || []));
     if (typeof qlines !== 'undefined') qlines = JSON.parse(JSON.stringify(snap.qlines || []));
     if (typeof devs   !== 'undefined') devs   = JSON.parse(JSON.stringify(snap.devs   || []));
@@ -156,12 +222,10 @@
       Object.keys(snap.projState).forEach(function(k){ projState[k] = snap.projState[k]; });
     }
 
-    // curRoom
     if (snap.curRoomId && typeof ROOMS !== 'undefined' && ROOMS[snap.curRoomId]) {
       if (typeof curRoom !== 'undefined') curRoom = ROOMS[snap.curRoomId];
     }
 
-    // DOM inputs
     function sv(id, v) { var el=G(id); if(el && v !== undefined && v !== null) el.value = String(v); }
     sv('quote-project',   snap.projName   || '');
     sv('quote-no',        snap.quoteNo    || 'Q-001');
@@ -178,16 +242,19 @@
     sv('proj-qty',        snap.projQty      || 1);
     sv('proj-up',         snap.projUp       || 0);
 
-    // Sync legacy localStorage so app.js save() works correctly later
     try {
-      localStorage.setItem('acp9h',    JSON.stringify(snap.hist   || []));
-      localStorage.setItem('acp9q',    JSON.stringify(snap.qlines || []));
-      localStorage.setItem('acp9qs',   JSON.stringify({ vatOn:snap.vatOn, instPct:snap.instPct, qsValidity:snap.qsValidity, qsNotes:snap.qsNotes }));
+      localStorage.setItem('acp9h', JSON.stringify(snap.hist || []));
+      localStorage.setItem('acp9q', JSON.stringify(snap.qlines || []));
+      localStorage.setItem('acp9qs', JSON.stringify({
+        vatOn: snap.vatOn,
+        instPct: snap.instPct,
+        qsValidity: snap.qsValidity,
+        qsNotes: snap.qsNotes
+      }));
       localStorage.setItem('acp9mode', snap.quoteMode || 'room');
       if (snap.bundleConfig) localStorage.setItem('ac_bundleConfig', JSON.stringify(snap.bundleConfig));
     } catch(e) {}
 
-    // Re-render UI in correct dependency order
     if (typeof applyQSState      === 'function') applyQSState();
     if (typeof renderDevs        === 'function') renderDevs();
     if (typeof renderHist        === 'function') renderHist();
@@ -195,13 +262,11 @@
     if (typeof _updateBundleUI   === 'function') _updateBundleUI();
     if (typeof refreshGrandTotal === 'function') refreshGrandTotal();
 
-    // Room label
     if (typeof curRoom !== 'undefined' && curRoom) {
       var dtEl = G('dt');
       if (dtEl) dtEl.textContent = _isAr() ? curRoom.ar : curRoom.en;
     }
 
-    // Project-mode dropdowns (small defer for DOM to settle after setQuoteMode)
     if (snap.projSysType) {
       setTimeout(function(){
         var stSel = G('proj-systype');
@@ -220,22 +285,47 @@
     }
   }
 
-  // ════════════════════════════════════════════════════════════════════
-  // PUBLIC API
-  // ════════════════════════════════════════════════════════════════════
+  // ── Nav red dots ──────────────────────────────────────────────────────
+  function _isPanelActive(panelId) {
+    var el = G(panelId);
+    return !!(el && el.classList.contains('on'));
+  }
+
+  function updateProjectsDot() {
+    var dot = G('projects-dot');
+    if (!dot) return;
+
+    var total = _loadAll().length;
+    var seen  = _getProjectsSeenCount();
+    var panelOpen = _isPanelActive('p-projects');
+    var hasUnseen = total > seen;
+
+    dot.style.display = (hasUnseen && !panelOpen) ? '' : 'none';
+  }
+
+  function updateHistDot() {
+    var dot = G('hist-dot');
+    if (!dot) return;
+
+    var total = _getHistLength();
+    var seen  = _getHistSeenCount();
+    var panelOpen = _isPanelActive('p-hist');
+    var hasUnseen = total > seen;
+
+    dot.style.display = (hasUnseen && !panelOpen) ? '' : 'none';
+  }
+
+  function updateNavDots() {
+    updateProjectsDot();
+    updateHistDot();
+  }
 
   // ── saveCurrentProject(opts) ─────────────────────────────────────────
-  // opts.silentNavigate = true → do NOT navigate away (used by H2 auto-save)
-  // Save logic priority:
-  //   1. Match by currentProjectId (update in-place — most reliable)
-  //   2. Match by normalised name   (update if found)
-  //   3. Create new project
   function saveCurrentProject(opts) {
     opts = opts || {};
 
     var projName = (G('quote-project') || {value:''}).value.trim();
 
-    // Require a name — show error and stop
     if (!projName) {
       _toast(_t('⚠️ أدخل اسم المشروع أولاً', '⚠️ Enter a project name first'));
       var el = G('quote-project');
@@ -253,15 +343,14 @@
     var now      = _now();
     var curId    = _getCurrentId();
     var foundIdx = -1;
+    var isNew    = false;
 
-    // Priority 1: match by stored current-project id
     if (curId) {
       for (var i = 0; i < all.length; i++) {
         if (all[i].id === curId) { foundIdx = i; break; }
       }
     }
 
-    // Priority 2: match by normalised name
     if (foundIdx < 0) {
       var normName = projName.toLowerCase();
       for (var j = 0; j < all.length; j++) {
@@ -270,32 +359,32 @@
     }
 
     if (foundIdx >= 0) {
-      // UPDATE existing
-      all[foundIdx].name      = projName;   // allow rename via field
+      all[foundIdx].name      = projName;
       all[foundIdx].snapshot  = snap;
       all[foundIdx].updatedAt = now;
       _saveAll(all);
       _setCurrentId(all[foundIdx].id);
+
       if (!opts.silentNavigate) {
         _toast(_t('✅ تم تحديث المشروع: ', '✅ Updated: ') + projName);
       }
     } else {
-      // CREATE new — check free plan project limit first
-      var canSave = window.AppPlan
-        ? window.AppPlan.hasAccess('unlimitedProjects') || (all.length < window.AppPlan.FREE_PROJ_LIMIT)
-        : true;
+      var canSave = window.AppPlan ? window.AppPlan.canSaveProject(all, false) : true;
       if (!canSave) {
-        // Free limit hit
         _toast(_isAr()
           ? '📁 وصلت للحد الأقصى (3 مشاريع) — رُقِّ إلى Pro لمشاريع غير محدودة'
           : '📁 Free limit reached (3 projects) — upgrade to Pro for unlimited');
-        // Flash upgrade button
+
         setTimeout(function(){
-          var btn2 = document.getElementById('set-upgrade-btn');
-          if (btn2) { btn2.classList.add('upgrade-pulse'); setTimeout(function(){ btn2.classList.remove('upgrade-pulse'); }, 1200); }
+          var btn2 = G('set-upgrade-btn');
+          if (btn2) {
+            btn2.classList.add('upgrade-pulse');
+            setTimeout(function(){ btn2.classList.remove('upgrade-pulse'); }, 1200);
+          }
         }, 300);
         return;
       }
+
       var newProj = {
         id:        _uid(),
         name:      projName,
@@ -303,17 +392,19 @@
         updatedAt: now,
         snapshot:  snap
       };
+
       all.unshift(newProj);
       _saveAll(all);
       _setCurrentId(newProj.id);
+      isNew = true;
+
       _toast(_t('💾 تم حفظ المشروع: ', '💾 Saved: ') + projName);
     }
 
-    // Flash the save button (green checkmark feedback)
-    var btn = G('quote-save-btn') || G('qp-save-btn');
+    var btn = G('quote-save-btn') || G('qp-save-btn') || G('pm-save-btn');
     if (btn) {
-      var origBg    = btn.style.background;
-      var origColor = btn.style.color;
+      var origBg     = btn.style.background;
+      var origColor  = btn.style.color;
       var origBorder = btn.style.border;
       btn.style.background = 'linear-gradient(135deg,rgba(52,211,153,.6),rgba(52,211,153,.4))';
       btn.style.color      = '#fff';
@@ -325,11 +416,13 @@
       }, 1200);
     }
 
-    // Always refresh projects list
+    if (isNew) {
+      markProjectsUnseen();
+    }
+
     renderProjects();
     updateNavDots();
 
-    // Navigate to Projects page (unless called silently from H2 auto-save)
     if (!opts.silentNavigate && typeof goPanel === 'function') {
       goPanel('projects');
     }
@@ -346,17 +439,12 @@
       return;
     }
 
-    // Restore full snapshot into app
     _restore(proj.snapshot);
-
-    // Mark as current project so H2 auto-save can update it
     _setCurrentId(proj.id);
 
-    // Touch updatedAt
     proj.updatedAt = _now();
     _saveAll(all);
 
-    // Navigate to Quotation page to show the loaded data
     if (typeof goPanel === 'function') goPanel('hist');
 
     _toast(_t('📂 تم فتح: ', '📂 Opened: ') + proj.name);
@@ -369,10 +457,16 @@
       if (p.id === id) { name = p.name; return false; }
       return true;
     });
+
     _saveAll(next);
 
-    // If we deleted the current project, clear the current id
     if (_getCurrentId() === id) _setCurrentId(null);
+
+    // keep seen count sane after delete
+    var nextCount = next.length;
+    if (_getProjectsSeenCount() > nextCount) {
+      _setProjectsSeenCount(nextCount);
+    }
 
     renderProjects();
     updateNavDots();
@@ -382,14 +476,16 @@
   // ── renderProjects ────────────────────────────────────────────────────
   function renderProjects() {
     var list = G('pm-list');
-    if (!list) return;
+    if (!list) {
+      updateNavDots();
+      return;
+    }
 
     var isAr  = _isAr();
     var all   = _loadAll();
     var query = ((G('pm-search') || {value:''}).value || '').trim().toLowerCase();
     var curId = _getCurrentId();
 
-    // Update search placeholder language
     var si = G('pm-search');
     if (si) si.placeholder = isAr ? 'بحث في المشاريع...' : 'Search projects...';
 
@@ -397,7 +493,6 @@
       ? all.filter(function(p){ return p.name.toLowerCase().indexOf(query) !== -1; })
       : all;
 
-    // Empty state
     if (!shown.length) {
       list.innerHTML =
         '<div class="pm-empty">' +
@@ -423,7 +518,6 @@
       var tot    = snap.totals   || {};
       var isCur  = (proj.id === curId);
 
-      // Pills
       var pills = '';
       if (tot.rooms > 0)
         pills += '<span class="pm-meta-pill"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg> ' + tot.rooms + ' ' + (isAr ? 'غرفة' : 'rooms') + '</span>';
@@ -443,7 +537,6 @@
       var pid   = proj.id;
       var pname = proj.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
-      // Active border if this is the currently open project
       var cardStyle = isCur
         ? ' style="border-color:rgba(52,211,153,.5);box-shadow:0 0 0 1px rgba(52,211,153,.2);"'
         : '';
@@ -474,6 +567,7 @@
           '</div>' +
         '</div>';
     });
+
     list.innerHTML = html;
     updateNavDots();
   }
@@ -482,40 +576,16 @@
   function updateProjMgrLabels() {
     var isAr = _isAr();
     function sl(id, ar, en){ var el=G(id); if(el) el.textContent = isAr ? ar : en; }
-    sl('pm-ttl',        '📁 المشاريع',         '📁 Projects');
-    sl('pm-save-lbl',   'حفظ المشروع الحالي',  'Save Current Project');
-    sl('nl-projects',   'المشاريع',            'Projects');
-    sl('quote-save-lbl','حفظ',                 'Save');
-    var si = G('pm-search'); if(si) si.placeholder = isAr ? 'بحث في المشاريع...' : 'Search projects...';
+    sl('pm-ttl',         '📁 المشاريع',        '📁 Projects');
+    sl('pm-save-lbl',    'حفظ المشروع الحالي', 'Save Current Project');
+    sl('nl-projects',    'المشاريع',           'Projects');
+    sl('quote-save-lbl', 'حفظ',                'Save');
+
+    var si = G('pm-search');
+    if (si) si.placeholder = isAr ? 'بحث في المشاريع...' : 'Search projects...';
+
     var btn = G('quote-save-btn') || G('qp-save-btn');
     if (btn) btn.title = isAr ? 'حفظ المشروع' : 'Save Project';
-  }
-
-  // ── Nav red dots ──────────────────────────────────────────────────────
-  function _isPanelActive(panelId) {
-    var el = document.getElementById(panelId);
-    return el && el.classList.contains('on');
-  }
-
-  function updateProjectsDot() {
-    var dot = G('projects-dot');
-    if (!dot) return;
-    var hasSaved = _loadAll().length > 0;
-    var panelOpen = _isPanelActive('p-projects');
-    dot.style.display = (hasSaved && !panelOpen) ? '' : 'none';
-  }
-
-  function updateHistDot() {
-    var dot = G('hist-dot');
-    if (!dot) return;
-    var histLen = (typeof hist !== 'undefined') ? hist.length : 0;
-    var panelOpen = _isPanelActive('p-hist');
-    dot.style.display = (histLen > 0 && !panelOpen) ? '' : 'none';
-  }
-
-  function updateNavDots() {
-    updateProjectsDot();
-    updateHistDot();
   }
 
   // ── Delete confirm ────────────────────────────────────────────────────
@@ -527,56 +597,66 @@
     if (window.confirm(msg)) deleteProject(id);
   };
 
-  // ── Window bindings — set now AND after DOMContentLoaded ─────────────
+  // ── Window bindings ───────────────────────────────────────────────────
   function _bindWindow() {
     window.saveCurrentProject = saveCurrentProject;
     window.loadProject        = loadProject;
-    window.openProject        = loadProject;    // alias
+    window.openProject        = loadProject;
     window.deleteProject      = deleteProject;
     window.renderProjects     = renderProjects;
+
     window.AppProjects = {
-      saveCurrentProject:  saveCurrentProject,
-      loadProject:         loadProject,
-      openProject:         loadProject,
-      deleteProject:       deleteProject,
-      renderProjects:      renderProjects,
-      updateProjMgrLabels: updateProjMgrLabels,
-      updateProjectsDot:   updateProjectsDot,
-      updateHistDot:       updateHistDot,
-      updateNavDots:       updateNavDots,
-      getProjects:         _loadAll,
-      snapshot:            _snapshot
+      saveCurrentProject:   saveCurrentProject,
+      loadProject:          loadProject,
+      openProject:          loadProject,
+      deleteProject:        deleteProject,
+      renderProjects:       renderProjects,
+      updateProjMgrLabels:  updateProjMgrLabels,
+      updateProjectsDot:    updateProjectsDot,
+      updateHistDot:        updateHistDot,
+      updateNavDots:        updateNavDots,
+      markProjectsSeen:     markProjectsSeen,
+      markHistSeen:         markHistSeen,
+      markProjectsUnseen:   markProjectsUnseen,
+      markHistUnseen:       markHistUnseen,
+      getProjects:          _loadAll,
+      snapshot:             _snapshot
     };
   }
 
-  // Bind immediately (sync — before app.js defer)
   _bindWindow();
 
-  // Re-bind after all deferred scripts have run
   document.addEventListener('DOMContentLoaded', function(){
-    setTimeout(_bindWindow, 0);   // tick 0: after defer scripts
+    setTimeout(_bindWindow, 0);
 
-    // Initial dot state on page load
-    setTimeout(updateNavDots, 200);
+    setTimeout(function(){
+      updateProjMgrLabels();
+      updateNavDots();
+    }, 200);
 
-    // Patch goPanel once (needs goPanel to exist from app.js defer)
     setTimeout(function(){
       if (typeof goPanel === 'function' && !goPanel._pmPatched) {
         var _orig = goPanel;
+
         goPanel = function(name){
           _orig(name);
+
           if (name === 'projects') {
+            markProjectsSeen();
             updateProjMgrLabels();
             renderProjects();
+          } else if (name === 'hist') {
+            markHistSeen();
           }
-          // Always refresh dots on any panel switch
+
           updateNavDots();
         };
+
         goPanel._pmPatched = true;
         window.goPanel = goPanel;
       }
     }, 150);
   });
 
-  console.log('[AirCalc] AppProjects v3 initialised');
+  console.log('[AirCalc] AppProjects v4 initialised');
 })();
