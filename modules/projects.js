@@ -281,8 +281,10 @@
       }
     } else {
       // CREATE new — check free plan project limit first
-      var limit = (window.AppPlan) ? window.AppPlan.getProjectLimit() : Infinity;
-      if (all.length >= limit) {
+      var canSave = window.AppPlan
+        ? window.AppPlan.hasAccess('unlimitedProjects') || (all.length < window.AppPlan.FREE_PROJ_LIMIT)
+        : true;
+      if (!canSave) {
         // Free limit hit
         _toast(_isAr()
           ? '📁 وصلت للحد الأقصى (3 مشاريع) — رُقِّ إلى Pro لمشاريع غير محدودة'
@@ -411,6 +413,7 @@
               '<div class="pm-empty-sub">' + (isAr ? 'جرّب كلمة مختلفة' : 'Try a different keyword') + '</div>'
           ) +
         '</div>';
+      updateNavDots();
       return;
     }
 
