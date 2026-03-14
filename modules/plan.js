@@ -1,539 +1,127 @@
-/* ============================================================
-   modules/plan.js  —  AirCalc Pro plan management
-   Plain script, no ES modules.
-   Public API on window.AppPlan AND directly on window.
-   localStorage key : aircalc_plan
-   Default plan     : free
-   Supported plans  : free | pro | monthly | yearly | lifetime
-   ============================================================ */
+// ── AirCalc Pro — modules/plan.js ─────────────────────────────────────────
+// Central Free vs Pro plan system.
+// Storage key: aircalc_plan
+// Plans: 'free' | 'pro' | 'monthly' | 'yearly' | 'lifetime'
+// All 'pro' variants share the same feature set.
+// ─────────────────────────────────────────────────────────────────────────
+(function () {
+  'use strict';
 
-(function (w) {
+  var PLAN_KEY       = 'aircalc_plan';
+  var FREE_PROJ_LIMIT = 3;
 
-  /* ── Constants ──────────────────────────────────────────────────── */
-
-  var PLAN_KEY          = 'aircalc_plan';
-  var VALID             = ['free', 'pro', 'monthly', 'yearly', 'lifetime'];
-  var PRO_PLANS         = ['pro', 'monthly', 'yearly', 'lifetime'];
-  var MAX_FREE_PROJECTS = 3;
-
-  /* ── Feature maps ───────────────────────────────────────────────── */
-
-  var FREE_FEATURES = {
-    exportCSV:         true,
-    exportPDF:         false,
-    techReport:        false,
-    unlimitedProjects: false,
-    projectMode:       false,
-    ductSizing:        false,
-    espCalc:           false
+  // ── Feature map ──────────────────────────────────────────────────────────
+  // true = available on plan
+  var FEATURE_MAP = {
+    free: {
+      exportCSV:         true,
+      exportPDF:         false,
+      techReport:        false,
+      unlimitedProjects: false,
+      projectMode:       false,
+      ductSizing:        false,
+      espCalc:           false,
+      advancedDuct:      false
+    },
+    pro: {
+      exportCSV:         true,
+      exportPDF:         true,
+      techReport:        true,
+      unlimitedProjects: true,
+      projectMode:       true,
+      ductSizing:        true,
+      espCalc:           true,
+      advancedDuct:      true
+    }
   };
+  // monthly / yearly / lifetime share pro features
+  FEATURE_MAP.monthly  = FEATURE_MAP.pro;
+  FEATURE_MAP.yearly   = FEATURE_MAP.pro;
+  FEATURE_MAP.lifetime = FEATURE_MAP.pro;
 
-  var PRO_FEATURES = {
-    exportCSV:         true,
-    exportPDF:         true,
-    techReport:        true,
-    unlimitedProjects: true,
-    projectMode:       true,
-    ductSizing:        true,
-    espCalc:           true
-  };
-
-  var FEATURES = {
-    free:     FREE_FEATURES,
-    pro:      PRO_FEATURES,
-    monthly:  PRO_FEATURES,
-    yearly:   PRO_FEATURES,
-    lifetime: PRO_FEATURES
-  };
-
-  /* ── Internal state ─────────────────────────────────────────────── */
-
-  var _selectedPricePlan = 'lifetime';
-
-  /* ── DOM helpers ────────────────────────────────────────────────── */
-
-  function _el(id) {
-    return document.getElementById(id);
-  }
-
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function _lang() { return (typeof lang !== 'undefined') ? lang : 'ar'; }
   function _toast(msg) {
-    if (typeof w.toast === 'function') {
-      w.toast(msg);
-    } else {
-      console.warn('[plan] ' + msg);
-    }
+    if (typeof toast === 'function') { toast(msg); return; }
+    if (window.AppHelpers) window.AppHelpers.toast(msg);
   }
+  function _isAr() { return _lang() === 'ar'; }
 
-  function _isAr() {
-    return (typeof w.lang !== 'undefined') ? w.lang === 'ar' : false;
-  }
-
-  /*
-   * Lock or unlock an ACTION button (btn-pdf, btn-techpdf).
-   * On free: disabled=true + locked classes applied.
-   * On pro:  disabled=false + locked classes removed.
-   * app.js gates the actual action with requireFeature() as a second
-   * layer, but we own the canonical disabled state here.
-   */
-  function _gateActionButton(node, allowed) {
-    if (!node) return;
-    if (allowed) {
-      node.disabled = false;
-      node.classList.remove('locked', 'btn-locked');
-    } else {
-      node.disabled = true;
-      node.classList.add('locked', 'btn-locked');
-    }
-  }
-
-  /*
-   * Lock or unlock a MODE button (mode-btn-proj).
-   * NEVER disabled — clicking a locked mode button must still open
-   * the upgrade overlay via the onclick in app.js → requireFeature().
-   * Only visual locked classes are toggled.
-   */
-  function _gateModeButton(node, allowed) {
-    if (!node) return;
-    node.disabled = false; /* always keep clickable */
-    if (allowed) {
-      node.classList.remove('locked', 'btn-locked');
-    } else {
-      node.classList.add('locked', 'btn-locked');
-    }
-  }
-
-  /*
-   * Lock or unlock a section block.
-   */
-  function _gateSection(node, allowed) {
-    if (!node) return;
-    if (allowed) {
-      node.classList.remove('section-locked');
-    } else {
-      node.classList.add('section-locked');
-    }
-  }
-
-  /*
-   * Force the app back to room mode.
-   *
-   * We call this unconditionally whenever projectMode is revoked —
-   * regardless of what window.quoteMode says — because DOM and state
-   * can diverge during plan switches.
-   *
-   * Strategy (most-to-least reliable):
-   *   1. Call w.setQuoteMode('room') if it exists (app.js function that
-   *      owns both state and DOM wiring).
-   *   2. Direct DOM manipulation as a fallback (e.g. if setQuoteMode
-   *      was not yet exposed at the time of the call).
-   */
-  function _forceRoomMode() {
-    /* Strategy 1 */
-    if (typeof w.setQuoteMode === 'function') {
-      w.setQuoteMode('room');
-      return;
-    }
-
-    /* Strategy 2: direct DOM */
-    var qiList    = _el('qi-list');
-    var projBlock = _el('proj-block');
-    var bundleRow = _el('bundle-row');
-    var btnRoom   = _el('mode-btn-room');
-    var btnProj   = _el('mode-btn-proj');
-
-    if (qiList)    { qiList.style.display   = ''; }
-    if (projBlock) { projBlock.style.display = 'none'; }
-    if (bundleRow) { bundleRow.style.display = 'none'; }
-    if (btnRoom)   { btnRoom.classList.add('active');    btnRoom.classList.remove('inactive'); }
-    if (btnProj)   { btnProj.classList.remove('active'); btnProj.classList.add('inactive');    }
-
-    if (typeof w.quoteMode !== 'undefined') { w.quoteMode = 'room'; }
-  }
-
-  /* ── 1. getCurrentPlan ──────────────────────────────────────────── */
+  // ── Core API ─────────────────────────────────────────────────────────────
 
   function getCurrentPlan() {
-    try {
-      var stored = localStorage.getItem(PLAN_KEY);
-      if (stored && VALID.indexOf(stored) !== -1) return stored;
-    } catch (e) { /* storage blocked */ }
-    return 'free';
+    return localStorage.getItem(PLAN_KEY) || 'free';
   }
-
-  /* ── 2. isPro ───────────────────────────────────────────────────── */
-
-  function isPro(plan) {
-    var p = (plan !== undefined) ? plan : getCurrentPlan();
-    return PRO_PLANS.indexOf(p) !== -1;
-  }
-
-  /* ── 3. getFeatureAccess ────────────────────────────────────────── */
-
-  function getFeatureAccess(plan) {
-    var p = (plan !== undefined) ? plan : getCurrentPlan();
-    return FEATURES[p] || FREE_FEATURES;
-  }
-
-  /* ── 4. hasAccess ───────────────────────────────────────────────── */
-
-  function hasAccess(featureKey) {
-    return getFeatureAccess(getCurrentPlan())[featureKey] === true;
-  }
-
-  /* ── 5. setCurrentPlan ──────────────────────────────────────────── */
 
   function setCurrentPlan(plan) {
-    if (VALID.indexOf(plan) === -1) {
-      console.error('[plan] Unknown plan: ' + plan);
-      return;
-    }
-    try { localStorage.setItem(PLAN_KEY, plan); } catch (e) { /* blocked */ }
-    updatePlanUI();
-    document.dispatchEvent(new CustomEvent('planChanged', { detail: { plan: plan } }));
+    var valid = ['free','pro','monthly','yearly','lifetime'];
+    if (valid.indexOf(plan) < 0) plan = 'free';
+    localStorage.setItem(PLAN_KEY, plan);
+    if (typeof updatePlanUI === 'function') updatePlanUI();
+    console.log('[AirCalc] Plan set to:', plan);
   }
 
-  /* ── 6. requireFeature ──────────────────────────────────────────── */
-  /*
-   * Returns true  → caller may proceed.
-   * Returns false → access denied; upgrade overlay shown.
-   */
-
-  function requireFeature(featureKey, message) {
-    if (hasAccess(featureKey)) return true;
-    var msg = message || (_isAr()
-      ? 'هذه الميزة متاحة في خطة Pro فقط.'
-      : 'This feature requires AirCalc Pro.');
-    _toast('🔒 ' + msg);
-    openUpgradeSheet();
-    return false;
+  function isPro() {
+    return getCurrentPlan() !== 'free';
   }
 
-  /* ── 7. canSaveProject ──────────────────────────────────────────── */
-  /*
-   * Call BEFORE saving a new project to enforce the free-plan cap.
-   *
-   * @param {Array|number} existingProjects  array or numeric count
-   * @param {boolean}      isEdit            true = editing existing slot
-   * @returns {boolean}  true = proceed, false = blocked (overlay shown)
-   */
-
-  function canSaveProject(existingProjects, isEdit) {
-    if (isEdit)  return true;
-    if (isPro()) return true;
-
-    var count = Array.isArray(existingProjects)
-      ? existingProjects.length
-      : (parseInt(existingProjects, 10) || 0);
-
-    if (count < MAX_FREE_PROJECTS) return true;
-
-    var msg = _isAr()
-      ? 'الخطة المجانية تسمح بحفظ حتى ' + MAX_FREE_PROJECTS + ' مشاريع فقط. قم بالترقية للحصول على مشاريع غير محدودة.'
-      : 'Free plan allows up to ' + MAX_FREE_PROJECTS + ' saved projects. Upgrade for unlimited projects.';
-    _toast('🔒 ' + msg);
-    openUpgradeSheet();
-    return false;
+  function getFeatureAccess(plan) {
+    return FEATURE_MAP[plan] || FEATURE_MAP.free;
   }
 
-  /* ── 8. updatePlanUI ────────────────────────────────────────────── */
-  /*
-   * Single source of truth for all plan-dependent UI state.
-   *
-   * Design rules:
-   *   - Uses classList.add/remove exclusively (never toggle) so every
-   *     call is fully deterministic regardless of previous plan state.
-   *   - Every branch is unconditional: free always locks, pro always
-   *     unlocks. No "if currently locked" guards that could leave stale
-   *     state behind after a Pro→Free downgrade.
-   *   - Action buttons (pdf, techpdf) are disabled on free.
-   *   - Mode buttons (mode-btn-proj) are NEVER disabled.
-   *   - When downgrading to free, _forceRoomMode() is called
-   *     unconditionally — not only when quoteMode === 'proj' — because
-   *     DOM and JS state can diverge during plan switches.
-   */
-
-  function updatePlanUI() {
+  function hasAccess(featureKey) {
     var plan = getCurrentPlan();
-    var pro  = isPro(plan);
-    var isAr = _isAr();
-    var fa   = getFeatureAccess(plan);
+    var map  = getFeatureAccess(plan);
+    return map[featureKey] === true;
+  }
 
-    /* ── Plan label strings ──────────────────────────────────────── */
-    var planLabels = {
-      free:     isAr ? 'مجاني'          : 'Free',
-      pro:      isAr ? 'Pro (دائم)'     : 'Pro (perpetual)',
-      monthly:  isAr ? 'Pro شهري'       : 'Pro Monthly',
-      yearly:   isAr ? 'Pro سنوي'       : 'Pro Yearly',
-      lifetime: isAr ? 'Pro مدى الحياة' : 'Pro Lifetime'
+  // requireFeature — returns true if allowed, shows toast + returns false if not
+  function requireFeature(featureKey) {
+    if (hasAccess(featureKey)) return true;
+    var msgs = {
+      exportPDF:         _isAr() ? '📄 تصدير PDF متاح في نسخة Pro فقط'           : '📄 PDF export is a Pro feature',
+      techReport:        _isAr() ? '🛠️ التقرير الفني متاح في نسخة Pro فقط'       : '🛠️ Tech Report is a Pro feature',
+      unlimitedProjects: _isAr() ? '📁 رُقِّ إلى Pro لحفظ مشاريع غير محدودة'    : '📁 Upgrade to Pro for unlimited projects',
+      projectMode:       _isAr() ? '🏢 وضع المشروع متاح في نسخة Pro فقط'        : '🏢 Project mode is a Pro feature',
+      ductSizing:        _isAr() ? '🌬 تصميم مجاري الهواء متاح في نسخة Pro فقط' : '🌬 Duct sizing is a Pro feature',
+      espCalc:           _isAr() ? '🔧 حساب ESP متاح في نسخة Pro فقط'           : '🔧 ESP calc is a Pro feature',
+      advancedDuct:      _isAr() ? 'التحليل المتقدم للمجاري متاح في نسخة Pro فقط' : 'Advanced duct analysis is a Pro feature'
     };
-    var planLabel = planLabels[plan] || plan;
-
-    /* ── #plan-status-pill ───────────────────────────────────────── */
-    var pill = _el('plan-status-pill');
-    if (pill) {
-      pill.textContent = pro ? planLabel + ' ⭐' : (isAr ? 'مجاني' : 'Free');
-      VALID.forEach(function (p) { pill.classList.remove('plan--' + p); });
-      pill.classList.add('plan--' + plan);
-      if (pro) { pill.classList.add('pro');  pill.classList.remove('free'); }
-      else      { pill.classList.add('free'); pill.classList.remove('pro');  }
-    }
-
-    /* ── #header-plan-badge ──────────────────────────────────────── */
-    var badge = _el('header-plan-badge');
-    if (badge) {
-      badge.textContent = pro ? 'PRO ⭐' : (isAr ? 'مجاني' : 'FREE');
-      if (pro) { badge.classList.add('badge--pro');  badge.classList.remove('badge--free'); }
-      else      { badge.classList.add('badge--free'); badge.classList.remove('badge--pro');  }
-    }
-
-    /* ── #ptg-live-badge ─────────────────────────────────────────── */
-    var liveBadge = _el('ptg-live-badge');
-    if (liveBadge) {
-      liveBadge.textContent = pro ? planLabel + ' ⭐' : (isAr ? 'مجاني' : 'Free');
-      liveBadge.className   = 'plan-status-pill ' + (pro ? 'pro' : 'free');
-    }
-
-    /* ── Tab buttons: #tbtn-free / pro / monthly / yearly ────────── */
-    ['free', 'pro', 'monthly', 'yearly'].forEach(function (p) {
-      var btn = _el('tbtn-' + p);
-      if (!btn) return;
-      if (plan === p) { btn.classList.add('active', 'active-plan'); }
-      else             { btn.classList.remove('active', 'active-plan'); }
-    });
-
-    /* ── #ptg-desc ───────────────────────────────────────────────── */
-    var descEl = _el('ptg-desc');
-    if (descEl) {
-      descEl.innerHTML =
-        '<span style="color:var(--a);font-weight:700">' +
-        (isAr ? 'الخطة الحالية: ' : 'Current plan: ') +
-        '</span>' + planLabel +
-        (pro
-          ? ' &nbsp;·&nbsp; <span style="color:var(--g)">' +
-            (isAr ? 'كل الميزات مفعّلة' : 'All features unlocked') + '</span>'
-          : ' &nbsp;·&nbsp; <span style="color:var(--am)">' +
-            (isAr ? 'حتى 3 مشاريع، بدون PDF' : 'Up to 3 projects, no PDF') + '</span>');
-    }
-
-    /* ── #ptg-features grid ──────────────────────────────────────── */
-    var featEl = _el('ptg-features');
-    if (featEl) {
-      var featureList = [
-        { key: 'exportCSV',         ar: 'تصدير CSV',           en: 'CSV export'         },
-        { key: 'exportPDF',         ar: 'تصدير PDF',           en: 'PDF export'         },
-        { key: 'techReport',        ar: 'التقرير الفني',        en: 'Tech Report'        },
-        { key: 'projectMode',       ar: 'وضع المشروع',          en: 'Project mode'       },
-        { key: 'ductSizing',        ar: 'تصميم المجاري',        en: 'Duct sizing'        },
-        { key: 'espCalc',           ar: 'حساب ESP',             en: 'ESP calc'           },
-        { key: 'unlimitedProjects', ar: 'مشاريع غير محدودة',    en: 'Unlimited projects' }
-      ];
-      featEl.innerHTML = featureList.map(function (f) {
-        var ok = fa[f.key] === true;
-        return '<div class="ptg-feat ' + (ok ? 'ok' : 'no') + '">' +
-          (ok ? '✅' : '❌') + ' ' + (isAr ? f.ar : f.en) +
-          '</div>';
-      }).join('');
-    }
-
-    /* ══════════════════════════════════════════════════════════════
-       GATING — applied unconditionally on every call so that a
-       Pro→Free switch always fully restores the locked state.
-    ══════════════════════════════════════════════════════════════ */
-
-    /* ── Action buttons (disabled on free) ───────────────────────── */
-    _gateActionButton(_el('btn-pdf'),     fa.exportPDF);
-    _gateActionButton(_el('btn-techpdf'), fa.techReport);
-
-    /* ── Mode button (visual lock only, never disabled) ─────────── */
-    _gateModeButton(_el('mode-btn-proj'), fa.projectMode);
-
-    /* ── Section blocks ──────────────────────────────────────────── */
-    _gateSection(_el('proj-duct-block'), fa.ductSizing);
-    _gateSection(_el('esp-block'),       fa.espCalc);
-
-    /* ── Force room mode when projectMode is revoked ─────────────── */
-    /*
-     * Called UNCONDITIONALLY when free (not guarded by a quoteMode
-     * check) because DOM and JS state can diverge mid-switch.
-     * _forceRoomMode() delegates to setQuoteMode('room') in app.js
-     * which is idempotent — calling it when already in room mode is
-     * safe and cheap.
-     */
-    if (!fa.projectMode) {
-      _forceRoomMode();
-    }
-
-    /* ── Settings panel labels ───────────────────────────────────── */
-    var upgLbl = _el('sl-upgrade-lbl');
-    if (upgLbl) upgLbl.textContent = pro
-      ? (isAr ? 'AirCalc Pro — مفعّل ⭐' : 'AirCalc Pro — Active ⭐')
-      : (isAr ? 'الترقية إلى AirCalc Pro' : 'Upgrade to AirCalc Pro');
-
-    var upgSub = _el('sl-upgrade-sub');
-    if (upgSub) upgSub.textContent = pro
-      ? (isAr ? 'تستمتع بكامل المزايا الاحترافية' : 'All Pro features are unlocked')
-      : (isAr ? 'افتح PDF، التقرير الفني، مشاريع غير محدودة' : 'Unlock PDF, Tech Report, unlimited projects');
-
-    /* ── Upgrade overlay price pills ─────────────────────────────── */
-    ['lifetime', 'yearly', 'monthly'].forEach(function (p) {
-      var node = _el('pp-' + p);
-      if (!node) return;
-      if (_selectedPricePlan === p) { node.classList.add('active', 'selected'); }
-      else                           { node.classList.remove('active', 'selected'); }
-    });
-  }
-
-  /* ── 9. openUpgradeSheet ────────────────────────────────────────── */
-
-  function openUpgradeSheet() {
-    var overlay = _el('upgrade-overlay');
-    if (!overlay) { console.warn('[plan] #upgrade-overlay not found'); return; }
-    overlay.classList.remove('hidden');
-    overlay.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('overlay-open');
-    selectPricePill(_selectedPricePlan);
-    _syncUpgradeSheetLang();
-    var sheet = overlay.querySelector('.upgrade-sheet');
-    if (sheet) {
-      var first = sheet.querySelector('button, [href], input, [tabindex]:not([tabindex="-1"])');
-      if (first) { setTimeout(function () { first.focus(); }, 50); }
-    }
-  }
-
-  /* ── 10. closeUpgradeSheet ──────────────────────────────────────── */
-
-  function closeUpgradeSheet(e) {
-    /* Backdrop-click: only close when click landed outside .upgrade-sheet */
-    if (e && e.type === 'click') {
-      var sheet = document.querySelector('#upgrade-overlay .upgrade-sheet');
-      if (sheet && sheet.contains(e.target)) return;
-    }
-    var overlay = _el('upgrade-overlay');
-    if (!overlay) return;
-    overlay.classList.add('hidden');
-    overlay.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('overlay-open');
-  }
-
-  /* ── 11. selectPricePill ────────────────────────────────────────── */
-
-  function selectPricePill(planKey) {
-    _selectedPricePlan = planKey;
-    ['lifetime', 'yearly', 'monthly'].forEach(function (p) {
-      var node = _el('pp-' + p);
-      if (!node) return;
-      if (p === planKey) { node.classList.add('active', 'selected'); }
-      else                { node.classList.remove('active', 'selected'); }
-    });
-  }
-
-  /* ── 12. upgradeToPro ───────────────────────────────────────────── */
-
-  function upgradeToPro() {
-    var isAr = _isAr();
-    var btn  = _el('btn-upgrade-main');
-    if (btn) {
-      btn.disabled    = true;
-      btn.textContent = isAr ? 'جارٍ المعالجة…' : 'Processing…';
-    }
-    /* ── Replace this setTimeout with your real payment integration ── */
-    setTimeout(function () {
-      setCurrentPlan(_selectedPricePlan);
-      closeUpgradeSheet();
+    var msg = msgs[featureKey]
+      || (_isAr() ? '🔒 هذه الميزة متاحة في نسخة Pro فقط' : '🔒 This feature requires Pro');
+    _toast(msg);
+    // Flash upgrade button in settings
+    setTimeout(function() {
+      var btn = document.getElementById('set-upgrade-btn');
       if (btn) {
-        btn.disabled    = false;
-        btn.textContent = isAr ? '⭐ الترقية إلى Pro الآن' : '⭐ Upgrade to Pro Now';
+        btn.classList.add('upgrade-pulse');
+        setTimeout(function(){ btn.classList.remove('upgrade-pulse'); }, 1200);
       }
-      _toast(isAr ? '⭐ تم تفعيل AirCalc Pro!' : '⭐ AirCalc Pro activated!');
-    }, 800);
+    }, 300);
+    return false;
   }
 
-  /* ── 13. _syncUpgradeSheetLang (internal) ───────────────────────── */
-
-  function _syncUpgradeSheetLang() {
-    var isAr = _isAr();
-    function sl(id, ar, en) {
-      var node = _el(id);
-      if (node) node.textContent = isAr ? ar : en;
-    }
-    sl('ush-sub',      'ارفع مستوى عملك الهندسي',                        'Elevate your engineering workflow');
-    sl('pc-free-name', 'مجاني',                                           'Free');
-    sl('pc-pro-name',  'Pro ⭐',                                          'Pro ⭐');
-    sl('pcf1', 'حساب TR / CFM / BTU',      'TR / CFM / BTU Calc');
-    sl('pcf2', 'أحمال الأجهزة',            'Device loads');
-    sl('pcf3', 'عرض سعر أساسي',            'Basic quotation');
-    sl('pcf4', 'تصدير CSV',                'CSV export');
-    sl('pcf5', 'حتى 3 مشاريع',             'Up to 3 projects');
-    sl('pcf6', 'تصدير PDF',                'PDF export');
-    sl('pcf7', 'التقرير الفني',             'Tech Report');
-    sl('pcf8', 'Duct / ESP',               'Duct / ESP');
-    sl('pcp1', 'كل مزايا المجاني',         'All Free features');
-    sl('pcp2', 'تصدير PDF',                'PDF export');
-    sl('pcp3', 'التقرير الفني',             'Tech Report');
-    sl('pcp4', 'مشاريع غير محدودة',         'Unlimited projects');
-    sl('pcp5', 'وضع وحدة للمشروع',         'Project unit mode');
-    sl('pcp6', 'Duct Sizing',              'Duct Sizing');
-    sl('pcp7', 'ESP Calculation',          'ESP Calculation');
-    sl('pcp8', 'مزايا مستقبلية',            'Future Pro tools');
-    sl('pp-lf-amt',   'SAR 99',            'SAR 99');
-    sl('pp-lf-per',   'مدى الحياة',         'Lifetime');
-    sl('pp-lf-badge', 'الأفضل قيمة',        'Best value');
-    sl('pp-yr-amt',   'SAR 149',           'SAR 149');
-    sl('pp-yr-per',   'سنوياً',             'Yearly');
-    sl('pp-mo-amt',   'SAR 19',            'SAR 19');
-    sl('pp-mo-per',   'شهرياً',             'Monthly');
-    sl('ush-cta',   '⭐ الترقية إلى Pro الآن', '⭐ Upgrade to Pro Now');
-    sl('ush-later', 'متابعة بالنسخة المجانية',  'Continue with Free');
-    sl('ush-note',  'للتجربة فقط — الدفع قيد التطوير', 'Demo only — payment coming soon');
-    sl('sl-upgrade-lbl',
-      isPro() ? 'AirCalc Pro — مفعّل ⭐' : 'الترقية إلى AirCalc Pro',
-      isPro() ? 'AirCalc Pro — Active ⭐' : 'Upgrade to AirCalc Pro');
-    sl('sl-upgrade-sub',
-      isPro() ? 'تستمتع بكامل المزايا' : 'افتح PDF، التقرير الفني، مشاريع غير محدودة',
-      isPro() ? 'All Pro features unlocked' : 'Unlock PDF, Tech Report, unlimited projects');
+  function getProjectLimit() {
+    return hasAccess('unlimitedProjects') ? Infinity : FREE_PROJ_LIMIT;
   }
 
-  /* ── 14. Auto-init ──────────────────────────────────────────────── */
-
-  function _init() {
-    updatePlanUI();
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { closeUpgradeSheet(); }
-    });
-    var overlay = _el('upgrade-overlay');
-    if (overlay) { overlay.addEventListener('click', closeUpgradeSheet); }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', _init);
-  } else {
-    _init();
-  }
-
-  /* ── Public API ─────────────────────────────────────────────────── */
-
-  w.AppPlan = {
-    getCurrentPlan:    getCurrentPlan,
-    setCurrentPlan:    setCurrentPlan,
-    getFeatureAccess:  getFeatureAccess,
-    hasAccess:         hasAccess,
-    requireFeature:    requireFeature,
-    canSaveProject:    canSaveProject,
-    isPro:             isPro,
-    updatePlanUI:      updatePlanUI,
-    MAX_FREE_PROJECTS: MAX_FREE_PROJECTS
+  // ── Expose ────────────────────────────────────────────────────────────────
+  window.AppPlan = {
+    getCurrentPlan:  getCurrentPlan,
+    setCurrentPlan:  setCurrentPlan,
+    isPro:           isPro,
+    getFeatureAccess:getFeatureAccess,
+    hasAccess:       hasAccess,
+    requireFeature:  requireFeature,
+    getProjectLimit: getProjectLimit,
+    FREE_PROJ_LIMIT: FREE_PROJ_LIMIT
   };
 
-  w.getCurrentPlan    = getCurrentPlan;
-  w.setCurrentPlan    = setCurrentPlan;
-  w.getFeatureAccess  = getFeatureAccess;
-  w.hasAccess         = hasAccess;
-  w.requireFeature    = requireFeature;
-  w.canSaveProject    = canSaveProject;
-  w.updatePlanUI      = updatePlanUI;
-  w.openUpgradeSheet  = openUpgradeSheet;
-  w.closeUpgradeSheet = closeUpgradeSheet;
-  w.selectPricePill   = selectPricePill;
-  w.upgradeToPro      = upgradeToPro;
+  // Backward-compat shortcuts
+  window.getCurrentPlan  = getCurrentPlan;
+  window.setCurrentPlan  = setCurrentPlan;
+  window.hasAccess       = hasAccess;
+  window.requireFeature  = requireFeature;
 
-}(window));
+  console.log('[AirCalc] AppPlan initialised — plan:', getCurrentPlan());
+})();
