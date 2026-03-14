@@ -486,3 +486,25 @@ body.light-theme .exp-btn-tech{color:#0d9488;border-color:rgba(13,148,136,.4);ba
 
 /* ── NAV RED DOTS ──────────────────────────────────────────────────────── */
 .nav-red-dot{position:absolute;top:-2px;inset-inline-end:-3px;width:7px;height:7px;background:#ef4444;border-radius:50%;border:1.5px solid var(--bg);pointer-events:none;flex-shrink:0;}
+
+/* ── CALC MODE SWITCH (Basic / Advanced) ──────────────────────────────── */
+.calc-mode-row{display:flex;gap:0;margin:10px 0 0;background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);overflow:hidden;}
+.calc-mode-btn{flex:1;padding:9px 12px;border:none;background:transparent;color:var(--tm);font-family:var(--fe);font-size:12px;font-weight:600;letter-spacing:.5px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.calc-mode-btn:first-child{border-inline-end:1px solid var(--b);}
+.calc-mode-btn.active{background:var(--s3);color:var(--a);box-shadow:inset 0 -2px 0 var(--a);}
+.calc-mode-btn:not(.active):hover{background:var(--s3);color:var(--t);}
+
+/* ── ADVANCED DUCT ANALYSIS BLOCK ────────────────────────────────────── */
+.adv-duct-block{background:var(--s1);border:1px solid var(--b);border-radius:var(--rad);padding:14px;margin-top:10px;position:relative;overflow:hidden;}
+.adv-duct-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--a2),transparent);}
+.adv-duct-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px;}
+.adv-duct-title{font-family:var(--fe);font-size:11px;font-weight:700;color:var(--tb);letter-spacing:.5px;text-transform:uppercase;}
+.adv-duct-ref{font-family:var(--fm);font-size:9px;color:var(--tm);white-space:nowrap;flex-shrink:0;}
+.adv-section-label{font-family:var(--fe);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--a);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--b);}
+.adv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.adv-field{background:var(--s2);border:1px solid var(--b);border-radius:var(--rads);padding:8px 10px;}
+.adv-field-wide{grid-column:1/-1;}
+.adv-field-lbl{font-family:var(--fe);font-size:9px;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.adv-field-val{font-family:var(--fm);font-size:15px;font-weight:700;color:var(--tb);line-height:1;}
+.adv-field-unit{font-family:var(--fe);font-size:9px;color:var(--tm);margin-top:3px;}
+.adv-duct-note{font-family:var(--fm);font-size:9px;color:var(--tm);line-height:1.5;border-top:1px solid var(--b);padding-top:8px;margin-top:4px;}
