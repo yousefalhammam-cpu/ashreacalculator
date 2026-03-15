@@ -46,8 +46,8 @@
     // Quote settings
     var qs = AS.restoreQuoteSettings();
     if (qs.vatOn      !== undefined) S.vatOn      = qs.vatOn;
-    if (qs.instPct)                  S.instPct    = qs.instPct;
-    if (qs.qsValidity)               S.qsValidity = qs.qsValidity;
+    if (qs.instPct    !== undefined) S.instPct    = qs.instPct;
+    if (qs.qsValidity !== undefined) S.qsValidity = qs.qsValidity;
     if (qs.qsNotes    !== undefined) S.qsNotes    = qs.qsNotes;
 
     // Quote mode
@@ -82,8 +82,8 @@
     S.qlines = S.qlines.slice(0, S.hist.length);
     var qs = H.safeJSONParse(localStorage.getItem('acp9qs'), {});
     if (qs.vatOn !== undefined) S.vatOn = qs.vatOn;
-    if (qs.instPct)             S.instPct = qs.instPct;
-    if (qs.qsValidity)          S.qsValidity = qs.qsValidity;
+    if (qs.instPct    !== undefined) S.instPct    = qs.instPct;
+    if (qs.qsValidity !== undefined) S.qsValidity = qs.qsValidity;
     if (qs.qsNotes !== undefined) S.qsNotes = qs.qsNotes;
     var qm = localStorage.getItem('acp9mode');
     if (qm === 'proj') S.quoteMode = 'proj';
