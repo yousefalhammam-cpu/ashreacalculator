@@ -719,7 +719,11 @@
 <div class="toast" id="toast"></div>
 
 <!-- Phase 3: core foundation (sync) -->
-<script src="./core.js"></script>
+<script src="./js/core/state.js"></script>
+<script src="./js/core/helpers.js"></script>
+<script src="./js/core/storage.js"></script>
+<script src="./js/core/i18n.js"></script>
+
 <!-- Phase 3: modules (sync — window.App* must exist before app.js defer) -->
 <script src="./modules/plan.js"></script>
 <script src="./modules/devices.js"></script>
@@ -729,8 +733,10 @@
 <script src="./modules/quote.js"></script>
 <script src="./modules/pdf.js"></script>
 <script src="./modules/projects.js"></script>
+
 <!-- Legacy app logic (deferred — overwrites module globals with live-state versions) -->
 <script src="./app.js" defer></script>
+
 <!-- Bootstrap (deferred — runs after app.js defines loadAppData/initApp) -->
 <script src="./main.js" defer></script>
 </body>
