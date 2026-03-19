@@ -27,35 +27,49 @@ function loadAppData(data){
 }
 
 function initApp(){
-  // Restore state from localStorage
-  try { hist = JSON.parse(localStorage.getItem('acp9h') || '[]'); } catch(e){ hist=[]; }
-  try { qlines = JSON.parse(localStorage.getItem('acp9q') || '[]'); } catch(e){ qlines=[]; }
-  while(qlines.length < hist.length){
-    var lastUp=(qlines.length>0?qlines[qlines.length-1].up:0)||0;
-    var lastUT=(qlines.length>0?qlines[qlines.length-1].unitType:'')||'split';
-    var lastBtu=(qlines.length>0?qlines[qlines.length-1].selectedBtu:0)||0;
-    qlines.push({qty:1,up:lastUp,unitType:lastUT,selectedBtu:lastBtu});
+  // Restore state via AppStorage
+  try {
+    var _restored = AppStorage.restoreHistory();
+    hist = _restored.hist || [];
+    qlines = _restored.qlines || [];
+  } catch(e){
+    hist = [];
+    qlines = [];
   }
-  qlines = qlines.slice(0, hist.length);
+
   // Restore quote settings
   try{
-    var _qs=JSON.parse(localStorage.getItem('acp9qs')||'{}');
-    if(_qs.vatOn!==undefined) vatOn=_qs.vatOn;
-    if(_qs.instPct) instPct=_qs.instPct;
-    if(_qs.qsValidity) qsValidity=_qs.qsValidity;
-    if(_qs.qsNotes!==undefined) qsNotes=_qs.qsNotes;
+    var _qs = AppStorage.restoreQuoteSettings();
+    if(_qs.vatOn !== undefined) vatOn = _qs.vatOn;
+    if(_qs.instPct) instPct = _qs.instPct;
+    if(_qs.qsValidity) qsValidity = _qs.qsValidity;
+    if(_qs.qsNotes !== undefined) qsNotes = _qs.qsNotes;
   }catch(e){}
+
   applyQSState();
+
   // Restore quoteMode
-  try{ var _qm9=localStorage.getItem('acp9mode'); if(_qm9==='proj') quoteMode='proj'; }catch(e){}
+  try{
+    quoteMode = AppStorage.restoreQuoteMode();
+  }catch(e){}
+
   // Restore bundle config
   try{
-    var _bc=localStorage.getItem('ac_bundleConfig');
-    if(_bc){ var o=JSON.parse(_bc); Object.keys(o).forEach(function(k){ bundleConfig[k]=o[k]; }); }
+    var _bc = AppStorage.restoreBundleConfig();
+    if(_bc){
+      Object.keys(_bc).forEach(function(k){
+        bundleConfig[k] = _bc[k];
+      });
+    }
   }catch(e){}
+
   // Restore theme
-  try{ var _t9=localStorage.getItem('acp9theme'); if(_t9==='light') _theme='light'; }catch(e){}
+  try{
+    _theme = AppStorage.restoreTheme();
+  }catch(e){}
+
   _applyTheme();
+
   // Initialize UI
   curRoom = ROOMS['r_office'] || Object.values(ROOMS)[0];
   applyLang();
@@ -64,9 +78,12 @@ function initApp(){
   renderHist();
   initProjDropdowns();
   updateProjLabels();
+
   // Service Worker registration
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js').catch(function(e){ console.warn('SW reg failed:', e); });
+    navigator.serviceWorker.register('./sw.js').catch(function(e){
+      console.warn('SW reg failed:', e);
+    });
   }
 }
 
