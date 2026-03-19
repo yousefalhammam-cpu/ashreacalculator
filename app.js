@@ -1964,7 +1964,9 @@ var bundleConfig = {
 };
 // [bundle config restored in initApp]
 function saveBundleConfig(){
-  try{ localStorage.setItem('ac_bundleConfig',JSON.stringify(bundleConfig)); }catch(e){}
+  try{
+    AppStorage.saveBundleConfig(bundleConfig);
+  }catch(e){}
 }
 function _updateBundleUI(){
   var btn=G('bundle-btn'), lbl=G('bundle-btn-lbl'), desc=G('bundle-desc');
