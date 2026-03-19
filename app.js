@@ -132,11 +132,20 @@ var qsValidity = 14;
 var qsNotes = '';
 
 function qsPersist(){
-  vatOn=G('vat-tog').classList.contains('on');
-  instPct=parseInt(G('qs-inst').value)||10;
-  qsValidity=parseInt(G('qs-validity').value)||14;
-  qsNotes=G('qs-notes').value||'';
-  try{ localStorage.setItem('acp9qs',JSON.stringify({vatOn:vatOn,instPct:instPct,qsValidity:qsValidity,qsNotes:qsNotes})); }catch(e){}
+  vatOn = G('vat-tog').classList.contains('on');
+  instPct = parseInt(G('qs-inst').value) || 10;
+  qsValidity = parseInt(G('qs-validity').value) || 14;
+  qsNotes = G('qs-notes').value || '';
+
+  try{
+    AppStorage.saveQuoteSettings({
+      vatOn: vatOn,
+      instPct: instPct,
+      qsValidity: qsValidity,
+      qsNotes: qsNotes
+    });
+  }catch(e){}
+
   refreshGrandTotal();
 }
 function toggleVAT(){
