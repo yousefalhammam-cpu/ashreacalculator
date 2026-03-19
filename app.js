@@ -169,8 +169,12 @@ function w2b(w){ return Math.round(w*3.412); }
 function m3toft3(m){ return m*35.3147; }
 function money(v){ return Number(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function flash(id,v){ var e=G(id); if(!e)return; e.classList.add('fade'); setTimeout(function(){e.textContent=v;e.classList.remove('fade');},150); }
-function toast(msg){ var t=G('toast'); t.textContent=msg; t.classList.add('on'); setTimeout(function(){t.classList.remove('on');},2600); }
-function save(){ try{ localStorage.setItem('acp9h',JSON.stringify(hist)); localStorage.setItem('acp9q',JSON.stringify(qlines)); }catch(e){} }
+function toast(msg){ var gt=G('toast'); t.textContent=msg; t.classList.add('on'); setTimeout(function(){t.classList.remove('on');},2600); }
+function save(){
+  try{
+    AppStorage.saveHistory(hist, qlines);
+  }catch(e){}
+}
 function rLabel(r){ return lang==='ar'?r.ar:r.en; }
 
 // ── LANG ──────────────────────────────────────────────────────────────────
