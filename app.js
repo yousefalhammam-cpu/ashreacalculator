@@ -303,7 +303,9 @@ var _theme = 'dark';
 function toggleTheme(){
   _theme = _theme === 'dark' ? 'light' : 'dark';
   _applyTheme();
-  try{ localStorage.setItem('acp9theme', _theme); }catch(e){}
+  try{
+    AppStorage.saveTheme(_theme);
+  }catch(e){}
 }
 function _applyTheme(){
   var btn = G('themeBtn');
