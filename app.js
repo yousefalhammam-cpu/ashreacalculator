@@ -1,4 +1,4 @@
-fl// ── ERROR HANDLERS ──────────────────────────────────────────────────────
+// ── ERROR HANDLERS ──────────────────────────────────────────────────────
 window.addEventListener('error', function(e){ console.error('[AirCalc]', e.message, e.error); });
 window.addEventListener('unhandledrejection', function(e){ console.error('[AirCalc] Unhandled:', e.reason); });
 
