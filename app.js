@@ -380,13 +380,26 @@ function goPanel(name){
 
 // ── DROPDOWN ──────────────────────────────────────────────────────────────
 function toggleDD(id){
-  var m=G(id), open=m.classList.contains('show');
+  var m = G(id);
+  if(!m) return;
+
+  var open = m.classList.contains('show');
   closeAllDD();
-  if(!open){ m.classList.add('show'); G('f-type').classList.add('open'); }
+
+  if(!open){
+    m.classList.add('show');
+    var fType = G('f-type');
+    if(fType) fType.classList.add('open');
+  }
 }
+
 function closeAllDD(){
-  document.querySelectorAll('.dd-menu.show').forEach(function(m){m.classList.remove('show');});
-  var ft=G('f-type'); if(ft) ft.classList.remove('open');
+  document.querySelectorAll('.dd-menu.show').forEach(function(m){
+    m.classList.remove('show');
+  });
+
+  var ft = G('f-type');
+  if(ft) ft.classList.remove('open');
 }
 document.addEventListener('click',function(e){
   if(!e.target.closest('.dd-wrap')) closeAllDD();
