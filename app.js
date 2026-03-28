@@ -3171,7 +3171,10 @@ document.addEventListener('DOMContentLoaded', function(){
 // ══════════════════════════════════════════════════════════════════
 
 
-
+var calcMode = (function(){
+  try { return localStorage.getItem('aircalc_calc_mode') || 'basic'; }
+  catch(e) { return 'basic'; }
+})();
 // ── J1) setCalcMode ────────────────────────────────────────────────
 function setCalcMode(mode) {
   if (mode === 'advanced') {
