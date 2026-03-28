@@ -253,13 +253,13 @@ function t(k){ return T[lang][k]||k; }
 
 function applyLang(){
   document.documentElement.lang = lang;
-  document.documentElement.dir = lang==='ar' ? 'rtl' : 'ltr';
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
 
   var langBtn = G('langBtn');
-  if(langBtn) langBtn.textContent = lang === 'ar' ? 'EN' : 'ع';
+  if (langBtn) langBtn.textContent = lang === 'ar' ? 'EN' : 'ع';
 
   var togLang = G('tog-lang');
-  if(togLang) togLang.className = 'tog' + (lang === 'ar' ? ' on' : '');
+  if (togLang) togLang.className = 'tog' + (lang === 'ar' ? ' on' : '');
 
   var m = {
     'lbl-calc':'calc','lbl-hclr':'hclr',
@@ -272,7 +272,6 @@ function applyLang(){
     'hcttl':'hcttl','hcl-ach':'hcach','hcl-sup':'hcsup','hcl-oa':'hcoa','hcl-exh':'hcexh',
     'cum-ttl':'cumttl','hist-ttl-lbl':'histttl',
     'q-ttl':'qttl','lbl-project':'qproject','lbl-qno':'qqno',
-    'qt-qty-lbl':'qtqty','qt-grand-lbl':'qtgrand',
     'lbl-export':'expcsv',
     'lbl-export2':'exphtml',
     'lbl-export3':'exppdf',
@@ -292,53 +291,78 @@ function applyLang(){
     'qs-valid-lbl':'qsvalid',
     'qs-notes-lbl':'qsnotes',
     'qs-subl':'qssubl',
-    'qs-vatl':'qsvatl',
-    'qt-qty-lbl':'qsqtyl',
-    'qt-grand-lbl':'qtgrand'
+    'qs-vatl':'qsvatl'
   };
-  for(var id in m){
-  var e = G(id);
-  if(e) e.textContent = t(m[id]);
+
+  for (var id in m){
+    var e = G(id);
+    if (e) e.textContent = t(m[id]);
+  }
+
+  var qtQtyLbl = G('qt-qty-lbl');
+  if (qtQtyLbl) qtQtyLbl.textContent = quoteMode === 'proj' ? t('qqty') : t('qsqtyl');
+
+  var qtGrandLbl = G('qt-grand-lbl');
+  if (qtGrandLbl) qtGrandLbl.textContent = t('qtgrand');
+
+  var disAr = G('dis-ar');
+  if (disAr) disAr.style.display = lang === 'ar' ? '' : 'none';
+
+  var disEn = G('dis-en');
+  if (disEn) disEn.style.display = lang === 'en' ? '' : 'none';
+
+  var inpVol = G('inp-vol');
+  if (inpVol) inpVol.placeholder = lang === 'ar' ? '٠ م³' : '0 m³';
+
+  var inpPpl = G('inp-ppl');
+  if (inpPpl) inpPpl.placeholder = '0';
+
+  var quoteProject = G('quote-project');
+  if (quoteProject) quoteProject.placeholder = lang === 'ar' ? 'اسم المشروع' : 'Project Name';
+
+  var v7 = G('v7'), v14 = G('v14'), v30 = G('v30');
+  if (v7) v7.textContent = t('v7');
+  if (v14) v14.textContent = t('v14');
+  if (v30) v30.textContent = t('v30');
+
+  var qn = G('qs-notes');
+  if (qn) qn.placeholder = t('qsnph');
+
+  var isl = G('qs-instl');
+  if (isl){
+    var ip2 = parseInt((G('qs-inst') || { value:'10' }).value, 10) || 10;
+    isl.textContent = t('qsinstl') + ' (' + ip2 + '%)';
+  }
+
+  var dt = G('dt');
+  if (dt && curRoom) dt.textContent = rLabel(curRoom);
+
+  updateProjLabels();
+  updatePlanUI();
+  _syncUpgradeSheetLang();
+  _syncAdvDuctLabels();
+
+  renderDevs();
+  renderHist();
+
+  if (quoteMode === 'proj') renderProjBlock();
+
+  if (window.AppProjects){
+    window.AppProjects.updateProjMgrLabels();
+    var pp = G('p-projects');
+    if (pp && pp.classList.contains('on')) {
+      window.AppProjects.renderProjects();
+    }
+  }
 }
 
-var disAr = G('dis-ar');
-if(disAr) disAr.style.display = lang === 'ar' ? '' : 'none';
-
-var disEn = G('dis-en');
-if(disEn) disEn.style.display = lang === 'en' ? '' : 'none';
-
-var inpVol = G('inp-vol');
-if(inpVol) inpVol.placeholder = lang === 'ar' ? '٠ م³' : '0 m³';
-
-var inpPpl = G('inp-ppl');
-if(inpPpl) inpPpl.placeholder = '0';
-
-var quoteProject = G('quote-project');
-if(quoteProject) quoteProject.placeholder = lang === 'ar' ? 'اسم المشروع' : 'Project Name';
-
-var v7 = G('v7'), v14 = G('v14'), v30 = G('v30');
-if(v7) v7.textContent = t('v7');
-if(v14) v14.textContent = t('v14');
-if(v30) v30.textContent = t('v30');
-
-var qn = G('qs-notes');
-if(qn) qn.placeholder = t('qsnph');
-
-var isl = G('qs-instl');
-if(isl){
-  var ip2 = parseInt((G('qs-inst') || { value:'10' }).value) || 10;
-  isl.textContent = t('qsinstl') + ' (' + ip2 + '%)';
+function toggleLang(){
+  lang = lang === 'ar' ? 'en' : 'ar';
+  applyLang();
 }
-
-var dt = G('dt');
-if(dt && curRoom) dt.textContent = rLabel(curRoom);
-
-renderDevs();
-renderHist();
-}
-function toggleLang(){ lang=lang==='ar'?'en':'ar'; applyLang(); }
 
 var _theme = 'dark';
+
 function toggleTheme(){
   _theme = _theme === 'dark' ? 'light' : 'dark';
   _applyTheme();
@@ -346,17 +370,17 @@ function toggleTheme(){
     AppStorage.saveTheme(_theme);
   }catch(e){}
 }
+
 function _applyTheme(){
   var btn = G('themeBtn');
-  if(_theme === 'light'){
+  if (_theme === 'light'){
     document.body.classList.add('light-theme');
-    if(btn) btn.textContent = '☀️';
+    if (btn) btn.textContent = '☀️';
   } else {
     document.body.classList.remove('light-theme');
-    if(btn) btn.textContent = '🌙';
+    if (btn) btn.textContent = '🌙';
   }
 }
-
 // ── NAVIGATION ────────────────────────────────────────────────────────────
 function goPanel(name){
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('on');});
