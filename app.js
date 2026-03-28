@@ -153,18 +153,6 @@ function qsPersist(){
 
   refreshGrandTotal();
 }
-
-  try{
-    AppStorage.saveQuoteSettings({
-      vatOn: vatOn,
-      instPct: instPct,
-      qsValidity: qsValidity,
-      qsNotes: qsNotes
-    });
-  }catch(e){}
-
-  refreshGrandTotal();
-}
 function toggleVAT(){
   G('vat-tog').classList.toggle('on');
   vatOn=G('vat-tog').classList.contains('on');
