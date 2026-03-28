@@ -1,4 +1,4 @@
-// ── ERROR HANDLERS ──────────────────────────────────────────────────────
+fl// ── ERROR HANDLERS ──────────────────────────────────────────────────────
 window.addEventListener('error', function(e){ console.error('[AirCalc]', e.message, e.error); });
 window.addEventListener('unhandledrejection', function(e){ console.error('[AirCalc] Unhandled:', e.reason); });
 
@@ -132,10 +132,27 @@ var qsValidity = 14;
 var qsNotes = '';
 
 function qsPersist(){
-  vatOn = G('vat-tog').classList.contains('on');
-  instPct = parseInt(G('qs-inst').value) || 10;
-  qsValidity = parseInt(G('qs-validity').value) || 14;
-  qsNotes = G('qs-notes').value || '';
+  var vatTog = G('vat-tog');
+  var qsInstEl = G('qs-inst');
+  var qsValidityEl = G('qs-validity');
+  var qsNotesEl = G('qs-notes');
+
+  vatOn = vatTog ? vatTog.classList.contains('on') : true;
+  instPct = qsInstEl ? (parseInt(qsInstEl.value) || 10) : 10;
+  qsValidity = qsValidityEl ? (parseInt(qsValidityEl.value) || 14) : 14;
+  qsNotes = qsNotesEl ? (qsNotesEl.value || '') : '';
+
+  try{
+    AppStorage.saveQuoteSettings({
+      vatOn: vatOn,
+      instPct: instPct,
+      qsValidity: qsValidity,
+      qsNotes: qsNotes
+    });
+  }catch(e){}
+
+  refreshGrandTotal();
+}
 
   try{
     AppStorage.saveQuoteSettings({
