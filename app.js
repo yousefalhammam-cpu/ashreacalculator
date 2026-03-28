@@ -1999,9 +1999,9 @@ var projState = {
 
 function setQuoteMode(mode){
   quoteMode = mode;
-try{
-  AppStorage.saveQuoteMode(mode);
-}catch(e){}
+  try{
+    AppStorage.saveQuoteMode(mode);
+  }catch(e){}
   var btnRoom = G('mode-btn-room'), btnProj = G('mode-btn-proj');
   var qiList = G('qi-list'), projBlock = G('proj-block');
   var bundleRow = G('bundle-row');
@@ -3170,10 +3170,7 @@ document.addEventListener('DOMContentLoaded', function(){
 // J) CALCULATION MODE SYSTEM (Basic / Advanced)
 // ══════════════════════════════════════════════════════════════════
 
-var calcMode = (function(){
-  try { return localStorage.getItem('aircalc_calc_mode') || 'basic'; }
-  catch(e) { return 'basic'; }
-})();
+try { localStorage.setItem('aircalc_calc_mode', mode); } catch(e){}
 
 // ── J1) setCalcMode ────────────────────────────────────────────────
 function setCalcMode(mode) {
