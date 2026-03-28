@@ -573,14 +573,9 @@ function resetApp(){
   editIdx = -1;
 
   // ── 2. Remove ALL app localStorage keys ──────────────────────────
-  try {
-    localStorage.removeItem('acp9h');
-    localStorage.removeItem('acp9q');
-    localStorage.removeItem('acp9qs');
-    localStorage.removeItem('acp9mode');
-    localStorage.removeItem('ac_bundleConfig');
-    localStorage.removeItem('acp9theme');
-  } catch(e){}
+try {
+  AppStorage.clearAll();
+} catch(e){}
 
   // ── 3. Reset runtime variables to factory defaults ────────────────
   vatOn      = true;
