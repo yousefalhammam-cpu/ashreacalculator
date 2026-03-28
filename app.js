@@ -3170,7 +3170,7 @@ document.addEventListener('DOMContentLoaded', function(){
 // J) CALCULATION MODE SYSTEM (Basic / Advanced)
 // ══════════════════════════════════════════════════════════════════
 
-try { localStorage.setItem('aircalc_calc_mode', mode); } catch(e){}
+
 
 // ── J1) setCalcMode ────────────────────────────────────────────────
 function setCalcMode(mode) {
