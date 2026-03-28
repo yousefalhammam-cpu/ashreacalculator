@@ -1999,7 +1999,9 @@ var projState = {
 
 function setQuoteMode(mode){
   quoteMode = mode;
-  try{ localStorage.setItem('acp9mode', mode); }catch(e){}
+try{
+  AppStorage.saveQuoteMode(mode);
+}catch(e){}
   var btnRoom = G('mode-btn-room'), btnProj = G('mode-btn-proj');
   var qiList = G('qi-list'), projBlock = G('proj-block');
   var bundleRow = G('bundle-row');
