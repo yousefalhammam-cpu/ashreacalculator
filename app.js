@@ -308,24 +308,45 @@ function applyLang(){
     'qt-qty-lbl':'qsqtyl',
     'qt-grand-lbl':'qtgrand'
   };
-  for(var id in m){ var e=G(id); if(e) e.textContent=t(m[id]); }
-  G('dis-ar').style.display = lang==='ar'?'':'none';
-  G('dis-en').style.display = lang==='en'?'':'none';
-  G('inp-vol').placeholder = lang==='ar'?'٠ م³':'0 m³';
-  G('inp-ppl').placeholder = '0';
-  G('quote-project').placeholder = lang==='ar'?'اسم المشروع':'Project Name';
-  var v7=G('v7'),v14=G('v14'),v30=G('v30');
-  if(v7) v7.textContent=t('v7');
-  if(v14) v14.textContent=t('v14');
-  if(v30) v30.textContent=t('v30');
-  var qn=G('qs-notes'); if(qn) qn.placeholder=t('qsnph');
-  var isl=G('qs-instl'); if(isl){
-    var ip2=parseInt((G('qs-inst')||{value:'10'}).value)||10;
-    isl.textContent=t('qsinstl')+' ('+ip2+'%)';
-  }
-  G('dt').textContent = rLabel(curRoom);
-  renderDevs();
-  renderHist();
+  for(var id in m){
+  var e = G(id);
+  if(e) e.textContent = t(m[id]);
+}
+
+var disAr = G('dis-ar');
+if(disAr) disAr.style.display = lang === 'ar' ? '' : 'none';
+
+var disEn = G('dis-en');
+if(disEn) disEn.style.display = lang === 'en' ? '' : 'none';
+
+var inpVol = G('inp-vol');
+if(inpVol) inpVol.placeholder = lang === 'ar' ? '٠ م³' : '0 m³';
+
+var inpPpl = G('inp-ppl');
+if(inpPpl) inpPpl.placeholder = '0';
+
+var quoteProject = G('quote-project');
+if(quoteProject) quoteProject.placeholder = lang === 'ar' ? 'اسم المشروع' : 'Project Name';
+
+var v7 = G('v7'), v14 = G('v14'), v30 = G('v30');
+if(v7) v7.textContent = t('v7');
+if(v14) v14.textContent = t('v14');
+if(v30) v30.textContent = t('v30');
+
+var qn = G('qs-notes');
+if(qn) qn.placeholder = t('qsnph');
+
+var isl = G('qs-instl');
+if(isl){
+  var ip2 = parseInt((G('qs-inst') || { value:'10' }).value) || 10;
+  isl.textContent = t('qsinstl') + ' (' + ip2 + '%)';
+}
+
+var dt = G('dt');
+if(dt && curRoom) dt.textContent = rLabel(curRoom);
+
+renderDevs();
+renderHist();
 }
 function toggleLang(){ lang=lang==='ar'?'en':'ar'; applyLang(); }
 
