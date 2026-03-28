@@ -265,9 +265,14 @@ function t(k){ return T[lang][k]||k; }
 
 function applyLang(){
   document.documentElement.lang = lang;
-  document.documentElement.dir = lang==='ar'?'rtl':'ltr';
-  G('langBtn').textContent = lang==='ar'?'EN':'ع';
-  G('tog-lang').className = 'tog'+(lang==='ar'?' on':'');
+  document.documentElement.dir = lang==='ar' ? 'rtl' : 'ltr';
+
+  var langBtn = G('langBtn');
+  if(langBtn) langBtn.textContent = lang === 'ar' ? 'EN' : 'ع';
+
+  var togLang = G('tog-lang');
+  if(togLang) togLang.className = 'tog' + (lang === 'ar' ? ' on' : '');
+
   var m = {
     'lbl-calc':'calc','lbl-hclr':'hclr',
     'nl-calc':'ncalc','nl-hist':'nhist','nl-contact':'ncontact','nl-settings':'nset','nl-projects':'nprojects',
