@@ -134,6 +134,28 @@
     return raw === 'light' ? 'light' : 'dark';
   }
 
+    // ── CALC MODE ──────────────────────────────────────────────────────────────
+  function saveCalcMode(mode) {
+    lsSetRaw('aircalc_calc_mode', mode);
+  }
+
+  function restoreCalcMode() {
+    var raw = lsGetRaw('aircalc_calc_mode');
+    return raw === 'advanced' ? 'advanced' : 'basic';
+  }
+
+  // ── CURRENT PROJECT ID ─────────────────────────────────────────────────────
+  function saveCurrentProjectId(id) {
+    if (!id) {
+      lsRemove('aircalc_current_project_id');
+      return;
+    }
+    lsSetRaw('aircalc_current_project_id', String(id));
+  }
+
+  function restoreCurrentProjectId() {
+    return lsGetRaw('aircalc_current_project_id') || '';
+  }
   // ── BUNDLE CONFIG ──────────────────────────────────────────────────────────
   var BUNDLE_CONFIG_DEFAULTS = {
     unitType: 'package',
@@ -164,17 +186,19 @@
   }
 
   // ── CLEAR ALL ──────────────────────────────────────────────────────────────
-  function clearAll() {
+    function clearAll() {
     lsRemove('acp9h');
     lsRemove('acp9q');
     lsRemove('acp9qs');
     lsRemove('acp9mode');
     lsRemove('acp9theme');
     lsRemove('ac_bundleConfig');
+    lsRemove('aircalc_calc_mode');
+    lsRemove('aircalc_current_project_id');
   }
 
   // ── Expose ─────────────────────────────────────────────────────────────────
-  window.AppStorage = {
+    window.AppStorage = {
     saveHistory: saveHistory,
     restoreHistory: restoreHistory,
 
@@ -186,6 +210,12 @@
 
     saveTheme: saveTheme,
     restoreTheme: restoreTheme,
+
+    saveCalcMode: saveCalcMode,
+    restoreCalcMode: restoreCalcMode,
+
+    saveCurrentProjectId: saveCurrentProjectId,
+    restoreCurrentProjectId: restoreCurrentProjectId,
 
     saveBundleConfig: saveBundleConfig,
     restoreBundleConfig: restoreBundleConfig,
