@@ -3248,7 +3248,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 var calcMode = (function(){
-  try { return localStorage.getItem('aircalc_calc_mode') || 'basic'; }
+  try { return AppStorage.restoreCalcMode(); }
   catch(e) { return 'basic'; }
 })();
 // ── J1) setCalcMode ────────────────────────────────────────────────
@@ -3261,7 +3261,7 @@ function setCalcMode(mode) {
     }
   }
   calcMode = mode;
-  try { localStorage.setItem('aircalc_calc_mode', mode); } catch(e){}
+  try { AppStorage.saveCalcMode(mode); } catch(e){}
 
   // Update button states
   var btnB = G('calc-mode-btn-basic');
@@ -3436,7 +3436,7 @@ function _syncAdvDuctLabels() {
       // Force back to basic if now on free
       if (!isPro && calcMode === 'advanced') {
         calcMode = 'basic';
-        try { localStorage.setItem('aircalc_calc_mode', 'basic'); } catch(e){}
+        try { AppStorage.saveCalcMode(mode); } catch(e){}
         var btnB = G('calc-mode-btn-basic');
         if (btnB) btnB.classList.add('active');
         btnA.classList.remove('active');
