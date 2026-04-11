@@ -2958,7 +2958,7 @@ function initProjDropdowns(){
   var _shOrig = saveHist;
   saveHist = function(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     _shOrig(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata);
-    if (window.AppProjects && localStorage.getItem('aircalc_current_project_id')) {
+    if (window.AppProjects && AppStorage.restoreCurrentProjectId()) {
       setTimeout(function(){
         window.AppProjects.saveCurrentProject({ silentNavigate: true });
       }, 100);
