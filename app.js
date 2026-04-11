@@ -2936,12 +2936,7 @@ buildPage2 = function(c){
 // ══════════════════════════════════════════════════════════════════
 // F) PATCH applyLang to also update project labels
 // ══════════════════════════════════════════════════════════════════
-var _origApplyLang = applyLang;
-applyLang = function(){
-  _origApplyLang();
-  updateProjLabels();
-  if(quoteMode==='proj') renderProjBlock();
-};
+
 
 // ══════════════════════════════════════════════════════════════════
 // G) INIT: populate proj system type dropdown on first load
@@ -2964,15 +2959,6 @@ function initProjDropdowns(){
 // ══════════════════════════════════════════════════════════════════
 
 // H1) applyLang: update Projects panel labels and re-render if visible
-(function(){
-  var _alOrig = applyLang;
-  applyLang = function(){
-    _alOrig();
-    if(window.AppProjects) window.AppProjects.updateProjMgrLabels();
-    var pp=G('p-projects');
-    if(pp && pp.classList.contains('on') && window.AppProjects) window.AppProjects.renderProjects();
-  };
-})();
 
 // H2) Optional auto-refresh for currently open project only
 (function(){
@@ -3246,14 +3232,7 @@ function _syncUpgradeSheetLang(){
 }
 
 // ── I6) Patch applyLang to also update plan UI labels ─────────────
-(function(){
-  var _alOrig = (typeof applyLang === 'function') ? applyLang : function(){};
-  applyLang = function(){
-    _alOrig();
-    updatePlanUI();
-    _syncUpgradeSheetLang();
-  };
-})();
+
 
 // ── I7) Init plan UI on first load ────────────────────────────────
 document.addEventListener('DOMContentLoaded', function(){
