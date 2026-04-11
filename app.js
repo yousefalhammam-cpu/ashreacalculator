@@ -251,16 +251,20 @@ var T = {
 };
 function t(k){ return T[lang][k]||k; }
 
-function applyLang(){
+function applyDocumentLang(){
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+}
 
+function applyLangHeaderUI(){
   var langBtn = G('langBtn');
   if (langBtn) langBtn.textContent = lang === 'ar' ? 'EN' : 'ع';
 
   var togLang = G('tog-lang');
   if (togLang) togLang.className = 'tog' + (lang === 'ar' ? ' on' : '');
+}
 
+function applyLangStaticTexts(){
   var m = {
     'lbl-calc':'calc','lbl-hclr':'hclr',
     'nl-calc':'ncalc','nl-hist':'nhist','nl-contact':'ncontact','nl-settings':'nset','nl-projects':'nprojects',
@@ -304,7 +308,9 @@ function applyLang(){
 
   var qtGrandLbl = G('qt-grand-lbl');
   if (qtGrandLbl) qtGrandLbl.textContent = t('qtgrand');
+}
 
+function applyLangInputsAndLabels(){
   var disAr = G('dis-ar');
   if (disAr) disAr.style.display = lang === 'ar' ? '' : 'none';
 
@@ -336,19 +342,26 @@ function applyLang(){
 
   var dt = G('dt');
   if (dt && curRoom) dt.textContent = rLabel(curRoom);
+}
 
+function applyLangModuleSync(){
   updateProjLabels();
   updatePlanUI();
   _syncUpgradeSheetLang();
   _syncAdvDuctLabels();
 
+  if (window.AppProjects){
+    window.AppProjects.updateProjMgrLabels();
+  }
+}
+
+function applyLangRenders(){
   renderDevs();
   renderHist();
 
   if (quoteMode === 'proj') renderProjBlock();
 
   if (window.AppProjects){
-    window.AppProjects.updateProjMgrLabels();
     var pp = G('p-projects');
     if (pp && pp.classList.contains('on')) {
       window.AppProjects.renderProjects();
@@ -356,6 +369,14 @@ function applyLang(){
   }
 }
 
+function applyLang(){
+  applyDocumentLang();
+  applyLangHeaderUI();
+  applyLangStaticTexts();
+  applyLangInputsAndLabels();
+  applyLangModuleSync();
+  applyLangRenders();
+}
 function toggleLang(){
   lang = lang === 'ar' ? 'en' : 'ar';
   applyLang();
