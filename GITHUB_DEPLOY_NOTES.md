@@ -1,25 +1,21 @@
-# Stabilization Final Scope
+# GitHub Deploy Notes
 
-This package focuses on the final stabilization layer before major feature work.
+## Important
+Upload the CONTENTS of the project folder so that `index.html` stays at repository root.
 
-## Included code fixes
-- AppStorage expanded to cover plan persistence
-- Current project pointer routed through AppStorage
-- App reset clears all important persisted keys
-- Redundant applyLang override removed
-- updatePlanUI calc-mode fallback bug fixed
-- Project snapshot restore sync moved through AppStorage
-- Quote settings module prefers AppStorage
+Correct:
+- repository/index.html
+- repository/app.js
+- repository/modules/
+- repository/js/
 
-## What this package does NOT claim
-The following are not fully rebuilt here in one pass:
-- Full ASHRAE healthcare engine redesign
-- Full report redesign
-- OCR
-- Complete Apple-style UI rewrite
+Wrong:
+- repository/aircalc-folder/index.html
 
-## Recommended next phase
-1. Engine hardening
-2. Technical report redesign
-3. UI refresh
-4. OCR / automation features
+## After upload
+1. Open GitHub Pages URL
+2. Hard refresh
+3. Run `POST_UPLOAD_TEST_CHECKLIST.md`
+
+## Suggested commit message
+`stabilization: final appstorage + applyLang cleanup package`

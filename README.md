@@ -1,37 +1,14 @@
-# AirCalc Pro — Current Status Snapshot
+# ASHRAE 170P HVAC Calculator — PWA (Mobile Web)
 
-## What currently works
-- Quick room calculation
-- Healthcare room airflow display
-- Quotation generation
-- Project save/load using localStorage
-- CSV export
-- HTML invoice export
-- PDF export
-- Technical report export
-- Project mode and bundle mode
-- Preliminary duct sizing
-- Preliminary ESP calculation
-- Free / Pro plan gating
-- Projects manager panel
+## تشغيل محلي (للتجربة)
+> لازم يكون عبر سيرفر (مو فتح ملف مباشرة) عشان الـ Service Worker يشتغل.
 
-## Preliminary only
-- Regular room cooling load is still simplified
-- Cooling load is not yet a full detailed HVAC design engine
-- Duct sizing is preliminary, not final detailed network design
-- ESP is estimated, not based on full duct layout
-- Equipment selection is not manufacturer-grade yet
-- Projects are stored locally, not cloud-synced
-- Some engineering outputs still need validation summary
+### Python
+python -m http.server 8000
+.
 
-## Needs improvement
-- Separate Quick Estimate and Design Mode more clearly
-- Improve detailed cooling load engine
-- Reduce app.js complexity
-- Add unified validation summary
-- Add export/import project JSON
-- Improve duct logic for branches and fittings
-- Improve technical assumptions in reports
+## تثبيت على iPhone (كأنه تطبيق)
+Safari > Share > Add to Home Screen
 
-## Goal of this branch
-Freeze the current version before major engineering and structural improvements.
+## تثبيت على Android
+Chrome > menu > Add to Home screen

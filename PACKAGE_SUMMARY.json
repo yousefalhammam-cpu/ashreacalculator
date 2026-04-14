@@ -1,21 +1,17 @@
-# GitHub Deploy Notes
-
-## Important
-Upload the CONTENTS of the project folder so that `index.html` stays at repository root.
-
-Correct:
-- repository/index.html
-- repository/app.js
-- repository/modules/
-- repository/js/
-
-Wrong:
-- repository/aircalc-folder/index.html
-
-## After upload
-1. Open GitHub Pages URL
-2. Hard refresh
-3. Run `POST_UPLOAD_TEST_CHECKLIST.md`
-
-## Suggested commit message
-`stabilization: final appstorage + applyLang cleanup package`
+{
+  "package": "ashreacalculator-stabilization-v1_comprehensive-github-ready",
+  "focus": "stabilization + deployment readiness",
+  "changes": [
+    "storage.js: added savePlan / restorePlan",
+    "storage.js: exposed plan methods and clearAll key",
+    "plan.js: moved plan persistence through AppStorage",
+    "app.js: fixed calc mode fallback bug in updatePlanUI",
+    "app.js: removed redundant applyLang override patch",
+    "projects.js: current project id now uses AppStorage",
+    "projects.js: project snapshot restore now syncs via AppStorage",
+    "history.js: reset now clears AppStorage keys comprehensively",
+    "added POST_UPLOAD_TEST_CHECKLIST.md",
+    "added STABILIZATION_FINAL_SCOPE.md",
+    "added GITHUB_DEPLOY_NOTES.md"
+  ]
+}

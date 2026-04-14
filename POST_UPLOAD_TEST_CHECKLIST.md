@@ -1,104 +1,42 @@
-// AirCalc Pro — Service Worker
-// Cache strategy:
-//   Network-first for index.html
-//   Cache-first for static assets
+# AirCalc Pro — Post Upload Test Checklist
 
-const CACHE_NAME = 'aircalcpro-v3';
+## 1) Core startup
+- Open the app and confirm it loads without a blank screen
+- Open DevTools Console and confirm there are no blocking errors
 
-const PRECACHE_ASSETS = [
-  './',
-  './index.html',
-  './styles.css',
-  './core.js',
-  './app.js',
-  './main.js',
-  './data.json',
-  './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-1024.png',
-  './home.png',
-  './quotation.png'
-];
+## 2) Language
+- Switch Arabic / English
+- Check labels, placeholders, quotation labels, and project manager labels
 
-// Install
-self.addEventListener('install', function (event) {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function (cache) {
-        return cache.addAll(PRECACHE_ASSETS);
-      })
-      .then(function () {
-        return self.skipWaiting();
-      })
-  );
-});
+## 3) Calculation
+- Add a room
+- Enter volume and people
+- Run a calculation
+- Confirm history and quotation update
 
-// Activate
-self.addEventListener('activate', function (event) {
-  event.waitUntil(
-    caches.keys().then(function (cacheNames) {
-      return Promise.all(
-        cacheNames
-          .filter(function (name) { return name !== CACHE_NAME; })
-          .map(function (name) { return caches.delete(name); })
-      );
-    }).then(function () {
-      return self.clients.claim();
-    })
-  );
-});
+## 4) Quote + project mode
+- Add items to quotation
+- Test Room mode
+- Test Project mode
+- Save a project
+- Reload the page and reopen the project
 
-// Fetch
-self.addEventListener('fetch', function (event) {
-  if (event.request.method !== 'GET') return;
+## 5) Persistence
+- Switch Basic / Advanced
+- Refresh page and confirm calc mode persists
+- Confirm current project persists
+- Confirm theme persists
 
-  const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) return;
+## 6) Reset
+- Press Reset App
+- Confirm history, quote settings, calc mode, project pointer, and plan state clear correctly
 
-  const pathname = url.pathname;
-  const isHTML =
-    pathname.endsWith('.html') ||
-    pathname.endsWith('/') ||
-    pathname === '/ashreacalculator/' ||
-    pathname === '/ashreacalculator';
+## 7) Output
+- CSV export
+- HTML invoice
+- PDF export
+- Tech report export
 
-  if (isHTML) {
-    event.respondWith(
-      fetch(event.request)
-        .then(function (response) {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(function (cache) {
-              cache.put(event.request, clone);
-              cache.put('./index.html', clone.clone());
-            });
-          }
-          return response;
-        })
-        .catch(function () {
-          return caches.match(event.request)
-            .then(function (cached) {
-              return cached || caches.match('./index.html') || caches.match('./');
-            });
-        })
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(event.request).then(function (cached) {
-      if (cached) return cached;
-
-      return fetch(event.request).then(function (response) {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(event.request, clone);
-          });
-        }
-        return response;
-      });
-    })
-  );
-});
+## 8) Final smoke check
+- Hard refresh once after deployment
+- Re-test the app from GitHub Pages URL
