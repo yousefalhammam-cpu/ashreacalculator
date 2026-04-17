@@ -9,6 +9,7 @@ var AC_CATALOG = {};
 var UT_TO_CAT = {};
 var UT_LABELS_AR = {};
 var UT_LABELS_EN = {};
+var ROOM_STANDARDS = {};
 var _DUCT_WIDTHS  = [150,200,250,300,350,400,450,500,600,700,800,900,1000,1100,1200];
 var _DUCT_HEIGHTS = [100,150,200,250,300,350,400,450,500,600,700,800];
 
@@ -20,6 +21,7 @@ function loadAppData(data){
   UT_TO_CAT   = data.UT_TO_CAT;
   UT_LABELS_AR = data.UT_LABELS_AR;
   UT_LABELS_EN = data.UT_LABELS_EN;
+  ROOM_STANDARDS = data.ROOM_STANDARDS || {};
   _DUCT_WIDTHS  = data.DUCT_WIDTHS  || _DUCT_WIDTHS;
   _DUCT_HEIGHTS = data.DUCT_HEIGHTS || _DUCT_HEIGHTS;
   // Rebuild DUCT_STD after widths/heights are loaded
@@ -524,6 +526,121 @@ function buildGrid(grp){
   });
 }
 
+
+function inferRoomStandardKey(room){
+  if(!room) return 'office';
+  var rid = (room.id || '').toLowerCase();
+  var en  = (room.en || '').toLowerCase();
+
+  if(rid.indexOf('operating') >= 0 || en.indexOf('operating room') >= 0) return 'operating_room';
+  if(rid.indexOf('procedure') >= 0 || en.indexOf('procedure') >= 0) return 'minor_procedure';
+  if(rid.indexOf('cath') >= 0 || en.indexOf('cath') >= 0) return 'cath_lab';
+  if(rid.indexOf('endoscopy') >= 0 || en.indexOf('endoscopy') >= 0) return 'endoscopy';
+
+  if(rid.indexOf('icu') >= 0 || en.indexOf('icu') >= 0) return 'icu';
+  if(rid.indexOf('nicu') >= 0 || en.indexOf('nicu') >= 0) return 'nicu';
+
+  if(rid.indexOf('isolation') >= 0 || en.indexOf('isolation') >= 0) return 'isolation_room';
+  if(rid.indexOf('protective') >= 0 || en.indexOf('protective') >= 0) return 'protective_environment';
+
+  if(rid.indexOf('emergency') >= 0 && en.indexOf('treatment') >= 0) return 'emergency_treatment';
+  if(rid.indexOf('emergency') >= 0 || en.indexOf('emergency') >= 0) return 'emergency_exam';
+
+  if(rid.indexOf('patient') >= 0 || en.indexOf('patient') >= 0) return 'patient_room';
+  if(rid.indexOf('exam') >= 0 || en.indexOf('exam') >= 0) return 'exam_room';
+  if(rid.indexOf('treatment') >= 0 || en.indexOf('treatment') >= 0) return 'treatment_room';
+  if(rid.indexOf('recovery') >= 0 || en.indexOf('recovery') >= 0) return 'recovery_room';
+
+  if(rid.indexOf('lab') >= 0 || en.indexOf('laboratory') >= 0 || en.indexOf('lab') >= 0) return 'laboratory';
+  if(rid.indexOf('pharmacy') >= 0 || en.indexOf('pharmacy') >= 0) return 'pharmacy_clean';
+  if(rid.indexOf('sterile') >= 0 || en.indexOf('sterile') >= 0 || en.indexOf('cssd') >= 0) return 'sterile_processing';
+
+  if(rid.indexOf('wait') >= 0 || en.indexOf('waiting') >= 0) return 'waiting_area';
+  if(rid.indexOf('corridor') >= 0 || en.indexOf('corridor') >= 0) return 'corridor';
+  return 'office';
+}
+
+function getRoomStandard(room){
+  var key = inferRoomStandardKey(room);
+  return ROOM_STANDARDS[key] || {
+    category: 'unknown',
+    roomType: room ? (room.en || room.ar || 'Room') : 'Room',
+    ach: null,
+    oa: null,
+    exhaust: null,
+    pressure: 'Neutral',
+    notes: 'No standard linked'
+  };
+}
+
+function getPressureLabel(p){
+  if(lang === 'ar'){
+    if(p === 'Positive') return 'موجب';
+    if(p === 'Negative') return 'سالب';
+    return 'محايد';
+  }
+  return p || 'Neutral';
+}
+
+function getCategoryLabel(cat){
+  if(lang === 'ar'){
+    var map = {
+      non_clinical:'غير سريري',
+      general_clinical:'سريري عام',
+      emergency:'طوارئ',
+      critical_care:'عناية حرجة',
+      isolation:'عزل',
+      procedure:'إجراءات / عمليات',
+      support_clinical:'دعم سريري',
+      unknown:'غير محدد'
+    };
+    return map[cat] || 'غير محدد';
+  }
+  return cat || 'unknown';
+}
+
+function updateRoomStandardCard(std, cfmValue){
+  var card = G('hc-card');
+  if(!card) return;
+
+  var ttl = G('hcttl');
+  if(ttl) ttl.textContent = lang==='ar' ? 'معايير الغرفة والتهوية' : 'Room Standards & Ventilation';
+
+  var achEl = G('hcv-ach');
+  if(achEl) achEl.textContent = std && std.ach != null ? std.ach : '—';
+
+  var supEl = G('hcv-sup');
+  if(supEl) supEl.textContent = cfmValue != null ? Number(cfmValue).toLocaleString() : '—';
+
+  var oaEl = G('hcv-oa');
+  if(oaEl) oaEl.textContent = std && std.oa != null ? String(std.oa) : '—';
+
+  var exhEl = G('hcv-exh');
+  if(exhEl) exhEl.textContent = std && std.exhaust != null ? String(std.exhaust) : '—';
+
+  var pill = G('hc-pill');
+  if(pill){
+    var p = std && std.pressure ? std.pressure : 'Neutral';
+    pill.textContent = getPressureLabel(p);
+    pill.className = 'hc-pill ' + (p === 'Positive' ? 'pos' : p === 'Negative' ? 'neg' : 'neu');
+  }
+
+  var noteRow = G('hc-note-row');
+  var noteVal = G('hcv-note');
+  if(noteRow && noteVal){
+    var noteText = '';
+    if(std){
+      noteText = (lang==='ar' ? 'الفئة: ' : 'Category: ') + getCategoryLabel(std.category) + (std.notes ? ' | ' + std.notes : '');
+    }
+    if(noteText){
+      noteRow.style.display = '';
+      noteVal.textContent = noteText;
+    } else {
+      noteRow.style.display = 'none';
+    }
+  }
+}
+
 // ── CALCULATION ───────────────────────────────────────────────────────────
 function onVolInput(){ G('inp-vol').value=G('inp-vol').value.replace(/[٠-٩]/g,function(d){return'٠١٢٣٤٥٦٧٨٩'.indexOf(d);}); }
 function onPplInput(){ G('inp-ppl').value=G('inp-ppl').value.replace(/[٠-٩]/g,function(d){return'٠١٢٣٤٥٦٧٨٩'.indexOf(d);}); }
@@ -539,12 +656,23 @@ function calcROT(vol,ppl){
   var base=vol*curRoom.factor, pplb=ppl*400, devb=totalDevBtu();
   var sub=base+pplb+devb, total=sub*1.10;
   var tr=total/12000, cfm=Math.round(tr*400), mkt=Math.ceil(total/9000)*9000;
+  var std=getRoomStandard(curRoom);
   flash('vtr',tr.toFixed(2)); flash('vcfm',cfm.toLocaleString()); flash('vbtu',Math.round(total).toLocaleString()); flash('vmkt',mkt.toLocaleString());
   G('brv-vol').textContent=vol; G('brv-base').textContent=Math.round(base).toLocaleString();
   G('brv-ppl').textContent=Math.round(pplb).toLocaleString(); G('brv-dev').textContent=Math.round(devb).toLocaleString();
   G('brv-sub').textContent=Math.round(sub).toLocaleString(); G('brv-sf').textContent=Math.round(total).toLocaleString();
-  G('breakdown').classList.add('show'); G('hc-card').style.display='none';
-  saveHist(vol,ppl,tr,cfm,total,mkt,devb,null);
+  G('breakdown').classList.add('show');
+  updateRoomStandardCard(std, cfm);
+  G('hc-card').style.display='block';
+  saveHist(vol,ppl,tr,cfm,total,mkt,devb,{
+    category: std.category,
+    roomType: std.roomType,
+    ach: std.ach,
+    oa: std.oa,
+    exhaust: std.exhaust,
+    pressure: std.pressure,
+    notes: std.notes
+  });
   G('add-quote-wrap').style.display='block';
   toast(t('tcalc'));
 }
@@ -569,7 +697,19 @@ function calcHC(vol,ppl){
   G('hcv-oa').textContent=oa.toLocaleString(); G('hcv-exh').textContent=exh.toLocaleString();
   if(r.note){G('hc-note-row').style.display='';G('hcv-note').textContent=r.note;}else{G('hc-note-row').style.display='none';}
   G('hc-card').style.display='block';
-  saveHist(vol,ppl,tr,sup,total,mkt,devb,{sup:sup,oa:oa,exh:exh,pres:r.pres});
+  saveHist(vol,ppl,tr,sup,total,mkt,devb,{
+    sup:sup,
+    oa:oa,
+    exh:exh,
+    pres:r.pres,
+    category:'support_clinical',
+    roomType:r.en || r.ar || 'Healthcare Room',
+    ach:r.tach || null,
+    oa:r.oach || null,
+    exhaust:exh || null,
+    pressure:r.pres || 'Neutral',
+    notes:r.note || ''
+  });
   G('add-quote-wrap').style.display='block';
   toast(t('tcalc'));
 }
@@ -586,7 +726,19 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     vol:vol, ppl:ppl, devSum:devSum, devBtu:devBtu,
     tr:tr.toFixed(2), cfm:cfm, btu:Math.round(totalBtu), mkt:mkt
   };
-  if(hcdata){ rec.sup=hcdata.sup; rec.oa=hcdata.oa; rec.exh=hcdata.exh; rec.pres=hcdata.pres; }
+  if(hcdata){
+    rec.sup=hcdata.sup;
+    rec.oa=hcdata.oa;
+    rec.exh=hcdata.exh;
+    rec.pres=hcdata.pres;
+    rec.category=hcdata.category;
+    rec.roomType=hcdata.roomType;
+    rec.ach=hcdata.ach;
+    rec.oaStd=hcdata.oa;
+    rec.exhaust=hcdata.exhaust;
+    rec.pressure=hcdata.pressure;
+    rec.notes=hcdata.notes;
+  }
   if(editIdx>=0&&editIdx<hist.length){
     hist[editIdx]=rec; editIdx=-1;
   } else {
@@ -621,6 +773,7 @@ function renderHist(){
     row.innerHTML='<div class="hist-main">'+
       '<div class="hist-room">'+(idx+1)+'. '+name+'</div>'+
       '<div class="hist-detail">'+h.vol+' m³ · '+h.ppl+' 👤'+(h.devSum?' · '+h.devSum:'')+'</div>'+
+      (h.roomType?'<div class="hist-cfm">'+(lang==='ar'?'نوع الغرفة: ':'Room Type: ')+h.roomType+(h.category?' | '+(lang==='ar'?'الفئة: ':'Category: ')+getCategoryLabel(h.category):'')+'</div>':'')+
       (cfmLine?'<div class="hist-cfm">'+cfmLine+'</div>':'')+
       '<div class="hist-time">'+h.time+'</div>'+
       '<div class="hist-actions">'+
@@ -808,6 +961,15 @@ function renderQuote(){
     if(h.sup){
       var pl=lang==='ar'?(h.pres==='positive'?'موجب':h.pres==='negative'?'سالب':'محايد'):(h.pres==='positive'?'Pos':h.pres==='negative'?'Neg':'Neutral');
       hcLine='<div class="qi-hcline">ASHRAE — S:'+h.sup+' OA:'+h.oa+' Exh:'+h.exh+' CFM | '+pl+'</div>';
+    } else if(h.roomType || h.ach || h.oaStd || h.exhaust){
+      hcLine='<div class="qi-hcline">'+
+        (h.roomType ? ((lang==='ar'?'النوع: ':'Type: ')+h.roomType+' | ') : '')+
+        (h.category ? ((lang==='ar'?'الفئة: ':'Category: ')+getCategoryLabel(h.category)+' | ') : '')+
+        'ACH: '+(h.ach != null ? h.ach : '—')+
+        ' | OA: '+(h.oaStd != null ? h.oaStd : '—')+
+        ' | Exh: '+(h.exhaust != null ? h.exhaust : '—')+
+        ' | '+(lang==='ar'?'Pressure: ':'Pressure: ')+(h.pressure || 'Neutral')+
+      '</div>';
     }
     var devLine=h.devSum?'<div class="qi-devline">⚡ '+h.devSum+'</div>':'';
     var UT_KEYS=['split','floor','ducted','cassette','package','vrf','chiller_air','chiller_water','fcu','ahu','window'];
@@ -1333,6 +1495,24 @@ function buildPage2(c){
     } else {
       warnHtml='<span style="display:inline-block;background:#ede9fe;color:#7c3aed;border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700">'+(c.isAr?'سعة عالية':'High oversize')+' '+d2pct+'</span>';
     }
+    var roomLogicHtml='';
+    if(h.roomType || h.ach || h.oaStd || h.exhaust || h.pressure){
+      roomLogicHtml='<div class="hc-detail-box">'+
+        '<div style="font-size:10px;color:#0369a1;font-weight:700;margin-bottom:8px">'+(c.isAr?'محرك معايير المستشفى':'Hospital Standards Logic')+'</div>'+
+        '<div class="hc-grid">'+
+          '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'النوع':'Type')+'</div><div class="hc-val">'+(h.roomType||'—')+'</div></div>'+
+          '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'الفئة':'Category')+'</div><div class="hc-val">'+(h.category?getCategoryLabel(h.category):'—')+'</div></div>'+
+          '<div class="hc-item"><div class="hc-lbl">ACH</div><div class="hc-val">'+(h.ach!=null?h.ach:'—')+'</div></div>'+
+          '<div class="hc-item"><div class="hc-lbl">OA</div><div class="hc-val">'+(h.oaStd!=null?h.oaStd:'—')+'</div></div>'+
+        '</div>'+
+        '<div class="hc-grid" style="margin-top:8px">'+
+          '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'العادم':'Exhaust')+'</div><div class="hc-val">'+(h.exhaust!=null?h.exhaust:'—')+'</div></div>'+
+          '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'الضغط':'Pressure')+'</div><div class="hc-val">'+(h.pressure||'—')+'</div></div>'+
+          '<div class="hc-item" style="grid-column: span 2;"><div class="hc-lbl">'+(c.isAr?'ملاحظة':'Note')+'</div><div class="hc-val">'+(h.notes||'—')+'</div></div>'+
+        '</div>'+
+      '</div>';
+    }
+
     // HC details
     var hcHtml='';
     if(h.sup){
@@ -1469,7 +1649,7 @@ function buildPage2(c){
         +warnHtml
         +'<span style="font-size:10px;color:#94a3b8;margin-'+( c.isAr?'right':'left')+':auto">'+Number(selBtu).toLocaleString()+' BTU × '+getQty(i)+(getQty(i)>1?' = '+Number(effCap).toLocaleString()+' BTU/h':'')+' </span>'
         +'</div>')
-        +hcHtml+devHtml+techDuctHtml
+        +roomLogicHtml+hcHtml+devHtml+techDuctHtml
       +'</div>'
     +'</div>';
   }

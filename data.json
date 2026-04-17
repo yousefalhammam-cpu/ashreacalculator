@@ -2198,5 +2198,187 @@
     600,
     700,
     800
-  ]
+  ],
+  "ROOM_STANDARDS": {
+    "office": {
+      "category": "non_clinical",
+      "roomType": "Office",
+      "ach": null,
+      "oa": null,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "General non-clinical room"
+    },
+    "waiting_area": {
+      "category": "non_clinical",
+      "roomType": "Waiting Area",
+      "ach": null,
+      "oa": null,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "General waiting area"
+    },
+    "corridor": {
+      "category": "non_clinical",
+      "roomType": "Corridor",
+      "ach": null,
+      "oa": null,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "General circulation space"
+    },
+    "patient_room": {
+      "category": "general_clinical",
+      "roomType": "Patient Room",
+      "ach": 6,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "Draft patient room baseline"
+    },
+    "exam_room": {
+      "category": "general_clinical",
+      "roomType": "Exam Room",
+      "ach": 6,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "Draft exam room baseline"
+    },
+    "treatment_room": {
+      "category": "general_clinical",
+      "roomType": "Treatment Room",
+      "ach": 6,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "Draft treatment room baseline"
+    },
+    "recovery_room": {
+      "category": "general_clinical",
+      "roomType": "Recovery Room",
+      "ach": 6,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "Draft recovery room baseline"
+    },
+    "emergency_exam": {
+      "category": "emergency",
+      "roomType": "Emergency Exam",
+      "ach": 6,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "Draft emergency exam baseline"
+    },
+    "emergency_treatment": {
+      "category": "emergency",
+      "roomType": "Emergency Treatment",
+      "ach": 6,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "Draft emergency treatment baseline"
+    },
+    "icu": {
+      "category": "critical_care",
+      "roomType": "ICU",
+      "ach": 6,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Positive",
+      "notes": "Draft ICU baseline"
+    },
+    "nicu": {
+      "category": "critical_care",
+      "roomType": "NICU",
+      "ach": 6,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Positive",
+      "notes": "Draft NICU baseline"
+    },
+    "isolation_room": {
+      "category": "isolation",
+      "roomType": "Isolation Room",
+      "ach": 12,
+      "oa": 2,
+      "exhaust": 12,
+      "pressure": "Negative",
+      "notes": "Draft airborne isolation baseline"
+    },
+    "protective_environment": {
+      "category": "isolation",
+      "roomType": "Protective Environment",
+      "ach": 12,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Positive",
+      "notes": "Draft protective environment baseline"
+    },
+    "operating_room": {
+      "category": "procedure",
+      "roomType": "Operating Room",
+      "ach": 20,
+      "oa": 4,
+      "exhaust": null,
+      "pressure": "Positive",
+      "notes": "Draft operating room baseline"
+    },
+    "minor_procedure": {
+      "category": "procedure",
+      "roomType": "Minor Procedure Room",
+      "ach": 15,
+      "oa": 3,
+      "exhaust": null,
+      "pressure": "Positive",
+      "notes": "Draft minor procedure baseline"
+    },
+    "cath_lab": {
+      "category": "procedure",
+      "roomType": "Cath Lab",
+      "ach": 12,
+      "oa": 4,
+      "exhaust": null,
+      "pressure": "Positive",
+      "notes": "Draft cath lab baseline"
+    },
+    "endoscopy": {
+      "category": "procedure",
+      "roomType": "Endoscopy",
+      "ach": 10,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "Draft endoscopy baseline"
+    },
+    "laboratory": {
+      "category": "support_clinical",
+      "roomType": "Laboratory",
+      "ach": 6,
+      "oa": 2,
+      "exhaust": 6,
+      "pressure": "Negative",
+      "notes": "Draft laboratory baseline"
+    },
+    "pharmacy_clean": {
+      "category": "support_clinical",
+      "roomType": "Pharmacy Clean Area",
+      "ach": 10,
+      "oa": 2,
+      "exhaust": null,
+      "pressure": "Positive",
+      "notes": "Draft pharmacy clean area baseline"
+    },
+    "sterile_processing": {
+      "category": "support_clinical",
+      "roomType": "Sterile Processing",
+      "ach": 10,
+      "oa": 2,
+      "exhaust": 10,
+      "pressure": "Negative",
+      "notes": "Draft sterile processing baseline"
+    }
+  }
 }
