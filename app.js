@@ -10,6 +10,7 @@ var UT_TO_CAT = {};
 var UT_LABELS_AR = {};
 var UT_LABELS_EN = {};
 var ROOM_STANDARDS = {};
+var ROOM_EQUIPMENT_PRESETS = {};
 var _DUCT_WIDTHS  = [150,200,250,300,350,400,450,500,600,700,800,900,1000,1100,1200];
 var _DUCT_HEIGHTS = [100,150,200,250,300,350,400,450,500,600,700,800];
 
@@ -22,6 +23,7 @@ function loadAppData(data){
   UT_LABELS_AR = data.UT_LABELS_AR;
   UT_LABELS_EN = data.UT_LABELS_EN;
   ROOM_STANDARDS = data.ROOM_STANDARDS || {};
+  ROOM_EQUIPMENT_PRESETS = data.ROOM_EQUIPMENT_PRESETS || {};
   _DUCT_WIDTHS  = data.DUCT_WIDTHS  || _DUCT_WIDTHS;
   _DUCT_HEIGHTS = data.DUCT_HEIGHTS || _DUCT_HEIGHTS;
   // Rebuild DUCT_STD after widths/heights are loaded
@@ -573,6 +575,44 @@ function getRoomStandard(room){
   };
 }
 
+
+function getRecommendedEquipmentIds(room){
+  var key = inferRoomStandardKey(room);
+  return ROOM_EQUIPMENT_PRESETS[key] || [];
+}
+
+function getEquipmentSummary(){
+  var items = devs.map(function(d){
+    var c = DEVS.filter(function(x){ return x.id===d.id; })[0];
+    return c ? {
+      id:d.id,
+      name:(lang==='ar'?c.ar:c.en),
+      qty:d.qty||1,
+      watt:(c.w||0)*(d.qty||1),
+      btu:Math.round((c.w||0)*3.412*(d.qty||1)),
+      group:c.g || ''
+    } : null;
+  }).filter(Boolean);
+  var totalBtu = items.reduce(function(s,x){ return s + (x.btu||0); }, 0);
+  var totalWatt = items.reduce(function(s,x){ return s + (x.watt||0); }, 0);
+  var text = items.map(function(x){ return x.name + '×' + x.qty; }).join(' | ');
+  return { items:items, totalBtu:totalBtu, totalWatt:totalWatt, text:text };
+}
+
+function getEquipmentGroupLabel(g){
+  var map = {
+    office:{ar:'مكتبي',en:'Office'},
+    light:{ar:'إنارة',en:'Lighting'},
+    home:{ar:'منزلي',en:'Domestic'},
+    health:{ar:'رعاية صحية',en:'Healthcare'},
+    medical:{ar:'أجهزة طبية',en:'Medical Equipment'},
+    lab:{ar:'أجهزة مختبر',en:'Laboratory Equipment'},
+    support:{ar:'دعم سريري',en:'Clinical Support'}
+  };
+  var row = map[g] || {ar:g,en:g};
+  return lang==='ar' ? row.ar : row.en;
+}
+
 function getPressureLabel(p){
   if(lang === 'ar'){
     if(p === 'Positive') return 'موجب';
@@ -716,14 +756,16 @@ function calcHC(vol,ppl){
 
 // ── HISTORY ───────────────────────────────────────────────────────────────
 function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
-  var devSum=devs.map(function(d){
-    var c=DEVS.filter(function(x){return x.id===d.id;})[0];
-    return c?(lang==='ar'?c.ar:c.en)+'×'+d.qty:'';
-  }).filter(Boolean).join(' | ');
+  var eq = getEquipmentSummary();
   var rec={
     time:new Date().toLocaleString('ar-SA'),
     rid:curRoom.id, ar:curRoom.ar, en:curRoom.en,
-    vol:vol, ppl:ppl, devSum:devSum, devBtu:devBtu,
+    vol:vol, ppl:ppl,
+    devSum:eq.text,
+    devBtu:eq.totalBtu,
+    equipmentItems:eq.items,
+    equipmentBtu:eq.totalBtu,
+    equipmentWatt:eq.totalWatt,
     tr:tr.toFixed(2), cfm:cfm, btu:Math.round(totalBtu), mkt:mkt
   };
   if(hcdata){
@@ -773,6 +815,7 @@ function renderHist(){
     row.innerHTML='<div class="hist-main">'+
       '<div class="hist-room">'+(idx+1)+'. '+name+'</div>'+
       '<div class="hist-detail">'+h.vol+' m³ · '+h.ppl+' 👤'+(h.devSum?' · '+h.devSum:'')+'</div>'+
+      (h.equipmentBtu?'<div class="hist-cfm">'+(lang==='ar'?'حمل الأجهزة: ':'Equipment Load: ')+Number(h.equipmentBtu).toLocaleString()+' BTU/h</div>':'')+
       (h.roomType?'<div class="hist-cfm">'+(lang==='ar'?'نوع الغرفة: ':'Room Type: ')+h.roomType+(h.category?' | '+(lang==='ar'?'الفئة: ':'Category: ')+getCategoryLabel(h.category):'')+'</div>':'')+
       (cfmLine?'<div class="hist-cfm">'+cfmLine+'</div>':'')+
       '<div class="hist-time">'+h.time+'</div>'+
@@ -971,7 +1014,7 @@ function renderQuote(){
         ' | '+(lang==='ar'?'Pressure: ':'Pressure: ')+(h.pressure || 'Neutral')+
       '</div>';
     }
-    var devLine=h.devSum?'<div class="qi-devline">⚡ '+h.devSum+'</div>':'';
+    var devLine=h.devSum?'<div class="qi-devline">⚡ '+h.devSum+(h.equipmentBtu?' · '+Number(h.equipmentBtu).toLocaleString()+' BTU/h':'')+'</div>':'';
     var UT_KEYS=['split','floor','ducted','cassette','package','vrf','chiller_air','chiller_water','fcu','ahu','window'];
     var utSelOpts=UT_KEYS.map(function(k){ return '<option value="'+k+'"'+(getUT(i)===k?' selected':'')+'>'+utLabel(k)+'</option>'; }).join('');
     // ── Bundle lock: disable per-room unit controls when bundleOn=true ──
@@ -1528,7 +1571,23 @@ function buildPage2(c){
       +'</div>';
     }
     // Devices
-    var devHtml=h.devSum?'<div style="font-size:11px;color:#64748b;margin-top:6px">⚡ '+h.devSum+'</div>':'';
+    var devHtml=h.devSum?'<div style="font-size:11px;color:#64748b;margin-top:6px">⚡ '+h.devSum+(h.equipmentBtu?' | '+Number(h.equipmentBtu).toLocaleString()+' BTU/h':'')+'</div>':'';
+    var equipmentHtml='';
+    if(h.equipmentItems && h.equipmentItems.length){
+      equipmentHtml='<div style="margin-top:8px;border:1px dashed #cbd5e1;border-radius:8px;padding:8px 10px">'+
+        '<div style="font-size:10px;font-weight:700;color:#0369a1;margin-bottom:6px">'+(c.isAr?'ملخص حمل الأجهزة':'Equipment Heat Load Summary')+'</div>'+
+        h.equipmentItems.map(function(eq){
+          return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:10px;color:#334155;margin:3px 0">'+
+            '<span>'+eq.name+' × '+eq.qty+'</span>'+
+            '<span>'+Number(eq.btu).toLocaleString()+' BTU/h</span>'+
+          '</div>';
+        }).join('')+
+        '<div style="display:flex;justify-content:space-between;gap:8px;font-size:10px;font-weight:700;color:#0f172a;border-top:1px solid #e2e8f0;margin-top:6px;padding-top:6px">'+
+          '<span>'+(c.isAr?'الإجمالي':'Total')+'</span>'+
+          '<span>'+Number(h.equipmentBtu||0).toLocaleString()+' BTU/h</span>'+
+        '</div>'+
+      '</div>';
+    }
     // Per-room duct sizing in tech PDF
     var techDuctHtml='';
     var _techUT=getUT(i);
@@ -1649,7 +1708,7 @@ function buildPage2(c){
         +warnHtml
         +'<span style="font-size:10px;color:#94a3b8;margin-'+( c.isAr?'right':'left')+':auto">'+Number(selBtu).toLocaleString()+' BTU × '+getQty(i)+(getQty(i)>1?' = '+Number(effCap).toLocaleString()+' BTU/h':'')+' </span>'
         +'</div>')
-        +roomLogicHtml+hcHtml+devHtml+techDuctHtml
+        +roomLogicHtml+hcHtml+devHtml+equipmentHtml+techDuctHtml
       +'</div>'
     +'</div>';
   }

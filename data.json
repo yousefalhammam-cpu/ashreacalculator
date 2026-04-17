@@ -1106,6 +1106,94 @@
       "ar": "لمبة عمليات",
       "en": "Surgical Light",
       "w": 300
+    },
+    {
+      "id": "med_monitor",
+      "g": "medical",
+      "e": "🩺",
+      "ar": "شاشة مراقبة طبية",
+      "en": "Medical Monitor",
+      "w": 150
+    },
+    {
+      "id": "cath_machine",
+      "g": "medical",
+      "e": "🫀",
+      "ar": "جهاز قسطرة",
+      "en": "Cath Lab Machine",
+      "w": 2000
+    },
+    {
+      "id": "surgical_light",
+      "g": "medical",
+      "e": "🔆",
+      "ar": "إضاءة عمليات",
+      "en": "Surgical Light",
+      "w": 250
+    },
+    {
+      "id": "xray_mobile",
+      "g": "medical",
+      "e": "🩻",
+      "ar": "أشعة متنقلة",
+      "en": "Mobile X-Ray",
+      "w": 1500
+    },
+    {
+      "id": "infusion_pump",
+      "g": "medical",
+      "e": "💉",
+      "ar": "مضخة محاليل",
+      "en": "Infusion Pump",
+      "w": 100
+    },
+    {
+      "id": "defibrillator",
+      "g": "medical",
+      "e": "⚡",
+      "ar": "جهاز صدمات",
+      "en": "Defibrillator",
+      "w": 200
+    },
+    {
+      "id": "lab_analyzer",
+      "g": "lab",
+      "e": "🧪",
+      "ar": "محلل مختبري",
+      "en": "Lab Analyzer",
+      "w": 800
+    },
+    {
+      "id": "biosafety_cabinet",
+      "g": "lab",
+      "e": "🧬",
+      "ar": "خزانة سلامة حيوية",
+      "en": "Biosafety Cabinet",
+      "w": 900
+    },
+    {
+      "id": "sterilizer",
+      "g": "support",
+      "e": "♨️",
+      "ar": "جهاز تعقيم",
+      "en": "Sterilizer",
+      "w": 1800
+    },
+    {
+      "id": "washer_disinfector",
+      "g": "support",
+      "e": "🚿",
+      "ar": "غسالة تعقيم",
+      "en": "Washer Disinfector",
+      "w": 2200
+    },
+    {
+      "id": "med_fridge",
+      "g": "support",
+      "e": "🧊",
+      "ar": "ثلاجة أدوية",
+      "en": "Medical Refrigerator",
+      "w": 400
     }
   ],
   "AC_CATALOG": {
@@ -2380,5 +2468,101 @@
       "pressure": "Negative",
       "notes": "Draft sterile processing baseline"
     }
+  },
+  "ROOM_EQUIPMENT_PRESETS": {
+    "patient_room": [
+      "med_monitor",
+      "infusion_pump",
+      "med_fridge"
+    ],
+    "exam_room": [
+      "med_monitor",
+      "printer",
+      "computer"
+    ],
+    "treatment_room": [
+      "med_monitor",
+      "infusion_pump",
+      "defibrillator"
+    ],
+    "recovery_room": [
+      "med_monitor",
+      "infusion_pump",
+      "ventilator"
+    ],
+    "emergency_exam": [
+      "med_monitor",
+      "defibrillator",
+      "xray_mobile"
+    ],
+    "emergency_treatment": [
+      "med_monitor",
+      "defibrillator",
+      "ventilator",
+      "xray_mobile"
+    ],
+    "icu": [
+      "ventilator",
+      "med_monitor",
+      "infusion_pump",
+      "defibrillator"
+    ],
+    "nicu": [
+      "ventilator",
+      "med_monitor",
+      "infusion_pump"
+    ],
+    "isolation_room": [
+      "ventilator",
+      "med_monitor",
+      "infusion_pump"
+    ],
+    "protective_environment": [
+      "med_monitor",
+      "infusion_pump"
+    ],
+    "operating_room": [
+      "anesthesia",
+      "surgical_light",
+      "med_monitor",
+      "xray_mobile"
+    ],
+    "minor_procedure": [
+      "surgical_light",
+      "med_monitor",
+      "printer"
+    ],
+    "cath_lab": [
+      "cath_machine",
+      "med_monitor",
+      "xray_mobile",
+      "printer"
+    ],
+    "endoscopy": [
+      "med_monitor",
+      "printer",
+      "computer"
+    ],
+    "laboratory": [
+      "lab_analyzer",
+      "centrifuge",
+      "incubator",
+      "biosafety_cabinet"
+    ],
+    "pharmacy_clean": [
+      "med_fridge",
+      "computer",
+      "printer"
+    ],
+    "sterile_processing": [
+      "sterilizer",
+      "washer_disinfector"
+    ],
+    "office": [
+      "computer",
+      "printer"
+    ],
+    "waiting_area": [],
+    "corridor": []
   }
 }
