@@ -76,6 +76,7 @@ function initApp(){
 
   // Initialize UI
   curRoom = ROOMS['r_office'] || Object.values(ROOMS)[0];
+  applyRoomEquipmentPreset(inferRoomStandardKey(curRoom));
   applyLang();
   applyQSState();
   setQuoteMode(quoteMode);
@@ -449,7 +450,9 @@ function pickRoom(el,rid){
   closeAllDD();
   G('dt').textContent=rLabel(r);
   G('inp-vol').value=''; G('inp-ppl').value='';
-  devs=[]; renderDevs();
+  var roomKey = inferRoomStandardKey(curRoom);
+  applyRoomEquipmentPreset(roomKey);
+  renderDevs();
   G('breakdown').classList.remove('show');
   G('hc-card').style.display='none';
   flash('vtr','0.00'); flash('vcfm','0'); flash('vbtu','0'); flash('vmkt','0');
@@ -579,6 +582,17 @@ function getRoomStandard(room){
 function getRecommendedEquipmentIds(room){
   var key = inferRoomStandardKey(room);
   return ROOM_EQUIPMENT_PRESETS[key] || [];
+}
+
+function applyRoomEquipmentPreset(roomKey){
+  var preset = ROOM_EQUIPMENT_PRESETS[roomKey];
+  if(!preset || !Array.isArray(preset)) return;
+
+  devs = preset.map(function(item){
+    var id = typeof item === 'string' ? item : item.id;
+    var qty = (item && typeof item === 'object' && item.qty) ? item.qty : 1;
+    return { id:id, qty:qty };
+  }).filter(function(x){ return !!x.id; });
 }
 
 function getEquipmentSummary(){
