@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "data.json: added Hospital Standards Engine dataset",
+    "app.js: added ROOM_STANDARDS global",
+    "app.js: added Hospital Standards helper functions",
+    "app.js: calcROT now applies Hospital Standards profile",
+    "app.js: calcHC now stores Hospital Standards metadata",
+    "app.js: saveHist now stores Hospital Standards fields",
+    "app.js: history view shows room type and category",
+    "app.js: quotation view shows standards logic",
+    "app.js: technical report shows Hospital Standards block",
+    "docs: added HOSPITAL_STANDARDS_ENGINE_NOTES.md"
+  ]
+}

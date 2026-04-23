@@ -1,0 +1,17 @@
+{
+  "package": "ashreacalculator-stabilization-v1_comprehensive-github-ready",
+  "focus": "stabilization + deployment readiness",
+  "changes": [
+    "storage.js: added savePlan / restorePlan",
+    "storage.js: exposed plan methods and clearAll key",
+    "plan.js: moved plan persistence through AppStorage",
+    "app.js: fixed calc mode fallback bug in updatePlanUI",
+    "app.js: removed redundant applyLang override patch",
+    "projects.js: current project id now uses AppStorage",
+    "projects.js: project snapshot restore now syncs via AppStorage",
+    "history.js: reset now clears AppStorage keys comprehensively",
+    "added POST_UPLOAD_TEST_CHECKLIST.md",
+    "added STABILIZATION_FINAL_SCOPE.md",
+    "added GITHUB_DEPLOY_NOTES.md"
+  ]
+}

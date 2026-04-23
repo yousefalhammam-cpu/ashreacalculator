@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "data.json: extended DEVS with medical/lab/support equipment",
+    "data.json: added ROOM_EQUIPMENT_PRESETS",
+    "app.js: added ROOM_EQUIPMENT_PRESETS global",
+    "app.js: added equipment summary helpers",
+    "app.js: saveHist now stores structured equipment summary",
+    "app.js: history shows equipment load",
+    "app.js: quotation shows equipment load",
+    "app.js: tech report device block shows equipment BTU",
+    "app.js: technical report includes equipment summary block",
+    "modules/devices.js: equipment modal shows recommended items and new groups",
+    "docs: added EQUIPMENT_HEATLOAD_ENGINE_NOTES.md"
+  ]
+}
