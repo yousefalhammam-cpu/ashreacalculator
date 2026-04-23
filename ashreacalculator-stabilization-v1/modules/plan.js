@@ -50,26 +50,13 @@
   // ── Core API ─────────────────────────────────────────────────────────────
 
   function getCurrentPlan() {
-    try {
-      if (window.AppStorage && typeof AppStorage.restorePlan === 'function') {
-        return AppStorage.restorePlan() || 'free';
-      }
-      return localStorage.getItem(PLAN_KEY) || 'free';
-    } catch(e) {
-      return 'free';
-    }
+    return localStorage.getItem(PLAN_KEY) || 'free';
   }
 
   function setCurrentPlan(plan) {
     var valid = ['free','pro','monthly','yearly','lifetime'];
     if (valid.indexOf(plan) < 0) plan = 'free';
-    try {
-      if (window.AppStorage && typeof AppStorage.savePlan === 'function') {
-        AppStorage.savePlan(plan);
-      } else {
-        localStorage.setItem(PLAN_KEY, plan);
-      }
-    } catch(e) {}
+    localStorage.setItem(PLAN_KEY, plan);
     if (typeof updatePlanUI === 'function') updatePlanUI();
     console.log('[AirCalc] Plan set to:', plan);
   }

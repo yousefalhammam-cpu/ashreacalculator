@@ -131,17 +131,7 @@
 
   function restoreTheme() {
     var raw = lsGetRaw('acp9theme');
-    return raw === 'light' ? 'light' : 'dark';
-  }
-
-  // ── PLAN ───────────────────────────────────────────────────────────────────
-  function savePlan(plan) {
-    lsSetRaw('aircalc_plan', plan || 'free');
-  }
-
-  function restorePlan() {
-    var raw = lsGetRaw('aircalc_plan');
-    return raw || 'free';
+    return raw === 'dark' ? 'dark' : 'light';
   }
 
     // ── CALC MODE ──────────────────────────────────────────────────────────────
@@ -205,7 +195,6 @@
     lsRemove('ac_bundleConfig');
     lsRemove('aircalc_calc_mode');
     lsRemove('aircalc_current_project_id');
-    lsRemove('aircalc_plan');
   }
 
   // ── Expose ─────────────────────────────────────────────────────────────────
@@ -221,9 +210,6 @@
 
     saveTheme: saveTheme,
     restoreTheme: restoreTheme,
-
-    savePlan: savePlan,
-    restorePlan: restorePlan,
 
     saveCalcMode: saveCalcMode,
     restoreCalcMode: restoreCalcMode,

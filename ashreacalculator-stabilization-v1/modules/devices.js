@@ -106,28 +106,18 @@
 
   // ── Modal: group labels ───────────────────────────────────────────────────
   var gLabel = {
-    office:  { ar: '🏢 مكتبي', en: '🏢 Office' },
-    light:   { ar: '💡 إنارة', en: '💡 Lighting' },
-    home:    { ar: '🏠 منزلي', en: '🏠 Domestic' },
-    health:  { ar: '🏥 رعاية صحية', en: '🏥 Healthcare' },
-    medical: { ar: '🩺 أجهزة طبية', en: '🩺 Medical Equipment' },
-    lab:     { ar: '🧪 أجهزة مختبر', en: '🧪 Laboratory Equipment' },
-    support: { ar: '🧰 دعم سريري', en: '🧰 Clinical Support' }
+    office: { ar: '🏢 Office', en: '🏢 Office' },
+    light:  { ar: '💡 Lighting', en: '💡 Lighting' },
+    home:   { ar: '🏠 Domestic', en: '🏠 Domestic' },
+    health: { ar: '🏥 Healthcare', en: '🏥 Healthcare' }
   };
 
   function allowedGroups() {
     var r = _curRoom();
     if (!r) return ['office', 'light', 'home'];
-    if (r.cat === 'healthcare') return ['medical', 'lab', 'support', 'health', 'light', 'office'];
+    if (r.cat === 'healthcare') return ['health', 'light'];
     if (r.cat === 'home')       return ['home', 'light', 'office'];
     return ['office', 'light', 'home'];
-  }
-
-  function recommendedIds() {
-    if (typeof getRecommendedEquipmentIds === 'function') {
-      return getRecommendedEquipmentIds(_curRoom()) || [];
-    }
-    return [];
   }
 
   // ── buildGrid ─────────────────────────────────────────────────────────────
@@ -138,43 +128,6 @@
     var D = _DEVS(), l = _lang();
     var ag = allowedGroups();
     var groups = (grp && ag.indexOf(grp) !== -1) ? [grp] : ag;
-
-    var recIds = recommendedIds();
-    if (!grp && recIds.length) {
-      var recItems = D.filter(function (d) { return recIds.indexOf(d.id) !== -1; });
-      if (recItems.length) {
-        var recHdr = document.createElement('div');
-        recHdr.className = 'cat-hdr';
-        recHdr.textContent = l === 'ar' ? '⭐ أجهزة مقترحة لهذه الغرفة' : '⭐ Recommended for this room';
-        grid.appendChild(recHdr);
-        recItems.forEach(function (d) {
-          var wl = d.w >= 1000 ? (d.w / 1000).toFixed(1) + 'kW' : d.w + 'W';
-          var card = document.createElement('div');
-          card.className = 'cat-item';
-          card.innerHTML =
-            '<div class="cat-ico">' + d.e + '</div>' +
-            '<div class="cat-name">' + (l === 'ar' ? d.ar : d.en) + '</div>' +
-            '<div class="cat-w">' + wl + '</div>' +
-            '<div class="cat-btu">' + _w2b(d.w).toLocaleString() + ' BTU/h</div>';
-          (function (did, dname) {
-            card.onclick = function () {
-              var found = false;
-              var d2 = _devs();
-              for (var i = 0; i < d2.length; i++) {
-                if (d2[i].id === did) { d2[i].qty++; found = true; break; }
-              }
-              if (!found) {
-                if (typeof devs !== 'undefined') devs.push({ id: did, qty: 1 });
-              }
-              if (typeof closeModal === 'function') closeModal();
-              renderDevs();
-              _toast('✅ ' + dname + ' +1');
-            };
-          })(d.id, l === 'ar' ? d.ar : d.en);
-          grid.appendChild(card);
-        });
-      }
-    }
 
     groups.forEach(function (gk) {
       var items = D.filter(function (d) { return d.g === gk; });

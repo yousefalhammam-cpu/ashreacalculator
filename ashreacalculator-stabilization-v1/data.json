@@ -2478,7 +2478,7 @@
     "exam_room": [
       "med_monitor",
       "printer",
-      "computer"
+      "pc"
     ],
     "treatment_room": [
       "med_monitor",
@@ -2541,7 +2541,7 @@
     "endoscopy": [
       "med_monitor",
       "printer",
-      "computer"
+      "pc"
     ],
     "laboratory": [
       "lab_analyzer",
@@ -2551,7 +2551,7 @@
     ],
     "pharmacy_clean": [
       "med_fridge",
-      "computer",
+      "pc",
       "printer"
     ],
     "sterile_processing": [
@@ -2559,7 +2559,7 @@
       "washer_disinfector"
     ],
     "office": [
-      "computer",
+      "pc",
       "printer"
     ],
     "waiting_area": [],
