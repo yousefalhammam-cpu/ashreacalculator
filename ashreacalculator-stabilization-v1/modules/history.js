@@ -223,9 +223,13 @@
     if (typeof devs      !== 'undefined') devs      = [];
     if (typeof editIdx   !== 'undefined') editIdx   = -1;
 
-    // 2. Remove all localStorage keys
-    var keys = ['acp9h','acp9q','acp9qs','acp9mode','ac_bundleConfig','acp9theme'];
-    keys.forEach(function (k) { try { localStorage.removeItem(k); } catch(e) {} });
+    // 2. Clear persisted storage
+    if (window.AppStorage && typeof AppStorage.clearAll === 'function') {
+      try { AppStorage.clearAll(); } catch(e) {}
+    } else {
+      var keys = ['acp9h','acp9q','acp9qs','acp9mode','ac_bundleConfig','acp9theme','aircalc_calc_mode','aircalc_current_project_id','aircalc_plan'];
+      keys.forEach(function (k) { try { localStorage.removeItem(k); } catch(e) {} });
+    }
 
     // 3. Reset runtime variables
     if (typeof vatOn      !== 'undefined') vatOn      = true;

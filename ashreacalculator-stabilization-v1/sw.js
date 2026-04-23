@@ -3,29 +3,17 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v4';
+const CACHE_NAME = 'aircalcpro-v3';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './styles.css',
+  './core.js',
   './app.js',
   './main.js',
   './data.json',
   './manifest.webmanifest',
-  './js/core/state.js',
-  './js/core/helpers.js',
-  './js/core/storage.js',
-  './js/core/i18n.js',
-  './js/core/calc.js',
-  './modules/plan.js',
-  './modules/devices.js',
-  './modules/history.js',
-  './modules/duct.js',
-  './modules/calc.js',
-  './modules/quote.js',
-  './modules/pdf.js',
-  './modules/projects.js',
   './icon-192.png',
   './icon-512.png',
   './icon-1024.png',

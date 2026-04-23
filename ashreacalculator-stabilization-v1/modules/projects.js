@@ -58,12 +58,25 @@
   }
 
   function _getCurrentId() {
-    return localStorage.getItem(CURRENT_KEY) || null;
+    try {
+      if (window.AppStorage && typeof AppStorage.restoreCurrentProjectId === 'function') {
+        return AppStorage.restoreCurrentProjectId() || null;
+      }
+      return localStorage.getItem(CURRENT_KEY) || null;
+    } catch(e) {
+      return null;
+    }
   }
 
   function _setCurrentId(id) {
-    if (id) localStorage.setItem(CURRENT_KEY, id);
-    else    localStorage.removeItem(CURRENT_KEY);
+    try {
+      if (window.AppStorage && typeof AppStorage.saveCurrentProjectId === 'function') {
+        AppStorage.saveCurrentProjectId(id || '');
+        return;
+      }
+      if (id) localStorage.setItem(CURRENT_KEY, id);
+      else    localStorage.removeItem(CURRENT_KEY);
+    } catch(e) {}
   }
 
   // ── Snapshot — reads all live globals at call-time ────────────────────
@@ -178,13 +191,33 @@
     sv('proj-qty',        snap.projQty      || 1);
     sv('proj-up',         snap.projUp       || 0);
 
-    // Sync legacy localStorage so app.js save() works correctly later
+    // Sync app persistence through AppStorage when available
     try {
-      localStorage.setItem('acp9h',    JSON.stringify(snap.hist   || []));
-      localStorage.setItem('acp9q',    JSON.stringify(snap.qlines || []));
-      localStorage.setItem('acp9qs',   JSON.stringify({ vatOn:snap.vatOn, instPct:snap.instPct, qsValidity:snap.qsValidity, qsNotes:snap.qsNotes }));
-      localStorage.setItem('acp9mode', snap.quoteMode || 'room');
-      if (snap.bundleConfig) localStorage.setItem('ac_bundleConfig', JSON.stringify(snap.bundleConfig));
+      if (window.AppStorage) {
+        if (typeof AppStorage.saveHistory === 'function') {
+          AppStorage.saveHistory(snap.hist || [], snap.qlines || []);
+        }
+        if (typeof AppStorage.saveQuoteSettings === 'function') {
+          AppStorage.saveQuoteSettings({
+            vatOn: snap.vatOn,
+            instPct: snap.instPct,
+            qsValidity: snap.qsValidity,
+            qsNotes: snap.qsNotes
+          });
+        }
+        if (typeof AppStorage.saveQuoteMode === 'function') {
+          AppStorage.saveQuoteMode(snap.quoteMode || 'room');
+        }
+        if (snap.bundleConfig && typeof AppStorage.saveBundleConfig === 'function') {
+          AppStorage.saveBundleConfig(snap.bundleConfig);
+        }
+      } else {
+        localStorage.setItem('acp9h',    JSON.stringify(snap.hist   || []));
+        localStorage.setItem('acp9q',    JSON.stringify(snap.qlines || []));
+        localStorage.setItem('acp9qs',   JSON.stringify({ vatOn:snap.vatOn, instPct:snap.instPct, qsValidity:snap.qsValidity, qsNotes:snap.qsNotes }));
+        localStorage.setItem('acp9mode', snap.quoteMode || 'room');
+        if (snap.bundleConfig) localStorage.setItem('ac_bundleConfig', JSON.stringify(snap.bundleConfig));
+      }
     } catch(e) {}
 
     // Re-render UI in correct dependency order
