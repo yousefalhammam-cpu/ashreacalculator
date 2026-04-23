@@ -15,7 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <!-- PDF libs loaded on-demand when user clicks Export PDF -->
 </head>
-<body>
+<body class="light-theme">
 <div class="app">
   <div class="header">
     <div class="logo">
@@ -36,7 +36,13 @@
 
   <!-- CALC PANEL -->
   <div class="panel on" id="p-calc">
-    <div class="dash">
+    <div class="dash results-dash">
+      <div class="results-head">
+        <div>
+          <div class="results-kicker" id="results-kicker">النتائج المباشرة</div>
+          <div class="results-caption" id="results-caption">تظهر هنا أهم نتائج التكييف مباشرة بعد الحساب.</div>
+        </div>
+      </div>
       <div class="dash-grid">
         <div class="met p"><div class="met-lbl" id="ml-tr">Cooling Load</div><div class="met-val" id="vtr">0.00</div><div class="met-unit">TON (TR)</div></div>
         <div class="met g"><div class="met-lbl" id="ml-cfm">Supply CFM</div><div class="met-val" id="vcfm">0</div><div class="met-unit">CFM</div></div>
@@ -44,13 +50,16 @@
         <div class="met"><div class="met-lbl" id="ml-mkt">Market BTU</div><div class="met-val" id="vmkt">0</div><div class="met-unit">BTU (Mkt)</div></div>
       </div>
     </div>
-    <div class="card">
-      <div class="sec-ttl" id="st-room">ROOM</div>
-      <div class="row2">
+    <div class="card input-card room-card">
+      <div class="input-head">
         <div>
-          <div class="lbl" id="lbl-vol">Room Volume (m³)</div>
-          <div class="ifield-wrap"><input class="ninput" id="inp-vol" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0 m³" oninput="onVolInput()"></div>
+          <div class="input-kicker" id="room-step-kicker">الخطوة 1</div>
+          <div class="input-title" id="room-input-title">Room Information</div>
         </div>
+        <div class="input-note" id="room-input-note">Enter dimensions in meters; volume is calculated automatically.</div>
+      </div>
+      <div class="sec-ttl" id="st-room">ROOM</div>
+      <div class="row2 room-top-row">
         <div class="dd-wrap">
           <div class="lbl" id="lbl-type">Room Type</div>
           <div class="dd-btn" id="f-type" onclick="toggleDD('dd-room')">
@@ -105,13 +114,54 @@
 <div class="dd-item" onclick="pickRoom(this,'h_records')"><div class="dd-item-info"><div>Medical Records / سجلات</div><div class="dd-item-sub">2 OA · 4 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
 </div>
 </div>
-</div>
-<div class="row1">
-        <div class="lbl" id="lbl-ppl">👤 Persons — 400 BTU/h each</div>
-        <div class="ifield-wrap"><input class="ninput" id="inp-ppl" type="number" inputmode="numeric" min="0" step="1" placeholder="0" oninput="onPplInput()"></div>
+        <div>
+          <div class="lbl" id="lbl-room-count">Room Count</div>
+          <div class="ifield-wrap stepper-field">
+            <input class="ninput" id="inp-room-count" type="number" inputmode="numeric" min="1" step="1" value="1" placeholder="1" oninput="onRoomCountInput()">
+            <div class="stepper-buttons" id="room-count-stepper" aria-label="تعديل عدد الغرف">
+              <button type="button" class="stepper-btn" onclick="stepRoomNumber('inp-room-count',1,1)" aria-label="زيادة عدد الغرف">▲</button>
+              <button type="button" class="stepper-btn" onclick="stepRoomNumber('inp-room-count',-1,1)" aria-label="تقليل عدد الغرف">▼</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="lbl" id="lbl-ppl">👤 Persons — 400 BTU/h each</div>
+          <div class="ifield-wrap stepper-field">
+            <input class="ninput" id="inp-ppl" type="number" inputmode="numeric" min="0" step="1" placeholder="0" oninput="onPplInput()">
+            <div class="stepper-buttons" id="persons-stepper" aria-label="تعديل عدد الأشخاص">
+              <button type="button" class="stepper-btn" onclick="stepRoomNumber('inp-ppl',1,0)" aria-label="زيادة عدد الأشخاص">▲</button>
+              <button type="button" class="stepper-btn" onclick="stepRoomNumber('inp-ppl',-1,0)" aria-label="تقليل عدد الأشخاص">▼</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="dim-grid" id="dim-grid" aria-label="أبعاد الغرفة">
+        <div>
+          <div class="lbl" id="lbl-len">Length (m)</div>
+          <div class="ifield-wrap dim-field"><input class="ninput" id="inp-len" type="text" inputmode="decimal" pattern="[0-9٠-٩۰-۹.,٫]*" placeholder="0.0" oninput="onDimInput()"><span class="unit-chip">m</span></div>
+        </div>
+        <div>
+          <div class="lbl" id="lbl-width">Width (m)</div>
+          <div class="ifield-wrap dim-field"><input class="ninput" id="inp-width" type="text" inputmode="decimal" pattern="[0-9٠-٩۰-۹.,٫]*" placeholder="0.0" oninput="onDimInput()"><span class="unit-chip">m</span></div>
+        </div>
+        <div>
+          <div class="lbl" id="lbl-height">Height (m)</div>
+          <div class="ifield-wrap dim-field"><input class="ninput" id="inp-height" type="text" inputmode="decimal" pattern="[0-9٠-٩۰-۹.,٫]*" placeholder="0.0" oninput="onDimInput()"><span class="unit-chip">m</span></div>
+        </div>
+      </div>
+      <div class="row1">
+        <div class="lbl" id="lbl-vol">Calculated Volume</div>
+        <div class="ifield-wrap calc-volume-wrap"><input class="ninput calculated-volume-input" id="inp-vol" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0.0" oninput="onVolInput()" readonly><span class="unit-chip">m³</span></div>
       </div>
     </div>
-    <div class="card">
+    <div class="card input-card devices-card">
+      <div class="input-head">
+        <div>
+          <div class="input-kicker" id="devices-step-kicker">الخطوة 2</div>
+          <div class="input-title" id="devices-title">أحمال الأجهزة الداخلية</div>
+        </div>
+        <div class="input-note" id="devices-note">أضف أحمال الأجهزة فقط عندما تكون مؤثرة في التقدير.</div>
+      </div>
       <div class="sec-ttl" id="st-dev">DEVICES</div>
       <div id="dev-list"></div>
       <button class="add-btn" style="margin-top:8px" onclick="openModal()">⚡ <span id="lbl-add">+ إضافة جهاز</span></button>
@@ -120,13 +170,22 @@
         <span id="val-dtot" style="font-weight:700;font-family:var(--fm)">0 BTU/h</span>
       </div>
     </div>
+    <div class="calc-cta-panel">
+      <div class="input-head cta-head">
+        <div>
+          <div class="input-kicker" id="calc-step-kicker">الخطوة 3</div>
+          <div class="input-title" id="calc-title">احسب وراجع</div>
+        </div>
+        <div class="input-note" id="calc-note">نفّذ الحساب ثم راجع التفصيل وتوجيهات تدفق الهواء بالأسفل.</div>
+      </div>
     <div class="disclaimer">
       <div id="dis-ar">تقدير أولي فقط للتكييف — لا يعتمد عليه للتصميم النهائي.</div>
       <div id="dis-en" style="display:none">Preliminary HVAC sizing only — not for final design or construction submittals.</div>
     </div>
     <button class="calc-btn" id="lbl-calc" onclick="doCalc()">احسب ▶</button>
+    </div>
     <div class="card breakdown" id="breakdown">
-      <div class="sec-ttl">BREAKDOWN</div>
+      <div class="sec-ttl" id="breakdown-ttl">التفصيل</div>
       <div class="br-row"><span class="br-lbl" id="brl-vol">حجم الغرفة</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-vol">—</span><span class="badge ba">m³</span></div></div>
       <div class="br-row"><span class="br-lbl" id="brl-base">الحمل الأساسي</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-base">—</span><span class="badge bam">BTU/h</span></div></div>
       <div class="br-row"><span class="br-lbl" id="brl-ppl">حمل الأشخاص</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-ppl">—</span><span class="badge bg">BTU/h</span></div></div>
@@ -145,13 +204,19 @@
       <div class="br-row"><span class="br-lbl" id="hcl-sup">Supply CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-sup">—</span><span class="badge ba">CFM</span></div></div>
       <div class="br-row"><span class="br-lbl" id="hcl-oa">Outdoor Air CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-oa">—</span><span class="badge bg">CFM</span></div></div>
       <div class="br-row"><span class="br-lbl" id="hcl-exh">Exhaust CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-exh">—</span><span class="badge bam">CFM</span></div></div>
-      <div class="br-row" id="hc-note-row" style="display:none"><span class="br-lbl">Note</span><span class="br-val" id="hcv-note" style="font-size:11px;color:var(--tm)">—</span></div>
+      <div class="br-row" id="hc-note-row" style="display:none"><span class="br-lbl" id="hc-note-lbl">ملاحظة</span><span class="br-val" id="hcv-note" style="font-size:11px;color:var(--tm)">—</span></div>
     </div>
 
-  <!-- ADD TO QUOTE BUTTON — inside p-calc so goPanel() hides it with the panel -->
+  <!-- CALCULATED ROOMS + QUOTATION BUTTON — inside p-calc so goPanel() hides it with the panel -->
+  <div class="card calc-rooms-card" id="calc-rooms-card" style="display:none">
+    <div class="hist-hdr">
+      <div class="sec-ttl" style="margin-bottom:0"><span class="room-count" id="calc-rooms-count">0</span><span id="calc-rooms-title">Calculated Rooms</span></div>
+    </div>
+    <div id="calc-rooms-list"></div>
+  </div>
   <div id="add-quote-wrap" style="display:none;margin-top:6px">
-    <button class="calc-btn" id="btn-add-quote" onclick="addToQuote()" style="background:linear-gradient(135deg,rgba(52,211,153,.18),rgba(52,211,153,.08));border-color:rgba(52,211,153,.5);color:var(--g)">
-      ✅ <span id="lbl-add-quote">أضف للعرض</span>
+    <button class="calc-btn quote-jump-btn" id="btn-add-quote" onclick="addToQuote()">
+      <span id="lbl-add-quote">Quotation</span>
     </button>
   </div>
   </div>
@@ -163,10 +228,10 @@
     <div class="cum-card" id="cum-card" style="display:none">
       <div class="cum-ttl" id="cum-ttl">الإجمالي التراكمي</div>
       <div class="cum-grid">
-        <div class="cum-item"><div class="cum-lbl">Total TR</div><div class="cum-val" id="cum-tr">0.00</div><div class="cum-unit">TON</div></div>
-        <div class="cum-item"><div class="cum-lbl">Total CFM</div><div class="cum-val" id="cum-cfm">0</div><div class="cum-unit">CFM</div></div>
-        <div class="cum-item"><div class="cum-lbl">Total BTU/h</div><div class="cum-val" id="cum-btu">0</div><div class="cum-unit">BTU/h</div></div>
-        <div class="cum-item"><div class="cum-lbl">Market BTU</div><div class="cum-val" id="cum-mkt">0</div><div class="cum-unit">BTU</div></div>
+        <div class="cum-item"><div class="cum-lbl" id="cum-lbl-tr">إجمالي TR</div><div class="cum-val" id="cum-tr">0.00</div><div class="cum-unit">TON</div></div>
+        <div class="cum-item"><div class="cum-lbl" id="cum-lbl-cfm">إجمالي CFM</div><div class="cum-val" id="cum-cfm">0</div><div class="cum-unit">CFM</div></div>
+        <div class="cum-item"><div class="cum-lbl" id="cum-lbl-btu">إجمالي BTU/h</div><div class="cum-val" id="cum-btu">0</div><div class="cum-unit">BTU/h</div></div>
+        <div class="cum-item"><div class="cum-lbl" id="cum-lbl-mkt">سعة السوق</div><div class="cum-val" id="cum-mkt">0</div><div class="cum-unit">BTU</div></div>
       </div>
     </div>
         <!-- BUNDLE TOGGLE (show/hide per-room locking) -->
@@ -192,10 +257,10 @@
     <div class="proj-block" id="proj-block" style="display:none">
       <div class="proj-block-ttl" id="proj-block-ttl">📊 إجماليات المشروع</div>
       <div class="proj-totals-grid">
-        <div class="proj-total-item"><div class="proj-total-lbl">Total TR</div><div class="proj-total-val" id="ptot-tr">0.0</div></div>
-        <div class="proj-total-item"><div class="proj-total-lbl">Total CFM</div><div class="proj-total-val" id="ptot-cfm">0</div></div>
-        <div class="proj-total-item"><div class="proj-total-lbl">Total BTU/h</div><div class="proj-total-val" id="ptot-btu">0</div></div>
-        <div class="proj-total-item"><div class="proj-total-lbl">Mkt BTU</div><div class="proj-total-val" id="ptot-mkt">0</div></div>
+        <div class="proj-total-item"><div class="proj-total-lbl" id="ptot-lbl-tr">إجمالي TR</div><div class="proj-total-val" id="ptot-tr">0.0</div></div>
+        <div class="proj-total-item"><div class="proj-total-lbl" id="ptot-lbl-cfm">إجمالي CFM</div><div class="proj-total-val" id="ptot-cfm">0</div></div>
+        <div class="proj-total-item"><div class="proj-total-lbl" id="ptot-lbl-btu">إجمالي BTU/h</div><div class="proj-total-val" id="ptot-btu">0</div></div>
+        <div class="proj-total-item"><div class="proj-total-lbl" id="ptot-lbl-mkt">سعة السوق</div><div class="proj-total-val" id="ptot-mkt">0</div></div>
       </div>
       <!-- System type + capacity -->
       <div class="proj-unit-row">
@@ -731,6 +796,7 @@
 <script src="./modules/devices.js"></script>
 <script src="./modules/history.js"></script>
 <script src="./modules/duct.js"></script>
+<script src="./modules/rooms.js"></script>
 <script src="./modules/calc.js"></script>
 <script src="./modules/quote.js"></script>
 <script src="./modules/pdf.js"></script>
