@@ -1,4 +1,4 @@
-// ── AirCalc Pro — main.js ────────────────────────────────────────────────
+﻿// ── AirCalc Pro — main.js ────────────────────────────────────────────────
 // Bootstrap entry point. Runs after DOM ready.
 // Phase 3: uses AppStorage directly instead of raw localStorage calls.
 

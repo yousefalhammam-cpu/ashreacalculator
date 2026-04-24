@@ -76,8 +76,8 @@
     snap.devs   = (typeof devs   !== 'undefined') ? JSON.parse(JSON.stringify(devs))   : [];
 
     // Quote identity
-    snap.projName = (G('quote-project') || {value:''}).value.trim();
-    snap.quoteNo  = (G('quote-no')      || {value:'Q-001'}).value.trim() || 'Q-001';
+    snap.projName = ((G('tech-project') || G('quote-project')) || {value:''}).value.trim();
+    snap.quoteNo  = ((G('tech-no') || G('quote-no')) || {value:'Q-001'}).value.trim() || 'Q-001';
 
     // Quote settings
     snap.vatOn      = (typeof vatOn      !== 'undefined') ? vatOn      : true;
@@ -233,12 +233,12 @@
   function saveCurrentProject(opts) {
     opts = opts || {};
 
-    var projName = (G('quote-project') || {value:''}).value.trim();
+    var projName = ((G('tech-project') || G('quote-project')) || {value:''}).value.trim();
 
     // Require a name — show error and stop
     if (!projName) {
       _toast(_t('⚠️ أدخل اسم المشروع أولاً', '⚠️ Enter a project name first'));
-      var el = G('quote-project');
+      var el = G('tech-project') || G('quote-project');
       if (el) {
         el.focus();
         var origBorder = el.style.borderColor;

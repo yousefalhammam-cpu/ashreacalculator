@@ -1,4 +1,4 @@
-// ── ERROR HANDLERS ──────────────────────────────────────────────────────
+﻿// ── ERROR HANDLERS ──────────────────────────────────────────────────────
 window.addEventListener('error', function(e){ console.error('[AirCalc]', e.message, e.error); });
 window.addEventListener('unhandledrejection', function(e){ console.error('[AirCalc] Unhandled:', e.reason); });
 
@@ -83,6 +83,7 @@ function initApp(){
   curRoom = ROOMS['r_office'] || Object.values(ROOMS)[0];
   applyRoomEquipmentPreset(inferRoomStandardKey(curRoom));
   applyLang();
+  arrangeReportAndQuoteLayout();
   applyQSState();
   setQuoteMode(quoteMode);
   renderHist();
@@ -393,6 +394,32 @@ function applyLangInputsAndLabels(){
 
   var quoteProject = G('quote-project');
   if (quoteProject) quoteProject.placeholder = lang === 'ar' ? 'اسم المشروع' : 'Project Name';
+  var techProject = G('tech-project');
+  if (techProject) techProject.placeholder = lang === 'ar' ? 'اسم المشروع' : 'Project Name';
+  var techNo = G('tech-no');
+  if (techNo) techNo.placeholder = 'Q-001';
+  var quoteProjPricingTtl = G('quote-proj-pricing-ttl');
+  if (quoteProjPricingTtl) quoteProjPricingTtl.textContent = lang === 'ar' ? 'التسعير' : 'Pricing';
+  var techTitle = G('tech-ttl');
+  if (techTitle) techTitle.textContent = lang === 'ar' ? 'التقرير الفني' : 'Technical Report';
+  var techProjectLbl = G('tech-project-lbl');
+  if (techProjectLbl) techProjectLbl.textContent = lang === 'ar' ? 'اسم المشروع' : 'Project Name';
+  var techQnoLbl = G('tech-qno-lbl');
+  if (techQnoLbl) techQnoLbl.textContent = lang === 'ar' ? 'رقم المشروع' : 'Project No.';
+  var techNote = G('tech-note');
+  if (techNote) techNote.textContent = lang === 'ar' ? 'راجع بيانات المشروع ثم صدّر التقرير الفني PDF مباشرة من هنا.' : 'Review project data, then export the technical report PDF directly from here.';
+  var techExportLbl = G('tech-export-lbl');
+  if (techExportLbl) techExportLbl.textContent = lang === 'ar' ? 'تقرير فني PDF' : 'Tech Report PDF';
+  var techNavLbl = G('nl-tech');
+  if (techNavLbl) techNavLbl.textContent = lang === 'ar' ? 'التقرير الفني' : 'Tech Report';
+  var conDesc = G('con-desc');
+  if (conDesc) conDesc.textContent = lang === 'ar'
+    ? 'AirCalc Pro أداة هندسية مبسطة لحساب أحمال التبريد والتهوية وتجهيز عرض السعر والتقرير الفني بسرعة ووضوح.'
+    : 'AirCalc Pro is a streamlined engineering tool for cooling load and ventilation calculations, with fast quotation and technical report preparation.';
+  var conFeatures = G('con-features');
+  if (conFeatures) conFeatures.innerHTML = lang === 'ar'
+    ? '<div class="con-feat">• حساب حمل التبريد و CFM و BTU</div><div class="con-feat">• معايير الغرف وتجهيزات الأجهزة حسب الاستخدام</div><div class="con-feat">• عرض سعر وتقرير فني وتصدير PDF</div><div class="con-feat">• وضع المشروع وحساب مجاري الهواء و ESP</div>'
+    : '<div class="con-feat">• Cooling load, CFM, and BTU calculations</div><div class="con-feat">• Room standards and equipment presets by use case</div><div class="con-feat">• Quotation, technical report, and PDF export</div><div class="con-feat">• Project mode, duct sizing, and ESP calculation</div>';
 
   var v7 = G('v7'), v14 = G('v14'), v30 = G('v30');
   if (v7) v7.textContent = t('v7');
@@ -420,11 +447,11 @@ function applyLangInputsAndLabels(){
   var personsStepper = G('persons-stepper');
   if (personsStepper) personsStepper.setAttribute('aria-label', lang === 'ar' ? 'تعديل عدد الأشخاص' : 'Adjust persons');
 
-  var roomBtns = document.querySelectorAll('#room-count-stepper .stepper-btn');
+  var roomBtns = document.querySelectorAll('#room-count-stepper button');
   if (roomBtns[0]) roomBtns[0].setAttribute('aria-label', lang === 'ar' ? 'زيادة عدد الغرف' : 'Increase room count');
   if (roomBtns[1]) roomBtns[1].setAttribute('aria-label', lang === 'ar' ? 'تقليل عدد الغرف' : 'Decrease room count');
 
-  var pplBtns = document.querySelectorAll('#persons-stepper .stepper-btn');
+  var pplBtns = document.querySelectorAll('#persons-stepper button');
   if (pplBtns[0]) pplBtns[0].setAttribute('aria-label', lang === 'ar' ? 'زيادة عدد الأشخاص' : 'Increase persons');
   if (pplBtns[1]) pplBtns[1].setAttribute('aria-label', lang === 'ar' ? 'تقليل عدد الأشخاص' : 'Decrease persons');
 
@@ -505,6 +532,86 @@ function goPanel(name){
   if(n) n.classList.add('on');
 }
 
+function syncProjectFields(source){
+  var fromProject = G(source + '-project');
+  var fromNo = G(source + '-no');
+  var toPrefix = source === 'tech' ? 'quote' : 'tech';
+  var toProject = G(toPrefix + '-project');
+  var toNo = G(toPrefix + '-no');
+  if(fromProject && toProject && toProject.value !== fromProject.value) toProject.value = fromProject.value;
+  if(fromNo && toNo && toNo.value !== fromNo.value) toNo.value = fromNo.value;
+}
+
+function exportTechPDFFromPanel(){
+  syncProjectFields('tech');
+  exportTechPDF();
+}
+
+function arrangeReportAndQuoteLayout(){
+  var quoteSettingsSlot = G('quote-settings-slot');
+  var quoteProjPricingSlot = G('quote-proj-pricing-slot');
+  var quoteProjPricingInlineSlot = G('quote-proj-pricing-inline-slot');
+  var techCumSlot = G('tech-cum-slot');
+  var techControlsSlot = G('tech-controls-slot');
+  var techProjSlot = G('tech-proj-slot');
+  var techAnalysisSlot = G('tech-analysis-slot');
+  if(!quoteSettingsSlot || !quoteProjPricingSlot || !quoteProjPricingInlineSlot || !techCumSlot || !techControlsSlot || !techProjSlot || !techAnalysisSlot) return;
+
+  var qsCard = G('qs-card');
+  if(qsCard && qsCard.parentNode !== quoteSettingsSlot) quoteSettingsSlot.appendChild(qsCard);
+
+  var cumCard = G('cum-card');
+  if(cumCard && cumCard.parentNode !== techCumSlot) techCumSlot.appendChild(cumCard);
+
+  var bundleRow = G('bundle-row');
+  if(bundleRow && bundleRow.parentNode !== techControlsSlot) techControlsSlot.appendChild(bundleRow);
+
+  var modeToggleRow = G('mode-toggle-row');
+  if(modeToggleRow && modeToggleRow.parentNode !== techControlsSlot) techControlsSlot.appendChild(modeToggleRow);
+
+  var projBlock = G('proj-block');
+  if(projBlock && projBlock.parentNode !== techProjSlot) techProjSlot.appendChild(projBlock);
+
+  var calcModeRow = G('calc-mode-row');
+  if(calcModeRow && calcModeRow.parentNode !== techAnalysisSlot) techAnalysisSlot.appendChild(calcModeRow);
+
+  var advDuctBlock = G('adv-duct-block');
+  if(advDuctBlock && advDuctBlock.parentNode !== techAnalysisSlot) techAnalysisSlot.appendChild(advDuctBlock);
+
+  var projUpGroup = G('proj-up-group');
+  var projLineTotal = G('proj-line-total');
+  if(projUpGroup && projLineTotal){
+    var pricingCard = G('quote-proj-pricing-card');
+    if(!pricingCard){
+      pricingCard = document.createElement('div');
+      pricingCard.className = 'quote-proj-pricing-card';
+      pricingCard.id = 'quote-proj-pricing-card';
+      pricingCard.innerHTML =
+        '<div class="sec-ttl" id="quote-proj-pricing-ttl">'+(lang==='ar'?'التسعير':'Pricing')+'</div>'+
+        '<div class="quote-proj-pricing-grid" id="quote-proj-pricing-grid"></div>';
+    }
+    var pricingGrid = pricingCard.querySelector('#quote-proj-pricing-grid');
+    if(pricingCard.parentNode !== quoteProjPricingInlineSlot) quoteProjPricingInlineSlot.appendChild(pricingCard);
+    if(pricingGrid && projUpGroup.parentNode !== pricingGrid) pricingGrid.appendChild(projUpGroup);
+    if(pricingGrid && projLineTotal.parentNode !== pricingGrid) pricingGrid.appendChild(projLineTotal);
+  }
+  updateQuoteModeAuxVisibility();
+}
+
+function updateQuoteModeAuxVisibility(){
+  var quoteProjPricingSlot = G('quote-proj-pricing-slot');
+  if(quoteProjPricingSlot) quoteProjPricingSlot.style.display = (quoteMode === 'proj') ? '' : 'none';
+  var quoteProjPricingInlineSlot = G('quote-proj-pricing-inline-slot');
+  if(quoteProjPricingInlineSlot) quoteProjPricingInlineSlot.style.display = (quoteMode === 'proj') ? '' : 'none';
+  var quoteProjPricingCard = G('quote-proj-pricing-card');
+  if(quoteProjPricingCard) quoteProjPricingCard.style.display = (quoteMode === 'proj') ? '' : 'none';
+  var projUpGroup = G('proj-up-group');
+  if(projUpGroup){
+    var inQuotePricing = !!projUpGroup.closest('#quote-proj-pricing-card, #quote-proj-pricing-inline-slot, #quote-proj-pricing-grid');
+    projUpGroup.style.display = (quoteMode === 'proj' && inQuotePricing) ? '' : 'none';
+  }
+}
+
 // ── DROPDOWN ──────────────────────────────────────────────────────────────
 function toggleDD(id){
   var m = G(id);
@@ -558,6 +665,7 @@ window.onRoomCountInput = onRoomCountInput;
 window.onPplInput = onPplInput;
 window.onDimInput = onDimInput;
 window.onVolInput = onVolInput;
+window.stepProjQty = stepProjQty;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.overlayClick = overlayClick;
@@ -1182,6 +1290,8 @@ try {
   var inpPpl = G('inp-ppl');        if(inpPpl)  inpPpl.value  = '';
   var qProj  = G('quote-project');  if(qProj)   qProj.value   = '';
   var qNo    = G('quote-no');       if(qNo)     qNo.value     = 'Q-001';
+  var tProj  = G('tech-project');   if(tProj)   tProj.value   = '';
+  var tNo    = G('tech-no');        if(tNo)     tNo.value     = 'Q-001';
   var qsInst = G('qs-inst');        if(qsInst)  qsInst.value  = '10';
   var qsVal  = G('qs-validity');    if(qsVal)   qsVal.value   = '14';
   var qsNts  = G('qs-notes');       if(qsNts)   qsNts.value   = '';
@@ -1309,11 +1419,31 @@ function ductRecommendation(supRt, retRt, isAr){
     : '✅ Velocity is within acceptable engineering limits.';
 }
 function renderQuote(){
-  var list=G('qi-list'); list.innerHTML='';
+  var list=G('qi-list'); if(list) list.innerHTML='';
+  var quoteView=G('quote-view-list'); if(quoteView) quoteView.innerHTML='';
   if(!hist.length){
     var em=document.createElement('div'); em.className='qi-empty'; em.textContent=t('qempty');
-    list.appendChild(em);
+    if(list) list.appendChild(em);
+    if(quoteView){
+      var em2=document.createElement('div'); em2.className='qi-empty'; em2.textContent=t('qempty');
+      quoteView.appendChild(em2);
+    }
     G('qt-total-qty').textContent='0'; G('qt-grand').textContent='0.00'; return;
+  }
+  if(quoteMode==='proj' && quoteView){
+    var projReqBtu = getProjTotalBtu();
+    var projItem = document.createElement('div');
+    projItem.className = 'quote-readonly-card';
+    projItem.innerHTML =
+      '<div class="quote-readonly-head"><span class="qi-num">#1</span><span class="qi-name">'+(lang==='ar'?'وحدة للمشروع':'Project Unit')+'</span></div>'+
+      '<div class="quote-readonly-grid">'+
+        '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'نوع النظام':'System Type')+'</div><div class="quote-readonly-value">'+utLabel(projState.sysType||'split')+'</div></div>'+
+        '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'السعة المختارة':'Selected Capacity')+'</div><div class="quote-readonly-value">'+Number(projState.selBtu||0).toLocaleString()+' BTU</div></div>'+
+        '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'عدد الوحدات':'Unit Count')+'</div><div class="quote-readonly-value">'+(projState.qty||1)+'</div></div>'+
+        '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'الحمل المطلوب':'Required Load')+'</div><div class="quote-readonly-value">'+Number(projReqBtu||0).toLocaleString()+' BTU/h</div></div>'+
+      '</div>'+
+      '<div class="quote-readonly-note">'+(lang==='ar'?'يتم تعديل نوع النظام والسعة من التقرير الفني فقط.':'System type and capacity are edited from the technical report only.')+'</div>';
+    quoteView.appendChild(projItem);
   }
   hist.forEach(function(h,i){
     var qty=getQty(i), roomCount=getRecordRoomCount(i), up=getUP(i), lt=qty*up;
@@ -1346,12 +1476,10 @@ function renderQuote(){
           : '🔒 Per-room unit selection is locked because Bundle is enabled')+'</div>'
       : '';
     var qtyCtrlHtml='<div class="qi-unit-count"><span class="qi-utype-lbl">'+(lang==='ar'?'عدد الوحدات':'Units Needed')+'</span>'+
-      '<div class="qi-unit-stepper">'+
+      '<div class="qi-unit-stepper" aria-label="'+(lang==='ar'?'تعديل عدد الوحدات':'Adjust units needed')+'">'+
+        '<button type="button" class="qbtn" onclick="stepQuoteQty('+i+',1)" aria-label="'+(lang==='ar'?'زيادة عدد الوحدات':'Increase units needed')+'">+</button>'+
         '<input class="qi-unit-count-input" type="number" min="1" step="1" value="'+qty+'" onchange="setQty('+i+',this.value)">'+
-        '<div class="stepper-buttons" aria-label="'+(lang==='ar'?'تعديل عدد الوحدات':'Adjust units needed')+'">'+
-          '<button type="button" class="stepper-btn" onclick="stepQuoteQty('+i+',1)" aria-label="'+(lang==='ar'?'زيادة عدد الوحدات':'Increase units needed')+'">▲</button>'+
-          '<button type="button" class="stepper-btn" onclick="stepQuoteQty('+i+',-1)" aria-label="'+(lang==='ar'?'تقليل عدد الوحدات':'Decrease units needed')+'">▼</button>'+
-        '</div>'+
+        '<button type="button" class="qbtn" onclick="stepQuoteQty('+i+',-1)" aria-label="'+(lang==='ar'?'تقليل عدد الوحدات':'Decrease units needed')+'">−</button>'+
       '</div>'+
       '</div>';
     var reqBtu = parseInt(h.btu)||0;
@@ -1529,7 +1657,20 @@ function renderQuote(){
           (h.devBtu>0?'<div class="qi-stat"><div class="qi-slbl">Dev</div><div class="qi-sval cam">'+Number(h.devBtu).toLocaleString()+'</div></div>':'')+
         '</div>'+
         devLine+hcLine+capHtml+(_bundleLocked?'':warnHtml)+roomDuctHtml+
-        '<div class="qi-price-row qi-price-row-simple">'+
+      '</div>';
+    if(list) list.appendChild(item);
+    if(quoteView && quoteMode!=='proj'){
+      var ro=document.createElement('div');
+      ro.className='quote-readonly-card';
+      ro.innerHTML=
+        '<div class="quote-readonly-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+
+        '<div class="quote-readonly-grid">'+
+          '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'نوع الوحدة':'Unit Type')+'</div><div class="quote-readonly-value">'+utLabel(curUT)+'</div></div>'+
+          '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'سعة الوحدة':'Unit Capacity')+'</div><div class="quote-readonly-value">'+Number(selBtu||0).toLocaleString()+' BTU</div></div>'+
+          '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'عدد الوحدات':'Unit Count')+'</div><div class="quote-readonly-value">'+qty+'</div></div>'+
+          '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'عدد الغرف':'Room Count')+'</div><div class="quote-readonly-value">'+roomCount+'</div></div>'+
+        '</div>'+
+        '<div class="qi-price-row qi-price-row-simple quote-price-row">'+
           '<div>'+
             '<div class="qi-plbl">'+(lang==='ar'?'سعر الوحدة':'Unit Price')+'</div>'+
             '<input class="minp" type="number" min="0" step="0.01" value="'+(up||'')+'" placeholder="0.00" onchange="setUp('+i+',this.value)">'+
@@ -1539,8 +1680,9 @@ function renderQuote(){
             '<div class="qi-lt-val" id="qlt-'+i+'">'+money(lt)+'</div>'+
           '</div>'+
         '</div>'+
-      '</div>';
-    list.appendChild(item);
+        '<div class="quote-readonly-note">'+(lang==='ar'?'يتم تعديل نوع التكييف والسعة من التقرير الفني فقط.':'AC type and capacity are edited from the technical report only.')+'</div>';
+      quoteView.appendChild(ro);
+    }
   });
   refreshGrandTotal();
 }
@@ -2270,7 +2412,7 @@ function exportTechPDF(){
   var h2cReady = typeof html2canvas !== 'undefined';
   var jspdfReady = typeof window.jspdf !== 'undefined';
   if(h2cReady && jspdfReady){ _doExportTechPDF(); return; }
-  var btn=G('btn-techpdf');
+  var btn=G('btn-techpdf-panel') || G('btn-techpdf');
   if(btn){ btn.disabled=true; btn.textContent=lang==='ar'?'جارٍ تحميل المكتبات...':'Loading libraries...'; }
   var loaded=0, failed=0;
   function onLoad(){ loaded++; if(loaded+failed>=2){ if(btn){btn.disabled=false;btn.innerHTML='<span id="lbl-export4">'+(lang==='ar'?'تقرير فني':'Tech Report')+'</span>';} if(failed===0) _doExportTechPDF(); else toast(lang==='ar'?'⚠️ فشل تحميل مكتبة PDF':'⚠️ PDF library failed to load'); } }
@@ -2285,7 +2427,7 @@ function exportTechPDF(){
   loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js','jsPDF',jspdfReady);
 }
 function _doExportTechPDF(){
-  var btn=G('btn-techpdf');
+  var btn=G('btn-techpdf-panel') || G('btn-techpdf');
   if(btn){ btn.disabled=true; btn.textContent=lang==='ar'?'جارٍ التحميل...':'Generating...'; }
 
   var c=invCommon();
@@ -2607,6 +2749,14 @@ function setDuctBasis(basis){
   renderProjBlock();
 }
 
+function stepProjQty(delta){
+  var el = G('proj-qty');
+  if(!el) return;
+  var next = Math.max(1, (parseInt(el.value,10) || 1) + (parseInt(delta,10) || 0));
+  el.value = next;
+  renderProjBlock();
+}
+
 // ══════════════════════════════════════════════════════════════════
 // B) PROJECT MODE STATE
 // ══════════════════════════════════════════════════════════════════
@@ -2692,6 +2842,7 @@ function setQuoteMode(mode){
     renderQuote();
     refreshGrandTotal();
   }
+  updateQuoteModeAuxVisibility();
 }
 
 function onProjSysTypeChange(){
@@ -2995,6 +3146,8 @@ function renderProjBlock(){
   setV('proj-lt-val', (G('cur-sym')?G('cur-sym').textContent:t('cur'))+' '+money(lt));
 
   refreshGrandTotal();
+  renderQuote();
+  updateQuoteModeAuxVisibility();
 }
 
 // ── Update labels on lang change
@@ -3638,8 +3791,10 @@ function updatePlanUI(){
   // PDF button locked state
   var btnPdf  = G('btn-pdf');
   var btnTech = G('btn-techpdf');
+  var btnTechPanel = G('btn-techpdf-panel');
   if (btnPdf)  { btnPdf.classList.toggle('btn-locked',  !isPro); }
   if (btnTech) { btnTech.classList.toggle('btn-locked', !isPro); }
+  if (btnTechPanel) { btnTechPanel.classList.toggle('btn-locked', !isPro); }
 
   // Project mode button locked state
   var btnProj = G('mode-btn-proj');
@@ -3921,6 +4076,17 @@ function renderAdvancedDuct() {
     var el = G(id);
     if (el) el.textContent = (value !== null && value !== undefined) ? value : '—';
   }
+  function setRichField(id, main, sub) {
+    var el = G(id);
+    if (!el) return;
+    if (!main) {
+      el.textContent = '—';
+      return;
+    }
+    el.innerHTML =
+      '<div class="adv-field-main">' + main + '</div>' +
+      (sub ? '<div class="adv-field-sub">' + sub + '</div>' : '');
+  }
   function asRatioLabel(sec) {
     if (!sec) return '—';
     if (sec.ratio) return '1:' + sec.ratio;
@@ -3991,26 +4157,34 @@ function renderAdvancedDuct() {
   }
 
   if (supAna) {
-    setField('adv-val-area-sup', supAna.A_ft2 + ' ft²  (' + supAna.A_m2 + ' m²)');
-    setField('adv-val-vel-sup',  supAna.V_fpm + ' fpm  (' + supAna.V_ms + ' m/s)');
-    setField('adv-val-dh-sup',   supAna.Dh_in + ' in  (' + supAna.Dh_mm + ' mm)');
-    setField('adv-val-pv-sup',   supAna.Pv_inwg + ' in.w.g.  (' + supAna.Pv_pa + ' Pa)');
-    setField('adv-val-dp-sup',   supAna.dP_per100ft_inwg !== null
-      ? supAna.dP_per100ft_inwg + ' in.w.g./100ft   run: ' + supAna.dP_inwg + ' in.w.g. (' + supAna.dP_pa + ' Pa)'
-      : '—');
+    setRichField('adv-val-area-sup', supAna.A_m2 + ' m²', supAna.A_ft2 + ' ft²');
+    setRichField('adv-val-vel-sup',  supAna.V_ms + ' m/s', supAna.V_fpm + ' fpm');
+    setRichField('adv-val-dh-sup',   supAna.Dh_mm + ' mm', supAna.Dh_in + ' in');
+    setRichField('adv-val-pv-sup',   supAna.Pv_pa + ' Pa', supAna.Pv_inwg + ' in.w.g.');
+    setRichField(
+      'adv-val-dp-sup',
+      supAna.dP_pa !== null ? supAna.dP_pa + ' Pa run' : '—',
+      supAna.dP_inwg !== null && supAna.dP_per100ft_inwg !== null
+        ? supAna.dP_inwg + ' in.w.g. run  •  ' + supAna.dP_per100ft_inwg + ' in.w.g./100ft'
+        : ''
+    );
   } else {
     ['adv-val-area-sup','adv-val-vel-sup','adv-val-dh-sup','adv-val-pv-sup','adv-val-dp-sup']
       .forEach(function(id){ setField(id, '—'); });
   }
 
   if (retAna) {
-    setField('adv-val-area-ret', retAna.A_ft2 + ' ft²  (' + retAna.A_m2 + ' m²)');
-    setField('adv-val-vel-ret',  retAna.V_fpm + ' fpm  (' + retAna.V_ms + ' m/s)');
-    setField('adv-val-dh-ret',   retAna.Dh_in + ' in  (' + retAna.Dh_mm + ' mm)');
-    setField('adv-val-pv-ret',   retAna.Pv_inwg + ' in.w.g.  (' + retAna.Pv_pa + ' Pa)');
-    setField('adv-val-dp-ret',   retAna.dP_per100ft_inwg !== null
-      ? retAna.dP_per100ft_inwg + ' in.w.g./100ft   run: ' + retAna.dP_inwg + ' in.w.g. (' + retAna.dP_pa + ' Pa)'
-      : '—');
+    setRichField('adv-val-area-ret', retAna.A_m2 + ' m²', retAna.A_ft2 + ' ft²');
+    setRichField('adv-val-vel-ret',  retAna.V_ms + ' m/s', retAna.V_fpm + ' fpm');
+    setRichField('adv-val-dh-ret',   retAna.Dh_mm + ' mm', retAna.Dh_in + ' in');
+    setRichField('adv-val-pv-ret',   retAna.Pv_pa + ' Pa', retAna.Pv_inwg + ' in.w.g.');
+    setRichField(
+      'adv-val-dp-ret',
+      retAna.dP_pa !== null ? retAna.dP_pa + ' Pa run' : '—',
+      retAna.dP_inwg !== null && retAna.dP_per100ft_inwg !== null
+        ? retAna.dP_inwg + ' in.w.g. run  •  ' + retAna.dP_per100ft_inwg + ' in.w.g./100ft'
+        : ''
+    );
   } else {
     ['adv-val-area-ret','adv-val-vel-ret','adv-val-dh-ret','adv-val-pv-ret','adv-val-dp-ret']
       .forEach(function(id){ setField(id, '—'); });
