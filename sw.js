@@ -3,7 +3,7 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v5';
+const CACHE_NAME = 'aircalcpro-v6';
 
 const PRECACHE_ASSETS = [
   './',
@@ -26,24 +26,36 @@ const PRECACHE_ASSETS = [
   './modules/quote.js',
   './modules/pdf.js',
   './modules/projects.js',
+  './assets/icons/apple-touch-icon.png',
   './assets/icons/favicon-16.png',
   './assets/icons/favicon-32.png',
   './assets/icons/favicon-48.png',
-  './assets/icons/favicon.ico',
   './assets/icons/icon-48.png',
   './assets/icons/icon-72.png',
   './assets/icons/icon-96.png',
+  './assets/icons/icon-120.png',
   './assets/icons/icon-128.png',
   './assets/icons/icon-144.png',
   './assets/icons/icon-152.png',
+  './assets/icons/icon-167.png',
   './assets/icons/icon-180.png',
   './assets/icons/icon-192.png',
+  './assets/icons/icon-256.png',
+  './assets/icons/icon-384.png',
   './assets/icons/icon-512.png',
   './assets/icons/icon-1024.png',
-  './assets/logo/logo-header.png',
-  './assets/logo/logo-mobile.png',
   './assets/logo/logo-navbar.png',
+  './assets/logo/logo-header.png',
+  './assets/logo/logo-header@2x.png',
+  './assets/logo/logo-mobile.png',
   './assets/logo/logo-splash.png',
+  './assets/logo/logo-wide.png',
+  './assets/logo/transparent-logo-navbar.png',
+  './assets/logo/transparent-logo-header.png',
+  './assets/logo/transparent-logo-header@2x.png',
+  './assets/logo/transparent-logo-mobile.png',
+  './assets/logo/transparent-logo-splash.png',
+  './assets/logo/transparent-logo-wide.png',
   './home.png',
   './quotation.png'
 ];

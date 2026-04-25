@@ -10,8 +10,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="./assets/icons/favicon-16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="48x48" href="./assets/icons/favicon-48.png">
-<link rel="shortcut icon" href="./assets/icons/favicon.ico">
-<link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
 <title>AirCalc Pro</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./styles.css">
@@ -22,14 +21,7 @@
 <div class="app">
   <div class="header">
     <div class="logo">
-      <img src="./assets/icons/icon-192.png" class="logo-icon" alt="AirCalc Pro" style="width:44px;height:44px;border-radius:12px;object-fit:cover;box-shadow:0 0 16px rgba(56,189,248,.4);">
-      <div>
-        <div style="display:flex;align-items:center;gap:0;">
-          <div class="logo-text">Air<span>Calc</span> Pro</div>
-          <span class="pro-badge" id="header-plan-badge">PRO</span>
-        </div>
-        <div class="logo-sub">HVAC Engineering Suite</div>
-      </div>
+      <img src="./assets/logo/logo-navbar.png" class="logo-brand-img" alt="AirCalc Pro">
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
       <button class="lang-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
@@ -157,7 +149,7 @@
       <div class="input-head">
         <div>
           <div class="input-kicker" id="devices-step-kicker">الخطوة 2</div>
-          <div class="input-title" id="devices-title">أحمال الأجهزة الداخلية</div>
+          <div class="input-title" id="devices-title">أحمال الأجهزة</div>
         </div>
         <div class="input-note" id="devices-note">أضف أحمال الأجهزة فقط عندما تكون مؤثرة في التقدير.</div>
       </div>
@@ -244,7 +236,7 @@
     </div>
         <!-- MODE TOGGLE -->
     <div class="mode-toggle-row" id="mode-toggle-row">
-      <button class="mode-btn active" id="mode-btn-room" onclick="setQuoteMode('room')" id="mode-btn-room">
+      <button class="mode-btn active" id="mode-btn-room" onclick="setQuoteMode('room')">
         <span id="mode-lbl-room">🏠 وحدة لكل غرفة</span>
       </button>
       <button class="mode-btn" id="mode-btn-proj" onclick="setQuoteMode('proj')">
@@ -276,10 +268,11 @@
         <div class="proj-input-group">
           <span class="proj-input-lbl" id="proj-lbl-qty">عدد الوحدات</span>
           <div class="ifield-wrap horizontal-stepper proj-qty-stepper" aria-label="تعديل عدد الوحدات">
-            <button type="button" class="qbtn" onclick="stepProjQty(1)" aria-label="زيادة عدد الوحدات">+</button>
-            <input class="ninput count-like-input proj-qty-input" id="proj-qty" type="number" inputmode="numeric" min="1" step="1" value="1" onchange="renderProjBlock()">
-            <button type="button" class="qbtn" onclick="stepProjQty(-1)" aria-label="تقليل عدد الوحدات">−</button>
+            <button type="button" class="qbtn" id="proj-qty-plus" onclick="stepProjQty(1)" aria-label="زيادة عدد الوحدات">+</button>
+            <input class="ninput count-like-input proj-qty-input" id="proj-qty" type="number" inputmode="numeric" min="1" step="1" value="1" onchange="setProjQtyManual(this.value)">
+            <button type="button" class="qbtn" id="proj-qty-minus" onclick="stepProjQty(-1)" aria-label="تقليل عدد الوحدات">−</button>
           </div>
+          <div id="proj-qty-auto-tools"></div>
         </div>
       </div>
       <div class="proj-unit-row">
@@ -347,27 +340,71 @@
           <div style="font-size:10px;font-weight:700;color:var(--a);margin-bottom:8px;display:flex;align-items:center;gap:5px">
             🔧 <span id="esp-ttl">حساب الضغط الساكن (ESP)</span>
           </div>
-          <div class="esp-grid">
-            <div class="esp-field">
-              <span class="esp-lbl" id="esp-lbl-len-sup">طول الإمداد (م)</span>
-              <input class="esp-inp" id="esp-len-sup" type="number" min="1" max="200" step="1" value="30" onchange="calcESP()">
-            </div>
-            <div class="esp-field">
-              <span class="esp-lbl" id="esp-lbl-len-ret">طول الرجوع (م)</span>
-              <input class="esp-inp" id="esp-len-ret" type="number" min="1" max="200" step="1" value="20" onchange="calcESP()">
-            </div>
-            <div class="esp-field">
-              <span class="esp-lbl" id="esp-lbl-bends">عدد الانحناءات</span>
-              <input class="esp-inp" id="esp-bends" type="number" min="0" max="30" step="1" value="4" onchange="calcESP()">
-            </div>
-            <div class="esp-field">
-              <span class="esp-lbl" id="esp-lbl-fric">معامل الاحتكاك (Pa/m)</span>
-              <input class="esp-inp" id="esp-fric" type="number" min="0.1" max="5" step="0.1" value="1.0" onchange="calcESP()">
+          <div class="esp-section">
+            <div class="esp-section-title" id="esp-group-path">مدخلات المسار</div>
+            <div class="esp-grid">
+              <div class="esp-field">
+                <span class="esp-lbl" id="esp-lbl-len-sup">طول الإمداد (م)</span>
+                <input class="esp-inp" id="esp-len-sup" type="number" min="1" max="200" step="1" value="30" onchange="calcESP()">
+              </div>
+              <div class="esp-field">
+                <span class="esp-lbl" id="esp-lbl-len-ret">طول الرجوع (م)</span>
+                <input class="esp-inp" id="esp-len-ret" type="number" min="1" max="200" step="1" value="20" onchange="calcESP()">
+              </div>
+              <div class="esp-field">
+                <span class="esp-lbl" id="esp-lbl-bends">عدد الانحناءات</span>
+                <input class="esp-inp" id="esp-bends" type="number" min="0" max="30" step="1" value="4" onchange="calcESP()">
+              </div>
+              <div class="esp-field">
+                <span class="esp-lbl" id="esp-lbl-fric">فقد الاحتكاك المستقيم (Pa/m)</span>
+                <input class="esp-inp" id="esp-fric" type="number" min="0.1" max="5" step="0.1" value="1.0" onchange="calcESP()">
+              </div>
             </div>
           </div>
-          <div class="esp-result" id="esp-result">
-            <span style="font-size:10px;color:var(--tm)" id="esp-result-txt">—</span>
+          <div class="esp-section">
+            <div class="esp-section-title" id="esp-group-losses">الفواقد الإضافية</div>
+            <div class="esp-grid">
+              <div class="esp-field">
+                <span class="esp-lbl" id="esp-lbl-bend-loss">فقد الانحناءة الواحدة (Pa)</span>
+                <input class="esp-inp" id="esp-bend-loss" type="number" min="0" max="200" step="1" value="10" onchange="calcESP()">
+              </div>
+              <div class="esp-field">
+                <span class="esp-lbl" id="esp-lbl-filter">فقد الفلتر (Pa)</span>
+                <input class="esp-inp" id="esp-filter-loss" type="number" min="0" max="500" step="1" value="20" onchange="calcESP()">
+              </div>
+              <div class="esp-field">
+                <span class="esp-lbl" id="esp-lbl-diffuser">فقد مخارج الهواء / الجريلات (Pa)</span>
+                <input class="esp-inp" id="esp-diffuser-loss" type="number" min="0" max="500" step="1" value="30" onchange="calcESP()">
+              </div>
+              <div class="esp-field">
+                <span class="esp-lbl" id="esp-lbl-coil">فقد الكويل (Pa)</span>
+                <input class="esp-inp" id="esp-coil-loss" type="number" min="0" max="1000" step="1" value="0" onchange="calcESP()">
+              </div>
+              <div class="esp-field">
+                <span class="esp-lbl" id="esp-lbl-damper">فقد الدامبر (Pa)</span>
+                <input class="esp-inp" id="esp-damper-loss" type="number" min="0" max="500" step="1" value="0" onchange="calcESP()">
+              </div>
+              <div class="esp-field">
+                <span class="esp-lbl" id="esp-lbl-other">بدل إضافي (Pa)</span>
+                <input class="esp-inp" id="esp-other-loss" type="number" min="0" max="1000" step="1" value="0" onchange="calcESP()">
+              </div>
+            </div>
           </div>
+          <div class="esp-section esp-section-result">
+            <div class="esp-section-title" id="esp-group-result">نتيجة ESP</div>
+            <div class="esp-result" id="esp-result">
+              <span style="font-size:10px;color:var(--tm)" id="esp-result-txt">—</span>
+            </div>
+          </div>
+          <div class="esp-section">
+            <div class="esp-section-head">
+              <div class="esp-section-title" id="esp-group-breakdown">تفصيل الحساب</div>
+              <button type="button" class="esp-toggle-btn" id="esp-breakdown-toggle" onclick="toggleEspBreakdown()">عرض تفاصيل الحساب</button>
+            </div>
+            <div class="esp-breakdown hidden" id="esp-breakdown"></div>
+          </div>
+          <div class="esp-note" id="esp-note">تقدير أولي للضغط الساكن — يجب التحقق من كتالوج الوحدة ومخطط الدكت قبل الاعتماد.</div>
+          <div class="esp-catalog-note" id="esp-catalog-note">بيانات ESP من كتالوج المصنع غير متوفرة — تحقق من بيانات الشركة المصنعة.</div>
         </div>
       </div>
       <!-- Line total display -->

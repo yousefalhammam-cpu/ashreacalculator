@@ -79,6 +79,11 @@ function initApp(){
 
   _applyTheme();
 
+  for(var qi=0; qi<qlines.length; qi++){
+    ensureQuoteLine(qi);
+  }
+  syncProjectRecommendation({keepSelectedCapacity:true});
+
   // Initialize UI
   curRoom = ROOMS['r_office'] || Object.values(ROOMS)[0];
   applyRoomEquipmentPreset(inferRoomStandardKey(curRoom));
@@ -142,6 +147,7 @@ var instPct = 10;
 var qsValidity = 14;
 var qsNotes = '';
 var lastRoomDims = null;
+var LEGACY_VOL_KEY = 'legacyVolume';
 
 function qsPersist(){
   var vatTog = G('vat-tog');
@@ -227,7 +233,7 @@ var T = {
       hcttl:'ASHRAE 170 — تدفق الهواء',
       hcach:'إجمالي ACH',hcsup:'تدفق الإمداد',hcoa:'هواء خارجي',hcexh:'تدفق العادم',
       ppos:'ضغط موجب ▲',pneg:'ضغط سالب ▼',pneu:'ضغط محايد',
-      vcfm:'تدفق الإمداد',cumttl:'الإجمالي التراكمي لعدة غرف',histttl:'عرض السعر',
+      vcfm:'تدفق الإمداد',cumttl:'الإجمالي التراكمي لعدة غرف',histttl:'سجل الغرف',
       qttl:'📋 عرض السعر',qproject:'اسم المشروع',qqno:'رقم عرض السعر',
       qqty:'الكمية',qup:'سعر الوحدة',qlt:'إجمالي السطر',
       qtqty:'إجمالي الكمية',qtgrand:'الإجمالي النهائي',
@@ -269,7 +275,7 @@ Object.assign(T.ar,{
   step1:'الخطوة 1',
   step2:'الخطوة 2',
   step3:'الخطوة 3',
-  devtitle:'أحمال الأجهزة الداخلية',
+  devtitle:'أحمال الأجهزة',
   devnote:'أضف أحمال الأجهزة فقط عندما تكون مؤثرة في التقدير.',
   calctitle:'احسب وراجع',
   calcnote:'نفّذ الحساب ثم راجع التفصيل وتوجيهات تدفق الهواء بالأسفل.',
@@ -290,7 +296,7 @@ Object.assign(T.en,{
   step1:'Step 1',
   step2:'Step 2',
   step3:'Step 3',
-  devtitle:'Internal Equipment Loads',
+  devtitle:'Equipment Loads',
   devnote:'Add plug loads and process equipment only when they matter to the estimate.',
   calctitle:'Calculate and Review',
   calcnote:'Run the estimate, then inspect the breakdown and airflow guidance below.',
@@ -666,6 +672,8 @@ window.onPplInput = onPplInput;
 window.onDimInput = onDimInput;
 window.onVolInput = onVolInput;
 window.stepProjQty = stepProjQty;
+window.setProjQtyManual = setProjQtyManual;
+window.setProjectQtyAuto = setProjectQtyAuto;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.overlayClick = overlayClick;
@@ -673,6 +681,7 @@ window.filterTab = filterTab;
 window.doCalc = doCalc;
 window.addToQuote = addToQuote;
 window.stepQuoteQty = stepQuoteQty;
+window.setQtyAuto = setQtyAuto;
 window.setQty = setQty;
 window.setUp = setUp;
 window.setUnitType = setUnitType;
@@ -957,6 +966,18 @@ function formatVolumeValue(vol){
   var rounded=Math.round(vol*10)/10;
   return Number.isInteger(rounded)?String(rounded):rounded.toFixed(1);
 }
+function setLegacyRoomVolume(vol){
+  var volEl=G('inp-vol');
+  if(!volEl) return;
+  var numeric=parseFloat(vol)||0;
+  if(numeric>0){
+    volEl.dataset[LEGACY_VOL_KEY]=String(numeric);
+    volEl.value=formatVolumeValue(numeric);
+  } else {
+    delete volEl.dataset[LEGACY_VOL_KEY];
+    volEl.value='';
+  }
+}
 function setRoomVolumeFromDimensions(){
   var dims=readRoomDimensions();
   var volEl=G('inp-vol');
@@ -964,16 +985,25 @@ function setRoomVolumeFromDimensions(){
     var vol=dims.len*dims.width*dims.height;
     var displayVol=parseFloat(formatVolumeValue(vol))||0;
     if(volEl) volEl.value=formatVolumeValue(displayVol);
+    if(volEl) delete volEl.dataset[LEGACY_VOL_KEY];
     lastRoomDims={len:dims.len,width:dims.width,height:dims.height};
-    return {volume:displayVol,dims:lastRoomDims,complete:true};
+    return {volume:displayVol,dims:lastRoomDims,complete:true,source:'dimensions'};
   }
   if(dims.hasAny){
     if(volEl) volEl.value='';
+    if(volEl) delete volEl.dataset[LEGACY_VOL_KEY];
     lastRoomDims=null;
-    return {volume:0,dims:null,complete:false};
+    return {volume:0,dims:null,complete:false,source:'incomplete'};
   }
-  if(volEl && !volEl.value) lastRoomDims=null;
-  return {volume:volEl?(parseFloat(volEl.value)||0):0,dims:null,complete:false};
+  if(volEl && volEl.dataset[LEGACY_VOL_KEY]){
+    var legacyVol=parseFloat(volEl.dataset[LEGACY_VOL_KEY])||0;
+    volEl.value=formatVolumeValue(legacyVol);
+    lastRoomDims=null;
+    return {volume:legacyVol,dims:null,complete:false,source:'legacy'};
+  }
+  if(volEl) volEl.value='';
+  lastRoomDims=null;
+  return {volume:0,dims:null,complete:false,source:'empty'};
 }
 function clearRoomDimensionInputs(){
   ['inp-len','inp-width','inp-height'].forEach(function(id){
@@ -981,6 +1011,7 @@ function clearRoomDimensionInputs(){
     if(el) el.value='';
   });
   lastRoomDims=null;
+  setLegacyRoomVolume(0);
 }
 function setRoomDimensionInputs(dims){
   clearRoomDimensionInputs();
@@ -991,7 +1022,7 @@ function setRoomDimensionInputs(dims){
   setRoomVolumeFromDimensions();
 }
 function onDimInput(){ setRoomVolumeFromDimensions(); }
-function onVolInput(){ normalizeNumericInput(G('inp-vol')); }
+function onVolInput(){ setRoomVolumeFromDimensions(); }
 function onPplInput(){ normalizeNumericInput(G('inp-ppl')); }
 function stepRoomNumber(id, delta, min){
   var el=G(id);
@@ -1008,6 +1039,7 @@ function stepRoomNumber(id, delta, min){
 function onRoomCountInput(){
   var el=G('inp-room-count');
   if(!el) return;
+  normalizeNumericInput(el);
   el.value=(el.value||'').replace(/[^\d]/g,'');
   if(!el.value) return;
   var n=parseInt(el.value,10)||1;
@@ -1120,20 +1152,17 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
   if(editIdx>=0&&editIdx<hist.length){
     var _editAt=editIdx;
     hist[_editAt]=rec; editIdx=-1;
-    if(qlines[_editAt]){
-      var _editUT=qlines[_editAt].unitType||'split';
-      var _editRec=getRecommendedQuoteUnitConfig(_editAt,_editUT);
-      qlines[_editAt].qty = _editRec.qty;
-      qlines[_editAt].selectedBtu = _editRec.selectedBtu;
-    }
+    ensureQuoteLine(_editAt);
+    syncQuoteLineRecommendation(_editAt,{keepSelectedCapacity:getQtyAuto(_editAt)});
   } else {
     hist.push(rec);
     var _pUT=(qlines.length>0?qlines[qlines.length-1].unitType:'')||'split';
     var _newIdx=hist.length-1;
-    var _autoRec=getRecommendedQuoteUnitConfig(_newIdx,_pUT);
-    qlines.push({qty:_autoRec.qty,up:0,unitType:_pUT,selectedBtu:_autoRec.selectedBtu});
+    qlines.push({qty:1,up:0,unitType:_pUT,selectedBtu:0,qtyAuto:true,autoReason:''});
+    syncQuoteLineRecommendation(_newIdx,{unitType:_pUT});
     if(hist.length>100){hist.shift();qlines.shift();}
   }
+  syncProjectRecommendation({keepSelectedCapacity:getProjectQtyAuto()});
   save(); renderHist();
   if(window.AppProjects&&window.AppProjects.updateNavDots) window.AppProjects.updateNavDots();
 }
@@ -1244,7 +1273,7 @@ function editRec(idx){
   G('inp-vol').value=h.vol; G('inp-ppl').value=h.ppl;
   var rcInput=G('inp-room-count'); if(rcInput) rcInput.value=Math.max(1,parseInt(h.roomCount,10)||getQty(idx)||1);
   setRoomDimensionInputs(h.dims);
-  if(!h.dims && G('inp-vol')) G('inp-vol').value=h.vol;
+  if(!h.dims) setLegacyRoomVolume(h.vol);
   devs=[];
   if(h.devSum){ h.devSum.split(' | ').forEach(function(part){
     var m=part.match(/^(.+?)×(\d+)$/); if(!m) return;
@@ -1274,7 +1303,7 @@ try {
   qsNotes    = '';
   bundleOn   = false;
   quoteMode  = 'room';
-  projState  = { sysType:'split', selBtu:0, qty:1, up:0 };
+  projState  = { sysType:'split', selBtu:0, qty:1, up:0, qtyAuto:true, autoReason:'' };
   bundleConfig.unitType    = 'package';
   bundleConfig.selectedBtu = 0;
   bundleConfig.qty         = 1;
@@ -1330,10 +1359,162 @@ function getTotalRecordRoomCount(){
 function getUP(i){ return parseFloat((qlines[i]||{}).up)||0; }
 function getUT(i){ return (qlines[i]||{}).unitType||'split'; }
 function getSelBtu(i){ return parseInt((qlines[i]||{}).selectedBtu)||0; }
-function setSelBtu(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0,unitType:'split',selectedBtu:0}; qlines[i].selectedBtu=parseInt(v)||0; save(); renderQuote(); }
+function getQtyAuto(i){ return !qlines[i] || qlines[i].qtyAuto !== false; }
+function getQtyAutoReason(i){ return (qlines[i]||{}).autoReason || ''; }
+function ensureQuoteLine(i){
+  if(!qlines[i]){
+    qlines[i]={qty:1,up:0,unitType:'split',selectedBtu:0,qtyAuto:true,autoReason:''};
+  } else {
+    if(qlines[i].qtyAuto === undefined) qlines[i].qtyAuto = true;
+    if(qlines[i].autoReason === undefined) qlines[i].autoReason = '';
+    if(!qlines[i].unitType) qlines[i].unitType = 'split';
+    if(qlines[i].selectedBtu === undefined) qlines[i].selectedBtu = 0;
+    if(qlines[i].up === undefined) qlines[i].up = 0;
+    if(qlines[i].qty === undefined) qlines[i].qty = 1;
+  }
+  return qlines[i];
+}
+function isPerRoomUnitType(utKey){
+  return ['split','window','cassette','ducted','floor'].indexOf(utKey||'') >= 0;
+}
+function isCentralUnitType(utKey){
+  return ['package','ahu','fcu','chiller_air','chiller_water','vrf'].indexOf(utKey||'') >= 0;
+}
+function getCatalogEntryByBtu(utKey, btu){
+  var cat=getCatalog(utKey);
+  for(var i=0;i<cat.length;i++){
+    if((cat[i].btu||0)===parseInt(btu,10)) return cat[i];
+  }
+  return null;
+}
+function getCatalogMaxBtu(utKey){
+  var cat=getCatalog(utKey);
+  return cat.length ? (cat[cat.length-1].btu||0) : 0;
+}
+function getProjectReferenceRoomLoad(){
+  var maxBtu=0, maxCfm=0;
+  for(var i=0;i<hist.length;i++){
+    maxBtu=Math.max(maxBtu, parseInt((hist[i]||{}).btu)||0);
+    maxCfm=Math.max(maxCfm, parseInt((hist[i]||{}).cfm)||0);
+  }
+  return {btu:maxBtu, cfm:maxCfm};
+}
+function buildAutoQtyReason(kind, details){
+  var isAr = lang==='ar';
+  if(kind==='room-count'){
+    return isAr
+      ? 'تم اختيار العدد تلقائيًا حسب عدد الغرف'
+      : 'Quantity auto-selected based on room count';
+  }
+  if(kind==='single-central'){
+    return isAr
+      ? 'تم اختيار وحدة واحدة تغطي الحمل الكلي'
+      : 'One unit selected to cover total project load';
+  }
+  if(kind==='capacity-limit'){
+    return isAr
+      ? 'تم زيادة العدد لأن الحمل أعلى من سعة الوحدة'
+      : 'Quantity increased because load exceeds selected unit capacity';
+  }
+  if(kind==='manual'){
+    return isAr
+      ? 'تم تعديل العدد يدويًا'
+      : 'Quantity was manually overridden';
+  }
+  if(kind==='central-match'){
+    return isAr
+      ? 'تم اختيار العدد تلقائيًا حسب الحمل الكلي والسعة المختارة'
+      : 'Quantity auto-selected from total load and selected capacity';
+  }
+  return details || '';
+}
+function getAutoUnitDecision(utKey, totalRequiredBtu, totalRequiredCfm, roomCount, currentSelectedBtu, perRoomBtu, perRoomCfm){
+  var validCurrent = !!getCatalogEntryByBtu(utKey, currentSelectedBtu);
+  var recommendedCap;
+  var selectedCap;
+  var qty = 1;
+  var reason = '';
+
+  if(isPerRoomUnitType(utKey)){
+    recommendedCap = defaultCapForUT(utKey, perRoomBtu || totalRequiredBtu, perRoomCfm || totalRequiredCfm);
+    selectedCap = validCurrent ? currentSelectedBtu : recommendedCap;
+    qty = Math.max(1, roomCount || 1);
+    reason = buildAutoQtyReason('room-count');
+    return {qty:qty, selectedBtu:selectedCap, reason:reason};
+  }
+
+  recommendedCap = defaultCapForUT(utKey, totalRequiredBtu, totalRequiredCfm);
+  selectedCap = validCurrent ? currentSelectedBtu : recommendedCap;
+  if(selectedCap <= 0) selectedCap = recommendedCap;
+  qty = Math.max(1, Math.ceil(totalRequiredBtu / Math.max(1, selectedCap)));
+
+  if(qty <= 1 && recommendedCap >= totalRequiredBtu){
+    qty = 1;
+    reason = buildAutoQtyReason('single-central');
+  } else if(qty > 1){
+    reason = buildAutoQtyReason('capacity-limit');
+  } else {
+    reason = buildAutoQtyReason('central-match');
+  }
+  return {qty:qty, selectedBtu:selectedCap, reason:reason};
+}
+function syncQuoteLineRecommendation(i, opts){
+  opts = opts || {};
+  var line = ensureQuoteLine(i);
+  var utKey = opts.unitType || line.unitType || 'split';
+  var h = hist[i] || {};
+  var roomCount = getRecordRoomCount(i);
+  var roomBtu = parseInt(h.btu)||0;
+  var roomCfm = parseInt(h.cfm)||0;
+  var totalBtu = isPerRoomUnitType(utKey) ? roomBtu : roomBtu * roomCount;
+  var totalCfm = isPerRoomUnitType(utKey) ? roomCfm : roomCfm * roomCount;
+  var currentSelectedBtu = opts.keepSelectedCapacity ? line.selectedBtu : 0;
+  var decision = getAutoUnitDecision(utKey, totalBtu, totalCfm, roomCount, currentSelectedBtu, roomBtu, roomCfm);
+  line.unitType = utKey;
+  line.selectedBtu = decision.selectedBtu;
+  line.autoReason = line.qtyAuto === false ? buildAutoQtyReason('manual') : decision.reason;
+  if(line.qtyAuto !== false) line.qty = decision.qty;
+  return line;
+}
+function getProjectQtyAuto(){ return projState.qtyAuto !== false; }
+function getProjectAutoReason(){ return projState.autoReason || ''; }
+function syncProjectRecommendation(opts){
+  opts = opts || {};
+  if(projState.qtyAuto === undefined) projState.qtyAuto = true;
+  if(projState.autoReason === undefined) projState.autoReason = '';
+  var utKey = opts.unitType || projState.sysType || 'split';
+  var totalBtu = getProjTotalBtu();
+  var totalCfm = getProjTotalCfm();
+  var totalRooms = getTotalRecordRoomCount();
+  var refRoom = getProjectReferenceRoomLoad();
+  var currentSelectedBtu = opts.keepSelectedCapacity ? projState.selBtu : 0;
+  var decision = getAutoUnitDecision(
+    utKey,
+    isPerRoomUnitType(utKey) ? refRoom.btu : totalBtu,
+    isPerRoomUnitType(utKey) ? refRoom.cfm : totalCfm,
+    isPerRoomUnitType(utKey) ? totalRooms : 1,
+    currentSelectedBtu,
+    refRoom.btu,
+    refRoom.cfm
+  );
+  projState.sysType = utKey;
+  projState.selBtu = decision.selectedBtu;
+  projState.autoReason = projState.qtyAuto === false ? buildAutoQtyReason('manual') : decision.reason;
+  if(projState.qtyAuto !== false) projState.qty = decision.qty;
+  return projState;
+}
+function setSelBtu(i,v){
+  var line = ensureQuoteLine(i);
+  line.selectedBtu=parseInt(v)||0;
+  if(line.qtyAuto !== false){
+    syncQuoteLineRecommendation(i,{keepSelectedCapacity:true});
+  }
+  save();
+  renderQuote();
+}
 
 function isSharedUnitType(utKey){
-  return ['ducted','package','vrf','chiller_air','chiller_water','ahu'].indexOf(utKey||'') >= 0;
+  return !isPerRoomUnitType(utKey);
 }
 
 function getQuoteRequiredBtu(i, utKey){
@@ -1343,16 +1524,15 @@ function getQuoteRequiredBtu(i, utKey){
 }
 
 function getRecommendedQuoteUnitConfig(i, utKey){
-  var h=hist[i]||{};
-  var roomCount=getRecordRoomCount(i);
-  var roomBtu=parseInt(h.btu)||0;
-  var roomCfm=parseInt(h.cfm)||0;
-  var shared=isSharedUnitType(utKey);
-  var reqBtu=shared ? roomBtu*roomCount : roomBtu;
-  var reqCfm=shared ? roomCfm*roomCount : roomCfm;
+  var line = ensureQuoteLine(i);
+  var prevQtyAuto = line.qtyAuto;
+  line.qtyAuto = true;
+  syncQuoteLineRecommendation(i,{unitType:utKey});
+  line.qtyAuto = prevQtyAuto;
   return {
-    qty: shared ? 1 : roomCount,
-    selectedBtu: defaultCapForUT(utKey, reqBtu, reqCfm)
+    qty: Math.max(1, parseInt(line.qty,10)||1),
+    selectedBtu: parseInt(line.selectedBtu,10)||0,
+    reason: line.autoReason || ''
   };
 }
 
@@ -1421,6 +1601,9 @@ function ductRecommendation(supRt, retRt, isAr){
 function renderQuote(){
   var list=G('qi-list'); if(list) list.innerHTML='';
   var quoteView=G('quote-view-list'); if(quoteView) quoteView.innerHTML='';
+  if(quoteMode==='proj' && getProjectQtyAuto()){
+    syncProjectRecommendation({keepSelectedCapacity:true});
+  }
   if(!hist.length){
     var em=document.createElement('div'); em.className='qi-empty'; em.textContent=t('qempty');
     if(list) list.appendChild(em);
@@ -1442,10 +1625,12 @@ function renderQuote(){
         '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'عدد الوحدات':'Unit Count')+'</div><div class="quote-readonly-value">'+(projState.qty||1)+'</div></div>'+
         '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'الحمل المطلوب':'Required Load')+'</div><div class="quote-readonly-value">'+Number(projReqBtu||0).toLocaleString()+' BTU/h</div></div>'+
       '</div>'+
-      '<div class="quote-readonly-note">'+(lang==='ar'?'يتم تعديل نوع النظام والسعة من التقرير الفني فقط.':'System type and capacity are edited from the technical report only.')+'</div>';
+      '<div class="quote-readonly-note">'+(getProjectAutoReason()?getProjectAutoReason()+'<br>':'')+(lang==='ar'?'يتم تعديل نوع النظام والسعة من التقرير الفني فقط.':'System type and capacity are edited from the technical report only.')+'</div>';
     quoteView.appendChild(projItem);
   }
   hist.forEach(function(h,i){
+    ensureQuoteLine(i);
+    if(getQtyAuto(i)) syncQuoteLineRecommendation(i,{keepSelectedCapacity:true});
     var qty=getQty(i), roomCount=getRecordRoomCount(i), up=getUP(i), lt=qty*up;
     var _rn=lang==='ar'?(h.ar||h.en):(h.en||h.ar);
     var name=_rn.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}]/gu,'').trim();
@@ -1475,11 +1660,13 @@ function renderQuote(){
           ? '🔒 تم تعطيل اختيار الوحدات لكل غرفة بسبب تفعيل التجميع'
           : '🔒 Per-room unit selection is locked because Bundle is enabled')+'</div>'
       : '';
+    var _autoQty = getQtyAuto(i);
+    var _qtyDisabled = _bundleLocked || _autoQty;
     var qtyCtrlHtml='<div class="qi-unit-count"><span class="qi-utype-lbl">'+(lang==='ar'?'عدد الوحدات':'Units Needed')+'</span>'+
       '<div class="qi-unit-stepper" aria-label="'+(lang==='ar'?'تعديل عدد الوحدات':'Adjust units needed')+'">'+
-        '<button type="button" class="qbtn" onclick="stepQuoteQty('+i+',1)" aria-label="'+(lang==='ar'?'زيادة عدد الوحدات':'Increase units needed')+'">+</button>'+
-        '<input class="qi-unit-count-input" type="number" min="1" step="1" value="'+qty+'" onchange="setQty('+i+',this.value)">'+
-        '<button type="button" class="qbtn" onclick="stepQuoteQty('+i+',-1)" aria-label="'+(lang==='ar'?'تقليل عدد الوحدات':'Decrease units needed')+'">−</button>'+
+        '<button type="button" class="qbtn'+(_qtyDisabled?' qty-locked':'')+'" '+(_qtyDisabled?'disabled':'')+' onclick="stepQuoteQty('+i+',1)" aria-label="'+(lang==='ar'?'زيادة عدد الوحدات':'Increase units needed')+'">+</button>'+
+        '<input class="qi-unit-count-input'+(_qtyDisabled?' qty-locked-input':'')+'" type="number" min="1" step="1" value="'+qty+'" '+(_qtyDisabled?'readonly':'')+' onchange="setQty('+i+',this.value)">'+
+        '<button type="button" class="qbtn'+(_qtyDisabled?' qty-locked':'')+'" '+(_qtyDisabled?'disabled':'')+' onclick="stepQuoteQty('+i+',-1)" aria-label="'+(lang==='ar'?'تقليل عدد الوحدات':'Decrease units needed')+'">−</button>'+
       '</div>'+
       '</div>';
     var reqBtu = parseInt(h.btu)||0;
@@ -1507,6 +1694,13 @@ function renderQuote(){
         : '<select class="qi-utype-sel" onchange="setUnitType('+i+',this.value)">'+utSelOpts+'</select>')+
       qtyCtrlHtml+
       capCtrlHtml+
+      '<div class="qty-auto-row">'+
+        '<button type="button" class="qty-auto-btn '+(_autoQty?'active':'')+'" onclick="setQtyAuto('+i+',true)">'+(lang==='ar'?'تلقائي':'Auto')+'</button>'+
+        '<button type="button" class="qty-auto-btn '+(!_autoQty?'active':'')+'" onclick="setQtyAuto('+i+',false)"'+(_bundleLocked?' disabled':'')+'>'+(lang==='ar'?'يدوي':'Manual')+'</button>'+
+      '</div>'+
+      '<div class="qty-auto-note">'+(_bundleLocked
+        ? (lang==='ar'?'التحكم من وحدة المشروع بسبب تفعيل التجميع':'Controlled by project unit because bundle mode is enabled')
+        : getQtyAutoReason(i))+'</div>'+
       '</div>';
     var capHtml = '';
     // In bundle mode: per-room warnings are suppressed (project-level shown separately)
@@ -1680,24 +1874,47 @@ function renderQuote(){
             '<div class="qi-lt-val" id="qlt-'+i+'">'+money(lt)+'</div>'+
           '</div>'+
         '</div>'+
-        '<div class="quote-readonly-note">'+(lang==='ar'?'يتم تعديل نوع التكييف والسعة من التقرير الفني فقط.':'AC type and capacity are edited from the technical report only.')+'</div>';
+        '<div class="quote-readonly-note">'+(getQtyAutoReason(i)?getQtyAutoReason(i)+'<br>':'')+(lang==='ar'?'يتم تعديل نوع التكييف والسعة من التقرير الفني فقط.':'AC type and capacity are edited from the technical report only.')+'</div>';
       quoteView.appendChild(ro);
     }
   });
   refreshGrandTotal();
 }
 
-function setQty(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].qty=Math.max(1,parseInt(v)||1); save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); renderQuote(); }
-function stepQuoteQty(i,delta){ setQty(i,getQty(i)+(parseInt(delta,10)||0)); }
+function setQtyAuto(i, enabled){
+  var line = ensureQuoteLine(i);
+  line.qtyAuto = enabled !== false;
+  if(line.qtyAuto){
+    syncQuoteLineRecommendation(i,{keepSelectedCapacity:true});
+  } else {
+    line.autoReason = buildAutoQtyReason('manual');
+  }
+  save();
+  renderQuote();
+}
+function setQty(i,v){
+  var line = ensureQuoteLine(i);
+  if(line.qtyAuto !== false) return;
+  line.qty=Math.max(1,parseInt(v)||1);
+  line.autoReason = buildAutoQtyReason('manual');
+  save();
+  var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i));
+  refreshGrandTotal();
+  renderQuote();
+}
+function stepQuoteQty(i,delta){
+  if(getQtyAuto(i)) return;
+  setQty(i,getQty(i)+(parseInt(delta,10)||0));
+}
 function setUnitType(i,v){
-  if(!qlines[i]) qlines[i]={qty:1,up:0,unitType:'split',selectedBtu:0};
-  var oldType=qlines[i].unitType||'split';
+  var line = ensureQuoteLine(i);
+  var oldType=line.unitType||'split';
   var newType=v||'split';
-  qlines[i].unitType=newType;
+  line.unitType=newType;
   if(oldType!==newType){
-    var recommended=getRecommendedQuoteUnitConfig(i,newType);
-    qlines[i].qty=recommended.qty;
-    qlines[i].selectedBtu=recommended.selectedBtu;
+    syncQuoteLineRecommendation(i,{unitType:newType});
+  } else if(line.qtyAuto !== false){
+    syncQuoteLineRecommendation(i,{unitType:newType,keepSelectedCapacity:true});
   }
   save(); renderQuote();
 }
@@ -2691,69 +2908,154 @@ function getProjDuctCfm(utKey, selBtu, qty, fallbackTotalCfm, cfmPerTr){
 }
 
 // ── Duct sizing basis toggle state ──
-// ── ESP Calculation ──────────────────────────────────────────────────────
-// ESP = Friction loss + Fitting losses + Filter/coil adders
-// Friction: (lenSup + lenRet) * fricPa
-// Fittings: bends × K × dynamicPressure_Pa
-//   Dynamic pressure Pa = 0.5 × 1.2 × V_m/s²  (V_m/s = fpm × 0.00508)
-// Adder: 30 Pa for supply diffuser + 20 Pa for filter (typical)
-// Classification: Low < 125 Pa, Medium 125-250 Pa, High > 250 Pa
+function paToInwg(pa){
+  return (parseFloat(pa)||0) / 249.0889;
+}
+var espBreakdownOpen = false;
+function syncEspBreakdownToggle(){
+  var btn = G('esp-breakdown-toggle');
+  var body = G('esp-breakdown');
+  if(body) body.classList.toggle('hidden', !espBreakdownOpen);
+  if(btn) btn.textContent = lang==='ar'
+    ? (espBreakdownOpen ? 'إخفاء تفاصيل الحساب' : 'عرض تفاصيل الحساب')
+    : (espBreakdownOpen ? 'Hide Calculation Details' : 'Show Calculation Details');
+}
+function toggleEspBreakdown(){
+  espBreakdownOpen = !espBreakdownOpen;
+  syncEspBreakdownToggle();
+}
+function getEspNumber(id, fallback){
+  var el = G(id);
+  if(!el) return fallback || 0;
+  var val = parseFloat(el.value);
+  if(isNaN(val)) val = fallback || 0;
+  el.value = String(val);
+  return val;
+}
+function getEspInputs(){
+  return {
+    lenSup: getEspNumber('esp-len-sup', 30),
+    lenRet: getEspNumber('esp-len-ret', 20),
+    bends: Math.max(0, parseInt(getEspNumber('esp-bends', 4), 10) || 0),
+    fric: getEspNumber('esp-fric', 1.0),
+    bendLossPer: getEspNumber('esp-bend-loss', 10),
+    filterLoss: getEspNumber('esp-filter-loss', 20),
+    diffuserLoss: getEspNumber('esp-diffuser-loss', 30),
+    coilLoss: getEspNumber('esp-coil-loss', 0),
+    damperLoss: getEspNumber('esp-damper-loss', 0),
+    otherLoss: getEspNumber('esp-other-loss', 0)
+  };
+}
+function calculateEspBreakdown(inputs){
+  var straightFriction = (inputs.lenSup + inputs.lenRet) * inputs.fric;
+  var bendLoss = inputs.bends * inputs.bendLossPer;
+  var adders = inputs.filterLoss + inputs.diffuserLoss + inputs.coilLoss + inputs.damperLoss + inputs.otherLoss;
+  var totalPa = straightFriction + bendLoss + adders;
+  var totalInwg = paToInwg(totalPa);
+  var status = totalPa < 125
+    ? {key:'low', ar:'منخفض', en:'Low', icon:'🟢'}
+    : totalPa <= 250
+      ? {key:'med', ar:'متوسط', en:'Medium', icon:'🟡'}
+      : {key:'high', ar:'عالٍ', en:'High', icon:'🔴'};
+  return {
+    inputs: inputs,
+    straightFrictionPa: Math.round(straightFriction * 10) / 10,
+    bendLossPa: Math.round(bendLoss * 10) / 10,
+    filterLossPa: inputs.filterLoss,
+    diffuserLossPa: inputs.diffuserLoss,
+    coilLossPa: inputs.coilLoss,
+    damperLossPa: inputs.damperLoss,
+    otherLossPa: inputs.otherLoss,
+    addersPa: Math.round(adders * 10) / 10,
+    totalPa: Math.round(totalPa * 10) / 10,
+    totalInwg: Math.round(totalInwg * 100) / 100,
+    status: status
+  };
+}
 function calcESP(){
   var isAr = lang==='ar';
   var espBlock = G('esp-block');
   if(!espBlock) return;
-  var lenSup = parseFloat((G('esp-len-sup')||{value:'30'}).value)||30;
-  var lenRet = parseFloat((G('esp-len-ret')||{value:'20'}).value)||20;
-  var bends  = parseInt((G('esp-bends')||{value:'4'}).value)||4;
-  var fric   = parseFloat((G('esp-fric')||{value:'1.0'}).value)||1.0;
-  var vSup   = parseInt((G('duct-vel-sup')||{value:'1000'}).value)||1000;
-  // Convert fpm to m/s
-  var vMs = vSup * 0.00508;
-  // Dynamic pressure Pa
-  var dynPa = 0.5 * 1.2 * vMs * vMs;
-  // K factor per bend ≈ 0.3 (typical elbow)
-  var K = 0.3;
-  // Total ESP
-  var frictionLoss = (lenSup + lenRet) * fric;
-  var fittingLoss  = bends * K * dynPa;
-  var adderLoss    = 50; // typical: 30 diffuser + 20 filter
-  var totalEsp     = frictionLoss + fittingLoss + adderLoss;
-  totalEsp = Math.round(totalEsp);
-  // Classify
-  var espClass, espColor, espIcon;
-  if(totalEsp < 125){
-    espClass = isAr ? 'منخفض' : 'Low';
-    espColor = '#065f46'; espIcon = '🟢';
-  } else if(totalEsp <= 250){
-    espClass = isAr ? 'متوسط' : 'Medium';
-    espColor = '#92400e'; espIcon = '🟡';
-  } else {
-    espClass = isAr ? 'عالٍ' : 'High';
-    espColor = '#991b1b'; espIcon = '🔴';
-  }
+  var breakdown = calculateEspBreakdown(getEspInputs());
+  window._lastEspCalc = breakdown;
+
   var espResult = G('esp-result');
   if(espResult){
-    var badgeCls = totalEsp<125?'esp-low':(totalEsp<=250?'esp-med':'esp-high');
+    var badgeCls = breakdown.status.key === 'low' ? 'esp-low' : (breakdown.status.key === 'med' ? 'esp-med' : 'esp-high');
     espResult.innerHTML =
-      '<span class="esp-badge '+badgeCls+'">'+espIcon+' '+espClass+' — '+totalEsp+' Pa</span>'+
-      '<span style="font-size:9px;color:var(--tm)">'+(isAr
-        ?('احتكاك: '+Math.round(frictionLoss)+' + وصلات: '+Math.round(fittingLoss)+' + إضافي: '+adderLoss+' Pa')
-        :('Friction: '+Math.round(frictionLoss)+' + Fittings: '+Math.round(fittingLoss)+' + Adders: '+adderLoss+' Pa')
-      )+'</span>';
+      '<span class="esp-badge '+badgeCls+'">'+breakdown.status.icon+' '+(isAr ? breakdown.status.ar : breakdown.status.en)+'</span>'+
+      '<div class="esp-total-stack">'+
+        '<div class="esp-total-main">'+(isAr ? 'ESP الكلي' : 'Total ESP')+' — '+Number(breakdown.totalPa).toLocaleString()+' Pa</div>'+
+        '<div class="esp-total-sub">'+Number(breakdown.totalInwg).toFixed(2)+' in.w.g.</div>'+
+      '</div>';
+  }
+
+  var espBreakdown = G('esp-breakdown');
+  if(espBreakdown){
+    var rows = [
+      { ar:'فقد الاحتكاك المستقيم', en:'Straight Friction Loss', value: breakdown.straightFrictionPa },
+      { ar:'فقد الانحناءات', en:'Bend Loss', value: breakdown.bendLossPa },
+      { ar:'فقد الفلتر', en:'Filter Loss', value: breakdown.filterLossPa },
+      { ar:'فقد مخارج الهواء / الجريلات', en:'Diffuser / Grille Loss', value: breakdown.diffuserLossPa },
+      { ar:'فقد الكويل', en:'Coil Loss', value: breakdown.coilLossPa },
+      { ar:'فقد الدامبر', en:'Damper Loss', value: breakdown.damperLossPa },
+      { ar:'بدل إضافي', en:'Other Allowance', value: breakdown.otherLossPa },
+      { ar:'ESP الكلي', en:'Total ESP', value: breakdown.totalPa, emph:true }
+    ];
+    espBreakdown.innerHTML = rows.map(function(row){
+      return '<div class="esp-break-row'+(row.emph?' esp-break-row-total':'')+'">'+
+        '<span class="esp-break-lbl">'+(isAr ? row.ar : row.en)+'</span>'+
+        '<span class="esp-break-val">'+Number(row.value).toLocaleString()+' Pa</span>'+
+      '</div>';
+    }).join('');
+  }
+  syncEspBreakdownToggle();
+
+  var espNote = G('esp-note');
+  if(espNote){
+    espNote.textContent = isAr
+      ? 'تقدير أولي للضغط الساكن — يجب التحقق من كتالوج الوحدة ومخطط الدكت قبل الاعتماد.'
+      : 'Preliminary ESP estimate — verify against unit catalog and duct layout before final design.';
+  }
+
+  var espCatalogNote = G('esp-catalog-note');
+  if(espCatalogNote){
+    espCatalogNote.textContent = isAr
+      ? 'بيانات ESP من كتالوج المصنع غير متوفرة — تحقق من بيانات الشركة المصنعة.'
+      : 'Catalog ESP data is not available — verify manufacturer data.';
   }
 }
 
 window._ductBasis = 'required'; // 'required' | 'selected'
+window.toggleEspBreakdown = toggleEspBreakdown;
 function setDuctBasis(basis){
   window._ductBasis = basis;
   renderProjBlock();
 }
 
 function stepProjQty(delta){
+  if(getProjectQtyAuto()) return;
   var el = G('proj-qty');
   if(!el) return;
   var next = Math.max(1, (parseInt(el.value,10) || 1) + (parseInt(delta,10) || 0));
   el.value = next;
+  projState.qty = next;
+  projState.autoReason = buildAutoQtyReason('manual');
+  renderProjBlock();
+}
+function setProjQtyManual(v){
+  if(getProjectQtyAuto()) return;
+  projState.qty = Math.max(1, parseInt(v,10) || 1);
+  projState.autoReason = buildAutoQtyReason('manual');
+  renderProjBlock();
+}
+function setProjectQtyAuto(enabled){
+  projState.qtyAuto = enabled !== false;
+  if(projState.qtyAuto){
+    syncProjectRecommendation({keepSelectedCapacity:true});
+  } else {
+    projState.autoReason = buildAutoQtyReason('manual');
+  }
   renderProjBlock();
 }
 
@@ -2809,7 +3111,9 @@ var projState = {
   sysType: 'split',
   selBtu: 0,
   qty: 1,
-  up: 0
+  up: 0,
+  qtyAuto: true,
+  autoReason: ''
 };
 // [quoteMode restored in initApp]
 
@@ -2858,10 +3162,7 @@ function onProjSysTypeChange(){
     var lbl = lang==='ar' ? c.label.ar : c.label.en;
     return '<option value="'+c.btu+'">'+lbl+'</option>';
   }).join('');
-  // Auto-select best capacity
-  var _tc=getProjTotalCfm(); var _reqCfmForCat = (_tc > 0) ? Math.ceil(_tc / Math.max(1, projState.qty)) : 0;
-  projState.selBtu = defaultCapForUT(projState.sysType, Math.ceil(totalBtu / Math.max(1, projState.qty)), _reqCfmForCat);
-  // Set dropdown
+  syncProjectRecommendation({unitType:projState.sysType});
   capSel.value = projState.selBtu;
   if(!capSel.value && cat.length) { capSel.selectedIndex=0; projState.selBtu=cat[0].btu; }
   renderProjBlock();
@@ -2916,21 +3217,46 @@ function renderProjBlock(){
         return '<option value="'+c.btu+'">'+lbl+'</option>';
       }).join('');
       capSel.dataset.forType = curUT;
-      // Auto pick
-      var needed = totalBtu;
-      var perUnit = Math.ceil(needed / Math.max(1,projState.qty));
-      var _reqCfmAuto = (totalCfm > 0) ? Math.ceil(totalCfm / Math.max(1, projState.qty)) : 0;
-      projState.selBtu = defaultCapForUT(curUT, perUnit, _reqCfmAuto);
+      syncProjectRecommendation({unitType:curUT});
       capSel.value = projState.selBtu;
       if(!capSel.value && cat2.length){ capSel.selectedIndex=0; projState.selBtu=cat2[0].btu; }
     }
     projState.selBtu = parseInt(capSel.value) || (cat2.length?cat2[0].btu:0);
+    if(getProjectQtyAuto()){
+      syncProjectRecommendation({unitType:curUT,keepSelectedCapacity:true});
+      capSel.value = projState.selBtu;
+    }
   }
 
   // Qty / UP
   var qtyEl = G('proj-qty'), upEl = G('proj-up');
   projState.qty = Math.max(1, parseInt((qtyEl||{value:'1'}).value)||1);
   projState.up  = parseFloat((upEl||{value:'0'}).value)||0;
+  if(getProjectQtyAuto()){
+    syncProjectRecommendation({unitType:curUT,keepSelectedCapacity:true});
+    projState.up  = parseFloat((upEl||{value:'0'}).value)||0;
+  } else {
+    projState.autoReason = buildAutoQtyReason('manual');
+  }
+  if(qtyEl){
+    qtyEl.value = projState.qty;
+    qtyEl.readOnly = getProjectQtyAuto();
+  }
+
+  var projQtyAutoTools = G('proj-qty-auto-tools');
+  if(projQtyAutoTools){
+    projQtyAutoTools.innerHTML =
+      '<div class="qty-auto-row">'+
+        '<button type="button" class="qty-auto-btn '+(getProjectQtyAuto()?'active':'')+'" onclick="setProjectQtyAuto(true)">'+(isAr?'تلقائي':'Auto')+'</button>'+
+        '<button type="button" class="qty-auto-btn '+(!getProjectQtyAuto()?'active':'')+'" onclick="setProjectQtyAuto(false)">'+(isAr?'يدوي':'Manual')+'</button>'+
+      '</div>'+
+      '<div class="qty-auto-note">'+getProjectAutoReason()+'</div>';
+  }
+
+  var projQtyMinus = G('proj-qty-minus');
+  var projQtyPlus = G('proj-qty-plus');
+  if(projQtyMinus) projQtyMinus.disabled = getProjectQtyAuto();
+  if(projQtyPlus) projQtyPlus.disabled = getProjectQtyAuto();
 
   // Capacity comparison
   var reqBtu = totalBtu;
@@ -3135,7 +3461,18 @@ function renderProjBlock(){
       var _slsup=G('esp-lbl-len-sup'); if(_slsup) _slsup.textContent=isAr?'طول الإمداد (م)':'Supply Length (m)';
       var _slret=G('esp-lbl-len-ret'); if(_slret) _slret.textContent=isAr?'طول الرجوع (م)':'Return Length (m)';
       var _sbnd=G('esp-lbl-bends'); if(_sbnd) _sbnd.textContent=isAr?'عدد الانحناءات':'No. of Bends';
-      var _sfric=G('esp-lbl-fric'); if(_sfric) _sfric.textContent=isAr?'احتكاك (Pa/m)':'Friction (Pa/m)';
+      var _sfric=G('esp-lbl-fric'); if(_sfric) _sfric.textContent=isAr?'فقد الاحتكاك المستقيم (Pa/m)':'Straight Friction Loss (Pa/m)';
+      var _sBend=G('esp-lbl-bend-loss'); if(_sBend) _sBend.textContent=isAr?'فقد الانحناءة الواحدة (Pa)':'Bend Loss (Pa)';
+      var _sFilter=G('esp-lbl-filter'); if(_sFilter) _sFilter.textContent=isAr?'فقد الفلتر (Pa)':'Filter Loss (Pa)';
+      var _sDiff=G('esp-lbl-diffuser'); if(_sDiff) _sDiff.textContent=isAr?'فقد مخارج الهواء / الجريلات (Pa)':'Diffuser / Grille Loss (Pa)';
+      var _espPathGroup=G('esp-group-path'); if(_espPathGroup) _espPathGroup.textContent=isAr?'مدخلات المسار':'Path Inputs';
+      var _espLossGroup=G('esp-group-losses'); if(_espLossGroup) _espLossGroup.textContent=isAr?'الفواقد الإضافية':'Additional Losses';
+      var _espResultGroup=G('esp-group-result'); if(_espResultGroup) _espResultGroup.textContent='ESP ' + (isAr?'النتيجة':'Result');
+      var _espBreakGroup=G('esp-group-breakdown'); if(_espBreakGroup) _espBreakGroup.textContent=isAr?'تفصيل الحساب':'Calculation Breakdown';
+      syncEspBreakdownToggle();
+      var _sCoil=G('esp-lbl-coil'); if(_sCoil) _sCoil.textContent=isAr?'فقد الكويل (Pa)':'Coil Loss (Pa)';
+      var _sDamper=G('esp-lbl-damper'); if(_sDamper) _sDamper.textContent=isAr?'فقد الدامبر (Pa)':'Damper Loss (Pa)';
+      var _sOther=G('esp-lbl-other'); if(_sOther) _sOther.textContent=isAr?'بدل إضافي (Pa)':'Other Allowance (Pa)';
 
     } else {
       ductBlock.style.display='none';
@@ -3168,6 +3505,22 @@ function updateProjLabels(){
   sl('duct-cfmtr-lbl','CFM/TR','CFM/TR');
   sl('duct-basis-lbl','أساس التصميم:','Sizing basis:');
   sl('proj-lt-lbl','إجمالي السطر','Line Total');
+  sl('esp-ttl','حساب الضغط الساكن (ESP)','Static Pressure (ESP)');
+  sl('esp-lbl-len-sup','طول مجرى الإمداد (م)','Supply Duct Length (m)');
+  sl('esp-lbl-len-ret','طول مجرى الرجوع (م)','Return Duct Length (m)');
+  sl('esp-lbl-bends','عدد الانحناءات','Number of Bends');
+  sl('esp-lbl-fric','فقد الاحتكاك المستقيم (Pa/m)','Straight Friction Loss (Pa/m)');
+  sl('esp-lbl-bend-loss','فقد الانحناءة الواحدة (Pa)','Bend Loss (Pa)');
+  sl('esp-lbl-filter','فقد الفلتر (Pa)','Filter Loss (Pa)');
+  sl('esp-lbl-diffuser','فقد مخارج الهواء / الجريلات (Pa)','Diffuser / Grille Loss (Pa)');
+  sl('esp-group-path','مدخلات المسار','Path Inputs');
+  sl('esp-group-losses','الفواقد الإضافية','Additional Losses');
+  sl('esp-group-result','نتيجة ESP','ESP Result');
+  sl('esp-group-breakdown','تفصيل الحساب','Calculation Breakdown');
+  syncEspBreakdownToggle();
+  sl('esp-lbl-coil','فقد الكويل (Pa)','Coil Loss (Pa)');
+  sl('esp-lbl-damper','فقد الدامبر (Pa)','Damper Loss (Pa)');
+  sl('esp-lbl-other','بدل إضافي (Pa)','Other Allowance (Pa)');
   sl('mode-lbl-room','🏠 وحدة لكل غرفة','🏠 Unit per Room');
   sl('mode-lbl-proj','🏢 وحدة للمشروع','🏢 One Unit for Project');
   // Refresh capacity labels in proj-cap dropdown
@@ -3188,6 +3541,7 @@ function updateProjLabels(){
       return '<option value="'+k+'"'+(k===curST?' selected':'')+'>'+utLabel(k)+'</option>';
     }).join('');
   }
+  calcESP();
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -3600,16 +3954,39 @@ buildPage2 = function(c){
         '</div>'+
         // ESP summary if available
         (function(){
-          var _espEl=G('esp-result');
-          if(!_espEl||!_espEl.textContent.trim()) return '';
-          var _espTxt=(_espEl.textContent||'').replace(/[^\w\d\s؀-\u06FF.+,\-%]/g,'').trim();
-          if(!_espTxt) return '';
-          var _espLenS=parseFloat((G('esp-len-sup')||{value:'30'}).value)||30;
-          var _espLenR=parseFloat((G('esp-len-ret')||{value:'20'}).value)||20;
-          var _espBends=parseInt((G('esp-bends')||{value:'4'}).value)||4;
-          return '<div style="margin-top:6px;padding:6px 10px;background:#fef9c3;border:1px solid #fde68a;border-radius:5px;font-size:10px;color:#78350f">'+
-            '⚡ ESP: '+_espTxt+' | '+(c.isAr?'طول الإمداد':'Sup.L')+' '+_espLenS+'m | '+(c.isAr?'طول الرجوع':'Ret.L')+' '+_espLenR+'m | '+(c.isAr?'انحناءات':'Bends')+' '+_espBends+
-            '<div style="font-size:9px;margin-top:2px;color:#92400e">'+(c.isAr?'تقدير أولي — يجب التحقق بتحليل مجاري تفصيلي':'Preliminary estimate only. Verify with detailed duct analysis.')+'</div>'+
+          var _esp = window._lastEspCalc;
+          if(!_esp) return '';
+          var rows = [
+            {lbl:c.isAr?'فقد الاحتكاك المستقيم':'Straight Friction', val:_esp.straightFrictionPa},
+            {lbl:c.isAr?'فقد الانحناءات':'Bend Loss', val:_esp.bendLossPa},
+            {lbl:c.isAr?'فقد الفلتر':'Filter Loss', val:_esp.filterLossPa},
+            {lbl:c.isAr?'فقد مخارج الهواء / الجريلات':'Diffuser / Grille Loss', val:_esp.diffuserLossPa},
+            {lbl:c.isAr?'فقد الكويل':'Coil Loss', val:_esp.coilLossPa},
+            {lbl:c.isAr?'فقد الدامبر':'Damper Loss', val:_esp.damperLossPa},
+            {lbl:c.isAr?'بدل إضافي':'Other Allowance', val:_esp.otherLossPa},
+            {lbl:c.isAr?'ESP الكلي':'Total ESP', val:_esp.totalPa, emph:true}
+          ];
+          return '<div style="margin-top:8px;border:1px solid #fde68a;border-radius:8px;padding:12px;background:#fffbeb;page-break-inside:avoid">'+
+            '<div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">⚡ '+(c.isAr?'تقدير أولي للضغط الساكن':'Preliminary ESP Estimate')+'</div>'+
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'+
+              '<span style="padding:4px 10px;border-radius:999px;border:1px solid #fcd34d;background:#fff7ed;color:#92400e;font-size:10px;font-weight:700">'+(_esp.status.icon||'')+' '+(c.isAr?_esp.status.ar:_esp.status.en)+'</span>'+
+              '<span style="padding:4px 10px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;color:#111827;font-size:10px;font-weight:700">'+Number(_esp.totalPa).toLocaleString()+' Pa</span>'+
+              '<span style="padding:4px 10px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;color:#111827;font-size:10px;font-weight:700">'+Number(_esp.totalInwg).toFixed(2)+' in.w.g.</span>'+
+            '</div>'+
+            '<table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:8px"><tbody>'+
+              rows.map(function(r){
+                return '<tr'+(r.emph?' style="background:#fff7ed;font-weight:700"':'')+'>'+
+                  '<td style="padding:6px 8px;border:1px solid #fde68a;text-align:'+(c.isAr?'right':'left')+'">'+r.lbl+'</td>'+
+                  '<td style="padding:6px 8px;border:1px solid #fde68a;text-align:center;font-family:monospace">'+Number(r.val).toLocaleString()+' Pa</td>'+
+                '</tr>';
+              }).join('')+
+            '</tbody></table>'+
+            '<div style="font-size:9px;color:#92400e;line-height:1.7">'+(c.isAr
+              ?'تقدير أولي للضغط الساكن — يجب التحقق من كتالوج الوحدة ومخطط الدكت قبل الاعتماد.'
+              :'Preliminary ESP estimate — verify against unit catalog and duct layout before final design.')+'</div>'+
+            '<div style="font-size:9px;color:#a16207;line-height:1.7;margin-top:3px">'+(c.isAr
+              ?'بيانات ESP من كتالوج المصنع غير متوفرة — تحقق من بيانات الشركة المصنعة.'
+              :'Catalog ESP data is not available — verify manufacturer data.')+'</div>'+
           '</div>';
         })()+
       '</div>';
