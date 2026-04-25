@@ -85,9 +85,10 @@ function initApp(){
   syncProjectRecommendation({keepSelectedCapacity:true});
 
   // Initialize UI
-  curRoom = ROOMS['r_office'] || Object.values(ROOMS)[0];
-  applyRoomEquipmentPreset(inferRoomStandardKey(curRoom));
+  curRoom = null;
+  devs = [];
   applyLang();
+  setResultsMode(resultsMode);
   arrangeReportAndQuoteLayout();
   applyQSState();
   setQuoteMode(quoteMode);
@@ -142,6 +143,8 @@ var devs = [];
 var hist = [];
 var qlines = []; // [{qty,up}] parallel to hist
 var editIdx = -1;
+var calcRoomsOpenIdx = -1;
+var resultsMode = 'total';
 var vatOn = true;
 var instPct = 10;
 var qsValidity = 14;
@@ -208,6 +211,46 @@ function save(){
 }
 function rLabel(r){ return lang==='ar'?r.ar:r.en; }
 
+function setResultsMode(mode){
+  resultsMode = mode === 'total' ? 'total' : 'last';
+  var lastBtn = G('results-mode-last');
+  var totalBtn = G('results-mode-total');
+  if(lastBtn) lastBtn.classList.toggle('on', resultsMode === 'last');
+  if(totalBtn) totalBtn.classList.toggle('on', resultsMode === 'total');
+  updateDirectResults();
+}
+
+function updateDirectResults(){
+  if(!hist.length){
+    flash('vtr','0.00');
+    flash('vcfm','0');
+    flash('vbtu','0');
+    flash('vmkt','0');
+    return;
+  }
+  if(resultsMode === 'total'){
+    var totTR=0,totCFM=0,totBTU=0,totMKT=0;
+    hist.forEach(function(h){
+      var rc=Math.max(1,parseInt(h.roomCount,10)||1);
+      totTR += (parseFloat(h.tr)||0) * rc;
+      totCFM += (parseInt(h.cfm,10)||0) * rc;
+      totBTU += (parseInt(h.btu,10)||0) * rc;
+      totMKT += (parseInt(h.mkt,10)||0) * rc;
+    });
+    flash('vtr',totTR.toFixed(2));
+    flash('vcfm',totCFM.toLocaleString());
+    flash('vbtu',totBTU.toLocaleString());
+    flash('vmkt',totMKT.toLocaleString());
+    return;
+  }
+  var h = hist[hist.length-1];
+  if(!h) return;
+  flash('vtr',Number(h.tr||0).toFixed(2));
+  flash('vcfm',Number(h.cfm||0).toLocaleString());
+  flash('vbtu',Number(h.btu||0).toLocaleString());
+  flash('vmkt',Number(h.mkt||0).toLocaleString());
+}
+
 // ── LANG ──────────────────────────────────────────────────────────────────
 var T = {
   ar:{calc:'احسب ▶',hclr:'مسح السجل',ncalc:'الحاسبة',nhist:'عرض السعر',ncontact:'تواصل',nset:'الإعدادات',nprojects:'المشاريع',
@@ -272,6 +315,8 @@ var T = {
 Object.assign(T.ar,{
   rsk:'النتائج المباشرة',
   rsc:'تظهر هنا أهم نتائج التكييف مباشرة بعد الحساب.',
+  rmlast:'آخر غرفة',
+  rmtotal:'إجمالي الغرف',
   step1:'الخطوة 1',
   step2:'الخطوة 2',
   step3:'الخطوة 3',
@@ -293,6 +338,8 @@ Object.assign(T.ar,{
 Object.assign(T.en,{
   rsk:'Live Results',
   rsc:'Your key HVAC sizing outputs update here after calculation.',
+  rmlast:'Last Room',
+  rmtotal:'All Rooms Total',
   step1:'Step 1',
   step2:'Step 2',
   step3:'Step 3',
@@ -330,6 +377,7 @@ function applyLangStaticTexts(){
   var m = {
     'lbl-calc':'calc','lbl-hclr':'hclr',
     'results-kicker':'rsk','results-caption':'rsc',
+    'results-mode-last':'rmlast','results-mode-total':'rmtotal',
     'room-step-kicker':'step1','devices-step-kicker':'step2','calc-step-kicker':'step3',
     'room-input-title':'roominfo','room-input-note':'roomnote',
     'devices-title':'devtitle','devices-note':'devnote',
@@ -442,7 +490,7 @@ function applyLangInputsAndLabels(){
   }
 
   var dt = G('dt');
-  if (dt && curRoom) dt.textContent = rLabel(curRoom);
+  if (dt) dt.textContent = curRoom ? rLabel(curRoom) : '—';
 
   var dimGrid = G('dim-grid');
   if (dimGrid) dimGrid.setAttribute('aria-label', lang === 'ar' ? 'أبعاد الغرفة' : 'Room dimensions');
@@ -671,6 +719,8 @@ window.onRoomCountInput = onRoomCountInput;
 window.onPplInput = onPplInput;
 window.onDimInput = onDimInput;
 window.onVolInput = onVolInput;
+window.setResultsMode = setResultsMode;
+window.toggleCalcRoom = toggleCalcRoom;
 window.stepProjQty = stepProjQty;
 window.setProjQtyManual = setProjQtyManual;
 window.setProjectQtyAuto = setProjectQtyAuto;
@@ -735,6 +785,7 @@ function overlayClick(e){ if(e.target===G('overlay')) closeModal(); }
 function filterTab(el,grp){ document.querySelectorAll('.ftab').forEach(function(t){t.className='ftab';}); el.className='ftab on'; buildGrid(grp); }
 var gLabel={office:{ar:'🏢 Office',en:'🏢 Office'},light:{ar:'💡 Lighting',en:'💡 Lighting'},home:{ar:'🏠 Domestic',en:'🏠 Domestic'},health:{ar:'🏥 Healthcare',en:'🏥 Healthcare'}};
 function allowedGroups(){
+  if(!curRoom) return ['office','light','home','health'];
   if(curRoom.cat==='healthcare') return ['health','light'];
   if(curRoom.cat==='home') return ['home','light','office'];
   return ['office','light','home'];
@@ -1042,8 +1093,9 @@ function onRoomCountInput(){
   normalizeNumericInput(el);
   el.value=(el.value||'').replace(/[^\d]/g,'');
   if(!el.value) return;
-  var n=parseInt(el.value,10)||1;
-  el.value=String(Math.max(1,n));
+  var n=parseInt(el.value,10);
+  if(isNaN(n)) return;
+  el.value=String(Math.max(0,n));
 }
 function getRoomCount(){
   var el=G('inp-room-count');
@@ -1051,12 +1103,22 @@ function getRoomCount(){
   return Math.max(1,n||1);
 }
 function doCalc(){
+  var wasEditing = editIdx >= 0;
   var volState=setRoomVolumeFromDimensions();
   var vol=volState.volume||0;
   var ppl=parseInt(G('inp-ppl').value)||0;
+  if(!curRoom){
+    toast(lang==='ar'?'⚠️ اختر نوع الغرفة أولاً':'⚠️ Select room type first');
+    return;
+  }
   if(!vol){ toast(t('tnov')); return; }
   if(curRoom.mode==='hc') calcHC(vol,ppl);
   else calcROT(vol,ppl);
+  if(!wasEditing){
+    setTimeout(function(){
+      resetCalcEntryForm();
+    }, 0);
+  }
 }
 function calcROT(vol,ppl){
   var base=vol*curRoom.factor, pplb=ppl*400, devb=totalDevBtu();
@@ -1152,35 +1214,101 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
   if(editIdx>=0&&editIdx<hist.length){
     var _editAt=editIdx;
     hist[_editAt]=rec; editIdx=-1;
+    calcRoomsOpenIdx = _editAt;
     ensureQuoteLine(_editAt);
     syncQuoteLineRecommendation(_editAt,{keepSelectedCapacity:getQtyAuto(_editAt)});
   } else {
     hist.push(rec);
     var _pUT=(qlines.length>0?qlines[qlines.length-1].unitType:'')||'split';
     var _newIdx=hist.length-1;
+    calcRoomsOpenIdx = _newIdx;
     qlines.push({qty:1,up:0,unitType:_pUT,selectedBtu:0,qtyAuto:true,autoReason:''});
     syncQuoteLineRecommendation(_newIdx,{unitType:_pUT});
     if(hist.length>100){hist.shift();qlines.shift();}
   }
   syncProjectRecommendation({keepSelectedCapacity:getProjectQtyAuto()});
   save(); renderHist();
+  updateDirectResults();
   if(window.AppProjects&&window.AppProjects.updateNavDots) window.AppProjects.updateNavDots();
+}
+
+function resetCalcEntryForm(){
+  curRoom = null;
+  document.querySelectorAll('#dd-room .dd-item').forEach(function(item){
+    item.classList.remove('sel');
+  });
+  var dtEl = G('dt'); if(dtEl) dtEl.textContent = '—';
+  clearRoomDimensionInputs();
+  var lenEl = G('inp-len'); if(lenEl) lenEl.value = '';
+  var widthEl = G('inp-width'); if(widthEl) widthEl.value = '';
+  var heightEl = G('inp-height'); if(heightEl) heightEl.value = '';
+  var volEl = G('inp-vol'); if(volEl) volEl.value = '';
+  var pplEl = G('inp-ppl'); if(pplEl) pplEl.value = '';
+  var roomCountEl = G('inp-room-count'); if(roomCountEl) roomCountEl.value = '0';
+  devs = [];
+  renderDevs();
+  G('breakdown').classList.remove('show');
+  G('hc-card').style.display='none';
+}
+
+function toggleCalcRoom(idx){
+  calcRoomsOpenIdx = (calcRoomsOpenIdx === idx) ? -1 : idx;
+  renderCalcRooms();
+}
+
+function calcRoomDetailHtml(h, idx){
+  var rc = Math.max(1,parseInt(h.roomCount,10)||1);
+  var dimsLine = '';
+  if(h.dims && (h.dims.len || h.dims.width || h.dims.height)){
+    dimsLine = '<div class="calc-room-detail-row calc-room-detail-row-wide calc-room-detail-dims"><span class="calc-room-detail-lbl">'+(lang==='ar'?'الأبعاد':'Dimensions')+'</span><span class="calc-room-detail-val">'+
+      [h.dims.len||0,h.dims.width||0,h.dims.height||0].join(' × ')+' '+(lang==='ar'?'م':'m')+
+    '</span></div>';
+  }
+  var roomTypeLine = h.roomType ? h.roomType : ((lang==='ar'?(h.ar||h.en):(h.en||h.ar))||'');
+  var hcLine = '';
+  if(h.ach || h.pressure || h.oaStd || h.exhaust){
+    var hcBits = [];
+    if(h.ach) hcBits.push('ACH '+h.ach);
+    if(h.oaStd) hcBits.push('OA '+h.oaStd);
+    if(h.exhaust) hcBits.push((lang==='ar'?'عادم':'Exh')+' '+h.exhaust);
+    if(h.pressure) hcBits.push((lang==='ar'?'ضغط':'Pressure')+' '+h.pressure);
+    hcLine = '<div class="calc-room-detail-note">'+hcBits.join(' · ')+'</div>';
+  }
+  return '<div class="calc-room-detail">'+
+    '<div class="calc-room-detail-grid">'+
+      '<div class="calc-room-detail-row calc-room-detail-row-wide calc-room-detail-type"><span class="calc-room-detail-lbl">'+(lang==='ar'?'نوع الغرفة':'Room Type')+'</span><span class="calc-room-detail-val">'+roomTypeLine+'</span></div>'+
+      dimsLine+
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'الحجم':'Volume')+'</span><span class="calc-room-detail-val">'+h.vol+' m³</span></div>'+
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'عدد الغرف':'Room Count')+'</span><span class="calc-room-detail-val">'+rc+'</span></div>'+
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'عدد الأشخاص':'People')+'</span><span class="calc-room-detail-val">'+h.ppl+'</span></div>'+
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">TR</span><span class="calc-room-detail-val">'+h.tr+'</span></div>'+
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">CFM</span><span class="calc-room-detail-val">'+Number(h.cfm||0).toLocaleString()+'</span></div>'+
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">BTU/h</span><span class="calc-room-detail-val">'+Number(h.btu||0).toLocaleString()+'</span></div>'+
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'سعة السوق':'Market BTU')+'</span><span class="calc-room-detail-val">'+Number(h.mkt||0).toLocaleString()+'</span></div>'+
+      (h.equipmentBtu?'<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'حمل الأجهزة':'Equipment Load')+'</span><span class="calc-room-detail-val">'+Number(h.equipmentBtu).toLocaleString()+' BTU/h</span></div>':'')+
+      (h.devSum?'<div class="calc-room-detail-row calc-room-detail-row-wide calc-room-detail-equipment"><span class="calc-room-detail-lbl">'+(lang==='ar'?'الأجهزة':'Equipment')+'</span><span class="calc-room-detail-val">'+h.devSum+'</span></div>':'')+
+    '</div>'+
+    hcLine+
+    '<div class="calc-room-detail-actions"><button class="hact-btn calc-room-edit-btn" onclick="event.stopPropagation();editRec('+idx+')">✏️ '+(lang==='ar'?'تعديل':'Edit')+'</button></div>'+
+  '</div>';
 }
 
 function calcRoomListHtml(){
   return hist.map(function(h,idx){
     var _rn=lang==='ar'?(h.ar||h.en):(h.en||h.ar);
     var name=_rn.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}]/gu,'').trim();
-    var rc=Math.max(1,parseInt(h.roomCount,10)||1);
-    return '<div class="hist-item calc-room-item">'+
-      '<div class="hist-main">'+
-        '<div class="hist-room">'+(idx+1)+'. '+name+'</div>'+
-        '<div class="hist-detail">'+h.vol+' m³ · '+rc+' '+(lang==='ar'?'غرف':'rooms')+' · '+h.ppl+' 👤</div>'+
-      '</div>'+
-      '<div class="hist-right">'+
-        '<div class="hist-tr">'+h.tr+' TR</div>'+
-        '<div class="hist-btu">'+Number(h.btu).toLocaleString()+' BTU/h</div>'+
-      '</div>'+
+    var isOpen = idx === calcRoomsOpenIdx;
+    return '<div class="hist-item calc-room-item'+(isOpen?' open':'')+'">'+
+      '<button type="button" class="calc-room-toggle" onclick="toggleCalcRoom('+idx+')">'+
+        '<div class="hist-main">'+
+          '<div class="hist-room">'+(idx+1)+'. '+name+'</div>'+
+        '</div>'+
+        '<div class="hist-right">'+
+          '<div class="hist-tr">'+h.tr+' TR</div>'+
+          '<div class="calc-room-chevron" aria-hidden="true">'+(isOpen?'▴':'▾')+'</div>'+
+        '</div>'+
+      '</button>'+
+      (isOpen ? calcRoomDetailHtml(h, idx) : '')+
     '</div>';
   }).join('');
 }
@@ -1188,6 +1316,7 @@ function calcRoomListHtml(){
 function renderCalcRooms(){
   var card=G('calc-rooms-card'), list=G('calc-rooms-list'), count=G('calc-rooms-count'), title=G('calc-rooms-title');
   if(!card||!list) return;
+  if(calcRoomsOpenIdx >= hist.length) calcRoomsOpenIdx = hist.length ? hist.length - 1 : -1;
   if(count) count.textContent=hist.length;
   if(title) title.textContent=lang==='ar'?'الغرف المحسوبة':'Calculated Rooms';
   if(!hist.length){
@@ -1202,9 +1331,9 @@ function renderCalcRooms(){
 function showCalcQuoteAction(){
   renderCalcRooms();
   var aw=G('add-quote-wrap');
-  if(aw) aw.style.display='block';
+  if(aw) aw.style.display='none';
   setTimeout(function(){
-    var target=G('add-quote-wrap')||G('calc-rooms-card');
+    var target=G('calc-rooms-card');
     if(target&&target.scrollIntoView) target.scrollIntoView({behavior:'smooth',block:'nearest'});
   },40);
 }
@@ -1255,12 +1384,24 @@ function renderHist(){
   });
   renderCalcRooms();
   renderQuote();
+  updateDirectResults();
   if(window.AppProjects&&window.AppProjects.updateNavDots) window.AppProjects.updateNavDots();
 }
 
-function delRec(idx){ hist.splice(idx,1); qlines.splice(idx,1); save(); renderHist(); toast(t('qdel')); if(window.AppProjects&&window.AppProjects.updateNavDots) window.AppProjects.updateNavDots(); }
+function delRec(idx){
+  hist.splice(idx,1);
+  qlines.splice(idx,1);
+  if(calcRoomsOpenIdx === idx) calcRoomsOpenIdx = -1;
+  else if(calcRoomsOpenIdx > idx) calcRoomsOpenIdx--;
+  save();
+  renderHist();
+  updateDirectResults();
+  toast(t('qdel'));
+  if(window.AppProjects&&window.AppProjects.updateNavDots) window.AppProjects.updateNavDots();
+}
 function editRec(idx){
   var h=hist[idx]; if(!h) return;
+  calcRoomsOpenIdx = idx;
   goPanel('calc');
   if(h.rid&&ROOMS[h.rid]){
     curRoom=ROOMS[h.rid];

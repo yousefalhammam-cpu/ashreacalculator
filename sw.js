@@ -3,7 +3,7 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v6';
+const CACHE_NAME = 'aircalcpro-v7';
 
 const PRECACHE_ASSETS = [
   './',
@@ -27,6 +27,7 @@ const PRECACHE_ASSETS = [
   './modules/pdf.js',
   './modules/projects.js',
   './assets/icons/apple-touch-icon.png',
+  './assets/icons/favicon.ico',
   './assets/icons/favicon-16.png',
   './assets/icons/favicon-32.png',
   './assets/icons/favicon-48.png',
