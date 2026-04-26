@@ -38,6 +38,70 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .sec-ttl::after{content:'';flex:1;height:1px;background:var(--b);}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
 .room-top-row{grid-template-columns:minmax(148px,1fr) minmax(84px,98px) minmax(84px,98px);align-items:end;}
+.load-factor-row{
+  align-items:end;
+  grid-template-columns:minmax(148px,.9fr) minmax(180px,1.1fr);
+  gap:12px;
+}
+.load-factor-row>div{min-width:0;}
+.load-factor-row .lbl{
+  font-size:10.5px;
+  color:var(--tm);
+}
+.load-factor-row .ifield-wrap{
+  min-height:42px;
+  padding-inline:10px;
+  justify-content:space-between;
+  gap:10px;
+}
+.load-factor-preset-wrap{
+  padding-inline:0 !important;
+}
+.load-factor-row .qs-sel{
+  width:100%;
+  min-height:40px;
+  border:none;
+  background:transparent;
+  padding:0 12px;
+  font-size:14px;
+  font-weight:700;
+  color:var(--tb);
+}
+.load-factor-row .ninput{
+  font-size:16px;
+  font-weight:700;
+  text-align:center;
+}
+.load-factor-value-wrap .unit-chip{
+  font-size:10px;
+  padding:3px 8px;
+}
+.calc-mode-note{
+  margin:0 0 10px;
+  padding:8px 12px;
+  border-radius:10px;
+  border:1px solid var(--b);
+  background:var(--s2);
+  font-size:11px;
+  line-height:1.6;
+  color:var(--tm);
+}
+.calc-mode-note strong{
+  display:block;
+  margin-bottom:2px;
+  color:var(--tb);
+  font-family:var(--fe);
+  font-size:11px;
+  font-weight:800;
+}
+.calc-mode-note.hc{
+  background:linear-gradient(135deg,rgba(46,168,229,.08),rgba(184,247,90,.08));
+  border-color:rgba(46,168,229,.22);
+}
+.calc-mode-note.rot{
+  background:linear-gradient(135deg,rgba(184,247,90,.08),rgba(46,168,229,.05));
+  border-color:rgba(184,247,90,.28);
+}
 .room-top-row>div{min-width:0;}
 .room-top-row .ifield-wrap,.room-top-row .dd-btn{min-height:40px;padding-inline:8px;}
 .room-top-row .ninput{font-size:14px;}
@@ -1576,6 +1640,23 @@ body.light-theme .qs-ta,
 body.light-theme .qs-sel,
 body.light-theme .proj-search-inp{
   color:#1d1d1f;
+}
+body.light-theme .load-factor-row .ifield-wrap{
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(244,249,252,.94));
+  border-color:rgba(46,168,229,.18);
+}
+body.light-theme .load-factor-preset-wrap{
+  background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(244,249,252,.94));
+}
+body.light-theme .load-factor-row .qs-sel{
+  color:#1565C0;
+}
+body.light-theme .load-factor-value-wrap .ninput{
+  color:#1d1d1f;
+}
+body.light-theme .calc-mode-note.rot{
+  background:linear-gradient(135deg,rgba(46,168,229,.06),rgba(184,247,90,.07));
+  border-color:rgba(46,168,229,.16);
 }
 
 body.light-theme .calc-volume-wrap{

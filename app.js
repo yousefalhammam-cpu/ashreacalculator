@@ -265,7 +265,7 @@ var T = {
       acroomtot:'إجمالي الوحدات',
       acround_btu:'خطوات السوق BTU/h',acround_htr:'خطوات 0.5 TR',acround_1tr:'خطوات 1 TR',
       acsplit:'سبليت (Split)',acducted:'سبليت مخفي (Ducted)',acpackage:'وحدة مركزية (Package)',acvrf:'VRF',acchiller:'تبريد مركزي (Chiller)',accassette:'كاسيت (Cassette)',acchillerfcu:'فريش إير + FCU',acwindow:'تكييف شباك (Window)',
-      lvol:'الحجم المحسوب (م³)',llen:'الطول (م)',lwidth:'العرض (م)',lheight:'الارتفاع (م)',ltype:'نوع الغرفة',lppl:'👤 أشخاص — 400 BTU/h',ladd:'+ إضافة جهاز',
+      lvol:'الحجم المحسوب (م³)',llen:'الطول (م)',lwidth:'العرض (م)',lheight:'الارتفاع (م)',ltype:'نوع الغرفة',lloadfactor:'معامل الحمل BTU/m³',lloadfactorval:'قيمة المعامل',lppl:'👤 أشخاص — 400 BTU/h',ladd:'+ إضافة جهاز',
       lmodal:'اختر نوع الجهاز',ldtot:'إجمالي حمل الأجهزة',sroom:'الغرفة',sdev:'الأجهزة',
       bvol:'حجم الغرفة',bbase:'الحمل الأساسي',bppl:'حمل الأشخاص',bdev:'حمل الأجهزة',bsub:'الإجمالي',bsf:'+ معامل أمان 10%',
       hempty:'لا توجد حسابات بعد',
@@ -294,7 +294,7 @@ var T = {
       acroomtot:'Total Units',
       acround_btu:'BTU/h Market Steps',acround_htr:'0.5 TR Steps',acround_1tr:'1 TR Steps',
       acsplit:'Split (Wall)',acducted:'Ducted Split',acpackage:'Package Unit',acvrf:'VRF',acchiller:'Chiller',accassette:'Cassette',acchillerfcu:'Chiller FCU',acwindow:'Window AC',
-      lvol:'Calculated Volume (m³)',llen:'Length (m)',lwidth:'Width (m)',lheight:'Height (m)',ltype:'Room Type',lppl:'👤 Persons — 400 BTU/h each',ladd:'+ Add Device',
+      lvol:'Calculated Volume (m³)',llen:'Length (m)',lwidth:'Width (m)',lheight:'Height (m)',ltype:'Room Type',lloadfactor:'Load Factor BTU/m³',lloadfactorval:'Factor Value',lppl:'👤 Persons — 400 BTU/h each',ladd:'+ Add Device',
       lmodal:'Select Device Type',ldtot:'Total Device Load',sroom:'ROOM',sdev:'DEVICES',
       bvol:'Room Volume',bbase:'Base Load',bppl:'People Load',bdev:'Device Load',bsub:'Sub-total',bsf:'+ Safety 10%',
       hempty:'No calculations yet',
@@ -317,6 +317,10 @@ Object.assign(T.ar,{
   rsc:'تظهر هنا أهم نتائج التكييف مباشرة بعد الحساب.',
   rmlast:'آخر غرفة',
   rmtotal:'إجمالي الغرف',
+  cmhc:'وضع الحساب: ASHRAE للرعاية الصحية',
+  cmrot:'وضع الحساب: معامل الحمل السريع',
+  cmhcsub:'معايير ASHRAE محفوظة لهذه الغرفة — لا يتم استبدال تهوية ASHRAE بمعامل الحمل.',
+  cmrotsub:'معامل الحمل BTU/m³ مستخدم لهذه الغرفة قبل تنفيذ الحساب.',
   step1:'الخطوة 1',
   step2:'الخطوة 2',
   step3:'الخطوة 3',
@@ -340,6 +344,10 @@ Object.assign(T.en,{
   rsc:'Your key HVAC sizing outputs update here after calculation.',
   rmlast:'Last Room',
   rmtotal:'All Rooms Total',
+  cmhc:'Calculation Mode: ASHRAE Healthcare',
+  cmrot:'Calculation Mode: Load Factor Estimate',
+  cmhcsub:'ASHRAE standards are preserved for this room — ventilation is not replaced by load factor.',
+  cmrotsub:'Load Factor BTU/m³ is used for this room before calculation.',
   step1:'Step 1',
   step2:'Step 2',
   step3:'Step 3',
@@ -383,7 +391,7 @@ function applyLangStaticTexts(){
     'devices-title':'devtitle','devices-note':'devnote',
     'calc-title':'calctitle','calc-note':'calcnote',
     'nl-calc':'ncalc','nl-hist':'nhist','nl-contact':'ncontact','nl-settings':'nset','nl-projects':'nprojects',
-    'lbl-vol':'lvol','lbl-len':'llen','lbl-width':'lwidth','lbl-height':'lheight','lbl-type':'ltype','lbl-ppl':'lppl',
+    'lbl-vol':'lvol','lbl-len':'llen','lbl-width':'lwidth','lbl-height':'lheight','lbl-type':'ltype','lbl-load-factor':'lloadfactor','lbl-load-factor-value':'lloadfactorval','lbl-ppl':'lppl',
     'lbl-add':'ladd','lbl-modal':'lmodal','lbl-dtot':'ldtot',
     'st-room':'sroom','st-dev':'sdev',
     'breakdown-ttl':'bttl','hc-note-lbl':'notelbl',
@@ -445,6 +453,17 @@ function applyLangInputsAndLabels(){
 
   var inpPpl = G('inp-ppl');
   if (inpPpl) inpPpl.placeholder = '0';
+  var loadFactorInp = G('inp-load-factor');
+  if (loadFactorInp) loadFactorInp.placeholder = curRoom && curRoom.factor ? String(curRoom.factor) : '260';
+  var loadFactorPreset = G('inp-load-factor-preset');
+  if (loadFactorPreset && loadFactorPreset.options.length >= 6){
+    loadFactorPreset.options[0].text = '—';
+    loadFactorPreset.options[1].text = lang === 'ar' ? 'خفيف 220' : 'Light 220';
+    loadFactorPreset.options[2].text = lang === 'ar' ? 'متوسط 260' : 'Medium 260';
+    loadFactorPreset.options[3].text = lang === 'ar' ? 'عالي 300' : 'High 300';
+    loadFactorPreset.options[4].text = lang === 'ar' ? 'ثقيل 340' : 'Heavy 340';
+    loadFactorPreset.options[5].text = lang === 'ar' ? 'مخصص' : 'Custom';
+  }
 
   var quoteProject = G('quote-project');
   if (quoteProject) quoteProject.placeholder = lang === 'ar' ? 'اسم المشروع' : 'Project Name';
@@ -551,6 +570,7 @@ function applyLang(){
   applyLangInputsAndLabels();
   applyLangModuleSync();
   applyLangRenders();
+  updateCalculationModeUI(curRoom);
 }
 function toggleLang(){
   lang = lang === 'ar' ? 'en' : 'ar';
@@ -699,6 +719,8 @@ function pickRoom(el,rid){
   el.classList.add('sel');
   closeAllDD();
   G('dt').textContent=rLabel(r);
+  syncLoadFactorFromRoom(r);
+  updateCalculationModeUI(r);
   clearRoomDimensionInputs();
   G('inp-vol').value=''; G('inp-ppl').value='';
   var roomKey = inferRoomStandardKey(curRoom);
@@ -716,6 +738,8 @@ window.closeAllDD = closeAllDD;
 window.pickRoom = pickRoom;
 window.stepRoomNumber = stepRoomNumber;
 window.onRoomCountInput = onRoomCountInput;
+window.onLoadFactorPresetChange = onLoadFactorPresetChange;
+window.onLoadFactorInput = onLoadFactorInput;
 window.onPplInput = onPplInput;
 window.onDimInput = onDimInput;
 window.onVolInput = onVolInput;
@@ -1097,6 +1121,79 @@ function onRoomCountInput(){
   if(isNaN(n)) return;
   el.value=String(Math.max(0,n));
 }
+
+function setLoadFactorPresetValue(factor){
+  var presetEl = G('inp-load-factor-preset');
+  if(!presetEl) return;
+  var key = String(parseInt(factor,10)||'');
+  if(key==='220' || key==='260' || key==='300' || key==='340') presetEl.value = key;
+  else presetEl.value = factor ? 'custom' : '';
+}
+
+function syncLoadFactorFromRoom(room){
+  var inputEl = G('inp-load-factor');
+  if(!inputEl) return;
+  var factor = room && room.factor ? Number(room.factor) : 0;
+  inputEl.value = factor ? String(factor) : '';
+  setLoadFactorPresetValue(factor);
+}
+
+function updateCalculationModeUI(room){
+  var row = G('load-factor-row');
+  var note = G('calc-mode-note');
+  var isHC = !!(room && room.mode === 'hc');
+  if(row) row.style.display = isHC ? 'none' : '';
+  if(!note) return;
+  if(!room){
+    note.style.display = 'none';
+    note.textContent = '';
+    note.className = 'calc-mode-note';
+    return;
+  }
+  note.style.display = '';
+  note.className = 'calc-mode-note ' + (isHC ? 'hc' : 'rot');
+  note.innerHTML = isHC
+    ? '<strong>'+t('cmhc')+'</strong><span>'+t('cmhcsub')+'</span>'
+    : '<strong>'+t('cmrot')+'</strong><span>'+t('cmrotsub')+'</span>';
+}
+
+function onLoadFactorPresetChange(){
+  var presetEl = G('inp-load-factor-preset');
+  var inputEl = G('inp-load-factor');
+  if(!presetEl || !inputEl) return;
+  var val = presetEl.value;
+  if(val === 'custom') return;
+  if(!val){
+    inputEl.value = '';
+    return;
+  }
+  inputEl.value = String(val);
+}
+
+function onLoadFactorInput(){
+  var inputEl = G('inp-load-factor');
+  if(!inputEl) return;
+  normalizeNumericInput(inputEl);
+  var raw = (inputEl.value||'').replace(/[^\d.]/g,'');
+  inputEl.value = raw;
+  if(!raw){
+    setLoadFactorPresetValue('');
+    return;
+  }
+  var factor = parseFloat(raw);
+  if(isNaN(factor)) return;
+  factor = Math.max(100, Math.min(800, factor));
+  inputEl.value = String(Math.round(factor));
+  setLoadFactorPresetValue(Math.round(factor));
+}
+
+function getSelectedLoadFactor(){
+  var inputEl = G('inp-load-factor');
+  var raw = inputEl ? parseFloat(inputEl.value) : NaN;
+  if(!isNaN(raw) && raw >= 100 && raw <= 800) return raw;
+  return curRoom && curRoom.factor ? Number(curRoom.factor) : 260;
+}
+
 function getRoomCount(){
   var el=G('inp-room-count');
   var n=el?parseInt(el.value,10):1;
@@ -1121,7 +1218,8 @@ function doCalc(){
   }
 }
 function calcROT(vol,ppl){
-  var base=vol*curRoom.factor, pplb=ppl*400, devb=totalDevBtu();
+  var loadFactor = getSelectedLoadFactor();
+  var base=vol*loadFactor, pplb=ppl*400, devb=totalDevBtu();
   var sub=base+pplb+devb, total=sub*1.10;
   var tr=total/12000, cfm=Math.round(tr*400), mkt=Math.ceil(total/9000)*9000;
   var std=getRoomStandard(curRoom);
@@ -1133,6 +1231,7 @@ function calcROT(vol,ppl){
   updateRoomStandardCard(std, cfm);
   G('hc-card').style.display='block';
   saveHist(vol,ppl,tr,cfm,total,mkt,devb,{
+    loadFactor: loadFactor,
     category: std.category,
     roomType: std.roomType,
     ach: std.ach,
@@ -1146,6 +1245,7 @@ function calcROT(vol,ppl){
 }
 function calcHC(vol,ppl){
   var r=curRoom, ft3=m3toft3(vol);
+  var loadFactor = getSelectedLoadFactor();
   var sup=Math.round((r.tach*ft3)/60), oa=Math.round((r.oach*ft3)/60);
   var exh=r.pres==='negative'?Math.round(sup*1.10):r.pres==='positive'?Math.round(sup*0.90):sup;
   var base=sup*1.08*20, pplb=ppl*400, devb=totalDevBtu();
@@ -1166,6 +1266,7 @@ function calcHC(vol,ppl){
   if(r.note){G('hc-note-row').style.display='';G('hcv-note').textContent=r.note;}else{G('hc-note-row').style.display='none';}
   G('hc-card').style.display='block';
   saveHist(vol,ppl,tr,sup,total,mkt,devb,{
+    loadFactor: loadFactor,
     sup:sup,
     oa:oa,
     exh:exh,
@@ -1189,7 +1290,7 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
   var rec={
     time:new Date().toLocaleString('ar-SA'),
     rid:curRoom.id, ar:curRoom.ar, en:curRoom.en,
-    vol:vol, ppl:ppl, roomCount:roomCount,
+    vol:vol, ppl:ppl, roomCount:roomCount, loadFactor:getSelectedLoadFactor(),
     dims:lastRoomDims,
     devSum:eq.text,
     devBtu:eq.totalBtu,
@@ -1199,6 +1300,7 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     tr:tr.toFixed(2), cfm:cfm, btu:Math.round(totalBtu), mkt:mkt
   };
   if(hcdata){
+    if(hcdata.loadFactor != null) rec.loadFactor = hcdata.loadFactor;
     rec.sup=hcdata.sup;
     rec.oa=hcdata.oa;
     rec.exh=hcdata.exh;
@@ -1245,6 +1347,9 @@ function resetCalcEntryForm(){
   var volEl = G('inp-vol'); if(volEl) volEl.value = '';
   var pplEl = G('inp-ppl'); if(pplEl) pplEl.value = '';
   var roomCountEl = G('inp-room-count'); if(roomCountEl) roomCountEl.value = '0';
+  var loadFactorEl = G('inp-load-factor'); if(loadFactorEl) loadFactorEl.value = '';
+  var loadFactorPresetEl = G('inp-load-factor-preset'); if(loadFactorPresetEl) loadFactorPresetEl.value = '';
+  updateCalculationModeUI(null);
   devs = [];
   renderDevs();
   G('breakdown').classList.remove('show');
@@ -1281,6 +1386,7 @@ function calcRoomDetailHtml(h, idx){
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'الحجم':'Volume')+'</span><span class="calc-room-detail-val">'+h.vol+' m³</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'عدد الغرف':'Room Count')+'</span><span class="calc-room-detail-val">'+rc+'</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'عدد الأشخاص':'People')+'</span><span class="calc-room-detail-val">'+h.ppl+'</span></div>'+
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'معامل الحمل':'Load Factor')+'</span><span class="calc-room-detail-val">'+Number(h.loadFactor||0).toLocaleString()+' BTU/m³</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">TR</span><span class="calc-room-detail-val">'+h.tr+'</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">CFM</span><span class="calc-room-detail-val">'+Number(h.cfm||0).toLocaleString()+'</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">BTU/h</span><span class="calc-room-detail-val">'+Number(h.btu||0).toLocaleString()+'</span></div>'+
@@ -1412,6 +1518,13 @@ function editRec(idx){
     G('dt').textContent=rLabel(curRoom);
   }
   G('inp-vol').value=h.vol; G('inp-ppl').value=h.ppl;
+  syncLoadFactorFromRoom(curRoom);
+  updateCalculationModeUI(curRoom);
+  if(h.loadFactor != null){
+    var lfEl = G('inp-load-factor');
+    if(lfEl) lfEl.value = String(h.loadFactor);
+    setLoadFactorPresetValue(h.loadFactor);
+  }
   var rcInput=G('inp-room-count'); if(rcInput) rcInput.value=Math.max(1,parseInt(h.roomCount,10)||getQty(idx)||1);
   setRoomDimensionInputs(h.dims);
   if(!h.dims) setLegacyRoomVolume(h.vol);

@@ -131,6 +131,29 @@
           </div>
         </div>
       </div>
+      <div class="row2 load-factor-row" id="load-factor-row">
+        <div>
+          <div class="lbl" id="lbl-load-factor">Load Factor BTU/m³</div>
+          <div class="ifield-wrap load-factor-preset-wrap">
+            <select class="qs-sel" id="inp-load-factor-preset" onchange="onLoadFactorPresetChange()">
+              <option value="">—</option>
+              <option value="220">خفيف 220</option>
+              <option value="260">متوسط 260</option>
+              <option value="300">عالي 300</option>
+              <option value="340">ثقيل 340</option>
+              <option value="custom">مخصص</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <div class="lbl" id="lbl-load-factor-value">BTU/m³</div>
+          <div class="ifield-wrap load-factor-value-wrap">
+            <input class="ninput" id="inp-load-factor" type="number" inputmode="numeric" min="100" max="800" step="10" placeholder="260" oninput="onLoadFactorInput()">
+            <span class="unit-chip">BTU/m³</span>
+          </div>
+        </div>
+      </div>
+      <div class="calc-mode-note" id="calc-mode-note" style="display:none"></div>
       <div class="dim-grid" id="dim-grid" aria-label="أبعاد الغرفة">
         <div>
           <div class="lbl" id="lbl-len">Length (m)</div>
