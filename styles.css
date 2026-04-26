@@ -227,8 +227,10 @@ body::after{content:'';position:fixed;top:-200px;right:-200px;width:600px;height
 .calc-room-detail-dims .calc-room-detail-val,
 .calc-room-detail-equipment .calc-room-detail-val{text-align:center;line-height:1.5;}
 .calc-room-detail-note{margin-top:8px;font-size:11px;color:var(--tm);padding:8px 10px;background:var(--s1);border:1px dashed var(--b);border-radius:10px;}
-.calc-room-detail-actions{display:flex;justify-content:flex-end;margin-top:10px;}
-.calc-room-edit-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;font-weight:600;}
+.calc-room-detail-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.calc-room-edit-btn,.calc-room-del-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;font-weight:600;}
+.calc-room-del-btn{border-color:rgba(248,113,113,.28);color:var(--r);}
+.calc-room-del-btn:hover{border-color:var(--r)!important;color:var(--r)!important;background:var(--rd);}
 @media (max-width: 640px){
   .calc-room-toggle{grid-template-columns:minmax(0,1fr) auto;}
   .calc-room-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr));}

@@ -265,11 +265,11 @@ var T = {
       acroomtot:'إجمالي الوحدات',
       acround_btu:'خطوات السوق BTU/h',acround_htr:'خطوات 0.5 TR',acround_1tr:'خطوات 1 TR',
       acsplit:'سبليت (Split)',acducted:'سبليت مخفي (Ducted)',acpackage:'وحدة مركزية (Package)',acvrf:'VRF',acchiller:'تبريد مركزي (Chiller)',accassette:'كاسيت (Cassette)',acchillerfcu:'فريش إير + FCU',acwindow:'تكييف شباك (Window)',
-      lvol:'الحجم المحسوب (م³)',llen:'الطول (م)',lwidth:'العرض (م)',lheight:'الارتفاع (م)',ltype:'نوع الغرفة',lloadfactor:'معامل الحمل BTU/m³',lloadfactorval:'قيمة المعامل',lppl:'👤 أشخاص — 400 BTU/h',ladd:'+ إضافة جهاز',
+      lvol:'الحجم المحسوب (م³)',llen:'الطول (م)',lwidth:'العرض (م)',lheight:'الارتفاع (م)',ltype:'نوع الغرفة',lroomcount:'عدد الغرف',lloadfactor:'معامل الحمل BTU/m³',lloadfactorval:'قيمة المعامل',lppl:'👤 أشخاص — 400 BTU/h',ladd:'+ إضافة جهاز',
       lmodal:'اختر نوع الجهاز',ldtot:'إجمالي حمل الأجهزة',sroom:'الغرفة',sdev:'الأجهزة',
       bvol:'حجم الغرفة',bbase:'الحمل الأساسي',bppl:'حمل الأشخاص',bdev:'حمل الأجهزة',bsub:'الإجمالي',bsf:'+ معامل أمان 10%',
       hempty:'لا توجد حسابات بعد',
-      qempty:'لا توجد غرف — احسب غرفة أولاً',
+      qempty:'لا توجد غرف — احسب غرفة أولاً',delroom:'حذف',delroomconfirm:'هل تريد حذف هذه الغرفة؟',
       cur:'ر.س',dempty:'لا أجهزة — اضغط + للإضافة',
       tnov:'⚠️ أدخل أبعاد الغرفة أولاً',tcalc:'✅ تم الحساب',tclr:'🗑️ تم المسح',
       slang:'اللغة / Language',slsub:'تبديل واجهة اللغة',
@@ -294,7 +294,7 @@ var T = {
       acroomtot:'Total Units',
       acround_btu:'BTU/h Market Steps',acround_htr:'0.5 TR Steps',acround_1tr:'1 TR Steps',
       acsplit:'Split (Wall)',acducted:'Ducted Split',acpackage:'Package Unit',acvrf:'VRF',acchiller:'Chiller',accassette:'Cassette',acchillerfcu:'Chiller FCU',acwindow:'Window AC',
-      lvol:'Calculated Volume (m³)',llen:'Length (m)',lwidth:'Width (m)',lheight:'Height (m)',ltype:'Room Type',lloadfactor:'Load Factor BTU/m³',lloadfactorval:'Factor Value',lppl:'👤 Persons — 400 BTU/h each',ladd:'+ Add Device',
+      lvol:'Calculated Volume (m³)',llen:'Length (m)',lwidth:'Width (m)',lheight:'Height (m)',ltype:'Room Type',lroomcount:'Room Count',lloadfactor:'Load Factor BTU/m³',lloadfactorval:'Factor Value',lppl:'👤 Persons — 400 BTU/h each',ladd:'+ Add Device',
       lmodal:'Select Device Type',ldtot:'Total Device Load',sroom:'ROOM',sdev:'DEVICES',
       bvol:'Room Volume',bbase:'Base Load',bppl:'People Load',bdev:'Device Load',bsub:'Sub-total',bsf:'+ Safety 10%',
       hempty:'No calculations yet',
@@ -309,7 +309,7 @@ var T = {
       qttl:'📋 QUOTATION',qproject:'Project Name',qqno:'Quotation No.',
       qqty:'Quantity',qup:'Unit Price',qlt:'Line Total',
       qtqty:'Total Quantity',qtgrand:'Grand Total',
-      qempty:'No rooms saved — calculate a room first',
+      qempty:'No rooms saved — calculate a room first',delroom:'Delete',delroomconfirm:'Are you sure you want to delete this room?',
       qexport:'Export Quotation (CSV)',qdel:'🗑️ Deleted',qsttl:'⚙️ Quotation Settings',qsinst:'Installation %',qsvat:'Enable VAT',qsvalid:'Quotation Validity',qsnotes:'Notes',qsnph:'Example: Price includes supply & installation within city limits.',v7:'7 days',v14:'14 days',v30:'30 days',qssubl:'Equipment Subtotal',qsinstl:'Installation',qsvatl:'VAT 15%',qsqtyl:'Total Quantity',expcsv:'CSV',exphtml:'Invoice HTML',exppdf:'Download PDF',exptechpdf:'Tech Report',invtitle:'Quotation / Invoice',invvalid:'Validity',invdate:'Date',invnotes:'Notes',invroom:'Room Type',invvol:'Volume m³',invppl:'Persons',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'Qty',invup:'Unit Price',invlt:'Line Total',invsubt:'Equipment Subtotal',invinst:'Installation',invvat:'VAT 15%',invgrand:'Grand Total',invdiscl:'Preliminary estimate — not for final design submittal'}
 };
 Object.assign(T.ar,{
@@ -391,7 +391,7 @@ function applyLangStaticTexts(){
     'devices-title':'devtitle','devices-note':'devnote',
     'calc-title':'calctitle','calc-note':'calcnote',
     'nl-calc':'ncalc','nl-hist':'nhist','nl-contact':'ncontact','nl-settings':'nset','nl-projects':'nprojects',
-    'lbl-vol':'lvol','lbl-len':'llen','lbl-width':'lwidth','lbl-height':'lheight','lbl-type':'ltype','lbl-load-factor':'lloadfactor','lbl-load-factor-value':'lloadfactorval','lbl-ppl':'lppl',
+    'lbl-vol':'lvol','lbl-len':'llen','lbl-width':'lwidth','lbl-height':'lheight','lbl-type':'ltype','lbl-room-count':'lroomcount','lbl-load-factor':'lloadfactor','lbl-load-factor-value':'lloadfactorval','lbl-ppl':'lppl',
     'lbl-add':'ladd','lbl-modal':'lmodal','lbl-dtot':'ldtot',
     'st-room':'sroom','st-dev':'sdev',
     'breakdown-ttl':'bttl','hc-note-lbl':'notelbl',
@@ -461,7 +461,7 @@ function applyLangInputsAndLabels(){
     loadFactorPreset.options[1].text = lang === 'ar' ? 'خفيف 220' : 'Light 220';
     loadFactorPreset.options[2].text = lang === 'ar' ? 'متوسط 260' : 'Medium 260';
     loadFactorPreset.options[3].text = lang === 'ar' ? 'عالي 300' : 'High 300';
-    loadFactorPreset.options[4].text = lang === 'ar' ? 'ثقيل 340' : 'Heavy 340';
+    loadFactorPreset.options[4].text = lang === 'ar' ? 'شديد 340' : 'Severe 340';
     loadFactorPreset.options[5].text = lang === 'ar' ? 'مخصص' : 'Custom';
   }
 
@@ -1395,7 +1395,10 @@ function calcRoomDetailHtml(h, idx){
       (h.devSum?'<div class="calc-room-detail-row calc-room-detail-row-wide calc-room-detail-equipment"><span class="calc-room-detail-lbl">'+(lang==='ar'?'الأجهزة':'Equipment')+'</span><span class="calc-room-detail-val">'+h.devSum+'</span></div>':'')+
     '</div>'+
     hcLine+
-    '<div class="calc-room-detail-actions"><button class="hact-btn calc-room-edit-btn" onclick="event.stopPropagation();editRec('+idx+')">✏️ '+(lang==='ar'?'تعديل':'Edit')+'</button></div>'+
+    '<div class="calc-room-detail-actions">'+
+      '<button class="hact-btn calc-room-edit-btn" onclick="event.stopPropagation();editRec('+idx+')">✏️ '+(lang==='ar'?'تعديل':'Edit')+'</button>'+
+      '<button class="hact-btn del-btn calc-room-del-btn" onclick="event.stopPropagation();delRec('+idx+')">🗑️ '+t('delroom')+'</button>'+
+    '</div>'+
   '</div>';
 }
 
@@ -1495,6 +1498,8 @@ function renderHist(){
 }
 
 function delRec(idx){
+  if(idx < 0 || idx >= hist.length) return;
+  if(!confirm(t('delroomconfirm'))) return;
   hist.splice(idx,1);
   qlines.splice(idx,1);
   if(calcRoomsOpenIdx === idx) calcRoomsOpenIdx = -1;
