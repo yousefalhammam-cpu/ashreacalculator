@@ -3,7 +3,7 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v7';
+const CACHE_NAME = 'aircalcpro-v8';
 
 const PRECACHE_ASSETS = [
   './',
@@ -11,6 +11,7 @@ const PRECACHE_ASSETS = [
   './styles.css',
   './app.js',
   './main.js',
+  './js/firebase-auth.js',
   './data.json',
   './manifest.webmanifest',
   './js/core/state.js',

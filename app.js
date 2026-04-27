@@ -320,6 +320,9 @@ var T = {
       qexport:'Export Quotation (CSV)',qdel:'🗑️ Deleted',qsttl:'⚙️ Quotation Settings',qsinst:'Installation %',qsvat:'Enable VAT',qsvalid:'Quotation Validity',qsnotes:'Notes',qsnph:'Example: Price includes supply & installation within city limits.',v7:'7 days',v14:'14 days',v30:'30 days',qssubl:'Equipment Subtotal',qsinstl:'Installation',qsvatl:'VAT 15%',qsqtyl:'Total Quantity',expcsv:'CSV',exphtml:'Invoice HTML',exppdf:'Download PDF',exptechpdf:'Tech Report',invtitle:'Quotation / Invoice',invvalid:'Validity',invdate:'Date',invnotes:'Notes',invroom:'Room Type',invvol:'Volume m³',invppl:'Persons',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'Qty',invup:'Unit Price',invlt:'Line Total',invsubt:'Equipment Subtotal',invinst:'Installation',invvat:'VAT 15%',invgrand:'Grand Total',invdiscl:'Preliminary estimate — not for final design submittal'}
 };
 Object.assign(T.ar,{
+  settingssec:'الإعدادات',
+  accountsec:'الحساب',
+  plansec:'الخطة',
   rsk:'النتائج المباشرة',
   rsc:'تظهر هنا أهم نتائج التكييف مباشرة بعد الحساب.',
   rmlast:'آخر غرفة',
@@ -344,9 +347,36 @@ Object.assign(T.ar,{
   pttr:'إجمالي TR',
   ptcfm:'إجمالي CFM',
   ptbtu:'إجمالي BTU/h',
-  ptmkt:'سعة السوق'
+  ptmkt:'سعة السوق',
+  authacct:'الحساب',
+  authanon:'يمكنك استخدام التطبيق بدون تسجيل دخول',
+  authsignin:'تسجيل الدخول',
+  authcreate:'إنشاء حساب',
+  authfullname:'الاسم الكامل',
+  authemail:'البريد الإلكتروني',
+  authpassword:'كلمة المرور',
+  authconfirm:'تأكيد كلمة المرور',
+  authforgot:'نسيت كلمة المرور؟',
+  authlogout:'تسجيل الخروج',
+  authsignedin:'تم تسجيل الدخول',
+  authcreated:'تم إنشاء الحساب',
+  authreset:'أرسلنا رابط إعادة تعيين كلمة المرور',
+  authcloudreq:'يتطلب تسجيل الدخول للحفظ السحابي',
+  authmodeanon:'يمكنك استخدام التطبيق بدون تسجيل دخول',
+  authtrialfree:'ميزات Pro مجانية خلال الفترة التجريبية.',
+  authloggedin:'تم تسجيل الدخول باسم',
+  authfullname_req:'الاسم الكامل مطلوب',
+  authemail_invalid:'أدخل بريدًا إلكترونيًا صحيحًا',
+  authpassword_min:'كلمة المرور يجب ألا تقل عن 8 أحرف',
+  authconfirm_mismatch:'تأكيد كلمة المرور غير مطابق',
+  authfirebase_unavailable:'تعذّر الاتصال بخدمة الحساب الآن',
+  authoffline:'أنت غير متصل حاليًا — يمكن استخدام التطبيق محليًا',
+  authcloudcoming:'الحفظ السحابي قادم قريبًا'
 });
 Object.assign(T.en,{
+  settingssec:'Settings',
+  accountsec:'Account',
+  plansec:'Plan',
   rsk:'Live Results',
   rsc:'Your key HVAC sizing outputs update here after calculation.',
   rmlast:'Last Room',
@@ -371,7 +401,31 @@ Object.assign(T.en,{
   pttr:'Total TR',
   ptcfm:'Total CFM',
   ptbtu:'Total BTU/h',
-  ptmkt:'Mkt BTU'
+  ptmkt:'Mkt BTU',
+  authacct:'Account',
+  authanon:'You can use the app without signing in',
+  authsignin:'Sign In',
+  authcreate:'Create Account',
+  authfullname:'Full Name',
+  authemail:'Email',
+  authpassword:'Password',
+  authconfirm:'Confirm Password',
+  authforgot:'Forgot Password?',
+  authlogout:'Log Out',
+  authsignedin:'Signed in',
+  authcreated:'Account created',
+  authreset:'Password reset link sent',
+  authcloudreq:'Login required for cloud saving',
+  authmodeanon:'You can use the app without signing in',
+  authtrialfree:'Pro features are free during the trial period.',
+  authloggedin:'Signed in as',
+  authfullname_req:'Full name is required',
+  authemail_invalid:'Enter a valid email address',
+  authpassword_min:'Password must be at least 8 characters',
+  authconfirm_mismatch:'Confirm password does not match',
+  authfirebase_unavailable:'Account service is unavailable right now',
+  authoffline:'You appear to be offline — local calculator remains available',
+  authcloudcoming:'Cloud saving is coming soon'
 });
 function t(k){ return T[lang][k]||k; }
 
@@ -404,6 +458,9 @@ function applyLangStaticTexts(){
     'breakdown-ttl':'bttl','hc-note-lbl':'notelbl',
     'brl-vol':'bvol','brl-base':'bbase','brl-ppl':'bppl','brl-dev':'bdev','brl-sub':'bsub','brl-sf':'bsf',
     'sl-lang':'slang','sl-sub':'slsub',
+    'settings-section-title':'settingssec','account-section-title':'accountsec','plan-section-title':'plansec',
+    'auth-panel-title':'authacct','auth-modal-title':'authacct',
+    'auth-fullname-lbl':'authfullname','auth-email-lbl':'authemail','auth-password-lbl':'authpassword','auth-confirm-lbl':'authconfirm',
     'hcttl':'hcttl','hcl-ach':'hcach','hcl-sup':'hcsup','hcl-oa':'hcoa','hcl-rec':'hcrec','hcl-exh':'hcexh',
     'lbl-fresh-air-mode':'freshairmode','lbl-export-hap':'exporthap',
     'cum-ttl':'cumttl','hist-ttl-lbl':'histttl',
@@ -560,6 +617,9 @@ function applyLangModuleSync(){
   updatePlanUI();
   _syncUpgradeSheetLang();
   _syncAdvDuctLabels();
+  if (window.AppAuth && typeof window.AppAuth.updateAuthUI === 'function') {
+    window.AppAuth.updateAuthUI();
+  }
 
   if (window.AppProjects){
     window.AppProjects.updateProjMgrLabels();
@@ -4690,110 +4750,86 @@ function initProjDropdowns(){
 
 // ── I4) updatePlanUI — sync all UI to current plan ────────────────
 function updatePlanUI(){
+  var earlyAccess = window.AppPlan && window.AppPlan.isEarlyAccess ? window.AppPlan.isEarlyAccess() : true;
   var isPro = window.AppPlan ? window.AppPlan.isPro() : false;
-  var plan  = window.AppPlan ? window.AppPlan.getCurrentPlan() : 'free';
+  var featuresOpen = earlyAccess || isPro;
   var isAr  = lang === 'ar';
+  var earlyAccessText = isAr ? 'نسخة تجريبية مجانية' : 'Free Trial Version';
+  var freeEarlyText = isAr ? 'مجاني / نسخة تجريبية مجانية' : 'Free / Trial Version';
 
   // Header badge
   var badge = G('header-plan-badge');
   if (badge) {
-    if (isPro) {
-      badge.textContent = 'PRO';
-      badge.className = 'pro-badge';
-    } else {
-      badge.textContent = isAr ? 'مجاني' : 'FREE';
-      badge.className = 'free-badge';
-    }
+    badge.textContent = earlyAccess ? earlyAccessText : (isPro ? 'PRO' : (isAr ? 'مجاني' : 'FREE'));
+    badge.className = earlyAccess ? 'early-badge' : (isPro ? 'pro-badge' : 'free-badge');
   }
 
   // Settings status pill
   var pill = G('plan-status-pill');
   if (pill) {
-    pill.textContent = isPro ? 'Pro ⭐' : (isAr ? 'مجاني' : 'Free');
-    pill.className = 'plan-status-pill ' + (isPro ? 'pro' : 'free');
+    pill.textContent = earlyAccess ? freeEarlyText : (isPro ? 'Pro ⭐' : (isAr ? 'مجاني' : 'Free'));
+    pill.className = 'plan-status-pill ' + (earlyAccess ? 'early' : (isPro ? 'pro' : 'free'));
   }
 
   // Settings upgrade row label
   var upgLbl = G('sl-upgrade-lbl');
-  if (upgLbl) upgLbl.textContent = isPro
-    ? (isAr ? 'AirCalc Pro — مفعّل ⭐' : 'AirCalc Pro — Active ⭐')
-    : (isAr ? 'الترقية إلى AirCalc Pro' : 'Upgrade to AirCalc Pro');
+  if (upgLbl) upgLbl.textContent = isAr ? 'نسخة تجريبية مجانية' : 'Free Trial Version';
 
   var upgSub = G('sl-upgrade-sub');
-  if (upgSub) upgSub.textContent = isPro
-    ? (isAr ? 'تستمتع بكامل المزايا الاحترافية' : 'All Pro features are unlocked')
-    : (isAr ? 'افتح PDF، التقرير الفني، مشاريع غير محدودة' : 'Unlock PDF, Tech Report, unlimited projects');
+  if (upgSub) upgSub.textContent = isAr
+    ? 'ميزات Pro مجانية خلال الفترة التجريبية.'
+    : 'Pro features are free during the trial period.';
 
   // PDF button locked state
   var btnPdf  = G('btn-pdf');
   var btnTech = G('btn-techpdf');
   var btnTechPanel = G('btn-techpdf-panel');
-  if (btnPdf)  { btnPdf.classList.toggle('btn-locked',  !isPro); }
-  if (btnTech) { btnTech.classList.toggle('btn-locked', !isPro); }
-  if (btnTechPanel) { btnTechPanel.classList.toggle('btn-locked', !isPro); }
+  if (btnPdf)  { btnPdf.classList.toggle('btn-locked',  !featuresOpen); }
+  if (btnTech) { btnTech.classList.toggle('btn-locked', !featuresOpen); }
+  if (btnTechPanel) { btnTechPanel.classList.toggle('btn-locked', !featuresOpen); }
 
   // Project mode button locked state
   var btnProj = G('mode-btn-proj');
-  if (btnProj) { btnProj.classList.toggle('btn-locked', !isPro); }
+  if (btnProj) { btnProj.classList.toggle('btn-locked', !featuresOpen); }
 
   // Duct and ESP blocks — lock overlay when free
   var ductBlock = G('proj-duct-block');
-  if (ductBlock) { ductBlock.classList.toggle('section-locked', !isPro); }
+  if (ductBlock) { ductBlock.classList.toggle('section-locked', !featuresOpen); }
   var espBlock  = G('esp-block');
-  if (espBlock)  { espBlock.classList.toggle('section-locked',  !isPro); }
-
-  // Test mode buttons — highlight active
-  ['free','pro','monthly','yearly','lifetime'].forEach(function(p){
-    var btn = G('tbtn-' + p);
-    if (btn) btn.classList.toggle('active-plan', plan === p);
-  });
+  if (espBlock)  { espBlock.classList.toggle('section-locked',  !featuresOpen); }
 
   // ── Plan Status test card ────────────────────────────────────────
   // Live badge in header of test card
   var liveBadge = G('ptg-live-badge');
   if (liveBadge) {
-    liveBadge.textContent = isPro
-      ? 'Pro ⭐'
-      : (isAr ? 'مجاني' : 'Free');
-    liveBadge.className = 'plan-status-pill ' + (isPro ? 'pro' : 'free');
+    liveBadge.textContent = freeEarlyText;
+    liveBadge.className = 'plan-status-pill early';
   }
 
   // Title & sub
   var ptgTitle = G('ptg-title');
-  if (ptgTitle) ptgTitle.textContent = isAr ? 'حالة الخطة' : 'Plan Status';
+  if (ptgTitle) ptgTitle.textContent = isAr ? 'نسخة تجريبية مجانية' : 'Free Trial Version';
   var ptgSub = G('ptg-sub');
-  if (ptgSub) ptgSub.textContent = isAr ? 'اختبار سريع للخطط' : 'Quick plan testing';
-
-  // Button subs (language)
-  var btnSubs = {
-    'tbtn-free-sub':    isAr ? 'حساب + CSV'    : 'Calc + CSV',
-    'tbtn-pro-sub':     isAr ? 'كل المزايا'    : 'All features',
-    'tbtn-monthly-sub': isAr ? '19 ر.س / شهر'  : 'SAR 19/mo',
-    'tbtn-yearly-sub':  isAr ? '149 ر.س / سنة' : 'SAR 149/yr'
-  };
-  Object.keys(btnSubs).forEach(function(id){
-    var el = G(id); if (el) el.textContent = btnSubs[id];
-  });
+  if (ptgSub) ptgSub.textContent = isAr ? 'ميزات Pro مجانية خلال الفترة التجريبية.' : 'Pro features are free during the trial period.';
+  if (G('ea-monthly-name')) G('ea-monthly-name').textContent = isAr ? 'شهري' : 'Monthly';
+  if (G('ea-monthly-price')) G('ea-monthly-price').textContent = isAr ? '19 ر.س / شهر' : '19 SAR / month';
+  if (G('ea-yearly-name')) G('ea-yearly-name').textContent = isAr ? 'سنوي' : 'Yearly';
+  if (G('ea-yearly-price')) G('ea-yearly-price').textContent = isAr ? '149 ر.س / سنة' : '149 SAR / year';
+  if (G('ea-soon-monthly')) G('ea-soon-monthly').textContent = isAr ? 'قريبًا' : 'Coming Soon';
+  if (G('ea-soon-yearly')) G('ea-soon-yearly').textContent = isAr ? 'قريبًا' : 'Coming Soon';
 
   // Active plan description
   var descEl = G('ptg-desc');
   if (descEl) {
-    var planLabels = {
-      free:     isAr ? 'مجاني'         : 'Free',
-      pro:      isAr ? 'Pro (دائم)'    : 'Pro (perpetual)',
-      monthly:  isAr ? 'Pro شهري'      : 'Pro Monthly',
-      yearly:   isAr ? 'Pro سنوي'      : 'Pro Yearly',
-      lifetime: isAr ? 'Pro مدى الحياة': 'Pro Lifetime'
-    };
-    var planLabel = planLabels[plan] || plan;
     descEl.innerHTML =
       '<span style="color:var(--a);font-weight:700;">' +
-      (isAr ? 'الخطة الحالية: ' : 'Current plan: ') +
-      '</span>' + planLabel +
-      (isPro
-        ? ' &nbsp;·&nbsp; <span style="color:var(--g);">' + (isAr ? 'كل الميزات مفعّلة' : 'All features unlocked') + '</span>'
-        : ' &nbsp;·&nbsp; <span style="color:var(--am);">' + (isAr ? 'حتى 3 مشاريع، بدون PDF' : 'Up to 3 projects, no PDF') + '</span>'
-      );
+      (isAr ? 'الحالة الحالية: ' : 'Current status: ') +
+      '</span>' + freeEarlyText +
+      ' &nbsp;·&nbsp; <span style="color:var(--g);">' +
+      (isAr ? 'ميزات Pro مجانية خلال الفترة التجريبية.' : 'Pro features are free during the trial period.') +
+      '</span><br><span style="color:var(--am);">' +
+      (isAr ? 'الخطط المدفوعة قادمة قريبًا.' : 'Paid plans are coming soon.') +
+      '</span>';
   }
 
   // Feature access summary grid
@@ -4808,7 +4844,8 @@ function updatePlanUI(){
       { key:'espCalc',           ar:'حساب ESP',             en:'ESP calc' },
       { key:'unlimitedProjects', ar:'مشاريع غير محدودة',    en:'Unlimited projects' }
     ];
-    var fa = window.AppPlan ? window.AppPlan.getFeatureAccess(plan) : {};
+    var fa = {};
+    features.forEach(function(f){ fa[f.key] = true; });
     featEl.innerHTML = features.map(function(f){
       var ok = fa[f.key] === true;
       return '<div class="ptg-feat ' + (ok?'ok':'no') + '">' +
@@ -4839,25 +4876,17 @@ function closeUpgradeSheet(e){
 
 function selectPricePill(planKey){
   _selectedPricePlan = planKey;
-  ['lifetime','yearly','monthly'].forEach(function(p){
-    var el = G('pp-' + p);
-    if (el) el.classList.toggle('active', p === planKey);
-  });
 }
 
 function upgradeToPro(){
-  // In production this would open payment flow.
-  // For now: simulate unlock with selected price plan.
-  if (window.AppPlan) window.AppPlan.setCurrentPlan(_selectedPricePlan);
-  var overlay = G('upgrade-overlay');
-  if (overlay) overlay.classList.add('hidden');
-  toast(lang==='ar' ? '⭐ تم تفعيل AirCalc Pro!' : '⭐ AirCalc Pro activated!');
+  toast(lang==='ar' ? 'الخطط المدفوعة قادمة قريبًا.' : 'Paid plans are coming soon.');
 }
 
 function _syncUpgradeSheetLang(){
   var isAr = lang === 'ar';
   function sl(id, ar, en){ var el=G(id); if(el) el.textContent = isAr?ar:en; }
-  sl('ush-sub',         'ارفع مستوى عملك الهندسي',                       'Elevate your engineering workflow');
+  sl('ush-title-accent','نسخة تجريبية مجانية',                           'Free Trial');
+  sl('ush-sub',         'ميزات Pro مجانية خلال الفترة التجريبية.',        'Pro features are free during the trial period.');
   sl('pc-free-name',    'مجاني',                                          'Free');
   sl('pc-pro-name',     'Pro ⭐',                                         'Pro ⭐');
   sl('pcf1','حساب TR / CFM / BTU',     'TR / CFM / BTU Calc');
@@ -4876,22 +4905,17 @@ function _syncUpgradeSheetLang(){
   sl('pcp6','Duct Sizing',             'Duct Sizing');
   sl('pcp7','ESP Calculation',         'ESP Calculation');
   sl('pcp8','مزايا مستقبلية',           'Future Pro tools');
-  sl('pp-lf-amt','99 ر.س',   'SAR 99');
-  sl('pp-lf-per','مدى الحياة','Lifetime');
-  sl('pp-lf-badge','الأفضل قيمة','Best value');
-  sl('pp-yr-amt','149 ر.س',  'SAR 149');
+  sl('pp-yr-amt','149 ر.س',  '149 SAR');
   sl('pp-yr-per','سنوياً',    'Yearly');
-  sl('pp-mo-amt','19 ر.س',   'SAR 19');
+  sl('pp-yr-badge','قريبًا', 'Coming Soon');
+  sl('pp-mo-amt','19 ر.س',   '19 SAR');
   sl('pp-mo-per','شهرياً',    'Monthly');
-  sl('ush-cta',   '⭐ الترقية إلى Pro الآن', '⭐ Upgrade to Pro Now');
-  sl('ush-later', 'متابعة بالنسخة المجانية',  'Continue with Free');
-  sl('ush-note',  'للتجربة فقط — الدفع قيد التطوير', 'Demo only — payment coming soon');
-  sl('sl-upgrade-lbl',
-    window.AppPlan&&window.AppPlan.isPro() ? 'AirCalc Pro — مفعّل ⭐' : 'الترقية إلى AirCalc Pro',
-    window.AppPlan&&window.AppPlan.isPro() ? 'AirCalc Pro — Active ⭐' : 'Upgrade to AirCalc Pro');
-  sl('sl-upgrade-sub',
-    window.AppPlan&&window.AppPlan.isPro() ? 'تستمتع بكامل المزايا' : 'افتح PDF، التقرير الفني، مشاريع غير محدودة',
-    window.AppPlan&&window.AppPlan.isPro() ? 'All Pro features unlocked' : 'Unlock PDF, Tech Report, unlimited projects');
+  sl('pp-mo-badge','قريبًا', 'Coming Soon');
+  sl('ush-cta',   'الخطط المدفوعة قادمة قريبًا', 'Paid plans are coming soon');
+  sl('ush-later', 'متابعة',  'Continue');
+  sl('ush-note',  'ميزات Pro مجانية خلال الفترة التجريبية.', 'Pro features are free during the trial period.');
+  sl('sl-upgrade-lbl','نسخة تجريبية مجانية','Free Trial Version');
+  sl('sl-upgrade-sub','ميزات Pro مجانية خلال الفترة التجريبية.','Pro features are free during the trial period.');
 }
 
 // ── I6) Patch applyLang to also update plan UI labels ─────────────
@@ -5204,12 +5228,12 @@ function _syncAdvDuctLabels() {
   var _origUPUI = updatePlanUI;
   updatePlanUI = function(){
     _origUPUI();
-    var isPro = window.AppPlan ? window.AppPlan.isPro() : false;
+    var advancedOpen = window.AppPlan ? window.AppPlan.hasAccess('advancedDuct') : true;
     var btnA = G('calc-mode-btn-advanced');
     if (btnA) {
-      btnA.classList.toggle('btn-locked', !isPro);
+      btnA.classList.toggle('btn-locked', !advancedOpen);
       // Force back to basic if now on free
-      if (!isPro && calcMode === 'advanced') {
+      if (!advancedOpen && calcMode === 'advanced') {
         calcMode = 'basic';
         try { AppStorage.saveCalcMode('basic'); } catch(e){}
         var btnB = G('calc-mode-btn-basic');

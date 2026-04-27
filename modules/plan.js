@@ -7,8 +7,9 @@
 (function () {
   'use strict';
 
-  var PLAN_KEY       = 'aircalc_plan';
+  var PLAN_KEY        = 'aircalc_plan';
   var FREE_PROJ_LIMIT = 3;
+  var EARLY_ACCESS_OPEN = true;
 
   // ── Feature map ──────────────────────────────────────────────────────────
   // true = available on plan
@@ -65,11 +66,16 @@
     return getCurrentPlan() !== 'free';
   }
 
+  function isEarlyAccess() {
+    return EARLY_ACCESS_OPEN === true;
+  }
+
   function getFeatureAccess(plan) {
     return FEATURE_MAP[plan] || FEATURE_MAP.free;
   }
 
   function hasAccess(featureKey) {
+    if (EARLY_ACCESS_OPEN) return true;
     var plan = getCurrentPlan();
     var map  = getFeatureAccess(plan);
     return map[featureKey] === true;
@@ -77,6 +83,7 @@
 
   // requireFeature — returns true if allowed, shows toast + returns false if not
   function requireFeature(featureKey) {
+    if (EARLY_ACCESS_OPEN) return true;
     if (hasAccess(featureKey)) return true;
     var msgs = {
       exportPDF:         _isAr() ? '📄 تصدير PDF متاح في نسخة Pro فقط'           : '📄 PDF export is a Pro feature',
@@ -102,6 +109,7 @@
   }
 
   function getProjectLimit() {
+    if (EARLY_ACCESS_OPEN) return Infinity;
     return hasAccess('unlimitedProjects') ? Infinity : FREE_PROJ_LIMIT;
   }
 
@@ -110,6 +118,7 @@
     getCurrentPlan:  getCurrentPlan,
     setCurrentPlan:  setCurrentPlan,
     isPro:           isPro,
+    isEarlyAccess:   isEarlyAccess,
     getFeatureAccess:getFeatureAccess,
     hasAccess:       hasAccess,
     requireFeature:  requireFeature,
