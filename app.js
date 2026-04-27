@@ -145,6 +145,7 @@ var qlines = []; // [{qty,up}] parallel to hist
 var editIdx = -1;
 var calcRoomsOpenIdx = -1;
 var resultsMode = 'total';
+var hcFreshAirMode = 'ashrae';
 var vatOn = true;
 var instPct = 10;
 var qsValidity = 14;
@@ -265,7 +266,7 @@ var T = {
       acroomtot:'إجمالي الوحدات',
       acround_btu:'خطوات السوق BTU/h',acround_htr:'خطوات 0.5 TR',acround_1tr:'خطوات 1 TR',
       acsplit:'سبليت (Split)',acducted:'سبليت مخفي (Ducted)',acpackage:'وحدة مركزية (Package)',acvrf:'VRF',acchiller:'تبريد مركزي (Chiller)',accassette:'كاسيت (Cassette)',acchillerfcu:'فريش إير + FCU',acwindow:'تكييف شباك (Window)',
-      lvol:'الحجم المحسوب (م³)',llen:'الطول (م)',lwidth:'العرض (م)',lheight:'الارتفاع (م)',ltype:'نوع الغرفة',lroomcount:'عدد الغرف',lloadfactor:'معامل الحمل BTU/m³',lloadfactorval:'قيمة المعامل',lppl:'👤 أشخاص — 400 BTU/h',ladd:'+ إضافة جهاز',
+      lvol:'الحجم المحسوب (م³)',llen:'الطول (م)',lwidth:'العرض (م)',lheight:'الارتفاع (م)',ltype:'نوع الغرفة',lroomcount:'عدد الغرف',lloadfactor:'معامل الحمل',lloadfactorval:'القيمة الحالية',lppl:'👤 عدد الأشخاص — 400 BTU/h',ladd:'+ إضافة جهاز',
       lmodal:'اختر نوع الجهاز',ldtot:'إجمالي حمل الأجهزة',sroom:'الغرفة',sdev:'الأجهزة',
       bvol:'حجم الغرفة',bbase:'الحمل الأساسي',bppl:'حمل الأشخاص',bdev:'حمل الأجهزة',bsub:'الإجمالي',bsf:'+ معامل أمان 10%',
       hempty:'لا توجد حسابات بعد',
@@ -274,7 +275,10 @@ var T = {
       tnov:'⚠️ أدخل أبعاد الغرفة أولاً',tcalc:'✅ تم الحساب',tclr:'🗑️ تم المسح',
       slang:'اللغة / Language',slsub:'تبديل واجهة اللغة',
       hcttl:'ASHRAE 170 — تدفق الهواء',
-      hcach:'إجمالي ACH',hcsup:'تدفق الإمداد',hcoa:'هواء خارجي',hcexh:'تدفق العادم',
+      hcach:'إجمالي ACH',hcsup:'تدفق الإمداد',hcoa:'هواء خارجي',hcrec:'هواء راجع',hcexh:'تدفق العادم',
+      lfhelper:'تقدير سريع — لا يستبدل الحساب التفصيلي',
+      freshairmode:'وضع الهواء النقي',freshairashrae:'حسب ASHRAE',freshair100:'هواء نقي 100%',freshairwarning:'وضع 100% هواء نقي يزيد الحمل واستهلاك الطاقة ويتطلب مراجعة مهندس.',
+      exporthap:'تصدير إلى HAP',haprooms:'الغرف',hapsummary:'الملخص',hapmeta:'البيانات',calcmode:'وضع الحساب',ashraehc:'ASHRAE للرعاية الصحية',loadmode:'معامل حمل سريع',freshairlabel:'وضع الهواء النقي',mixedair:'حسب ASHRAE',fresh100lbl:'هواء نقي 100%',
       ppos:'ضغط موجب ▲',pneg:'ضغط سالب ▼',pneu:'ضغط محايد',
       vcfm:'تدفق الإمداد',cumttl:'الإجمالي التراكمي لعدة غرف',histttl:'سجل الغرف',
       qttl:'📋 عرض السعر',qproject:'اسم المشروع',qqno:'رقم عرض السعر',
@@ -294,7 +298,7 @@ var T = {
       acroomtot:'Total Units',
       acround_btu:'BTU/h Market Steps',acround_htr:'0.5 TR Steps',acround_1tr:'1 TR Steps',
       acsplit:'Split (Wall)',acducted:'Ducted Split',acpackage:'Package Unit',acvrf:'VRF',acchiller:'Chiller',accassette:'Cassette',acchillerfcu:'Chiller FCU',acwindow:'Window AC',
-      lvol:'Calculated Volume (m³)',llen:'Length (m)',lwidth:'Width (m)',lheight:'Height (m)',ltype:'Room Type',lroomcount:'Room Count',lloadfactor:'Load Factor BTU/m³',lloadfactorval:'Factor Value',lppl:'👤 Persons — 400 BTU/h each',ladd:'+ Add Device',
+      lvol:'Calculated Volume (m³)',llen:'Length (m)',lwidth:'Width (m)',lheight:'Height (m)',ltype:'Room Type',lroomcount:'Room Count',lloadfactor:'Load Factor',lloadfactorval:'Current Value',lppl:'👤 Persons — 400 BTU/h each',ladd:'+ Add Device',
       lmodal:'Select Device Type',ldtot:'Total Device Load',sroom:'ROOM',sdev:'DEVICES',
       bvol:'Room Volume',bbase:'Base Load',bppl:'People Load',bdev:'Device Load',bsub:'Sub-total',bsf:'+ Safety 10%',
       hempty:'No calculations yet',
@@ -303,7 +307,10 @@ var T = {
       tnov:'⚠️ Enter room dimensions first',tcalc:'✅ Calculated',tclr:'🗑️ Cleared',
       slang:'Language',slsub:'Switch interface language',
       hcttl:'ASHRAE 170 — Airflow',
-      hcach:'Total ACH',hcsup:'Supply CFM',hcoa:'Outdoor Air CFM',hcexh:'Exhaust CFM',
+      hcach:'Total ACH',hcsup:'Supply CFM',hcoa:'Outdoor Air CFM',hcrec:'Recirculated CFM',hcexh:'Exhaust CFM',
+      lfhelper:'Quick estimate — not a substitute for detailed calculation',
+      freshairmode:'Fresh Air Mode',freshairashrae:'ASHRAE Mixed Air',freshair100:'100% Fresh Air',freshairwarning:'100% Fresh Air increases load and energy use. Engineer review required.',
+      exporthap:'Export to HAP',haprooms:'Rooms',hapsummary:'Summary',hapmeta:'Metadata',calcmode:'Calculation Mode',ashraehc:'ASHRAE Healthcare',loadmode:'Load Factor Estimate',freshairlabel:'Fresh Air Mode',mixedair:'ASHRAE Mixed Air',fresh100lbl:'100% Fresh Air',
       ppos:'Positive Pressure ▲',pneg:'Negative Pressure ▼',pneu:'Neutral Pressure',
       vcfm:'Supply CFM',cumttl:'Cumulative Total — Multiple Rooms',histttl:'Quotation',
       qttl:'📋 QUOTATION',qproject:'Project Name',qqno:'Quotation No.',
@@ -397,7 +404,8 @@ function applyLangStaticTexts(){
     'breakdown-ttl':'bttl','hc-note-lbl':'notelbl',
     'brl-vol':'bvol','brl-base':'bbase','brl-ppl':'bppl','brl-dev':'bdev','brl-sub':'bsub','brl-sf':'bsf',
     'sl-lang':'slang','sl-sub':'slsub',
-    'hcttl':'hcttl','hcl-ach':'hcach','hcl-sup':'hcsup','hcl-oa':'hcoa','hcl-exh':'hcexh',
+    'hcttl':'hcttl','hcl-ach':'hcach','hcl-sup':'hcsup','hcl-oa':'hcoa','hcl-rec':'hcrec','hcl-exh':'hcexh',
+    'lbl-fresh-air-mode':'freshairmode','lbl-export-hap':'exporthap',
     'cum-ttl':'cumttl','hist-ttl-lbl':'histttl',
     'cum-lbl-tr':'cumtr','cum-lbl-cfm':'cumcfm','cum-lbl-btu':'cumbtu','cum-lbl-mkt':'cummkt',
     'ptot-lbl-tr':'pttr','ptot-lbl-cfm':'ptcfm','ptot-lbl-btu':'ptbtu','ptot-lbl-mkt':'ptmkt',
@@ -455,6 +463,8 @@ function applyLangInputsAndLabels(){
   if (inpPpl) inpPpl.placeholder = '0';
   var loadFactorInp = G('inp-load-factor');
   if (loadFactorInp) loadFactorInp.placeholder = curRoom && curRoom.factor ? String(curRoom.factor) : '260';
+  var loadFactorHelper = G('load-factor-helper');
+  if (loadFactorHelper) loadFactorHelper.textContent = t('lfhelper');
   var loadFactorPreset = G('inp-load-factor-preset');
   if (loadFactorPreset && loadFactorPreset.options.length >= 6){
     loadFactorPreset.options[0].text = '—';
@@ -463,6 +473,11 @@ function applyLangInputsAndLabels(){
     loadFactorPreset.options[3].text = lang === 'ar' ? 'عالي 300' : 'High 300';
     loadFactorPreset.options[4].text = lang === 'ar' ? 'شديد 340' : 'Severe 340';
     loadFactorPreset.options[5].text = lang === 'ar' ? 'مخصص' : 'Custom';
+  }
+  var freshAirMode = G('inp-fresh-air-mode');
+  if(freshAirMode && freshAirMode.options.length >= 2){
+    freshAirMode.options[0].text = t('freshairashrae');
+    freshAirMode.options[1].text = t('freshair100');
   }
 
   var quoteProject = G('quote-project');
@@ -519,6 +534,8 @@ function applyLangInputsAndLabels(){
 
   var personsStepper = G('persons-stepper');
   if (personsStepper) personsStepper.setAttribute('aria-label', lang === 'ar' ? 'تعديل عدد الأشخاص' : 'Adjust persons');
+  var freshAirRow = G('fresh-air-row');
+  if (freshAirRow) freshAirRow.setAttribute('aria-label', t('freshairmode'));
 
   var roomBtns = document.querySelectorAll('#room-count-stepper button');
   if (roomBtns[0]) roomBtns[0].setAttribute('aria-label', lang === 'ar' ? 'زيادة عدد الغرف' : 'Increase room count');
@@ -550,6 +567,7 @@ function applyLangModuleSync(){
 }
 
 function applyLangRenders(){
+  renderRoomDropdown();
   renderDevs();
   renderHist();
 
@@ -712,13 +730,51 @@ function closeAllDD(){
 document.addEventListener('click',function(e){
   if(!e.target.closest('.dd-wrap')) closeAllDD();
 });
+var ROOM_GROUP_ORDER = {
+  general:['r_office','r_residential','r_retail','r_kitchen','r_server','r_classroom','r_gym','r_mosque','r_restaurant'],
+  healthcare:['h_patient_room','h_corridor','h_or','h_or_sub','h_icu','h_ccu','h_emergency','h_exam','h_treatment','h_medication','h_isolation','h_airborne','h_protective','h_nicu','h_nursery','h_labor','h_lab','h_pathology','h_autopsy','h_radiology','h_mri','h_dialysis','h_cath_lab','h_cardiac_cath','h_ep_lab','h_ir_lab','h_neuro_angio','h_hybrid_or','h_sterile_decontam','h_sterile_clean','h_sterile_storage','h_dental','h_physio','h_waiting','h_nurse','h_pharmacy','h_hkitchen','h_soiled','h_clean','h_toilet','h_records']
+};
+function renderRoomDropdown(){
+  var dd = G('dd-room');
+  if(!dd || !ROOMS) return;
+  function roomBadge(room){
+    return room.mode === 'hc' ? 'ASHRAE' : 'BTU/m³';
+  }
+  function roomSub(room){
+    if(room.mode === 'hc'){
+      var pressure = room.pres === 'positive'
+        ? (lang === 'ar' ? 'ضغط موجب' : 'Positive')
+        : room.pres === 'negative'
+          ? (lang === 'ar' ? 'ضغط سالب' : 'Negative')
+          : (lang === 'ar' ? 'ضغط محايد' : 'Neutral');
+      return room.oach + ' OA · ' + room.tach + ' ACH · ' + pressure;
+    }
+    return lang === 'ar' ? 'تقدير سريع بمعامل حمل' : 'Quick load factor estimate';
+  }
+  function itemHtml(roomId){
+    var room = ROOMS[roomId];
+    if(!room) return '';
+    var selected = curRoom && curRoom.id === roomId ? ' sel' : '';
+    return '<div class="dd-item'+selected+'" onclick="pickRoom(this,\''+roomId+'\')">'+
+      '<div class="dd-item-info"><div>'+rLabel(room)+'</div><div class="dd-item-sub">'+roomSub(room)+'</div></div>'+
+      '<span class="dd-badge">'+roomBadge(room)+'</span></div>';
+  }
+  var generalHdr = lang === 'ar' ? 'عام — معامل حمل' : 'General — Load Factor';
+  var hcHdr = lang === 'ar' ? 'رعاية صحية — ASHRAE' : 'Healthcare — ASHRAE';
+  dd.innerHTML =
+    '<div class="dd-cat-hdr">'+generalHdr+'</div>'+
+    ROOM_GROUP_ORDER.general.map(itemHtml).join('')+
+    '<div class="dd-cat-hdr">'+hcHdr+'</div>'+
+    ROOM_GROUP_ORDER.healthcare.map(itemHtml).join('');
+}
 function pickRoom(el,rid){
   var r=ROOMS[rid]; if(!r) return;
   curRoom=r;
   document.querySelectorAll('#dd-room .dd-item').forEach(function(i){i.classList.remove('sel');});
-  el.classList.add('sel');
+  if(el) el.classList.add('sel');
   closeAllDD();
   G('dt').textContent=rLabel(r);
+  setFreshAirMode('ashrae');
   syncLoadFactorFromRoom(r);
   updateCalculationModeUI(r);
   clearRoomDimensionInputs();
@@ -763,6 +819,8 @@ window.setSelBtu = setSelBtu;
 window.editRec = editRec;
 window.delRec = delRec;
 window.toggleVAT = toggleVAT;
+window.onFreshAirModeChange = onFreshAirModeChange;
+window.exportHAP = exportHAP;
 
 // ── DEVICES ───────────────────────────────────────────────────────────────
 function totalDevBtu(){
@@ -854,6 +912,7 @@ function _fallbackAppRooms(){
       if(rid.indexOf('patient')>=0 || en.indexOf('patient')>=0) return 'patient_room';
       if(rid.indexOf('exam')>=0 || en.indexOf('exam')>=0) return 'exam_room';
       if(rid.indexOf('treatment')>=0 || en.indexOf('treatment')>=0) return 'treatment_room';
+      if(rid.indexOf('cath')>=0 || rid.indexOf('ep_')>=0 || rid.indexOf('hybrid')>=0 || en.indexOf('catheterization')>=0 || en.indexOf('electrophysiology')>=0 || en.indexOf('interventional radiology')>=0 || en.indexOf('angiography')>=0 || en.indexOf('hybrid or')>=0) return 'radiology';
       if(rid.indexOf('lab')>=0 || en.indexOf('laboratory')>=0 || en.indexOf('lab')>=0) return 'laboratory';
       if(rid.indexOf('pharmacy')>=0 || en.indexOf('pharmacy')>=0) return 'pharmacy_clean';
       if(rid.indexOf('sterile')>=0 || en.indexOf('sterile')>=0 || en.indexOf('cssd')>=0) return 'sterile_processing';
@@ -985,6 +1044,8 @@ function updateRoomStandardCard(std, cfmValue){
 
   var oaEl = G('hcv-oa');
   if(oaEl) oaEl.textContent = std && std.oa != null ? String(std.oa) : '—';
+  var recEl = G('hcv-rec');
+  if(recEl) recEl.textContent = std && std.recirc != null ? String(std.recirc) : '—';
 
   var exhEl = G('hcv-exh');
   if(exhEl) exhEl.textContent = std && std.exhaust != null ? String(std.exhaust) : '—';
@@ -1128,6 +1189,14 @@ function setLoadFactorPresetValue(factor){
   var key = String(parseInt(factor,10)||'');
   if(key==='220' || key==='260' || key==='300' || key==='340') presetEl.value = key;
   else presetEl.value = factor ? 'custom' : '';
+  setLoadFactorInputMode(presetEl.value === 'custom');
+}
+
+function setLoadFactorInputMode(isCustom){
+  var inputEl = G('inp-load-factor');
+  if(!inputEl) return;
+  inputEl.readOnly = !isCustom;
+  inputEl.classList.toggle('readonly-like', !isCustom);
 }
 
 function syncLoadFactorFromRoom(room){
@@ -1138,16 +1207,42 @@ function syncLoadFactorFromRoom(room){
   setLoadFactorPresetValue(factor);
 }
 
+function setFreshAirMode(mode){
+  hcFreshAirMode = mode === 'fresh100' ? 'fresh100' : 'ashrae';
+  var sel = G('inp-fresh-air-mode');
+  if(sel) sel.value = hcFreshAirMode;
+  var warning = G('fresh-air-warning');
+  if(warning){
+    if(curRoom && curRoom.mode === 'hc' && hcFreshAirMode === 'fresh100'){
+      warning.style.display = '';
+      warning.innerHTML = '<strong>'+t('freshair100')+'</strong><span>'+t('freshairwarning')+'</span>';
+    } else {
+      warning.style.display = 'none';
+      warning.textContent = '';
+    }
+  }
+}
+
+function onFreshAirModeChange(){
+  var sel = G('inp-fresh-air-mode');
+  setFreshAirMode(sel ? sel.value : 'ashrae');
+}
+
 function updateCalculationModeUI(room){
   var row = G('load-factor-row');
+  var helper = G('load-factor-helper');
   var note = G('calc-mode-note');
+  var freshAirRow = G('fresh-air-row');
   var isHC = !!(room && room.mode === 'hc');
   if(row) row.style.display = isHC ? 'none' : '';
+  if(helper) helper.style.display = isHC ? 'none' : '';
+  if(freshAirRow) freshAirRow.style.display = isHC ? '' : 'none';
   if(!note) return;
   if(!room){
     note.style.display = 'none';
     note.textContent = '';
     note.className = 'calc-mode-note';
+    setFreshAirMode('ashrae');
     return;
   }
   note.style.display = '';
@@ -1155,6 +1250,7 @@ function updateCalculationModeUI(room){
   note.innerHTML = isHC
     ? '<strong>'+t('cmhc')+'</strong><span>'+t('cmhcsub')+'</span>'
     : '<strong>'+t('cmrot')+'</strong><span>'+t('cmrotsub')+'</span>';
+  setFreshAirMode(getFreshAirMode());
 }
 
 function onLoadFactorPresetChange(){
@@ -1162,6 +1258,7 @@ function onLoadFactorPresetChange(){
   var inputEl = G('inp-load-factor');
   if(!presetEl || !inputEl) return;
   var val = presetEl.value;
+  setLoadFactorInputMode(val === 'custom');
   if(val === 'custom') return;
   if(!val){
     inputEl.value = '';
@@ -1173,6 +1270,7 @@ function onLoadFactorPresetChange(){
 function onLoadFactorInput(){
   var inputEl = G('inp-load-factor');
   if(!inputEl) return;
+  if(inputEl.readOnly) return;
   normalizeNumericInput(inputEl);
   var raw = (inputEl.value||'').replace(/[^\d.]/g,'');
   inputEl.value = raw;
@@ -1185,6 +1283,10 @@ function onLoadFactorInput(){
   factor = Math.max(100, Math.min(800, factor));
   inputEl.value = String(Math.round(factor));
   setLoadFactorPresetValue(Math.round(factor));
+}
+
+function getFreshAirMode(){
+  return hcFreshAirMode === 'fresh100' ? 'fresh100' : 'ashrae';
 }
 
 function getSelectedLoadFactor(){
@@ -1246,7 +1348,9 @@ function calcROT(vol,ppl){
 function calcHC(vol,ppl){
   var r=curRoom, ft3=m3toft3(vol);
   var loadFactor = getSelectedLoadFactor();
-  var sup=Math.round((r.tach*ft3)/60), oa=Math.round((r.oach*ft3)/60);
+  var freshMode = getFreshAirMode();
+  var sup=Math.round((r.tach*ft3)/60), oa=freshMode === 'fresh100' ? Math.round((r.tach*ft3)/60) : Math.round((r.oach*ft3)/60);
+  var recirc=Math.max(0,sup-oa);
   var exh=r.pres==='negative'?Math.round(sup*1.10):r.pres==='positive'?Math.round(sup*0.90):sup;
   var base=sup*1.08*20, pplb=ppl*400, devb=totalDevBtu();
   var sub=base+pplb+devb, total=sub*1.10;
@@ -1262,15 +1366,20 @@ function calcHC(vol,ppl){
   G('hc-temp').textContent=r.tr[0]+'–'+r.tr[1]+' °C';
   G('hc-rh').textContent=r.rh[0]+'–'+r.rh[1]+'% RH';
   G('hcv-ach').textContent=r.tach; G('hcv-sup').textContent=sup.toLocaleString();
-  G('hcv-oa').textContent=oa.toLocaleString(); G('hcv-exh').textContent=exh.toLocaleString();
-  if(r.note){G('hc-note-row').style.display='';G('hcv-note').textContent=r.note;}else{G('hc-note-row').style.display='none';}
+  G('hcv-oa').textContent=oa.toLocaleString(); G('hcv-rec').textContent=recirc.toLocaleString(); G('hcv-exh').textContent=exh.toLocaleString();
+  if(r.note || freshMode === 'fresh100'){
+    G('hc-note-row').style.display='';
+    G('hcv-note').textContent = [r.note || '', freshMode === 'fresh100' ? t('freshairwarning') : ''].filter(Boolean).join(' | ');
+  }else{G('hc-note-row').style.display='none';}
   G('hc-card').style.display='block';
   saveHist(vol,ppl,tr,sup,total,mkt,devb,{
     loadFactor: loadFactor,
     sup:sup,
     oa:oa,
+    recirc:recirc,
     exh:exh,
     pres:r.pres,
+    freshAirMode:freshMode,
     category:'support_clinical',
     roomType:r.en || r.ar || 'Healthcare Room',
     ach:r.tach || null,
@@ -1291,6 +1400,7 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     time:new Date().toLocaleString('ar-SA'),
     rid:curRoom.id, ar:curRoom.ar, en:curRoom.en,
     vol:vol, ppl:ppl, roomCount:roomCount, loadFactor:getSelectedLoadFactor(),
+    calcMode: curRoom && curRoom.mode === 'hc' ? 'hc' : 'rot',
     dims:lastRoomDims,
     devSum:eq.text,
     devBtu:eq.totalBtu,
@@ -1303,8 +1413,10 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     if(hcdata.loadFactor != null) rec.loadFactor = hcdata.loadFactor;
     rec.sup=hcdata.sup;
     rec.oa=hcdata.oa;
+    rec.recirc=hcdata.recirc;
     rec.exh=hcdata.exh;
     rec.pres=hcdata.pres;
+    rec.freshAirMode=hcdata.freshAirMode;
     rec.category=hcdata.category;
     rec.roomType=hcdata.roomType;
     rec.ach=hcdata.ach;
@@ -1349,6 +1461,7 @@ function resetCalcEntryForm(){
   var roomCountEl = G('inp-room-count'); if(roomCountEl) roomCountEl.value = '0';
   var loadFactorEl = G('inp-load-factor'); if(loadFactorEl) loadFactorEl.value = '';
   var loadFactorPresetEl = G('inp-load-factor-preset'); if(loadFactorPresetEl) loadFactorPresetEl.value = '';
+  setFreshAirMode('ashrae');
   updateCalculationModeUI(null);
   devs = [];
   renderDevs();
@@ -1375,14 +1488,17 @@ function calcRoomDetailHtml(h, idx){
     var hcBits = [];
     if(h.ach) hcBits.push('ACH '+h.ach);
     if(h.oaStd) hcBits.push('OA '+h.oaStd);
+    if(h.recirc != null) hcBits.push((lang==='ar'?'راجع':'Recirc')+' '+h.recirc);
     if(h.exhaust) hcBits.push((lang==='ar'?'عادم':'Exh')+' '+h.exhaust);
     if(h.pressure) hcBits.push((lang==='ar'?'ضغط':'Pressure')+' '+h.pressure);
+    if(h.freshAirMode) hcBits.push((lang==='ar'?'هواء نقي':'Fresh Air')+' '+(h.freshAirMode==='fresh100'?(lang==='ar'?'100%':'100%'):(lang==='ar'?'ASHRAE':'ASHRAE')));
     hcLine = '<div class="calc-room-detail-note">'+hcBits.join(' · ')+'</div>';
   }
   return '<div class="calc-room-detail">'+
     '<div class="calc-room-detail-grid">'+
       '<div class="calc-room-detail-row calc-room-detail-row-wide calc-room-detail-type"><span class="calc-room-detail-lbl">'+(lang==='ar'?'نوع الغرفة':'Room Type')+'</span><span class="calc-room-detail-val">'+roomTypeLine+'</span></div>'+
       dimsLine+
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+t('calcmode')+'</span><span class="calc-room-detail-val">'+(h.calcMode==='hc'?t('ashraehc'):t('loadmode'))+'</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'الحجم':'Volume')+'</span><span class="calc-room-detail-val">'+h.vol+' m³</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'عدد الغرف':'Room Count')+'</span><span class="calc-room-detail-val">'+rc+'</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'عدد الأشخاص':'People')+'</span><span class="calc-room-detail-val">'+h.ppl+'</span></div>'+
@@ -1474,7 +1590,7 @@ function renderHist(){
     var row=document.createElement('div'); row.className='hist-item';
     row.innerHTML='<div class="hist-main">'+
       '<div class="hist-room">'+(idx+1)+'. '+name+'</div>'+
-      '<div class="hist-detail">'+h.vol+' m³ · '+(Math.max(1,parseInt(h.roomCount,10)||1))+' '+(lang==='ar'?'غرف':'rooms')+' · '+h.ppl+' 👤'+(h.devSum?' · '+h.devSum:'')+'</div>'+
+      '<div class="hist-detail">'+h.vol+' m³ · '+(Math.max(1,parseInt(h.roomCount,10)||1))+' '+(lang==='ar'?'غرف':'rooms')+' · '+h.ppl+' '+(lang==='ar'?'أشخاص':'people')+(h.devSum?' · '+h.devSum:'')+'</div>'+
       (h.equipmentBtu?'<div class="hist-cfm">'+(lang==='ar'?'حمل الأجهزة: ':'Equipment Load: ')+Number(h.equipmentBtu).toLocaleString()+' BTU/h</div>':'')+
       (h.roomType?'<div class="hist-cfm">'+(lang==='ar'?'نوع الغرفة: ':'Room Type: ')+h.roomType+(h.category?' | '+(lang==='ar'?'الفئة: ':'Category: ')+getCategoryLabel(h.category):'')+'</div>':'')+
       (cfmLine?'<div class="hist-cfm">'+cfmLine+'</div>':'')+
@@ -1523,6 +1639,7 @@ function editRec(idx){
     G('dt').textContent=rLabel(curRoom);
   }
   G('inp-vol').value=h.vol; G('inp-ppl').value=h.ppl;
+  setFreshAirMode(h.freshAirMode || 'ashrae');
   syncLoadFactorFromRoom(curRoom);
   updateCalculationModeUI(curRoom);
   if(h.loadFactor != null){
@@ -2269,6 +2386,185 @@ function exportCSV(){
   a.download='quotation_'+qno.replace(/[^a-zA-Z0-9\u0600-\u06FF_-]/g,'_')+'.csv';a.click();
   toast(lang==='ar'?'📄 \u062a\u0645 \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u0645\u0644\u0641':'📄 CSV exported');
 }
+
+function xmlEscape(v){
+  return String(v == null ? '' : v)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&apos;');
+}
+function sheetColName(n){
+  var s = '';
+  while(n >= 0){
+    s = String.fromCharCode((n % 26) + 65) + s;
+    n = Math.floor(n / 26) - 1;
+  }
+  return s;
+}
+function sheetXmlFromRows(rows){
+  var xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+  rows.forEach(function(row, rIdx){
+    xml += '<row r="'+(rIdx+1)+'">';
+    row.forEach(function(cell, cIdx){
+      var ref = sheetColName(cIdx) + (rIdx + 1);
+      var val = cell == null ? '' : cell;
+      if(typeof val === 'number' && isFinite(val)){
+        xml += '<c r="'+ref+'"><v>'+val+'</v></c>';
+      } else {
+        xml += '<c r="'+ref+'" t="inlineStr"><is><t>'+xmlEscape(val)+'</t></is></c>';
+      }
+    });
+    xml += '</row>';
+  });
+  xml += '</sheetData></worksheet>';
+  return xml;
+}
+function uint16LE(n){ return [n & 255, (n >>> 8) & 255]; }
+function uint32LE(n){ return [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]; }
+var _crcTable = null;
+function getCrcTable(){
+  if(_crcTable) return _crcTable;
+  _crcTable = [];
+  for(var n=0; n<256; n++){
+    var c = n;
+    for(var k=0; k<8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    _crcTable[n] = c >>> 0;
+  }
+  return _crcTable;
+}
+function crc32(bytes){
+  var table = getCrcTable();
+  var crc = 0 ^ (-1);
+  for(var i=0;i<bytes.length;i++) crc = (crc >>> 8) ^ table[(crc ^ bytes[i]) & 0xFF];
+  return (crc ^ (-1)) >>> 0;
+}
+function utf8Bytes(str){
+  return new TextEncoder().encode(str);
+}
+function makeStoredZip(files){
+  var localParts = [];
+  var centralParts = [];
+  var offset = 0;
+  files.forEach(function(file){
+    var nameBytes = utf8Bytes(file.name);
+    var dataBytes = utf8Bytes(file.data);
+    var crc = crc32(dataBytes);
+    var localHeader = new Uint8Array([
+      0x50,0x4b,0x03,0x04,
+      20,0,0,0,0,0,0,0,0,0,
+      ...uint32LE(crc),
+      ...uint32LE(dataBytes.length),
+      ...uint32LE(dataBytes.length),
+      ...uint16LE(nameBytes.length),
+      0,0
+    ]);
+    localParts.push(localHeader, nameBytes, dataBytes);
+    var centralHeader = new Uint8Array([
+      0x50,0x4b,0x01,0x02,
+      20,0,20,0,0,0,0,0,0,0,
+      ...uint32LE(crc),
+      ...uint32LE(dataBytes.length),
+      ...uint32LE(dataBytes.length),
+      ...uint16LE(nameBytes.length),
+      0,0,0,0,0,0,0,0,
+      ...uint32LE(0),
+      ...uint32LE(offset)
+    ]);
+    centralParts.push(centralHeader, nameBytes);
+    offset += localHeader.length + nameBytes.length + dataBytes.length;
+  });
+  var centralSize = centralParts.reduce(function(s,part){ return s + part.length; }, 0);
+  var endRecord = new Uint8Array([
+    0x50,0x4b,0x05,0x06,
+    0,0,0,0,
+    ...uint16LE(files.length),
+    ...uint16LE(files.length),
+    ...uint32LE(centralSize),
+    ...uint32LE(offset),
+    0,0
+  ]);
+  return new Blob(localParts.concat(centralParts).concat([endRecord]), {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function buildHapWorkbookBlob(roomRows, summaryRows, metaRows){
+  var files = [
+    {name:'[Content_Types].xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>'},
+    {name:'_rels/.rels', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>'},
+    {name:'docProps/app.xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>AirCalc Pro</Application></Properties>'},
+    {name:'docProps/core.xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>AirCalc HAP Export</dc:title><dc:creator>AirCalc Pro</dc:creator></cp:coreProperties>'},
+    {name:'xl/workbook.xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="'+xmlEscape(t('haprooms'))+'" sheetId="1" r:id="rId1"/><sheet name="'+xmlEscape(t('hapsummary'))+'" sheetId="2" r:id="rId2"/><sheet name="'+xmlEscape(t('hapmeta'))+'" sheetId="3" r:id="rId3"/></sheets></workbook>'},
+    {name:'xl/_rels/workbook.xml.rels', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/><Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'},
+    {name:'xl/styles.xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts><fills count="1"><fill><patternFill patternType="none"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs></styleSheet>'},
+    {name:'xl/worksheets/sheet1.xml', data:sheetXmlFromRows(roomRows)},
+    {name:'xl/worksheets/sheet2.xml', data:sheetXmlFromRows(summaryRows)},
+    {name:'xl/worksheets/sheet3.xml', data:sheetXmlFromRows(metaRows)}
+  ];
+  return makeStoredZip(files);
+}
+function safeVal(v, fallback){
+  return v == null || v === '' || (typeof v === 'number' && !isFinite(v)) ? (fallback == null ? '' : fallback) : v;
+}
+function exportHAP(){
+  if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف محفوظة':'⚠️ No saved rooms'); return; }
+  var projectName = ((G('quote-project')||{value:''}).value || (G('tech-project')||{value:''}).value || '').trim() || (lang==='ar'?'غير محدد':'Untitled');
+  var today = new Date().toISOString().slice(0,10);
+  var roomRows = [[
+    'Room Name','Room Type','Calculation Mode','Volume','Area','Height','People','Equipment Load','Load Factor','Fresh Air Mode','Outdoor Air CFM','Recirculated CFM','Exhaust CFM','Total CFM','Total BTU','TR','ACH','Pressure'
+  ]];
+  var totalBtu = 0, totalTr = 0, totalCfm = 0;
+  hist.forEach(function(h){
+    var dims = h.dims || {};
+    var area = (Number(dims.len||0) * Number(dims.width||0)) || 0;
+    var modeLabel = h.calcMode === 'hc' ? t('ashraehc') : t('loadmode');
+    var freshAirModeLabel = h.calcMode === 'hc'
+      ? (h.freshAirMode === 'fresh100' ? t('fresh100lbl') : t('mixedair'))
+      : '';
+    roomRows.push([
+      safeVal(lang==='ar'?(h.ar||h.en):(h.en||h.ar)),
+      safeVal(h.roomType || (lang==='ar'?(h.ar||h.en):(h.en||h.ar))),
+      safeVal(modeLabel),
+      Number(h.vol||0),
+      Number(area.toFixed(2)),
+      Number(dims.height||0),
+      Number(h.ppl||0),
+      Number(h.equipmentBtu||0),
+      h.calcMode === 'hc' ? '' : Number(h.loadFactor||0),
+      safeVal(freshAirModeLabel),
+      Number(h.oa||0),
+      Number(h.recirc||0),
+      Number(h.exh||0),
+      Number(h.cfm||0),
+      Number(h.btu||0),
+      Number(h.tr||0),
+      h.ach != null ? Number(h.ach) : '',
+      safeVal(h.pressure || h.pres || '')
+    ]);
+    totalBtu += Number(h.btu||0);
+    totalTr += Number(h.tr||0);
+    totalCfm += Number(h.cfm||0);
+  });
+  var summaryRows = [
+    ['Metric','Value'],
+    ['Total Rooms', hist.length],
+    ['Total BTU', totalBtu],
+    ['Total TR', Number(totalTr.toFixed(2))],
+    ['Total CFM', totalCfm]
+  ];
+  var metaRows = [
+    ['Project Name', projectName],
+    ['Date', today],
+    ['Mode', quoteMode === 'proj' ? 'Project' : 'Room']
+  ];
+  var blob = buildHapWorkbookBlob(roomRows, summaryRows, metaRows);
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'AirCalc_HAP_Export_' + today + '.xlsx';
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  toast(lang==='ar'?'📊 تم تصدير ملف HAP':'📊 HAP export downloaded');
+}
 function exportInvoiceHTML(){
   if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف':'⚠️ No rooms'); return; }
   var win=window.open('','_blank');
@@ -2486,20 +2782,22 @@ function buildPage2(c){
       warnHtml='<span style="display:inline-block;background:#ede9fe;color:#7c3aed;border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700">'+(c.isAr?'سعة عالية':'High oversize')+' '+d2pct+'</span>';
     }
     var roomLogicHtml='';
-    if(h.roomType || h.ach || h.oaStd || h.exhaust || h.pressure){
+    if(h.roomType || h.ach || h.oaStd || h.exhaust || h.pressure || h.freshAirMode){
       roomLogicHtml='<div class="hc-detail-box">'+
         '<div style="font-size:10px;color:#0369a1;font-weight:700;margin-bottom:8px">'+(c.isAr?'محرك معايير الغرفة':'Room Standards Engine')+'</div>'+
         '<div class="hc-grid">'+
           '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'النوع':'Type')+'</div><div class="hc-val">'+(h.roomType||'—')+'</div></div>'+
-          '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'الفئة':'Category')+'</div><div class="hc-val">'+(h.category?getCategoryLabel(h.category):'—')+'</div></div>'+
+          '<div class="hc-item"><div class="hc-lbl">'+t('calcmode')+'</div><div class="hc-val">'+(h.calcMode==='hc'?t('ashraehc'):t('loadmode'))+'</div></div>'+
           '<div class="hc-item"><div class="hc-lbl">Total ACH</div><div class="hc-val">'+(h.ach!=null?h.ach:'—')+'</div></div>'+
           '<div class="hc-item"><div class="hc-lbl">OA ACH</div><div class="hc-val">'+(h.oaStd!=null?h.oaStd:'—')+'</div></div>'+
         '</div>'+
         '<div class="hc-grid" style="margin-top:8px">'+
           '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'العادم':'Exhaust')+'</div><div class="hc-val">'+(h.exhaust!=null?h.exhaust:'—')+'</div></div>'+
           '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'الضغط':'Pressure')+'</div><div class="hc-val">'+(h.pressure||'—')+'</div></div>'+
-          '<div class="hc-item" style="grid-column: span 2;"><div class="hc-lbl">'+(c.isAr?'ملاحظة':'Note')+'</div><div class="hc-val">'+(h.notes||'—')+'</div></div>'+
+          '<div class="hc-item"><div class="hc-lbl">'+t('freshairlabel')+'</div><div class="hc-val">'+(h.freshAirMode==='fresh100'?t('fresh100lbl'):h.calcMode==='hc'?t('mixedair'):'—')+'</div></div>'+
+          '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'الفئة':'Category')+'</div><div class="hc-val">'+(h.category?getCategoryLabel(h.category):'—')+'</div></div>'+
         '</div>'+
+        '<div style="margin-top:8px;font-size:10px;color:#64748b">'+(h.notes||'—')+'</div>'+
       '</div>';
     }
 
@@ -2511,10 +2809,12 @@ function buildPage2(c){
         +'<div style="font-size:10px;color:#0369a1;font-weight:700;margin-bottom:8px">ASHRAE 170</div>'
         +'<div class="hc-grid">'
           +'<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'إمداد':'Supply')+'</div><div class="hc-val">'+h.sup+'</div></div>'
-          +'<div class="hc-item"><div class="hc-lbl">OA ACH</div><div class="hc-val">'+(h.oa||'—')+'</div></div>'
+          +'<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'هواء خارجي':'Outdoor Air')+'</div><div class="hc-val">'+(h.oa||'—')+'</div></div>'
+          +'<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'هواء راجع':'Recirculated')+'</div><div class="hc-val">'+(h.recirc||0)+'</div></div>'
           +'<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'عادم':'Exhaust')+'</div><div class="hc-val">'+(h.exh||'—')+'</div></div>'
           +'<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'الضغط':'Pressure')+'</div><div class="hc-val">'+presLbl+'</div></div>'
         +'</div>'
+        +'<div style="margin-top:8px;font-size:10px;color:#64748b">'+t('freshairlabel')+': '+(h.freshAirMode==='fresh100'?t('fresh100lbl'):t('mixedair'))+'</div>'
       +'</div>';
     }
     // Devices

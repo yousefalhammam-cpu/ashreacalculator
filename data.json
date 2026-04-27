@@ -490,6 +490,120 @@
       ],
       "note": ""
     },
+    "h_cath_lab": {
+      "id": "h_cath_lab",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "مختبر القسطرة",
+      "en": "Cath Lab",
+      "oach": 3,
+      "tach": 15,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        0,
+        60
+      ],
+      "note": "ASHRAE 170 Class 2 imaging room basis."
+    },
+    "h_cardiac_cath": {
+      "id": "h_cardiac_cath",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "قسطرة القلب",
+      "en": "Cardiac Cath Lab",
+      "oach": 3,
+      "tach": 15,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        0,
+        60
+      ],
+      "note": "ASHRAE 170 Class 2 imaging room basis for cardiac catheterization."
+    },
+    "h_ep_lab": {
+      "id": "h_ep_lab",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "مختبر الفيزيولوجيا الكهربائية",
+      "en": "EP Lab",
+      "oach": 3,
+      "tach": 15,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        0,
+        60
+      ],
+      "note": "ASHRAE 170 Class 2 imaging room basis for electrophysiology procedures."
+    },
+    "h_ir_lab": {
+      "id": "h_ir_lab",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "مختبر الأشعة التداخلية",
+      "en": "Interventional Radiology Lab",
+      "oach": 3,
+      "tach": 15,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        0,
+        60
+      ],
+      "note": "ASHRAE 170 Class 2 imaging room basis."
+    },
+    "h_neuro_angio": {
+      "id": "h_neuro_angio",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "مختبر القسطرة العصبية",
+      "en": "Neuro Angio Lab",
+      "oach": 3,
+      "tach": 15,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        0,
+        60
+      ],
+      "note": "ASHRAE 170 Class 2 imaging room basis for neuro/peripheral angiography."
+    },
+    "h_hybrid_or": {
+      "id": "h_hybrid_or",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "غرفة عمليات هجينة",
+      "en": "Hybrid OR / Class 3 Imaging",
+      "oach": 4,
+      "tach": 20,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        20,
+        60
+      ],
+      "note": "ASHRAE 170 Class 3 imaging room basis."
+    },
     "h_sterile_decontam": {
       "id": "h_sterile_decontam",
       "mode": "hc",

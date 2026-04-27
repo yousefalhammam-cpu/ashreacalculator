@@ -153,7 +153,20 @@
           </div>
         </div>
       </div>
+      <div class="load-factor-helper" id="load-factor-helper">تقدير سريع — لا يستبدل الحساب التفصيلي</div>
       <div class="calc-mode-note" id="calc-mode-note" style="display:none"></div>
+      <div class="row2 fresh-air-row" id="fresh-air-row" style="display:none">
+        <div>
+          <div class="lbl" id="lbl-fresh-air-mode">وضع الهواء النقي</div>
+          <div class="ifield-wrap fresh-air-wrap">
+            <select class="qs-sel" id="inp-fresh-air-mode" onchange="onFreshAirModeChange()">
+              <option value="ashrae">حسب ASHRAE</option>
+              <option value="fresh100">هواء نقي 100%</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="calc-mode-note fresh-air-warning" id="fresh-air-warning" style="display:none"></div>
       <div class="dim-grid" id="dim-grid" aria-label="أبعاد الغرفة">
         <div>
           <div class="lbl" id="lbl-len">Length (m)</div>
@@ -222,6 +235,7 @@
       <div class="br-row"><span class="br-lbl" id="hcl-ach">Total ACH</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-ach">—</span><span class="badge ba">ACH</span></div></div>
       <div class="br-row"><span class="br-lbl" id="hcl-sup">Supply CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-sup">—</span><span class="badge ba">CFM</span></div></div>
       <div class="br-row"><span class="br-lbl" id="hcl-oa">Outdoor Air CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-oa">—</span><span class="badge bg">CFM</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="hcl-rec">Recirculated CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-rec">—</span><span class="badge ba">CFM</span></div></div>
       <div class="br-row"><span class="br-lbl" id="hcl-exh">Exhaust CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-exh">—</span><span class="badge bam">CFM</span></div></div>
       <div class="br-row" id="hc-note-row" style="display:none"><span class="br-lbl" id="hc-note-lbl">ملاحظة</span><span class="br-val" id="hcv-note" style="font-size:11px;color:var(--tm)">—</span></div>
     </div>
@@ -655,6 +669,7 @@
       <div id="tech-proj-slot"></div>
       <div id="tech-analysis-slot"></div>
       <div class="exp-row tech-exp-row">
+        <button class="exp-btn-hap" onclick="exportHAP()"><span id="lbl-export-hap">تصدير إلى HAP</span></button>
         <button class="exp-btn-tech" id="btn-techpdf-panel" onclick="exportTechPDFFromPanel()"><span id="tech-export-lbl">تقرير فني PDF</span></button>
       </div>
     </div>
