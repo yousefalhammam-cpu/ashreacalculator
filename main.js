@@ -56,6 +56,14 @@
     // Theme
     S.theme = AS.restoreTheme();
 
+    // Language
+    try {
+      var savedLang = localStorage.getItem('aircalc_lang');
+      if (savedLang === 'ar' || savedLang === 'en') {
+        S.lang = savedLang;
+      }
+    } catch (e) {}
+
     // Bundle config
     var bc = AS.restoreBundleConfig();
     if (bc && typeof bc === 'object') {
@@ -89,6 +97,8 @@
     if (qm === 'proj') S.quoteMode = 'proj';
     var th = localStorage.getItem('acp9theme');
     if (th === 'light') S.theme = 'light';
+    var savedLang = localStorage.getItem('aircalc_lang');
+    if (savedLang === 'ar' || savedLang === 'en') S.lang = savedLang;
     var bc = H.safeJSONParse(localStorage.getItem('ac_bundleConfig'), null);
     if (bc && typeof bc === 'object') {
       Object.keys(bc).forEach(function (k) { if (k in S.bundleConfig) S.bundleConfig[k] = bc[k]; });

@@ -137,7 +137,14 @@ document.addEventListener('DOMContentLoaded', function(){
 // [DATA: DEVS loaded from data.json]
 
 // ── STATE ─────────────────────────────────────────────────────────────────
-var lang = 'ar';
+var lang = (function(){
+  try{
+    var savedLang = localStorage.getItem('aircalc_lang');
+    return savedLang === 'en' ? 'en' : 'ar';
+  }catch(e){
+    return 'ar';
+  }
+})();
 var curRoom = null; // set in initApp() after data loaded
 var devs = [];
 var hist = [];
@@ -285,7 +292,7 @@ var T = {
       qqty:'الكمية',qup:'سعر الوحدة',qlt:'إجمالي السطر',
       qtqty:'إجمالي الكمية',qtgrand:'الإجمالي النهائي',
       qempty:'لا توجد غرف — احسب غرفة أولاً',
-      qexport:'تصدير عرض السعر (CSV)',qdel:'🗑️ تم الحذف',qsttl:'⚙️ إعدادات عرض السعر',qsinst:'نسبة التركيب',qsvat:'تفعيل ضريبة القيمة المضافة',qsvalid:'مدة صلاحية العرض',qsnotes:'ملاحظات',qsnph:'مثال: العرض شامل التوريد والتركيب داخل المدينة.',v7:'7 أيام',v14:'14 يوم',v30:'30 يوم',qssubl:'المجموع الفرعي (المعدات)',qsinstl:'التركيب',qsvatl:'ضريبة القيمة المضافة 15%',qsqtyl:'إجمالي الكمية',expcsv:'CSV',exphtml:'فاتورة HTML',exppdf:'تحميل PDF',exptechpdf:'تقرير فني',invtitle:'فاتورة / عرض سعر',invvalid:'صلاحية العرض',invdate:'التاريخ',invnotes:'ملاحظات',invroom:'نوع الغرفة',invvol:'الحجم',invppl:'أشخاص',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'الكمية',invup:'سعر الوحدة',invlt:'إجمالي السطر',invsubt:'المجموع الفرعي',invinst:'التركيب',invvat:'ضريبة 15%',invgrand:'الإجمالي النهائي',invdiscl:'تقدير أولي — لا يُعتمد للتصميم النهائي'},
+      qexport:'تصدير عرض السعر (CSV)',qdel:'🗑️ تم الحذف',qsttl:'⚙️ إعدادات عرض السعر',qsinst:'نسبة التركيب',qsvat:'تفعيل ضريبة القيمة المضافة',qsvalid:'مدة صلاحية العرض',qsnotes:'ملاحظات',qsnph:'مثال: العرض شامل التوريد والتركيب داخل المدينة.',v7:'7 أيام',v14:'14 يوم',v30:'30 يوم',qssubl:'المجموع الفرعي (المعدات)',qsinstl:'التركيب',qsvatl:'ضريبة القيمة المضافة 15%',qsqtyl:'إجمالي الكمية',qsave:'حفظ العرض',qsaveok:'تم حفظ عرض السعر',qsavewarn:'افتح أو احفظ مشروعًا أولًا',expcsv:'CSV',exphtml:'فاتورة HTML',exppdf:'تحميل PDF',exptechpdf:'تقرير فني',invtitle:'فاتورة / عرض سعر',invvalid:'صلاحية العرض',invdate:'التاريخ',invnotes:'ملاحظات',invroom:'نوع الغرفة',invvol:'الحجم',invppl:'أشخاص',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'الكمية',invup:'سعر الوحدة',invlt:'إجمالي السطر',invsubt:'المجموع الفرعي',invinst:'التركيب',invvat:'ضريبة 15%',invgrand:'الإجمالي النهائي',invdiscl:'تقدير أولي — لا يُعتمد للتصميم النهائي'},
   en:{calc:'Calculate ▶',hclr:'Clear History',ncalc:'Calc',nhist:'Quotation',ncontact:'Contact',nset:'Settings',nprojects:'Projects',
       mltr:'Cooling Load',mlcfm:'Supply CFM',mlbtu:'Heat Load',mlmkt:'Market BTU',
       roominfo:'Room Information',roomnote:'Enter dimensions in meters; volume is calculated automatically.',
@@ -317,7 +324,7 @@ var T = {
       qqty:'Quantity',qup:'Unit Price',qlt:'Line Total',
       qtqty:'Total Quantity',qtgrand:'Grand Total',
       qempty:'No rooms saved — calculate a room first',delroom:'Delete',delroomconfirm:'Are you sure you want to delete this room?',
-      qexport:'Export Quotation (CSV)',qdel:'🗑️ Deleted',qsttl:'⚙️ Quotation Settings',qsinst:'Installation %',qsvat:'Enable VAT',qsvalid:'Quotation Validity',qsnotes:'Notes',qsnph:'Example: Price includes supply & installation within city limits.',v7:'7 days',v14:'14 days',v30:'30 days',qssubl:'Equipment Subtotal',qsinstl:'Installation',qsvatl:'VAT 15%',qsqtyl:'Total Quantity',expcsv:'CSV',exphtml:'Invoice HTML',exppdf:'Download PDF',exptechpdf:'Tech Report',invtitle:'Quotation / Invoice',invvalid:'Validity',invdate:'Date',invnotes:'Notes',invroom:'Room Type',invvol:'Volume m³',invppl:'Persons',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'Qty',invup:'Unit Price',invlt:'Line Total',invsubt:'Equipment Subtotal',invinst:'Installation',invvat:'VAT 15%',invgrand:'Grand Total',invdiscl:'Preliminary estimate — not for final design submittal'}
+      qexport:'Export Quotation (CSV)',qdel:'🗑️ Deleted',qsttl:'⚙️ Quotation Settings',qsinst:'Installation %',qsvat:'Enable VAT',qsvalid:'Quotation Validity',qsnotes:'Notes',qsnph:'Example: Price includes supply & installation within city limits.',v7:'7 days',v14:'14 days',v30:'30 days',qssubl:'Equipment Subtotal',qsinstl:'Installation',qsvatl:'VAT 15%',qsqtyl:'Total Quantity',qsave:'Save Quotation',qsaveok:'Quotation saved',qsavewarn:'Open or save a project first',expcsv:'CSV',exphtml:'Invoice HTML',exppdf:'Download PDF',exptechpdf:'Tech Report',invtitle:'Quotation / Invoice',invvalid:'Validity',invdate:'Date',invnotes:'Notes',invroom:'Room Type',invvol:'Volume m³',invppl:'Persons',invtr:'TR',invcfm:'CFM',invbtu:'BTU/h',invmkt:'Mkt BTU',invqty:'Qty',invup:'Unit Price',invlt:'Line Total',invsubt:'Equipment Subtotal',invinst:'Installation',invvat:'VAT 15%',invgrand:'Grand Total',invdiscl:'Preliminary estimate — not for final design submittal'}
 };
 Object.assign(T.ar,{
   settingssec:'الإعدادات',
@@ -557,14 +564,18 @@ function applyLangInputsAndLabels(){
   if (techExportLbl) techExportLbl.textContent = lang === 'ar' ? 'تقرير فني PDF' : 'Tech Report PDF';
   var techNavLbl = G('nl-tech');
   if (techNavLbl) techNavLbl.textContent = lang === 'ar' ? 'التقرير الفني' : 'Tech Report';
-  var conDesc = G('con-desc');
-  if (conDesc) conDesc.textContent = lang === 'ar'
-    ? 'AirCalc Pro أداة هندسية مبسطة لحساب أحمال التبريد والتهوية وتجهيز عرض السعر والتقرير الفني بسرعة ووضوح.'
-    : 'AirCalc Pro is a streamlined engineering tool for cooling load and ventilation calculations, with fast quotation and technical report preparation.';
-  var conFeatures = G('con-features');
-  if (conFeatures) conFeatures.innerHTML = lang === 'ar'
-    ? '<div class="con-feat">• حساب حمل التبريد و CFM و BTU</div><div class="con-feat">• معايير الغرف وتجهيزات الأجهزة حسب الاستخدام</div><div class="con-feat">• عرض سعر وتقرير فني وتصدير PDF</div><div class="con-feat">• وضع المشروع وحساب مجاري الهواء و ESP</div>'
-    : '<div class="con-feat">• Cooling load, CFM, and BTU calculations</div><div class="con-feat">• Room standards and equipment presets by use case</div><div class="con-feat">• Quotation, technical report, and PDF export</div><div class="con-feat">• Project mode, duct sizing, and ESP calculation</div>';
+  var appSubtitle = G('app-subtitle');
+  if (appSubtitle) appSubtitle.textContent = lang === 'ar'
+    ? 'منصة حسابات وعروض أسعار التكييف'
+    : 'HVAC Calculation & Quotation Suite';
+  var contactPhoneLbl = G('contact-phone-lbl');
+  if (contactPhoneLbl) contactPhoneLbl.textContent = lang === 'ar' ? 'رقم الجوال' : 'Mobile';
+  var contactEmailLbl = G('contact-email-lbl');
+  if (contactEmailLbl) contactEmailLbl.textContent = lang === 'ar' ? 'البريد الإلكتروني' : 'Email';
+  var contactPhoneVal = G('contact-phone-val');
+  if (contactPhoneVal) contactPhoneVal.textContent = '0560282701';
+  var contactEmailVal = G('contact-email-val');
+  if (contactEmailVal) contactEmailVal.textContent = 'yousef.alhammam@live.com';
 
   var v7 = G('v7'), v14 = G('v14'), v30 = G('v30');
   if (v7) v7.textContent = t('v7');
@@ -609,7 +620,9 @@ function applyLangInputsAndLabels(){
   if (calcNav) calcNav.title = lang === 'ar' ? 'الحاسبة' : 'Calculator';
 
   var saveBtn = G('quote-save-btn');
-  if (saveBtn) saveBtn.title = lang === 'ar' ? 'حفظ المشروع' : 'Save Project';
+  if (saveBtn) saveBtn.title = t('qsave');
+  var saveLbl = G('quote-save-lbl');
+  if (saveLbl) saveLbl.textContent = t('qsave');
 }
 
 function applyLangModuleSync(){
@@ -642,6 +655,12 @@ function applyLangRenders(){
 }
 
 function applyLang(){
+  if (arguments.length && (arguments[0] === 'ar' || arguments[0] === 'en')) {
+    lang = arguments[0];
+  }
+  if (window.AppState) {
+    window.AppState.lang = lang;
+  }
   applyDocumentLang();
   applyLangHeaderUI();
   applyLangStaticTexts();
@@ -649,6 +668,9 @@ function applyLang(){
   applyLangModuleSync();
   applyLangRenders();
   updateCalculationModeUI(curRoom);
+  try{
+    localStorage.setItem('aircalc_lang', lang);
+  }catch(e){}
 }
 function toggleLang(){
   lang = lang === 'ar' ? 'en' : 'ar';
@@ -745,6 +767,18 @@ function arrangeReportAndQuoteLayout(){
     var pricingGrid = pricingCard.querySelector('#quote-proj-pricing-grid');
     if(pricingCard.parentNode !== quoteProjPricingInlineSlot) quoteProjPricingInlineSlot.appendChild(pricingCard);
     if(pricingGrid && projUpGroup.parentNode !== pricingGrid) pricingGrid.appendChild(projUpGroup);
+    var quoteProjSave = G('quote-proj-save-inline');
+    if(pricingGrid && !quoteProjSave){
+      quoteProjSave = document.createElement('div');
+      quoteProjSave.className = 'qi-save-box qi-save-box-proj';
+      quoteProjSave.id = 'quote-proj-save-inline';
+      pricingGrid.appendChild(quoteProjSave);
+    }
+    if(quoteProjSave){
+      quoteProjSave.innerHTML =
+        '<div class="qi-plbl">'+t('qsave')+'</div>'+
+        getQuotationSaveButtonHtml('quote-inline-save-btn-proj');
+    }
     if(pricingGrid && projLineTotal.parentNode !== pricingGrid) pricingGrid.appendChild(projLineTotal);
   }
   updateQuoteModeAuxVisibility();
@@ -2034,6 +2068,10 @@ function ductRecommendation(supRt, retRt, isAr){
     ? '✅ السرعة مناسبة من الناحية الفنية.'
     : '✅ Velocity is within acceptable engineering limits.';
 }
+function getQuotationSaveButtonHtml(extraClass){
+  var cls = 'quote-inline-save-btn' + (extraClass ? ' ' + extraClass : '');
+  return '<button type="button" class="'+cls+'" onclick="saveQuotationToCurrentProject()" title="'+t('qsave')+'" aria-label="'+t('qsave')+'">💾 <span>'+t('qsave')+'</span></button>';
+}
 function renderQuote(){
   var list=G('qi-list'); if(list) list.innerHTML='';
   var quoteView=G('quote-view-list'); if(quoteView) quoteView.innerHTML='';
@@ -2305,6 +2343,10 @@ function renderQuote(){
             '<div class="qi-plbl">'+(lang==='ar'?'سعر الوحدة':'Unit Price')+'</div>'+
             '<input class="minp" type="number" min="0" step="0.01" value="'+(up||'')+'" placeholder="0.00" onchange="setUp('+i+',this.value)">'+
           '</div>'+
+          '<div class="qi-save-box">'+
+            '<div class="qi-plbl">'+t('qsave')+'</div>'+
+            getQuotationSaveButtonHtml('quote-inline-save-btn-row')+
+          '</div>'+
           '<div class="qi-lt-box">'+
             '<div class="qi-lt-lbl">'+(lang==='ar'?'الإجمالي':'Total')+'</div>'+
             '<div class="qi-lt-val" id="qlt-'+i+'">'+money(lt)+'</div>'+
@@ -2566,13 +2608,21 @@ function buildHapWorkbookBlob(roomRows, summaryRows, metaRows){
 function safeVal(v, fallback){
   return v == null || v === '' || (typeof v === 'number' && !isFinite(v)) ? (fallback == null ? '' : fallback) : v;
 }
+function safeExportCell(v){
+  if (v === undefined || v === null) return '';
+  if (typeof v === 'number') return isFinite(v) ? v : '';
+  if (typeof v === 'boolean') return v;
+  return String(v);
+}
 function exportHAP(){
   if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف محفوظة':'⚠️ No saved rooms'); return; }
+  if(typeof XLSX === 'undefined' || !XLSX.utils || !XLSX.writeFile){
+    toast(lang==='ar'?'⚠️ مكتبة Excel غير متاحة الآن':'⚠️ Excel library is not available right now');
+    return;
+  }
   var projectName = ((G('quote-project')||{value:''}).value || (G('tech-project')||{value:''}).value || '').trim() || (lang==='ar'?'غير محدد':'Untitled');
   var today = new Date().toISOString().slice(0,10);
-  var roomRows = [[
-    'Room Name','Room Type','Calculation Mode','Volume','Area','Height','People','Equipment Load','Load Factor','Fresh Air Mode','Outdoor Air CFM','Recirculated CFM','Exhaust CFM','Total CFM','Total BTU','TR','ACH','Pressure'
-  ]];
+  var roomRows = [];
   var totalBtu = 0, totalTr = 0, totalCfm = 0;
   hist.forEach(function(h){
     var dims = h.dims || {};
@@ -2581,48 +2631,49 @@ function exportHAP(){
     var freshAirModeLabel = h.calcMode === 'hc'
       ? (h.freshAirMode === 'fresh100' ? t('fresh100lbl') : t('mixedair'))
       : '';
-    roomRows.push([
-      safeVal(lang==='ar'?(h.ar||h.en):(h.en||h.ar)),
-      safeVal(h.roomType || (lang==='ar'?(h.ar||h.en):(h.en||h.ar))),
-      safeVal(modeLabel),
-      Number(h.vol||0),
-      Number(area.toFixed(2)),
-      Number(dims.height||0),
-      Number(h.ppl||0),
-      Number(h.equipmentBtu||0),
-      h.calcMode === 'hc' ? '' : Number(h.loadFactor||0),
-      safeVal(freshAirModeLabel),
-      Number(h.oa||0),
-      Number(h.recirc||0),
-      Number(h.exh||0),
-      Number(h.cfm||0),
-      Number(h.btu||0),
-      Number(h.tr||0),
-      h.ach != null ? Number(h.ach) : '',
-      safeVal(h.pressure || h.pres || '')
-    ]);
+    roomRows.push({
+      'Room Name': safeExportCell(lang==='ar'?(h.ar||h.en):(h.en||h.ar)),
+      'Room Type': safeExportCell(h.roomType || (lang==='ar'?(h.ar||h.en):(h.en||h.ar))),
+      'Calculation Mode': safeExportCell(modeLabel),
+      'Volume': safeExportCell(Number(h.vol||0)),
+      'Area': safeExportCell(Number(area.toFixed(2))),
+      'Height': safeExportCell(Number(dims.height||0)),
+      'People': safeExportCell(Number(h.ppl||0)),
+      'Equipment Load': safeExportCell(Number(h.equipmentBtu||0)),
+      'Load Factor': safeExportCell(h.calcMode === 'hc' ? '' : Number(h.loadFactor||0)),
+      'Fresh Air Mode': safeExportCell(freshAirModeLabel),
+      'Outdoor Air CFM': safeExportCell(Number(h.oa||0)),
+      'Recirculated CFM': safeExportCell(Number(h.recirc||0)),
+      'Exhaust CFM': safeExportCell(Number(h.exh||0)),
+      'Total CFM': safeExportCell(Number(h.cfm||0)),
+      'Total BTU': safeExportCell(Number(h.btu||0)),
+      'TR': safeExportCell(Number(h.tr||0)),
+      'ACH': safeExportCell(h.ach != null ? Number(h.ach) : ''),
+      'Pressure': safeExportCell(h.pressure || h.pres || '')
+    });
     totalBtu += Number(h.btu||0);
     totalTr += Number(h.tr||0);
     totalCfm += Number(h.cfm||0);
   });
   var summaryRows = [
-    ['Metric','Value'],
-    ['Total Rooms', hist.length],
-    ['Total BTU', totalBtu],
-    ['Total TR', Number(totalTr.toFixed(2))],
-    ['Total CFM', totalCfm]
+    {'Metric':'Total Rooms','Value': safeExportCell(hist.length)},
+    {'Metric':'Total BTU','Value': safeExportCell(totalBtu)},
+    {'Metric':'Total TR','Value': safeExportCell(Number(totalTr.toFixed(2)))},
+    {'Metric':'Total CFM','Value': safeExportCell(totalCfm)}
   ];
   var metaRows = [
-    ['Project Name', projectName],
-    ['Date', today],
-    ['Mode', quoteMode === 'proj' ? 'Project' : 'Room']
+    {'Field':'Project Name','Value': safeExportCell(projectName)},
+    {'Field':'Date','Value': safeExportCell(today)},
+    {'Field':'Mode','Value': safeExportCell(quoteMode === 'proj' ? 'Project' : 'Room')}
   ];
-  var blob = buildHapWorkbookBlob(roomRows, summaryRows, metaRows);
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'AirCalc_HAP_Export_' + today + '.xlsx';
-  a.click();
-  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  var wb = XLSX.utils.book_new();
+  var wsRooms = XLSX.utils.json_to_sheet(roomRows);
+  var wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+  var wsMeta = XLSX.utils.json_to_sheet(metaRows);
+  XLSX.utils.book_append_sheet(wb, wsRooms, 'Rooms');
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+  XLSX.utils.book_append_sheet(wb, wsMeta, 'Metadata');
+  XLSX.writeFile(wb, 'AirCalc_HAP_Export_' + today + '.xlsx');
   toast(lang==='ar'?'📊 تم تصدير ملف HAP':'📊 HAP export downloaded');
 }
 function exportInvoiceHTML(){
