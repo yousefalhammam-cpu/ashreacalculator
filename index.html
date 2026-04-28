@@ -20,6 +20,7 @@
       <nav class="site-nav">
         <a href="#top" data-i18n="nav_home">الرئيسية</a>
         <a href="#features" data-i18n="nav_features">الميزات</a>
+        <a href="#problem-solution" data-i18n="nav_solution">الحل</a>
         <a href="#workflow" data-i18n="nav_workflow">طريقة العمل</a>
         <a href="#contact" data-i18n="nav_contact">تواصل</a>
       </nav>
@@ -30,33 +31,65 @@
     <main>
       <section class="hero" id="top">
         <div class="hero-copy">
-          <div class="eyebrow">HVAC SaaS</div>
+          <div class="eyebrow" data-i18n="hero_eyebrow">منصة HVAC احترافية</div>
           <h1>AirCalc Pro</h1>
           <p class="hero-subtitle" data-i18n="subtitle">منصة حسابات وعروض أسعار التكييف</p>
           <p class="hero-text" data-i18n="hero_desc">
-            أداة ذكية للمهندسين والمقاولين وفرق التشغيل لحساب أحمال التكييف، تدفق الهواء، متطلبات التهوية للمنشآت الصحية، وإصدار عروض أسعار احترافية بسرعة.
+            احسب أحمال التكييف واصدر عرض سعر خلال دقائق — بدون إكسل وبدون تعقيد.
           </p>
+          <p class="hero-support" data-i18n="hero_support">أداة احترافية للمهندسين والمقاولين مبنية على ASHRAE.</p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="./app/index.html" data-i18n="hero_primary">ابدأ الحساب</a>
-            <a class="btn btn-secondary" href="#features" data-i18n="hero_secondary">استعرض الميزات</a>
+            <a class="btn btn-primary btn-large" href="./app/index.html" data-i18n="hero_primary">ابدأ الحساب الآن</a>
+            <a class="btn btn-secondary btn-large" href="#features" data-i18n="hero_secondary">شاهد الميزات</a>
           </div>
+          <div class="hero-urgency" data-i18n="hero_urgency">المستخدمون الحاليون يحصلون على وصول مجاني لفترة محدودة</div>
         </div>
 
         <div class="hero-side-grid" aria-label="AirCalc Pro Highlights">
           <article class="hero-highlight">
             <div class="hero-highlight-icon">❄</div>
-            <h3 data-i18n="hero_h1_title">حساب أحمال التبريد</h3>
-            <p data-i18n="hero_h1_text">من الغرفة الواحدة إلى المشاريع متعددة الغرف مع نتائج واضحة وسريعة.</p>
+            <h3 data-i18n="hero_h1_title">نتائج فورية وواضحة</h3>
+            <p data-i18n="hero_h1_text">اعرف BTU وTR وCFM والسعة المناسبة خلال خطوات قليلة.</p>
           </article>
           <article class="hero-highlight">
             <div class="hero-highlight-icon">🏥</div>
-            <h3 data-i18n="hero_h2_title">ASHRAE للغرف الصحية</h3>
-            <p data-i18n="hero_h2_text">دعم ACH والهواء الخارجي والعادم والضغط للمنشآت الصحية.</p>
+            <h3 data-i18n="hero_h2_title">منطق ASHRAE حقيقي</h3>
+            <p data-i18n="hero_h2_text">ACH والهواء الخارجي والعادم والضغط ضمن نفس مسار العمل.</p>
           </article>
           <article class="hero-highlight">
             <div class="hero-highlight-icon">💼</div>
-            <h3 data-i18n="hero_h3_title">عروض سعر ومشاريع</h3>
-            <p data-i18n="hero_h3_text">تجهيز عروض الأسعار وحفظ المشاريع والتقارير من نفس المسار.</p>
+            <h3 data-i18n="hero_h3_title">من الحساب إلى العرض</h3>
+            <p data-i18n="hero_h3_text">احفظ المشاريع وجهّز التقرير وعرض السعر من أداة واحدة.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="problem-solution">
+        <div class="split-grid">
+          <article class="info-panel problem-panel">
+            <div class="section-head compact">
+              <div class="eyebrow" data-i18n="problem_eyebrow">المشكلة</div>
+              <h2 data-i18n="problem_title">لماذا تتأخر الحسابات وعروض السعر؟</h2>
+            </div>
+            <div class="bullet-list">
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="problem_1">الحساب اليدوي يأخذ وقت</span></div>
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="problem_2">الاعتماد على إكسل معقد</span></div>
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="problem_3">أخطاء في تقدير الأحمال</span></div>
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="problem_4">صعوبة تجهيز عرض سعر سريع</span></div>
+            </div>
+          </article>
+
+          <article class="info-panel solution-panel">
+            <div class="section-head compact">
+              <div class="eyebrow" data-i18n="solution_eyebrow">الحل</div>
+              <h2 data-i18n="solution_title">أداة واحدة تجمع المسار كاملًا</h2>
+            </div>
+            <div class="bullet-list">
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="solution_1">AirCalc Pro يجمع كل شيء في أداة واحدة</span></div>
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="solution_2">حساب + تدفق هواء + عرض سعر</span></div>
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="solution_3">نتائج فورية</span></div>
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="solution_4">بدون تعقيد</span></div>
+            </div>
           </article>
         </div>
       </section>
@@ -64,38 +97,62 @@
       <section class="section" id="features">
         <div class="section-head">
           <div class="eyebrow" data-i18n="features_eyebrow">الميزات</div>
-          <h2 data-i18n="features_title">مزايا عملية تدعم سير عمل HVAC من الحساب إلى العرض</h2>
+          <h2 data-i18n="features_title">مزايا تترجم إلى وقت أقل وقرار أسرع</h2>
         </div>
         <div class="feature-grid">
           <article class="feature-card">
             <div class="feature-icon">❄</div>
             <h3 data-i18n="f1_title">حساب أحمال التبريد</h3>
-            <p data-i18n="f1_text">تقدير الحمل الحراري، طن التبريد، والسعة السوقية لغرفة واحدة أو عدة غرف.</p>
+            <p data-i18n="f1_text">احسب الحمل الحراري بدقة مع عرض TR وBTU والسعة المناسبة تلقائيًا.</p>
           </article>
           <article class="feature-card">
             <div class="feature-icon">🌬</div>
             <h3 data-i18n="f2_title">حساب تدفق الهواء</h3>
-            <p data-i18n="f2_text">حساب تدفق الإمداد ومراجعة قيم CFM لدعم اختيار النظام.</p>
+            <p data-i18n="f2_text">راجع CFM وتدفق الإمداد بسرعة لدعم اختيار النظام والمقاس المناسب.</p>
           </article>
           <article class="feature-card">
             <div class="feature-icon">🏥</div>
             <h3 data-i18n="f3_title">دعم ASHRAE للمنشآت الصحية</h3>
-            <p data-i18n="f3_text">استخدام ACH والهواء الخارجي والعادم والضغط لغرف المنشآت الصحية.</p>
+            <p data-i18n="f3_text">تطبيق مباشر لمعايير ASHRAE للغرف الصحية بدون تعقيد.</p>
           </article>
           <article class="feature-card">
-            <div class="feature-icon">💨</div>
-            <h3 data-i18n="f4_title">وضع الهواء النقي 100%</h3>
-            <p data-i18n="f4_text">مقارنة وضع ASHRAE المختلط مع وضع الهواء النقي 100% للغرف الصحية.</p>
+            <div class="feature-icon">💰</div>
+            <h3 data-i18n="f4_title">نظام عرض السعر</h3>
+            <p data-i18n="f4_text">إنشاء عرض سعر كامل خلال ثواني مع الضريبة والتركيب.</p>
           </article>
           <article class="feature-card">
             <div class="feature-icon">📁</div>
             <h3 data-i18n="f5_title">لوحة إدارة المشاريع</h3>
-            <p data-i18n="f5_text">حفظ المشاريع ومراجعة الإجماليات وفتح التقارير وعروض السعر والتصدير بسرعة.</p>
+            <p data-i18n="f5_text">إدارة مشاريعك ومراجعة النتائج بسرعة مع حفظ السجلات والتقارير.</p>
           </article>
           <article class="feature-card">
-            <div class="feature-icon">💰</div>
-            <h3 data-i18n="f6_title">نظام عرض السعر</h3>
-            <p data-i18n="f6_text">إعداد عروض أسعار للتكييف تشمل أسعار الوحدات، الضريبة، نسبة التركيب، والإجماليات.</p>
+            <div class="feature-icon">💨</div>
+            <h3 data-i18n="f6_title">وضع الهواء النقي 100%</h3>
+            <p data-i18n="f6_text">قارن بين ASHRAE mixed air ووضع 100% fresh air للغرف الصحية.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div class="eyebrow" data-i18n="trust_eyebrow">الثقة</div>
+          <h2 data-i18n="trust_title">المنشآت الصحية والمستشفيات</h2>
+        </div>
+        <div class="trust-grid">
+          <article class="trust-card">
+            <div class="feature-icon">🏥</div>
+            <h3 data-i18n="trust_1_title">دعم غرف العمليات</h3>
+            <p data-i18n="trust_1_text">منطق واضح للغرف الصحية الحرجة ومسارات تهوية أكثر مهنية.</p>
+          </article>
+          <article class="trust-card">
+            <div class="feature-icon">📐</div>
+            <h3 data-i18n="trust_2_title">حساب ACH والضغط</h3>
+            <p data-i18n="trust_2_text">مراجعة ACH والهواء الخارجي والعادم والضغط ضمن نفس الأداة.</p>
+          </article>
+          <article class="trust-card">
+            <div class="feature-icon">👷</div>
+            <h3 data-i18n="trust_3_title">مناسب للمهندسين والمقاولين</h3>
+            <p data-i18n="trust_3_text">نتائج سريعة تساعد في الدراسة والتسعير واتخاذ القرار.</p>
           </article>
         </div>
       </section>
@@ -130,21 +187,52 @@
       </section>
 
       <section class="section">
+        <div class="section-head">
+          <div class="eyebrow" data-i18n="compare_eyebrow">قبل وبعد</div>
+          <h2 data-i18n="compare_title">فرّق بين الأسلوب التقليدي وأسلوب AirCalc Pro</h2>
+        </div>
+        <div class="compare-grid">
+          <article class="compare-card compare-before">
+            <h3 data-i18n="before_title">قبل</h3>
+            <div class="bullet-list">
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="before_1">Excel</span></div>
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="before_2">حساب يدوي</span></div>
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="before_3">وقت طويل</span></div>
+            </div>
+          </article>
+          <article class="compare-card compare-after">
+            <h3 data-i18n="after_title">بعد</h3>
+            <div class="bullet-list">
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="after_1">AirCalc Pro</span></div>
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="after_2">نتائج فورية</span></div>
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="after_3">عرض سعر جاهز</span></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
         <div class="early-access-card">
-          <div class="early-access-title" data-i18n="early_title">وصول مجاني حاليًا</div>
+          <div class="early-access-title" data-i18n="early_title">الخطة الحالية</div>
           <div class="early-access-text" data-i18n="early_access">
             المستخدمون الأوائل يحصلون على وصول مجاني أثناء تطوير المنتج.
           </div>
+          <div class="pricing-list">
+            <span class="pricing-pill" data-i18n="plan_1">وصول كامل</span>
+            <span class="pricing-pill" data-i18n="plan_2">بدون قيود</span>
+            <span class="pricing-pill" data-i18n="plan_3">مجانًا مؤقتًا</span>
+          </div>
+          <div class="early-access-note" data-i18n="plan_note">سيتم إضافة خطط مدفوعة لاحقًا</div>
         </div>
       </section>
 
       <section class="cta-band">
         <div>
           <div class="eyebrow">AirCalc Pro</div>
-          <h2 data-i18n="cta_title">جاهز لحساب مشروع التكييف القادم؟</h2>
+          <h2 data-i18n="cta_title">ابدأ الآن وجرّب بنفسك</h2>
         </div>
         <div class="cta-actions">
-          <a class="btn btn-primary" href="./app/index.html" data-i18n="cta_button">افتح AirCalc Pro</a>
+          <a class="btn btn-primary btn-large" href="./app/index.html" data-i18n="cta_button">افتح AirCalc Pro</a>
         </div>
       </section>
     </main>
@@ -172,32 +260,56 @@
         subtitle: 'منصة حسابات وعروض أسعار التكييف',
         nav_home: 'الرئيسية',
         nav_features: 'الميزات',
+        nav_solution: 'الحل',
         nav_workflow: 'طريقة العمل',
         nav_contact: 'تواصل',
         nav_app: 'التطبيق',
-        hero_desc: 'أداة ذكية للمهندسين والمقاولين وفرق التشغيل لحساب أحمال التكييف، تدفق الهواء، متطلبات التهوية للمنشآت الصحية، وإصدار عروض أسعار احترافية بسرعة.',
-        hero_primary: 'ابدأ الحساب',
-        hero_secondary: 'استعرض الميزات',
-        hero_h1_title: 'حساب أحمال التبريد',
-        hero_h1_text: 'من الغرفة الواحدة إلى المشاريع متعددة الغرف مع نتائج واضحة وسريعة.',
-        hero_h2_title: 'ASHRAE للغرف الصحية',
-        hero_h2_text: 'دعم ACH والهواء الخارجي والعادم والضغط للمنشآت الصحية.',
-        hero_h3_title: 'عروض سعر ومشاريع',
-        hero_h3_text: 'تجهيز عروض الأسعار وحفظ المشاريع والتقارير من نفس المسار.',
+        hero_eyebrow: 'منصة HVAC احترافية',
+        hero_desc: 'احسب أحمال التكييف واصدر عرض سعر خلال دقائق — بدون إكسل وبدون تعقيد.',
+        hero_support: 'أداة احترافية للمهندسين والمقاولين مبنية على ASHRAE.',
+        hero_primary: 'ابدأ الحساب الآن',
+        hero_secondary: 'شاهد الميزات',
+        hero_urgency: 'المستخدمون الحاليون يحصلون على وصول مجاني لفترة محدودة',
+        hero_h1_title: 'نتائج فورية وواضحة',
+        hero_h1_text: 'اعرف BTU وTR وCFM والسعة المناسبة خلال خطوات قليلة.',
+        hero_h2_title: 'منطق ASHRAE حقيقي',
+        hero_h2_text: 'ACH والهواء الخارجي والعادم والضغط ضمن نفس مسار العمل.',
+        hero_h3_title: 'من الحساب إلى العرض',
+        hero_h3_text: 'احفظ المشاريع وجهّز التقرير وعرض السعر من أداة واحدة.',
+        problem_eyebrow: 'المشكلة',
+        problem_title: 'لماذا تتأخر الحسابات وعروض السعر؟',
+        problem_1: 'الحساب اليدوي يأخذ وقت',
+        problem_2: 'الاعتماد على إكسل معقد',
+        problem_3: 'أخطاء في تقدير الأحمال',
+        problem_4: 'صعوبة تجهيز عرض سعر سريع',
+        solution_eyebrow: 'الحل',
+        solution_title: 'أداة واحدة تجمع المسار كاملًا',
+        solution_1: 'AirCalc Pro يجمع كل شيء في أداة واحدة',
+        solution_2: 'حساب + تدفق هواء + عرض سعر',
+        solution_3: 'نتائج فورية',
+        solution_4: 'بدون تعقيد',
         features_eyebrow: 'الميزات',
-        features_title: 'مزايا عملية تدعم سير عمل HVAC من الحساب إلى العرض',
+        features_title: 'مزايا تترجم إلى وقت أقل وقرار أسرع',
         f1_title: 'حساب أحمال التبريد',
-        f1_text: 'تقدير الحمل الحراري، طن التبريد، والسعة السوقية لغرفة واحدة أو عدة غرف.',
+        f1_text: 'احسب الحمل الحراري بدقة مع عرض TR وBTU والسعة المناسبة تلقائيًا.',
         f2_title: 'حساب تدفق الهواء',
-        f2_text: 'حساب تدفق الإمداد ومراجعة قيم CFM لدعم اختيار النظام.',
+        f2_text: 'راجع CFM وتدفق الإمداد بسرعة لدعم اختيار النظام والمقاس المناسب.',
         f3_title: 'دعم ASHRAE للمنشآت الصحية',
-        f3_text: 'استخدام ACH والهواء الخارجي والعادم والضغط لغرف المنشآت الصحية.',
-        f4_title: 'وضع الهواء النقي 100%',
-        f4_text: 'مقارنة وضع ASHRAE المختلط مع وضع الهواء النقي 100% للغرف الصحية.',
+        f3_text: 'تطبيق مباشر لمعايير ASHRAE للغرف الصحية بدون تعقيد.',
+        f4_title: 'نظام عرض السعر',
+        f4_text: 'إنشاء عرض سعر كامل خلال ثواني مع الضريبة والتركيب.',
         f5_title: 'لوحة إدارة المشاريع',
-        f5_text: 'حفظ المشاريع ومراجعة الإجماليات وفتح التقارير وعروض السعر والتصدير بسرعة.',
-        f6_title: 'نظام عرض السعر',
-        f6_text: 'إعداد عروض أسعار للتكييف تشمل أسعار الوحدات، الضريبة، نسبة التركيب، والإجماليات.',
+        f5_text: 'إدارة مشاريعك ومراجعة النتائج بسرعة مع حفظ السجلات والتقارير.',
+        f6_title: 'وضع الهواء النقي 100%',
+        f6_text: 'قارن بين ASHRAE mixed air ووضع 100% fresh air للغرف الصحية.',
+        trust_eyebrow: 'الثقة',
+        trust_title: 'المنشآت الصحية والمستشفيات',
+        trust_1_title: 'دعم غرف العمليات',
+        trust_1_text: 'منطق واضح للغرف الصحية الحرجة ومسارات تهوية أكثر مهنية.',
+        trust_2_title: 'حساب ACH والضغط',
+        trust_2_text: 'مراجعة ACH والهواء الخارجي والعادم والضغط ضمن نفس الأداة.',
+        trust_3_title: 'مناسب للمهندسين والمقاولين',
+        trust_3_text: 'نتائج سريعة تساعد في الدراسة والتسعير واتخاذ القرار.',
         workflow_eyebrow: 'طريقة العمل',
         workflow_title: 'كيف يعمل AirCalc Pro',
         w1_title: 'أدخل أبعاد الغرفة',
@@ -205,9 +317,23 @@
         w3_title: 'أضف أحمال الأجهزة',
         w4_title: 'راجع النتائج',
         w5_title: 'صدّر التقرير أو عرض السعر',
-        early_title: 'وصول مجاني حاليًا',
+        compare_eyebrow: 'قبل وبعد',
+        compare_title: 'فرّق بين الأسلوب التقليدي وأسلوب AirCalc Pro',
+        before_title: 'قبل',
+        before_1: 'Excel',
+        before_2: 'حساب يدوي',
+        before_3: 'وقت طويل',
+        after_title: 'بعد',
+        after_1: 'AirCalc Pro',
+        after_2: 'نتائج فورية',
+        after_3: 'عرض سعر جاهز',
+        early_title: 'الخطة الحالية',
         early_access: 'المستخدمون الأوائل يحصلون على وصول مجاني أثناء تطوير المنتج.',
-        cta_title: 'جاهز لحساب مشروع التكييف القادم؟',
+        plan_1: 'وصول كامل',
+        plan_2: 'بدون قيود',
+        plan_3: 'مجانًا مؤقتًا',
+        plan_note: 'سيتم إضافة خطط مدفوعة لاحقًا',
+        cta_title: 'ابدأ الآن وجرّب بنفسك',
         cta_button: 'افتح AirCalc Pro',
         footer_note: 'منصة حسابات وعروض أسعار التكييف',
         footer_mobile: 'رقم الجوال: 0560282701',
@@ -217,32 +343,56 @@
         subtitle: 'HVAC Calculation & Quotation Suite',
         nav_home: 'Home',
         nav_features: 'Features',
+        nav_solution: 'Solution',
         nav_workflow: 'How it Works',
         nav_contact: 'Contact',
         nav_app: 'App',
-        hero_desc: 'A smart HVAC tool for engineers, contractors, and facility teams to estimate cooling loads, airflow, healthcare ventilation requirements, and professional quotations faster.',
+        hero_eyebrow: 'Professional HVAC Platform',
+        hero_desc: 'Calculate HVAC loads and generate quotations in minutes — no Excel, no guesswork.',
+        hero_support: 'Built for engineers and contractors using real ASHRAE logic.',
         hero_primary: 'Start Calculating',
         hero_secondary: 'Explore Features',
-        hero_h1_title: 'Cooling Load Calculation',
-        hero_h1_text: 'From single rooms to multi-room projects with quick, readable results.',
-        hero_h2_title: 'ASHRAE Healthcare Support',
-        hero_h2_text: 'Support for ACH, outdoor air, exhaust, and pressure in healthcare spaces.',
-        hero_h3_title: 'Quotations & Projects',
-        hero_h3_text: 'Prepare quotations, save projects, and open reports from one workflow.',
+        hero_urgency: 'Current users get free access for a limited time',
+        hero_h1_title: 'Fast, readable results',
+        hero_h1_text: 'See BTU, TR, CFM, and suggested capacity in a few steps.',
+        hero_h2_title: 'Real ASHRAE logic',
+        hero_h2_text: 'ACH, outdoor air, exhaust, and pressure in one workflow.',
+        hero_h3_title: 'From load to quotation',
+        hero_h3_text: 'Save projects and prepare reports and quotations in one tool.',
+        problem_eyebrow: 'Problem',
+        problem_title: 'Why do load studies and quotations slow teams down?',
+        problem_1: 'Manual calculations take time',
+        problem_2: 'Excel-based workflows are messy',
+        problem_3: 'Load estimates are easy to miss',
+        problem_4: 'Fast quotations are hard to prepare',
+        solution_eyebrow: 'Solution',
+        solution_title: 'One tool for the full workflow',
+        solution_1: 'AirCalc Pro brings everything together',
+        solution_2: 'Load + airflow + quotation',
+        solution_3: 'Instant results',
+        solution_4: 'No unnecessary complexity',
         features_eyebrow: 'Features',
-        features_title: 'Practical capabilities for HVAC work from calculation to quotation',
+        features_title: 'Features that turn into faster delivery and clearer decisions',
         f1_title: 'Cooling Load Calculation',
-        f1_text: 'Estimate BTU, TR, and market capacity for single or multiple rooms.',
+        f1_text: 'Calculate sensible cooling load with TR, BTU, and suggested market capacity automatically.',
         f2_title: 'Airflow & CFM',
-        f2_text: 'Calculate supply airflow and review CFM values for HVAC sizing.',
+        f2_text: 'Review supply airflow and CFM values quickly to support HVAC sizing.',
         f3_title: 'ASHRAE Healthcare Support',
-        f3_text: 'Use ACH, outdoor air, exhaust, and pressure data for healthcare spaces.',
-        f4_title: '100% Fresh Air Mode',
-        f4_text: 'Compare ASHRAE mixed air with 100% fresh air for healthcare rooms.',
+        f3_text: 'Apply ASHRAE healthcare room logic directly without extra complexity.',
+        f4_title: 'Quotation System',
+        f4_text: 'Generate complete HVAC quotations in seconds with VAT and installation costs.',
         f5_title: 'Project Dashboard',
-        f5_text: 'Save projects, review totals, open reports, quotations, and exports quickly.',
-        f6_title: 'Quotation System',
-        f6_text: 'Prepare HVAC quotations with unit prices, VAT, installation percentage, and totals.',
+        f5_text: 'Manage projects and review results quickly with saved records and exports.',
+        f6_title: '100% Fresh Air Mode',
+        f6_text: 'Compare ASHRAE mixed air against 100% fresh air for healthcare rooms.',
+        trust_eyebrow: 'Trust',
+        trust_title: 'Built on real healthcare facility project experience',
+        trust_1_title: 'Operating room support',
+        trust_1_text: 'Practical logic for critical healthcare spaces and ventilation paths.',
+        trust_2_title: 'ACH and pressure review',
+        trust_2_text: 'Review ACH, outdoor air, exhaust, and pressure in the same tool.',
+        trust_3_title: 'Built for engineers and contractors',
+        trust_3_text: 'Fast outputs that support study, pricing, and decision-making.',
         workflow_eyebrow: 'Workflow',
         workflow_title: 'How it works',
         w1_title: 'Enter room dimensions',
@@ -250,9 +400,23 @@
         w3_title: 'Add equipment loads',
         w4_title: 'Review results',
         w5_title: 'Export report or quotation',
-        early_title: 'Early Access',
+        compare_eyebrow: 'Before / After',
+        compare_title: 'See the difference between the old workflow and AirCalc Pro',
+        before_title: 'Before',
+        before_1: 'Excel',
+        before_2: 'Manual calculations',
+        before_3: 'Long turnaround',
+        after_title: 'After',
+        after_1: 'AirCalc Pro',
+        after_2: 'Instant results',
+        after_3: 'Ready quotation',
+        early_title: 'Current Plan',
         early_access: 'Early users get free access while the product is being improved.',
-        cta_title: 'Ready to calculate your next HVAC project?',
+        plan_1: 'Full access',
+        plan_2: 'No restrictions',
+        plan_3: 'Free for now',
+        plan_note: 'Paid plans will be added later',
+        cta_title: 'Start now and try it yourself',
         cta_button: 'Open AirCalc Pro',
         footer_note: 'HVAC Calculation & Quotation Suite',
         footer_mobile: 'Mobile: 0560282701',
