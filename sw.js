@@ -3,11 +3,14 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v8';
+const CACHE_NAME = 'aircalcpro-v9';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
+  './landing.css',
+  './app/',
+  './app/index.html',
   './styles.css',
   './app.js',
   './main.js',
@@ -101,6 +104,7 @@ self.addEventListener('fetch', function (event) {
   const isHTML =
     pathname.endsWith('.html') ||
     pathname.endsWith('/') ||
+    pathname.indexOf('/app') !== -1 ||
     pathname === '/ashreacalculator/' ||
     pathname === '/ashreacalculator';
 
@@ -120,7 +124,11 @@ self.addEventListener('fetch', function (event) {
         .catch(function () {
           return caches.match(event.request)
             .then(function (cached) {
-              return cached || caches.match('./index.html') || caches.match('./');
+              if (cached) return cached;
+              if (pathname.indexOf('/app') !== -1) {
+                return caches.match('./app/index.html') || caches.match('./app/');
+              }
+              return caches.match('./index.html') || caches.match('./');
             });
         })
     );

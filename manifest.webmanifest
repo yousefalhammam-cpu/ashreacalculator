@@ -3,7 +3,7 @@
   "name": "AirCalc Pro",
   "short_name": "AirCalc",
   "description": "HVAC Engineering Suite for cooling load, airflow, quotation, duct sizing, and technical reports.",
-  "start_url": "./index.html",
+  "start_url": "./app/index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",

@@ -1,1049 +1,284 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#0a0e17">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="AirCalc Pro">
-<link rel="shortcut icon" href="./assets/icons/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="./assets/icons/favicon-16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="./assets/icons/favicon-32.png">
-<link rel="icon" type="image/png" sizes="48x48" href="./assets/icons/favicon-48.png">
-<link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
-<title>AirCalc Pro</title>
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./styles.css">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<!-- PDF libs loaded on-demand when user clicks Export PDF -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AirCalc Pro - Landing</title>
+  <link rel="stylesheet" href="./landing.css">
 </head>
-<body class="light-theme">
-<div class="app">
-  <div class="header">
-    <div class="logo">
-      <div class="app-header">
-        <img src="./assets/logo/logo-header.png" class="logo-brand-img" alt="AirCalc Pro">
-        <div class="app-brand-text">
-          <div class="app-title">AirCalc Pro</div>
-          <div class="logo-subtitle" id="app-subtitle">منصة حسابات وعروض أسعار التكييف</div>
+<body>
+  <div class="landing-shell">
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="AirCalc Pro">
+        <img src="./assets/logo/logo-header.png" alt="AirCalc Pro" class="brand-logo">
+        <div class="brand-copy">
+          <div class="brand-title">AirCalc Pro <span class="pro-badge">PRO</span></div>
+          <div class="brand-subtitle" data-i18n="subtitle">منصة حسابات وعروض أسعار التكييف</div>
         </div>
+      </a>
+
+      <nav class="site-nav">
+        <a href="#top" data-i18n="nav_home">الرئيسية</a>
+        <a href="#features" data-i18n="nav_features">الميزات</a>
+        <a href="#workflow" data-i18n="nav_workflow">طريقة العمل</a>
+        <a href="#contact" data-i18n="nav_contact">تواصل</a>
+      </nav>
+
+      <button class="lang-toggle" id="langToggle" type="button">EN</button>
+    </header>
+
+    <main>
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <div class="eyebrow">HVAC SaaS</div>
+          <h1>AirCalc Pro</h1>
+          <p class="hero-subtitle" data-i18n="subtitle">منصة حسابات وعروض أسعار التكييف</p>
+          <p class="hero-text" data-i18n="hero_desc">
+            أداة ذكية للمهندسين والمقاولين وفرق التشغيل لحساب أحمال التكييف، تدفق الهواء، متطلبات التهوية للمنشآت الصحية، وإصدار عروض أسعار احترافية بسرعة.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="./app/index.html" data-i18n="hero_primary">ابدأ الحساب</a>
+            <a class="btn btn-secondary" href="#features" data-i18n="hero_secondary">استعرض الميزات</a>
+          </div>
+        </div>
+
+        <div class="hero-side-grid" aria-label="AirCalc Pro Highlights">
+          <article class="hero-highlight">
+            <div class="hero-highlight-icon">❄</div>
+            <h3 data-i18n="hero_h1_title">حساب أحمال التبريد</h3>
+            <p data-i18n="hero_h1_text">من الغرفة الواحدة إلى المشاريع متعددة الغرف مع نتائج واضحة وسريعة.</p>
+          </article>
+          <article class="hero-highlight">
+            <div class="hero-highlight-icon">🏥</div>
+            <h3 data-i18n="hero_h2_title">ASHRAE للغرف الصحية</h3>
+            <p data-i18n="hero_h2_text">دعم ACH والهواء الخارجي والعادم والضغط للمنشآت الصحية.</p>
+          </article>
+          <article class="hero-highlight">
+            <div class="hero-highlight-icon">💼</div>
+            <h3 data-i18n="hero_h3_title">عروض سعر ومشاريع</h3>
+            <p data-i18n="hero_h3_text">تجهيز عروض الأسعار وحفظ المشاريع والتقارير من نفس المسار.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="features">
+        <div class="section-head">
+          <div class="eyebrow" data-i18n="features_eyebrow">الميزات</div>
+          <h2 data-i18n="features_title">مزايا عملية تدعم سير عمل HVAC من الحساب إلى العرض</h2>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon">❄</div>
+            <h3 data-i18n="f1_title">حساب أحمال التبريد</h3>
+            <p data-i18n="f1_text">تقدير الحمل الحراري، طن التبريد، والسعة السوقية لغرفة واحدة أو عدة غرف.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">🌬</div>
+            <h3 data-i18n="f2_title">حساب تدفق الهواء</h3>
+            <p data-i18n="f2_text">حساب تدفق الإمداد ومراجعة قيم CFM لدعم اختيار النظام.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">🏥</div>
+            <h3 data-i18n="f3_title">دعم ASHRAE للمنشآت الصحية</h3>
+            <p data-i18n="f3_text">استخدام ACH والهواء الخارجي والعادم والضغط لغرف المنشآت الصحية.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">💨</div>
+            <h3 data-i18n="f4_title">وضع الهواء النقي 100%</h3>
+            <p data-i18n="f4_text">مقارنة وضع ASHRAE المختلط مع وضع الهواء النقي 100% للغرف الصحية.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">📁</div>
+            <h3 data-i18n="f5_title">لوحة إدارة المشاريع</h3>
+            <p data-i18n="f5_text">حفظ المشاريع ومراجعة الإجماليات وفتح التقارير وعروض السعر والتصدير بسرعة.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">💰</div>
+            <h3 data-i18n="f6_title">نظام عرض السعر</h3>
+            <p data-i18n="f6_text">إعداد عروض أسعار للتكييف تشمل أسعار الوحدات، الضريبة، نسبة التركيب، والإجماليات.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="workflow">
+        <div class="section-head">
+          <div class="eyebrow" data-i18n="workflow_eyebrow">طريقة العمل</div>
+          <h2 data-i18n="workflow_title">كيف يعمل AirCalc Pro</h2>
+        </div>
+        <div class="workflow-grid">
+          <article class="workflow-step">
+            <span class="workflow-index">1</span>
+            <h3 data-i18n="w1_title">أدخل أبعاد الغرفة</h3>
+          </article>
+          <article class="workflow-step">
+            <span class="workflow-index">2</span>
+            <h3 data-i18n="w2_title">اختر نوع الغرفة ومعامل الحمل</h3>
+          </article>
+          <article class="workflow-step">
+            <span class="workflow-index">3</span>
+            <h3 data-i18n="w3_title">أضف أحمال الأجهزة</h3>
+          </article>
+          <article class="workflow-step">
+            <span class="workflow-index">4</span>
+            <h3 data-i18n="w4_title">راجع النتائج</h3>
+          </article>
+          <article class="workflow-step">
+            <span class="workflow-index">5</span>
+            <h3 data-i18n="w5_title">صدّر التقرير أو عرض السعر</h3>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="early-access-card">
+          <div class="early-access-title" data-i18n="early_title">وصول مجاني حاليًا</div>
+          <div class="early-access-text" data-i18n="early_access">
+            المستخدمون الأوائل يحصلون على وصول مجاني أثناء تطوير المنتج.
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-band">
+        <div>
+          <div class="eyebrow">AirCalc Pro</div>
+          <h2 data-i18n="cta_title">جاهز لحساب مشروع التكييف القادم؟</h2>
+        </div>
+        <div class="cta-actions">
+          <a class="btn btn-primary" href="./app/index.html" data-i18n="cta_button">افتح AirCalc Pro</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="footer-brand">
+        <div class="brand-title">AirCalc Pro</div>
+        <div class="footer-note" data-i18n="footer_note">منصة حسابات وعروض أسعار التكييف</div>
       </div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <button class="lang-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
-      <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
-    </div>
+      <div class="footer-links">
+        <a href="#top" data-i18n="nav_home">الرئيسية</a>
+        <a href="./app/index.html" data-i18n="nav_app">التطبيق</a>
+        <a href="#contact" data-i18n="nav_contact">تواصل</a>
+      </div>
+      <div class="footer-contact">
+        <a href="tel:0560282701" data-i18n="footer_mobile">رقم الجوال: 0560282701</a>
+        <a href="mailto:yousef.alhammam@live.com" data-i18n="footer_email">البريد الإلكتروني: yousef.alhammam@live.com</a>
+      </div>
+    </footer>
   </div>
 
-  <!-- CALC PANEL -->
-  <div class="panel on" id="p-calc">
-    <div class="dash results-dash">
-      <div class="results-head">
-        <div>
-          <div class="results-kicker" id="results-kicker">النتائج المباشرة</div>
-          <div class="results-caption" id="results-caption">تظهر هنا أهم نتائج التكييف مباشرة بعد الحساب.</div>
-        </div>
-        <div class="results-mode-toggle" aria-label="تبديل عرض النتائج">
-          <button type="button" class="results-mode-btn" id="results-mode-last" onclick="setResultsMode('last')">آخر غرفة</button>
-          <button type="button" class="results-mode-btn on" id="results-mode-total" onclick="setResultsMode('total')">إجمالي الغرف</button>
-        </div>
-      </div>
-      <div class="dash-grid">
-        <div class="met p"><div class="met-lbl" id="ml-tr">Cooling Load</div><div class="met-val" id="vtr">0.00</div><div class="met-unit">TON (TR)</div></div>
-        <div class="met g"><div class="met-lbl" id="ml-cfm">Supply CFM</div><div class="met-val" id="vcfm">0</div><div class="met-unit">CFM</div></div>
-        <div class="met am"><div class="met-lbl" id="ml-btu">Heat Load</div><div class="met-val" id="vbtu">0</div><div class="met-unit">BTU/h</div></div>
-        <div class="met"><div class="met-lbl" id="ml-mkt">Market BTU</div><div class="met-val" id="vmkt">0</div><div class="met-unit">BTU (Mkt)</div></div>
-      </div>
-    </div>
-    <div class="card input-card room-card">
-      <div class="input-head">
-        <div>
-          <div class="input-kicker" id="room-step-kicker">الخطوة 1</div>
-          <div class="input-title" id="room-input-title">Room Information</div>
-        </div>
-        <div class="input-note" id="room-input-note">Enter dimensions in meters; volume is calculated automatically.</div>
-      </div>
-      <div class="sec-ttl" id="st-room">ROOM</div>
-      <div class="row2 room-top-row">
-        <div class="dd-wrap">
-          <div class="lbl" id="lbl-type">Room Type</div>
-          <div class="dd-btn" id="f-type" onclick="toggleDD('dd-room')">
-            <span id="dt" style="font-size:13px">—</span><span class="dd-arr">▼</span>
-          </div>
-          <div class="dd-menu" id="dd-room">
-<div class="dd-cat-hdr">General / عام</div>
-<div class="dd-item sel" onclick="pickRoom(this,'r_office')"><div class="dd-item-info"><div>Office / مكتب</div><div class="dd-item-sub">أعمال مكتبية</div></div><span class="dd-badge">BTU/m³</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_residential')"><div class="dd-item-info"><div>Residential / سكني</div><div class="dd-item-sub">منازل وشقق</div></div><span class="dd-badge">BTU/m³</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_retail')"><div class="dd-item-info"><div>Retail / محل</div></div><span class="dd-badge">BTU/m³</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_kitchen')"><div class="dd-item-info"><div>Kitchen / مطبخ</div></div><span class="dd-badge">BTU/m³</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_server')"><div class="dd-item-info"><div>Server Room / سيرفر</div></div><span class="dd-badge">BTU/m³</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_classroom')"><div class="dd-item-info"><div>Classroom / قاعة</div></div><span class="dd-badge">BTU/m³</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_gym')"><div class="dd-item-info"><div>Gym / صالة</div></div><span class="dd-badge">BTU/m³</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_mosque')"><div class="dd-item-info"><div>Mosque / مسجد</div></div><span class="dd-badge">BTU/m³</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_restaurant')"><div class="dd-item-info"><div>Restaurant / مطعم</div></div><span class="dd-badge">BTU/m³</span></div>
-<div class="dd-cat-hdr">Healthcare — ASHRAE 170</div>
-<div class="dd-item" onclick="pickRoom(this,'h_patient_room')"><div class="dd-item-info"><div>Patient Room / غرفة المريض</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_corridor')"><div class="dd-item-info"><div>Patient Corridor / ممر</div><div class="dd-item-sub">2 OA · 4 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_or')"><div class="dd-item-info"><div>Operating Room / عمليات</div><div class="dd-item-sub">4 OA · 20 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_or_sub')"><div class="dd-item-info"><div>OR Sub-sterile / تعقيم</div><div class="dd-item-sub">2 OA · 10 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_icu')"><div class="dd-item-info"><div>🫁 ICU / عناية مركزة</div><div class="dd-item-sub">2 OA · 8 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_ccu')"><div class="dd-item-info"><div>🫀 CCU / رعاية القلب</div><div class="dd-item-sub">2 OA · 8 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_emergency')"><div class="dd-item-info"><div>Emergency / الطوارئ</div><div class="dd-item-sub">2 OA · 12 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_exam')"><div class="dd-item-info"><div>🩺 Examination Room / فحص</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_treatment')"><div class="dd-item-info"><div>Treatment Room / علاج</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_medication')"><div class="dd-item-info"><div>Medication Room / أدوية</div><div class="dd-item-sub">2 OA · 4 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_isolation')"><div class="dd-item-info"><div>Isolation Room / عزل</div><div class="dd-item-sub">2 OA · 12 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_airborne')"><div class="dd-item-info"><div>Airborne Precaution / هواء</div><div class="dd-item-sub">2 OA · 12 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_protective')"><div class="dd-item-info"><div>Protective Environment</div><div class="dd-item-sub">2 OA · 12 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_nicu')"><div class="dd-item-info"><div>NICU / حديثي الولادة</div><div class="dd-item-sub">2 OA · 6 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_nursery')"><div class="dd-item-info"><div>Nursery / حضانة</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_labor')"><div class="dd-item-info"><div>Labor &amp; Delivery / ولادة</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_lab')"><div class="dd-item-info"><div>Laboratory / مختبر</div><div class="dd-item-sub">2 OA · 6 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_pathology')"><div class="dd-item-info"><div>Pathology / باثولوجيا</div><div class="dd-item-sub">2 OA · 10 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_autopsy')"><div class="dd-item-info"><div>Autopsy / تشريح</div><div class="dd-item-sub">2 OA · 12 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_radiology')"><div class="dd-item-info"><div>🩻 Radiology / أشعة</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_mri')"><div class="dd-item-info"><div>MRI / رنين مغناطيسي</div><div class="dd-item-sub">3 OA · 8 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_dialysis')"><div class="dd-item-info"><div>🩸 Dialysis / غسيل كلوي</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_sterile_decontam')"><div class="dd-item-info"><div>Sterile Decontam / ازالة تلوث</div><div class="dd-item-sub">2 OA · 10 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_sterile_clean')"><div class="dd-item-info"><div>Sterile Clean Assembly</div><div class="dd-item-sub">2 OA · 4 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_sterile_storage')"><div class="dd-item-info"><div>Sterile Storage / تخزين</div><div class="dd-item-sub">2 OA · 4 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_dental')"><div class="dd-item-info"><div>Dental Operatory / أسنان</div><div class="dd-item-sub">2 OA · 15 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_physio')"><div class="dd-item-info"><div>Physical Therapy / علاج طبيعي</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_waiting')"><div class="dd-item-info"><div>Waiting Room / انتظار</div><div class="dd-item-sub">2 OA · 8 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_nurse')"><div class="dd-item-info"><div>Nurse Station / تمريض</div><div class="dd-item-sub">2 OA · 4 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_pharmacy')"><div class="dd-item-info"><div>Pharmacy / صيدلية</div><div class="dd-item-sub">2 OA · 6 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_hkitchen')"><div class="dd-item-info"><div>Hospital Kitchen / مطبخ</div><div class="dd-item-sub">2 OA · 15 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_soiled')"><div class="dd-item-info"><div>Soiled Utility / نفايات</div><div class="dd-item-sub">2 OA · 10 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_clean')"><div class="dd-item-info"><div>Clean Utility / خدمات نظيفة</div><div class="dd-item-sub">2 OA · 4 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_toilet')"><div class="dd-item-info"><div>Patient Toilet / حمام</div><div class="dd-item-sub">Exhaust · 10 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_records')"><div class="dd-item-info"><div>Medical Records / سجلات</div><div class="dd-item-sub">2 OA · 4 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-</div>
-</div>
-        <div>
-          <div class="lbl" id="lbl-room-count">Room Count</div>
-          <div class="ifield-wrap horizontal-stepper" id="room-count-stepper" aria-label="تعديل عدد الغرف">
-            <button type="button" class="qbtn" onclick="stepRoomNumber('inp-room-count',1,0)" aria-label="زيادة عدد الغرف">+</button>
-            <input class="ninput count-like-input" id="inp-room-count" type="number" inputmode="numeric" min="0" step="1" placeholder="0" oninput="onRoomCountInput()">
-            <button type="button" class="qbtn" onclick="stepRoomNumber('inp-room-count',-1,0)" aria-label="تقليل عدد الغرف">−</button>
-          </div>
-        </div>
-        <div>
-          <div class="lbl" id="lbl-ppl">👤 Persons — 400 BTU/h each</div>
-          <div class="ifield-wrap horizontal-stepper" id="persons-stepper" aria-label="تعديل عدد الأشخاص">
-            <button type="button" class="qbtn" onclick="stepRoomNumber('inp-ppl',1,0)" aria-label="زيادة عدد الأشخاص">+</button>
-            <input class="ninput count-like-input" id="inp-ppl" type="number" inputmode="numeric" min="0" step="1" placeholder="0" oninput="onPplInput()">
-            <button type="button" class="qbtn" onclick="stepRoomNumber('inp-ppl',-1,0)" aria-label="تقليل عدد الأشخاص">−</button>
-          </div>
-        </div>
-      </div>
-      <div class="row2 load-factor-row" id="load-factor-row">
-        <div>
-          <div class="lbl" id="lbl-load-factor">Load Factor BTU/m³</div>
-          <div class="ifield-wrap load-factor-preset-wrap">
-            <select class="qs-sel" id="inp-load-factor-preset" onchange="onLoadFactorPresetChange()">
-              <option value="">—</option>
-              <option value="220">خفيف 220</option>
-              <option value="260">متوسط 260</option>
-              <option value="300">عالي 300</option>
-              <option value="340">شديد 340</option>
-              <option value="custom">مخصص</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <div class="lbl" id="lbl-load-factor-value">BTU/m³</div>
-          <div class="ifield-wrap load-factor-value-wrap">
-            <input class="ninput" id="inp-load-factor" type="number" inputmode="numeric" min="100" max="800" step="10" placeholder="260" oninput="onLoadFactorInput()">
-            <span class="unit-chip">BTU/m³</span>
-          </div>
-        </div>
-      </div>
-      <div class="load-factor-helper" id="load-factor-helper">تقدير سريع — لا يستبدل الحساب التفصيلي</div>
-      <div class="calc-mode-note" id="calc-mode-note" style="display:none"></div>
-      <div class="row2 fresh-air-row" id="fresh-air-row" style="display:none">
-        <div>
-          <div class="lbl" id="lbl-fresh-air-mode">وضع الهواء النقي</div>
-          <div class="ifield-wrap fresh-air-wrap">
-            <select class="qs-sel" id="inp-fresh-air-mode" onchange="onFreshAirModeChange()">
-              <option value="ashrae">حسب ASHRAE</option>
-              <option value="fresh100">هواء نقي 100%</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="calc-mode-note fresh-air-warning" id="fresh-air-warning" style="display:none"></div>
-      <div class="dim-grid" id="dim-grid" aria-label="أبعاد الغرفة">
-        <div>
-          <div class="lbl" id="lbl-len">Length (m)</div>
-          <div class="ifield-wrap dim-field"><input class="ninput" id="inp-len" type="text" inputmode="decimal" pattern="[0-9٠-٩۰-۹.,٫]*" placeholder="0.0" oninput="onDimInput()"><span class="unit-chip">m</span></div>
-        </div>
-        <div>
-          <div class="lbl" id="lbl-width">Width (m)</div>
-          <div class="ifield-wrap dim-field"><input class="ninput" id="inp-width" type="text" inputmode="decimal" pattern="[0-9٠-٩۰-۹.,٫]*" placeholder="0.0" oninput="onDimInput()"><span class="unit-chip">m</span></div>
-        </div>
-        <div>
-          <div class="lbl" id="lbl-height">Height (m)</div>
-          <div class="ifield-wrap dim-field"><input class="ninput" id="inp-height" type="text" inputmode="decimal" pattern="[0-9٠-٩۰-۹.,٫]*" placeholder="0.0" oninput="onDimInput()"><span class="unit-chip">m</span></div>
-        </div>
-      </div>
-      <div class="row1">
-        <div class="lbl" id="lbl-vol">Calculated Volume</div>
-        <div class="ifield-wrap calc-volume-wrap"><input class="ninput calculated-volume-input" id="inp-vol" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0.0" oninput="onVolInput()" readonly><span class="unit-chip">m³</span></div>
-      </div>
-    </div>
-    <div class="card input-card devices-card">
-      <div class="input-head">
-        <div>
-          <div class="input-kicker" id="devices-step-kicker">الخطوة 2</div>
-          <div class="input-title" id="devices-title">أحمال الأجهزة</div>
-        </div>
-        <div class="input-note" id="devices-note">أضف أحمال الأجهزة فقط عندما تكون مؤثرة في التقدير.</div>
-      </div>
-      <div class="sec-ttl" id="st-dev">DEVICES</div>
-      <div id="dev-list"></div>
-      <button class="add-btn" style="margin-top:8px" onclick="openModal()">⚡ <span id="lbl-add">+ إضافة جهاز</span></button>
-      <div class="dev-total" id="dev-total" style="display:none;margin-top:8px">
-        <span id="lbl-dtot">إجمالي حمل الأجهزة</span>
-        <span id="val-dtot" style="font-weight:700;font-family:var(--fm)">0 BTU/h</span>
-      </div>
-    </div>
-    <div class="calc-cta-panel">
-      <div class="input-head cta-head">
-        <div>
-          <div class="input-kicker" id="calc-step-kicker">الخطوة 3</div>
-          <div class="input-title" id="calc-title">احسب وراجع</div>
-        </div>
-        <div class="input-note" id="calc-note">نفّذ الحساب ثم راجع التفصيل وتوجيهات تدفق الهواء بالأسفل.</div>
-      </div>
-    <div class="disclaimer">
-      <div id="dis-ar">تقدير أولي فقط للتكييف — لا يعتمد عليه للتصميم النهائي.</div>
-      <div id="dis-en" style="display:none">Preliminary HVAC sizing only — not for final design or construction submittals.</div>
-    </div>
-    <button class="calc-btn" id="lbl-calc" onclick="doCalc()">احسب ▶</button>
-    </div>
-    <div class="card breakdown" id="breakdown">
-      <div class="sec-ttl" id="breakdown-ttl">التفصيل</div>
-      <div class="br-row"><span class="br-lbl" id="brl-vol">حجم الغرفة</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-vol">—</span><span class="badge ba">m³</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-base">الحمل الأساسي</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-base">—</span><span class="badge bam">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-ppl">حمل الأشخاص</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-ppl">—</span><span class="badge bg">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-dev">حمل الأجهزة</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-dev">—</span><span class="badge bam">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-sub">الإجمالي</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sub">—</span><span class="badge ba">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-sf">+ معامل أمان 10%</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sf">—</span><span class="badge ba">BTU/h</span></div></div>
-    </div>
-    <div class="card hc-card" id="hc-card" style="display:none">
-      <div class="sec-ttl" id="hcttl">ASHRAE 170 — AIRFLOW</div>
-      <div class="hc-badge-row">
-        <span class="hc-pill" id="hc-pill">—</span>
-        <span class="hc-meta" id="hc-temp">—</span>
-        <span class="hc-meta" id="hc-rh">—</span>
-      </div>
-      <div class="br-row"><span class="br-lbl" id="hcl-ach">Total ACH</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-ach">—</span><span class="badge ba">ACH</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-sup">Supply CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-sup">—</span><span class="badge ba">CFM</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-oa">Outdoor Air CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-oa">—</span><span class="badge bg">CFM</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-rec">Recirculated CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-rec">—</span><span class="badge ba">CFM</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-exh">Exhaust CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-exh">—</span><span class="badge bam">CFM</span></div></div>
-      <div class="br-row" id="hc-note-row" style="display:none"><span class="br-lbl" id="hc-note-lbl">ملاحظة</span><span class="br-val" id="hcv-note" style="font-size:11px;color:var(--tm)">—</span></div>
-    </div>
+  <script>
+    const T = {
+      ar: {
+        subtitle: 'منصة حسابات وعروض أسعار التكييف',
+        nav_home: 'الرئيسية',
+        nav_features: 'الميزات',
+        nav_workflow: 'طريقة العمل',
+        nav_contact: 'تواصل',
+        nav_app: 'التطبيق',
+        hero_desc: 'أداة ذكية للمهندسين والمقاولين وفرق التشغيل لحساب أحمال التكييف، تدفق الهواء، متطلبات التهوية للمنشآت الصحية، وإصدار عروض أسعار احترافية بسرعة.',
+        hero_primary: 'ابدأ الحساب',
+        hero_secondary: 'استعرض الميزات',
+        hero_h1_title: 'حساب أحمال التبريد',
+        hero_h1_text: 'من الغرفة الواحدة إلى المشاريع متعددة الغرف مع نتائج واضحة وسريعة.',
+        hero_h2_title: 'ASHRAE للغرف الصحية',
+        hero_h2_text: 'دعم ACH والهواء الخارجي والعادم والضغط للمنشآت الصحية.',
+        hero_h3_title: 'عروض سعر ومشاريع',
+        hero_h3_text: 'تجهيز عروض الأسعار وحفظ المشاريع والتقارير من نفس المسار.',
+        features_eyebrow: 'الميزات',
+        features_title: 'مزايا عملية تدعم سير عمل HVAC من الحساب إلى العرض',
+        f1_title: 'حساب أحمال التبريد',
+        f1_text: 'تقدير الحمل الحراري، طن التبريد، والسعة السوقية لغرفة واحدة أو عدة غرف.',
+        f2_title: 'حساب تدفق الهواء',
+        f2_text: 'حساب تدفق الإمداد ومراجعة قيم CFM لدعم اختيار النظام.',
+        f3_title: 'دعم ASHRAE للمنشآت الصحية',
+        f3_text: 'استخدام ACH والهواء الخارجي والعادم والضغط لغرف المنشآت الصحية.',
+        f4_title: 'وضع الهواء النقي 100%',
+        f4_text: 'مقارنة وضع ASHRAE المختلط مع وضع الهواء النقي 100% للغرف الصحية.',
+        f5_title: 'لوحة إدارة المشاريع',
+        f5_text: 'حفظ المشاريع ومراجعة الإجماليات وفتح التقارير وعروض السعر والتصدير بسرعة.',
+        f6_title: 'نظام عرض السعر',
+        f6_text: 'إعداد عروض أسعار للتكييف تشمل أسعار الوحدات، الضريبة، نسبة التركيب، والإجماليات.',
+        workflow_eyebrow: 'طريقة العمل',
+        workflow_title: 'كيف يعمل AirCalc Pro',
+        w1_title: 'أدخل أبعاد الغرفة',
+        w2_title: 'اختر نوع الغرفة ومعامل الحمل',
+        w3_title: 'أضف أحمال الأجهزة',
+        w4_title: 'راجع النتائج',
+        w5_title: 'صدّر التقرير أو عرض السعر',
+        early_title: 'وصول مجاني حاليًا',
+        early_access: 'المستخدمون الأوائل يحصلون على وصول مجاني أثناء تطوير المنتج.',
+        cta_title: 'جاهز لحساب مشروع التكييف القادم؟',
+        cta_button: 'افتح AirCalc Pro',
+        footer_note: 'منصة حسابات وعروض أسعار التكييف',
+        footer_mobile: 'رقم الجوال: 0560282701',
+        footer_email: 'البريد الإلكتروني: yousef.alhammam@live.com'
+      },
+      en: {
+        subtitle: 'HVAC Calculation & Quotation Suite',
+        nav_home: 'Home',
+        nav_features: 'Features',
+        nav_workflow: 'How it Works',
+        nav_contact: 'Contact',
+        nav_app: 'App',
+        hero_desc: 'A smart HVAC tool for engineers, contractors, and facility teams to estimate cooling loads, airflow, healthcare ventilation requirements, and professional quotations faster.',
+        hero_primary: 'Start Calculating',
+        hero_secondary: 'Explore Features',
+        hero_h1_title: 'Cooling Load Calculation',
+        hero_h1_text: 'From single rooms to multi-room projects with quick, readable results.',
+        hero_h2_title: 'ASHRAE Healthcare Support',
+        hero_h2_text: 'Support for ACH, outdoor air, exhaust, and pressure in healthcare spaces.',
+        hero_h3_title: 'Quotations & Projects',
+        hero_h3_text: 'Prepare quotations, save projects, and open reports from one workflow.',
+        features_eyebrow: 'Features',
+        features_title: 'Practical capabilities for HVAC work from calculation to quotation',
+        f1_title: 'Cooling Load Calculation',
+        f1_text: 'Estimate BTU, TR, and market capacity for single or multiple rooms.',
+        f2_title: 'Airflow & CFM',
+        f2_text: 'Calculate supply airflow and review CFM values for HVAC sizing.',
+        f3_title: 'ASHRAE Healthcare Support',
+        f3_text: 'Use ACH, outdoor air, exhaust, and pressure data for healthcare spaces.',
+        f4_title: '100% Fresh Air Mode',
+        f4_text: 'Compare ASHRAE mixed air with 100% fresh air for healthcare rooms.',
+        f5_title: 'Project Dashboard',
+        f5_text: 'Save projects, review totals, open reports, quotations, and exports quickly.',
+        f6_title: 'Quotation System',
+        f6_text: 'Prepare HVAC quotations with unit prices, VAT, installation percentage, and totals.',
+        workflow_eyebrow: 'Workflow',
+        workflow_title: 'How it works',
+        w1_title: 'Enter room dimensions',
+        w2_title: 'Select room type and load factor',
+        w3_title: 'Add equipment loads',
+        w4_title: 'Review results',
+        w5_title: 'Export report or quotation',
+        early_title: 'Early Access',
+        early_access: 'Early users get free access while the product is being improved.',
+        cta_title: 'Ready to calculate your next HVAC project?',
+        cta_button: 'Open AirCalc Pro',
+        footer_note: 'HVAC Calculation & Quotation Suite',
+        footer_mobile: 'Mobile: 0560282701',
+        footer_email: 'Email: yousef.alhammam@live.com'
+      }
+    };
 
-  <!-- CALCULATED ROOMS + QUOTATION BUTTON — inside p-calc so goPanel() hides it with the panel -->
-  <div class="card calc-rooms-card" id="calc-rooms-card" style="display:none">
-    <div class="hist-hdr">
-      <div class="sec-ttl" style="margin-bottom:0"><span class="room-count" id="calc-rooms-count">0</span><span id="calc-rooms-title">Calculated Rooms</span></div>
-      <button class="hist-clr calc-rooms-clear" id="calc-rooms-clear" onclick="clearHist()" aria-label="مسح الكل" title="مسح الكل">🗑️ <span id="calc-rooms-clear-lbl">مسح الكل</span></button>
-    </div>
-    <div id="calc-rooms-list"></div>
-  </div>
-  <div id="add-quote-wrap" style="display:none;margin-top:6px">
-    <button class="calc-btn quote-jump-btn" id="btn-add-quote" onclick="addToQuote()">
-      <span id="lbl-add-quote">Quotation</span>
-    </button>
-  </div>
-  </div>
+    let lang = 'ar';
 
-  <!-- HIST + QUOTATION PANEL -->
-  <div class="panel" id="p-hist">
+    function applyLang(next) {
+      lang = next === 'en' ? 'en' : 'ar';
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.body.classList.toggle('ltr', lang === 'en');
+      document.getElementById('langToggle').textContent = lang === 'ar' ? 'EN' : 'ع';
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (T[lang][key]) el.textContent = T[lang][key];
+      });
+    }
 
+    document.getElementById('langToggle').addEventListener('click', () => {
+      applyLang(lang === 'ar' ? 'en' : 'ar');
+    });
 
-    <div class="cum-card" id="cum-card" style="display:none">
-      <div class="cum-ttl" id="cum-ttl">الإجمالي التراكمي</div>
-      <div class="cum-grid">
-        <div class="cum-item"><div class="cum-lbl" id="cum-lbl-tr">إجمالي TR</div><div class="cum-val" id="cum-tr">0.00</div><div class="cum-unit">TON</div></div>
-        <div class="cum-item"><div class="cum-lbl" id="cum-lbl-cfm">إجمالي CFM</div><div class="cum-val" id="cum-cfm">0</div><div class="cum-unit">CFM</div></div>
-        <div class="cum-item"><div class="cum-lbl" id="cum-lbl-btu">إجمالي BTU/h</div><div class="cum-val" id="cum-btu">0</div><div class="cum-unit">BTU/h</div></div>
-        <div class="cum-item"><div class="cum-lbl" id="cum-lbl-mkt">سعة السوق</div><div class="cum-val" id="cum-mkt">0</div><div class="cum-unit">BTU</div></div>
-      </div>
-    </div>
-        <!-- BUNDLE TOGGLE (show/hide per-room locking) -->
-    <div class="bundle-row" id="bundle-row" style="display:none">
-      <button class="bundle-toggle-btn" id="bundle-btn" onclick="toggleBundle()" style="flex-shrink:0">
-        <span id="bundle-btn-lbl">🔓 تفعيل التجميع</span>
-      </button>
-      <div style="font-size:10px;color:#78716c;line-height:1.4" id="bundle-desc">
-        يعطّل اختيار الوحدات لكل غرفة ويعتمد على وحدة المشروع فقط
-      </div>
-    </div>
-        <!-- MODE TOGGLE -->
-    <div class="mode-toggle-row" id="mode-toggle-row">
-      <button class="mode-btn active" id="mode-btn-room" onclick="setQuoteMode('room')">
-        <span id="mode-lbl-room">🏠 وحدة لكل غرفة</span>
-      </button>
-      <button class="mode-btn" id="mode-btn-proj" onclick="setQuoteMode('proj')">
-        <span id="mode-lbl-proj">🏢 وحدة للمشروع</span>
-      </button>
-    </div>
-
-    <!-- PROJECT MODE BLOCK (hidden by default) -->
-    <div class="proj-block" id="proj-block" style="display:none">
-      <div class="proj-block-ttl" id="proj-block-ttl">📊 إجماليات المشروع</div>
-      <div class="proj-totals-grid">
-        <div class="proj-total-item"><div class="proj-total-lbl" id="ptot-lbl-tr">إجمالي TR</div><div class="proj-total-val" id="ptot-tr">0.0</div></div>
-        <div class="proj-total-item"><div class="proj-total-lbl" id="ptot-lbl-cfm">إجمالي CFM</div><div class="proj-total-val" id="ptot-cfm">0</div></div>
-        <div class="proj-total-item"><div class="proj-total-lbl" id="ptot-lbl-btu">إجمالي BTU/h</div><div class="proj-total-val" id="ptot-btu">0</div></div>
-        <div class="proj-total-item"><div class="proj-total-lbl" id="ptot-lbl-mkt">سعة السوق</div><div class="proj-total-val" id="ptot-mkt">0</div></div>
-      </div>
-      <!-- System type + capacity -->
-      <div class="proj-unit-row proj-config-row">
-        <div class="proj-input-group">
-          <span class="proj-input-lbl" id="proj-lbl-systype">نوع النظام</span>
-          <select class="qi-utype-sel" id="proj-systype" onchange="onProjSysTypeChange()" style="width:100%;padding:7px 8px;font-size:12px;">
-          </select>
-        </div>
-        <div class="proj-input-group">
-          <span class="proj-input-lbl" id="proj-lbl-cap">السعة المختارة</span>
-          <select class="qi-cap-sel" id="proj-cap" onchange="renderProjBlock()" style="width:100%;padding:7px 8px;font-size:12px;">
-          </select>
-        </div>
-        <div class="proj-input-group">
-          <span class="proj-input-lbl" id="proj-lbl-qty">عدد الوحدات</span>
-          <div class="ifield-wrap horizontal-stepper proj-qty-stepper" aria-label="تعديل عدد الوحدات">
-            <button type="button" class="qbtn" id="proj-qty-plus" onclick="stepProjQty(1)" aria-label="زيادة عدد الوحدات">+</button>
-            <input class="ninput count-like-input proj-qty-input" id="proj-qty" type="number" inputmode="numeric" min="1" step="1" value="1" onchange="setProjQtyManual(this.value)">
-            <button type="button" class="qbtn" id="proj-qty-minus" onclick="stepProjQty(-1)" aria-label="تقليل عدد الوحدات">−</button>
-          </div>
-          <div id="proj-qty-auto-tools"></div>
-        </div>
-      </div>
-      <div class="proj-unit-row">
-        <div class="proj-input-group" id="proj-up-group">
-          <span class="proj-input-lbl" id="proj-lbl-up">سعر الوحدة (ر.س)</span>
-          <input class="minp" id="proj-up" type="number" min="0" step="0.01" value="" placeholder="0.00" onchange="renderProjBlock(); refreshGrandTotal();" style="width:100%;font-size:14px;padding:7px 8px;">
-        </div>
-      </div>
-      <!-- Status badge -->
-      <div id="proj-status-row" style="margin:8px 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;"></div>
-      <!-- Duct sizing (shown only for ducted types) -->
-      <div class="duct-block" id="proj-duct-block" style="display:none">
-        <div class="duct-block-ttl" id="proj-duct-ttl">🌬 تصميم مجاري الهواء</div>
-        <!-- Velocity row -->
-        <div class="duct-row">
-          <span class="duct-lbl" id="duct-vel-sup-lbl">سرعة الإمداد (fpm)</span>
-          <select class="duct-sel" id="duct-vel-sup" onchange="renderProjBlock();if(quoteMode==='room')renderQuote();">
-            <option value="900">900</option>
-            <option value="1000" selected>1000</option>
-            <option value="1200">1200</option>
-          </select>
-          <span class="duct-lbl" id="duct-vel-ret-lbl">سرعة الرجوع (fpm)</span>
-          <select class="duct-sel" id="duct-vel-ret" onchange="renderProjBlock();if(quoteMode==='room')renderQuote();">
-            <option value="700">700</option>
-            <option value="800" selected>800</option>
-            <option value="900">900</option>
-          </select>
-        </div>
-        <!-- CFM/TR setting (hidden for CFM-based systems) -->
-        <div class="duct-row" id="duct-cfm-per-tr-row">
-          <span class="duct-lbl" id="duct-cfmtr-lbl">CFM/TR</span>
-          <select class="duct-sel" id="duct-cfm-per-tr" onchange="renderProjBlock();if(quoteMode==='room')renderQuote();">
-            <option value="350">350</option>
-            <option value="400" selected>400</option>
-            <option value="450">450</option>
-            <option value="500">500</option>
-          </select>
-        </div>
-        <!-- Sizing basis toggle -->
-        <div class="duct-row" id="duct-basis-row" style="margin-bottom:6px">
-          <span class="duct-lbl" id="duct-basis-lbl">أساس التصميم:</span>
-          <div style="display:flex;gap:4px">
-            <button id="duct-basis-req" onclick="setDuctBasis('required')"
-              style="padding:3px 10px;border-radius:4px;border:1px solid var(--g);background:rgba(52,211,153,.18);color:var(--g);font-size:10px;font-family:var(--fe);cursor:pointer;font-weight:700">حسب الاحتياج</button>
-            <button id="duct-basis-sel" onclick="setDuctBasis('selected')"
-              style="padding:3px 10px;border-radius:4px;border:1px solid var(--b);background:var(--s3);color:var(--tm);font-size:10px;font-family:var(--fe);cursor:pointer">حسب الوحدة</button>
-          </div>
-        </div>
-        <!-- Q values display -->
-        <div id="duct-q-info" style="margin-bottom:6px"></div>
-        <!-- Warning line -->
-        <div id="duct-q-warn" style="display:none"></div>
-        <!-- Duct sizes result -->
-        <div class="duct-row">
-          <span class="duct-lbl" id="duct-sup-lbl">مجرى الإمداد الرئيسي:</span>
-          <span class="duct-val" id="duct-sup-val">—</span>
-          <span class="duct-lbl" id="duct-ret-lbl">مجرى الرجوع الرئيسي:</span>
-          <span class="duct-val" id="duct-ret-val">—</span>
-        </div>
-        <div class="duct-note" id="duct-m3s-row" style="font-family:var(--fe);color:var(--a);font-size:10px;margin-bottom:2px"></div>
-        <div class="duct-note" id="duct-note-txt">تصميم أولي — يجب التحقق من الضغط الساكن والمخطط.</div>
-
-        <!-- ESP Calculation block -->
-        <div class="esp-block" id="esp-block">
-          <div style="font-size:10px;font-weight:700;color:var(--a);margin-bottom:8px;display:flex;align-items:center;gap:5px">
-            🔧 <span id="esp-ttl">حساب الضغط الساكن (ESP)</span>
-          </div>
-          <div class="esp-section">
-            <div class="esp-section-title" id="esp-group-path">مدخلات المسار</div>
-            <div class="esp-grid">
-              <div class="esp-field">
-                <span class="esp-lbl" id="esp-lbl-len-sup">طول الإمداد (م)</span>
-                <input class="esp-inp" id="esp-len-sup" type="number" min="1" max="200" step="1" value="30" onchange="calcESP()">
-              </div>
-              <div class="esp-field">
-                <span class="esp-lbl" id="esp-lbl-len-ret">طول الرجوع (م)</span>
-                <input class="esp-inp" id="esp-len-ret" type="number" min="1" max="200" step="1" value="20" onchange="calcESP()">
-              </div>
-              <div class="esp-field">
-                <span class="esp-lbl" id="esp-lbl-bends">عدد الانحناءات</span>
-                <input class="esp-inp" id="esp-bends" type="number" min="0" max="30" step="1" value="4" onchange="calcESP()">
-              </div>
-              <div class="esp-field">
-                <span class="esp-lbl" id="esp-lbl-fric">فقد الاحتكاك المستقيم (Pa/m)</span>
-                <input class="esp-inp" id="esp-fric" type="number" min="0.1" max="5" step="0.1" value="1.0" onchange="calcESP()">
-              </div>
-            </div>
-          </div>
-          <div class="esp-section">
-            <div class="esp-section-title" id="esp-group-losses">الفواقد الإضافية</div>
-            <div class="esp-grid">
-              <div class="esp-field">
-                <span class="esp-lbl" id="esp-lbl-bend-loss">فقد الانحناءة الواحدة (Pa)</span>
-                <input class="esp-inp" id="esp-bend-loss" type="number" min="0" max="200" step="1" value="10" onchange="calcESP()">
-              </div>
-              <div class="esp-field">
-                <span class="esp-lbl" id="esp-lbl-filter">فقد الفلتر (Pa)</span>
-                <input class="esp-inp" id="esp-filter-loss" type="number" min="0" max="500" step="1" value="20" onchange="calcESP()">
-              </div>
-              <div class="esp-field">
-                <span class="esp-lbl" id="esp-lbl-diffuser">فقد مخارج الهواء / الجريلات (Pa)</span>
-                <input class="esp-inp" id="esp-diffuser-loss" type="number" min="0" max="500" step="1" value="30" onchange="calcESP()">
-              </div>
-              <div class="esp-field">
-                <span class="esp-lbl" id="esp-lbl-coil">فقد الكويل (Pa)</span>
-                <input class="esp-inp" id="esp-coil-loss" type="number" min="0" max="1000" step="1" value="0" onchange="calcESP()">
-              </div>
-              <div class="esp-field">
-                <span class="esp-lbl" id="esp-lbl-damper">فقد الدامبر (Pa)</span>
-                <input class="esp-inp" id="esp-damper-loss" type="number" min="0" max="500" step="1" value="0" onchange="calcESP()">
-              </div>
-              <div class="esp-field">
-                <span class="esp-lbl" id="esp-lbl-other">بدل إضافي (Pa)</span>
-                <input class="esp-inp" id="esp-other-loss" type="number" min="0" max="1000" step="1" value="0" onchange="calcESP()">
-              </div>
-            </div>
-          </div>
-          <div class="esp-section esp-section-result">
-            <div class="esp-section-title" id="esp-group-result">نتيجة ESP</div>
-            <div class="esp-result" id="esp-result">
-              <span style="font-size:10px;color:var(--tm)" id="esp-result-txt">—</span>
-            </div>
-          </div>
-          <div class="esp-section">
-            <div class="esp-section-head">
-              <div class="esp-section-title" id="esp-group-breakdown">تفصيل الحساب</div>
-              <button type="button" class="esp-toggle-btn" id="esp-breakdown-toggle" onclick="toggleEspBreakdown()">عرض تفاصيل الحساب</button>
-            </div>
-            <div class="esp-breakdown hidden" id="esp-breakdown"></div>
-          </div>
-          <div class="esp-note" id="esp-note">تقدير أولي للضغط الساكن — يجب التحقق من كتالوج الوحدة ومخطط الدكت قبل الاعتماد.</div>
-          <div class="esp-catalog-note" id="esp-catalog-note">بيانات ESP من كتالوج المصنع غير متوفرة — تحقق من بيانات الشركة المصنعة.</div>
-        </div>
-      </div>
-      <!-- Line total display -->
-      <div id="proj-line-total" style="display:none;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(99,102,241,.2);">
-        <span style="font-size:12px;color:var(--tm)" id="proj-lt-lbl">إجمالي السطر</span>
-        <span style="font-family:var(--fm);font-size:16px;font-weight:700;color:var(--g)" id="proj-lt-val">0.00</span>
-      </div>
-    </div>
-
-    <!-- CALC MODE SWITCH (Basic / Advanced) -->
-    <div class="calc-mode-row" id="calc-mode-row">
-      <button class="calc-mode-btn active" id="calc-mode-btn-basic" onclick="setCalcMode('basic')">
-        <span id="calc-mode-lbl-basic">سريع</span>
-      </button>
-      <button class="calc-mode-btn" id="calc-mode-btn-advanced" onclick="setCalcMode('advanced')">
-        <span id="calc-mode-lbl-advanced">متقدم</span>
-      </button>
-    </div>
-
-    <!-- ADVANCED DUCT ANALYSIS BLOCK (Pro only, hidden by default) -->
-    <div class="adv-duct-block" id="adv-duct-block" style="display:none">
-      <div class="adv-duct-header">
-        <span class="adv-duct-title" id="adv-duct-title">التحليل الهندسي المتقدم للمجاري</span>
-        <span class="adv-duct-ref">ASHRAE Ch.21 · Darcy-Weisbach</span>
-      </div>
-      <!-- Supply duct analysis -->
-      <div class="adv-section-label" id="adv-sup-label">مجرى الإمداد</div>
-      <div class="adv-grid" id="adv-sup-grid">
-        <div class="adv-field">
-          <div class="adv-field-lbl" id="adv-lbl-area-sup">المساحة A</div>
-          <div class="adv-field-val" id="adv-val-area-sup">—</div>
-          <div class="adv-field-unit">ft²</div>
-        </div>
-        <div class="adv-field">
-          <div class="adv-field-lbl" id="adv-lbl-vel-sup">السرعة V</div>
-          <div class="adv-field-val" id="adv-val-vel-sup">—</div>
-          <div class="adv-field-unit">fpm</div>
-        </div>
-        <div class="adv-field">
-          <div class="adv-field-lbl" id="adv-lbl-dh-sup">القطر الهيدروليكي Dh</div>
-          <div class="adv-field-val" id="adv-val-dh-sup">—</div>
-          <div class="adv-field-unit">in</div>
-        </div>
-        <div class="adv-field">
-          <div class="adv-field-lbl" id="adv-lbl-pv-sup">ضغط السرعة Pv</div>
-          <div class="adv-field-val" id="adv-val-pv-sup">—</div>
-          <div class="adv-field-unit">in.w.g.</div>
-        </div>
-        <div class="adv-field adv-field-wide">
-          <div class="adv-field-lbl" id="adv-lbl-dp-sup">فقد الاحتكاك المستقيم</div>
-          <div class="adv-field-val" id="adv-val-dp-sup">—</div>
-          <div class="adv-field-unit" id="adv-unit-dp-sup">in.w.g. / 100ft</div>
-        </div>
-      </div>
-      <!-- Return duct analysis -->
-      <div class="adv-section-label" id="adv-ret-label">مجرى الرجوع</div>
-      <div class="adv-grid" id="adv-ret-grid">
-        <div class="adv-field">
-          <div class="adv-field-lbl" id="adv-lbl-area-ret">المساحة A</div>
-          <div class="adv-field-val" id="adv-val-area-ret">—</div>
-          <div class="adv-field-unit">ft²</div>
-        </div>
-        <div class="adv-field">
-          <div class="adv-field-lbl" id="adv-lbl-vel-ret">السرعة V</div>
-          <div class="adv-field-val" id="adv-val-vel-ret">—</div>
-          <div class="adv-field-unit">fpm</div>
-        </div>
-        <div class="adv-field">
-          <div class="adv-field-lbl" id="adv-lbl-dh-ret">القطر الهيدروليكي Dh</div>
-          <div class="adv-field-val" id="adv-val-dh-ret">—</div>
-          <div class="adv-field-unit">in</div>
-        </div>
-        <div class="adv-field">
-          <div class="adv-field-lbl" id="adv-lbl-pv-ret">ضغط السرعة Pv</div>
-          <div class="adv-field-val" id="adv-val-pv-ret">—</div>
-          <div class="adv-field-unit">in.w.g.</div>
-        </div>
-        <div class="adv-field adv-field-wide">
-          <div class="adv-field-lbl" id="adv-lbl-dp-ret">فقد الاحتكاك المستقيم</div>
-          <div class="adv-field-val" id="adv-val-dp-ret">—</div>
-          <div class="adv-field-unit" id="adv-unit-dp-ret">in.w.g. / 100ft</div>
-        </div>
-      </div>
-      <div class="adv-duct-note" id="adv-duct-note">
-        Darcy-Weisbach · f = 0.02 (galvanised steel) · ASHRAE Standard Air 20°C · Preliminary sizing only
-      </div>
-    </div>
-
-    <div class="quote-card">
-      <div class="sec-ttl" id="q-ttl">📋 عرض السعر</div>
-      <div class="q-hdr-grid">
-        <div>
-          <div class="lbl" id="lbl-project">اسم المشروع</div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <div class="ifield-wrap" style="flex:1;margin-bottom:0;">
-              <input class="ninput sync-readonly" id="quote-project" type="text" placeholder="—" style="text-align:start;font-size:14px;" readonly aria-readonly="true">
-            </div>
-            <button
-              id="quote-save-btn"
-              onclick="saveQuotationToCurrentProject()"
-              title="Save Quotation"
-              style="height:44px;border-radius:12px;border:1px solid rgba(52,211,153,.35);background:linear-gradient(135deg,rgba(52,211,153,.18),rgba(52,211,153,.08));color:var(--g);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;padding:0 12px;gap:8px;min-width:120px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="18" height="18">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                <polyline points="17 21 17 13 7 13 7 21"/>
-                <polyline points="7 3 7 8 15 8"/>
-              </svg>
-              <span id="quote-save-lbl">حفظ العرض</span>
-            </button>
-          </div>
-        </div>
-        <div>
-          <div class="lbl" id="lbl-qno">رقم عرض السعر</div>
-          <div class="ifield-wrap"><input class="ninput sync-readonly" id="quote-no" type="text" placeholder="Q-001" style="font-size:14px;" readonly aria-readonly="true"></div>
-        </div>
-      </div>
-      <div id="quote-settings-slot"></div>
-      <div id="quote-proj-pricing-slot"></div>
-      <div class="qi-list" id="quote-view-list">
-        <div class="qi-empty" id="quote-view-empty">لا توجد غرف — احسب غرفة أولاً</div>
-      </div>
-      <div class="q-summary" id="q-summary">
-        <div class="q-sr"><span class="q-sl" id="qs-subl">المجموع الفرعي</span><span class="q-sv" id="qs-subtotal-v">0.00</span></div>
-        <div class="q-sr"><span class="q-sl" id="qs-instl">التركيب (10%)</span><span class="q-sv" id="qs-inst-v">0.00</span></div>
-        <div class="q-sr vrow" id="vat-row"><span class="q-sl" id="qs-vatl">ضريبة القيمة المضافة 15%</span><span class="q-sv" id="qs-vat-v">0.00</span></div>
-        <div class="q-sr"><span class="q-sl" id="qt-qty-lbl">إجمالي الكمية</span><span class="q-sv" id="qt-total-qty">0</span></div>
-        <div class="q-sr grow"><span class="q-sl" id="qt-grand-lbl">الإجمالي النهائي</span><span class="q-sv" id="qt-grand">0.00</span></div>
-      </div>
-      <div class="exp-row" style="grid-template-columns:1fr 1fr 1fr">
-        <button class="exp-btn-csv" onclick="exportCSV()"><span id="lbl-export">CSV</span></button>
-        <button class="exp-btn-inv" onclick="exportInvoiceHTML()"><span id="lbl-export2">فاتورة HTML</span></button>
-        <button class="exp-btn-pdf" id="btn-pdf" onclick="exportPDF()"><span id="lbl-export3">تحميل PDF</span></button>
-        <button class="exp-btn-tech" id="btn-techpdf" onclick="exportTechPDF()" style="display:none"><span id="lbl-export4">تقرير فني</span></button>
-      </div>
-    </div>
-
-    <!-- QUOTATION SETTINGS CARD -->
-    <div class="qs-card" id="qs-card">
-      <div class="sec-ttl" id="qs-ttl">&#9881;&#65039; &#x625;&#x639;&#x62f;&#x627;&#x62f;&#x627;&#x62a; &#x639;&#x631;&#x636; &#x627;&#x644;&#x633;&#x639;&#x631;</div>
-      <div id="quote-proj-pricing-inline-slot"></div>
-      <div class="qs-row">
-        <div class="qs-label" id="qs-inst-lbl">&#x646;&#x633;&#x628;&#x629; &#x627;&#x644;&#x62a;&#x631;&#x643;&#x64a;&#x628;</div>
-        <select class="qs-sel" id="qs-inst" onchange="qsPersist()">
-          <option value="5">5%</option>
-          <option value="10" selected>10%</option>
-          <option value="15">15%</option>
-          <option value="20">20%</option>
-          <option value="25">25%</option>
-        </select>
-      </div>
-      <div class="qs-row">
-        <div class="qs-label">
-          <div id="qs-vat-lbl">&#x62a;&#x641;&#x639;&#x64a;&#x644; &#x636;&#x631;&#x64a;&#x628;&#x629; &#x627;&#x644;&#x642;&#x64a;&#x645;&#x629; &#x627;&#x644;&#x645;&#x636;&#x627;&#x641;&#x629;</div>
-          <div class="qs-sub">VAT 15% &#x2014; &#x627;&#x644;&#x633;&#x639;&#x648;&#x62f;&#x64a;&#x629;</div>
-        </div>
-        <div class="vat-tog on" id="vat-tog" onclick="toggleVAT()"></div>
-      </div>
-      <div class="qs-row">
-        <div class="qs-label" id="qs-valid-lbl">&#x645;&#x62f;&#x629; &#x635;&#x644;&#x627;&#x62d;&#x64a;&#x629; &#x627;&#x644;&#x639;&#x631;&#x636;</div>
-        <select class="qs-sel" id="qs-validity" onchange="qsPersist()">
-          <option value="7" id="v7">7 &#x623;&#x64a;&#x627;&#x645;</option>
-          <option value="14" selected id="v14">14 &#x64a;&#x648;&#x645;</option>
-          <option value="30" id="v30">30 &#x64a;&#x648;&#x645;</option>
-        </select>
-      </div>
-      <div>
-        <div class="lbl" id="qs-notes-lbl" style="margin-bottom:4px">&#x645;&#x644;&#x627;&#x62d;&#x638;&#x627;&#x62a;</div>
-        <textarea class="qs-ta" id="qs-notes" oninput="qsPersist()"></textarea>
-      </div>
-    </div>
-    <div class="card">
-      <div class="hist-hdr">
-        <div class="sec-ttl" style="margin-bottom:0"><span class="room-count" id="hist-count">0</span><span id="hist-ttl-lbl">السجل</span></div>
-        <button class="hist-clr" id="lbl-hclr" onclick="clearHist()">مسح السجل</button>
-      </div>
-      <div id="hist-list"><div class="hist-empty" id="hist-empty">لا توجد حسابات بعد</div></div>
-    </div>
-  </div>
-
-  <!-- TECH REPORT PANEL -->
-  <div class="panel" id="p-tech">
-    <div class="quote-card tech-report-card">
-      <div class="sec-ttl" id="tech-ttl">التقرير الفني</div>
-      <div class="q-hdr-grid">
-        <div>
-          <div class="lbl" id="tech-project-lbl">اسم المشروع</div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <div class="ifield-wrap" style="flex:1;margin-bottom:0;">
-              <input class="ninput" id="tech-project" type="text" placeholder="—" style="text-align:start;font-size:14px;" oninput="syncProjectFields('tech')">
-            </div>
-            <button
-              id="tech-save-btn"
-              onclick="saveCurrentProject()"
-              title="Save Project"
-              style="width:44px;height:44px;border-radius:12px;border:1px solid rgba(52,211,153,.35);background:linear-gradient(135deg,rgba(52,211,153,.18),rgba(52,211,153,.08));color:var(--g);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="18" height="18">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                <polyline points="17 21 17 13 7 13 7 21"/>
-                <polyline points="7 3 7 8 15 8"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div>
-          <div class="lbl" id="tech-qno-lbl">رقم المشروع</div>
-          <div class="ifield-wrap"><input class="ninput" id="tech-no" type="text" placeholder="Q-001" style="font-size:14px;" oninput="syncProjectFields('tech')"></div>
-        </div>
-      </div>
-      <div class="tech-report-note" id="tech-note">
-        راجع بيانات المشروع ثم صدّر التقرير الفني PDF مباشرة من هنا.
-      </div>
-      <div id="tech-cum-slot"></div>
-      <div id="tech-controls-slot"></div>
-      <div id="tech-room-slot">
-        <div class="qi-list" id="qi-list">
-          <div class="qi-empty" id="qi-empty">لا توجد غرف — احسب غرفة أولاً</div>
-        </div>
-      </div>
-      <div id="tech-proj-slot"></div>
-      <div id="tech-analysis-slot"></div>
-      <div class="exp-row tech-exp-row">
-        <button class="exp-btn-hap" onclick="exportHAP()"><span id="lbl-export-hap">تصدير إلى HAP</span></button>
-        <button class="exp-btn-tech" id="btn-techpdf-panel" onclick="exportTechPDFFromPanel()"><span id="tech-export-lbl">تقرير فني PDF</span></button>
-      </div>
-    </div>
-  </div>
-
-  <!-- CONTACT PANEL -->
-  <div class="panel" id="p-contact">
-    <div class="con-card">
-      <div class="con-av">✉️</div>
-      <div class="con-title" id="contact-phone-lbl">رقم الجوال</div>
-      <a class="con-link" href="tel:0560282701"><span style="font-size:18px">📞</span><span id="contact-phone-val">0560282701</span></a>
-      <div class="con-title" id="contact-email-lbl">البريد الإلكتروني</div>
-      <a class="con-link" href="mailto:yousef.alhammam@live.com"><span style="font-size:18px">✉️</span><span id="contact-email-val">yousef.alhammam@live.com</span></a>
-    </div>
-  </div>
-
-  <!-- PROJECTS PANEL -->
-  <div class="panel" id="p-projects">
-    <div class="proj-mgr-header">
-      <div class="proj-mgr-title" id="pm-ttl">📁 لوحة المشاريع</div>
-      <button class="proj-mgr-save-btn" id="pm-save-btn" onclick="saveCurrentProject()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        <span id="pm-save-lbl">حفظ المشروع الحالي</span>
-      </button>
-    </div>
-    <div class="proj-mgr-toolbar">
-      <div class="proj-mgr-search-wrap">
-        <svg class="proj-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input class="proj-search-inp" id="pm-search" type="text" placeholder="بحث في المشاريع..." oninput="renderProjects()">
-      </div>
-      <div class="proj-mgr-filters">
-        <div class="pm-tool">
-          <div class="pm-tool-lbl" id="pm-filter-lbl">تصفية</div>
-          <select class="pm-tool-sel" id="pm-filter-type" onchange="renderProjects()">
-            <option value="all">الكل</option>
-            <option value="ashrae">ASHRAE</option>
-            <option value="load">Load Factor</option>
-          </select>
-        </div>
-        <div class="pm-tool">
-          <div class="pm-tool-lbl" id="pm-date-lbl">التاريخ</div>
-          <select class="pm-tool-sel" id="pm-filter-date" onchange="renderProjects()">
-            <option value="all">الكل</option>
-            <option value="7">آخر 7 أيام</option>
-            <option value="30">آخر 30 يوم</option>
-          </select>
-        </div>
-        <div class="pm-tool">
-          <div class="pm-tool-lbl" id="pm-rooms-lbl">الغرف</div>
-          <select class="pm-tool-sel" id="pm-filter-rooms" onchange="renderProjects()">
-            <option value="all">الكل</option>
-            <option value="1-3">1 - 3</option>
-            <option value="4+">4+</option>
-          </select>
-        </div>
-        <div class="pm-tool">
-          <div class="pm-tool-lbl" id="pm-sort-lbl">ترتيب</div>
-          <select class="pm-tool-sel" id="pm-sort" onchange="renderProjects()">
-            <option value="latest">الأحدث</option>
-            <option value="largest">الأكبر</option>
-            <option value="name">الاسم</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    <div id="pm-list" class="pm-grid"></div>
-  </div>
-
-  <!-- SETTINGS PANEL -->
-  <div class="panel" id="p-settings">
-    <div class="settings-section-head" id="settings-section-title">الإعدادات</div>
-    <!-- Language toggle -->
-    <div class="set-group">
-      <div class="set-item">
-        <div><div class="set-lbl" id="sl-lang">اللغة / Language</div><div class="set-sub" id="sl-sub">تبديل واجهة اللغة</div></div>
-        <div class="tog on" id="tog-lang" onclick="toggleLang()"></div>
-      </div>
-    </div>
-
-    <!-- Account -->
-    <div class="settings-section-head" id="account-section-title">الحساب</div>
-    <div class="set-group" id="auth-account-group">
-      <div class="set-item auth-account-row">
-        <div>
-          <div class="set-lbl" id="auth-panel-title">الحساب</div>
-          <div class="set-sub" id="auth-status-sub">يمكنك استخدام التطبيق بدون تسجيل دخول</div>
-        </div>
-        <button class="auth-settings-btn" id="auth-open-btn" type="button" onclick="openAuthModal()">تسجيل الدخول</button>
-      </div>
-      <div class="set-item auth-account-meta" id="auth-user-row" style="display:none;">
-        <div>
-          <div class="set-lbl" id="auth-user-name">—</div>
-          <div class="set-sub" id="auth-user-email">—</div>
-        </div>
-        <button class="auth-logout-btn" id="auth-logout-btn" type="button" onclick="logoutAuth()">تسجيل الخروج</button>
-      </div>
-    </div>
-
-    <!-- Trial entry -->
-    <div class="settings-section-head" id="plan-section-title">الخطة</div>
-    <div class="set-group" style="display:none">
-      <div class="set-upgrade-row" id="set-upgrade-btn" onclick="openUpgradeSheet()">
-        <div style="display:flex;align-items:center;">
-          <span class="set-upgrade-ico">⭐</span>
-          <div>
-            <div class="set-upgrade-lbl" id="sl-upgrade-lbl">نسخة تجريبية مجانية</div>
-            <div class="set-upgrade-sub" id="sl-upgrade-sub">ميزات Pro مجانية خلال الفترة التجريبية.</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span class="plan-status-pill early" id="plan-status-pill">مجاني / نسخة تجريبية مجانية</span>
-          <span class="set-upgrade-arr">ℹ️</span>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- ── TRIAL STATUS SECTION ─────────────────────────────────── -->
-    <div class="set-group" id="plan-test-group">
-
-      <!-- Header row -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--b);">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:16px;">🧪</span>
-          <div>
-            <div class="set-lbl" id="ptg-title" style="font-size:13px;font-weight:700;">نسخة تجريبية مجانية</div>
-            <div class="set-sub" id="ptg-sub">ميزات Pro مجانية خلال الفترة التجريبية.</div>
-          </div>
-        </div>
-        <!-- Live plan badge -->
-        <span id="ptg-live-badge" class="plan-status-pill early">مجاني / نسخة تجريبية مجانية</span>
-      </div>
-
-      <!-- Active plan description -->
-      <div id="ptg-desc" style="padding:10px 16px;background:var(--s2);border-bottom:1px solid var(--b);font-size:11px;color:var(--tm);font-family:var(--fe);line-height:1.6;">
-        الخطط المدفوعة قادمة قريبًا.
-      </div>
-
-      <!-- Pricing preview -->
-      <div class="ea-price-preview">
-        <div class="ea-price-card">
-          <div class="ea-price-head">
-            <div>
-              <div class="ea-price-name" id="ea-monthly-name">شهري</div>
-              <div class="ea-price-amount" id="ea-monthly-price">19 ر.س / شهر</div>
-            </div>
-            <span class="ea-soon-badge" id="ea-soon-monthly">قريبًا</span>
-          </div>
-        </div>
-        <div class="ea-price-card">
-          <div class="ea-price-head">
-            <div>
-              <div class="ea-price-name" id="ea-yearly-name">سنوي</div>
-              <div class="ea-price-amount" id="ea-yearly-price">149 ر.س / سنة</div>
-            </div>
-            <span class="ea-soon-badge" id="ea-soon-yearly">قريبًا</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Feature access summary -->
-      <div id="ptg-features" style="padding:0 16px 14px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;">
-        <!-- filled by updatePlanUI() -->
-      </div>
-
-    </div>
-    <!-- ── END PLAN STATUS ────────────────────────────────────────── -->
-
-    <div style="text-align:center;color:var(--tm);font-size:12px;padding:16px;font-family:var(--fe)">Air Calc Pro v9.0 · Made in Saudi Arabia 🇸🇦</div>
-  </div>
-</div>
-
-<!-- ── UPGRADE MODAL SHEET ────────────────────────────────────────────── -->
-<div class="upgrade-overlay hidden" id="upgrade-overlay" onclick="closeUpgradeSheet(event)">
-  <div class="upgrade-sheet" onclick="event.stopPropagation()">
-    <div class="upgrade-sheet-handle" onclick="closeUpgradeSheet()"></div>
-    <div style="position:relative;">
-      <button class="upgrade-sheet-close" onclick="closeUpgradeSheet()">✕</button>
-    </div>
-
-    <!-- Hero -->
-    <div class="upgrade-hero">
-      <div class="upgrade-hero-icon">⭐</div>
-      <div class="upgrade-hero-title">AirCalc <span id="ush-title-accent">Free Trial</span></div>
-      <div class="upgrade-hero-sub" id="ush-sub">ميزات Pro مجانية خلال الفترة التجريبية.</div>
-    </div>
-
-    <!-- Plan comparison -->
-    <div class="upgrade-plans">
-      <!-- Free -->
-      <div class="plan-card">
-        <div class="plan-card-name" id="pc-free-name">مجاني</div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcf1">حساب TR / CFM / BTU</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcf2">أحمال الأجهزة</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcf3">عرض سعر أساسي</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcf4">تصدير CSV</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcf5">حتى 3 مشاريع</span></div>
-        <div class="plan-feature locked"><span class="pf-ico">🔒</span><span id="pcf6">تصدير PDF</span></div>
-        <div class="plan-feature locked"><span class="pf-ico">🔒</span><span id="pcf7">التقرير الفني</span></div>
-        <div class="plan-feature locked"><span class="pf-ico">🔒</span><span id="pcf8">Duct / ESP</span></div>
-      </div>
-      <!-- Pro -->
-      <div class="plan-card pro">
-        <div class="plan-card-name" id="pc-pro-name">Pro ⭐</div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp1">كل مزايا المجاني</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp2">تصدير PDF</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp3">التقرير الفني</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp4">مشاريع غير محدودة</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp5">وضع وحدة للمشروع</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp6">Duct Sizing</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp7">ESP Calculation</span></div>
-        <div class="plan-feature"><span class="pf-ico">✅</span><span id="pcp8">مزايا مستقبلية</span></div>
-      </div>
-    </div>
-
-    <!-- Pricing preview -->
-    <div class="upgrade-pricing">
-      <div class="price-row">
-        <div class="price-pill coming-soon-pill" id="pp-yearly">
-          <div class="price-pill-amount" id="pp-yr-amt">149 ر.س</div>
-          <div class="price-pill-period" id="pp-yr-per">سنوياً</div>
-          <div class="price-pill-badge" id="pp-yr-badge">قريبًا</div>
-        </div>
-        <div class="price-pill coming-soon-pill" id="pp-monthly">
-          <div class="price-pill-amount" id="pp-mo-amt">19 ر.س</div>
-          <div class="price-pill-period" id="pp-mo-per">شهرياً</div>
-          <div class="price-pill-badge" id="pp-mo-badge">قريبًا</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CTA -->
-    <div class="upgrade-cta">
-      <button class="btn-upgrade-primary btn-upgrade-disabled" id="btn-upgrade-main" type="button" disabled>
-        <span id="ush-cta">الخطط المدفوعة قادمة قريبًا</span>
-      </button>
-      <button class="btn-upgrade-secondary" onclick="closeUpgradeSheet()">
-        <span id="ush-later">متابعة</span>
-      </button>
-    </div>
-    <div class="upgrade-note" id="ush-note">ميزات Pro مجانية خلال الفترة التجريبية.</div>
-  </div>
-</div>
-
-<!-- BOTTOM NAV -->
-<div class="bnav">
-  <div class="ni on icon-only" id="ni-calc" onclick="goPanel('calc')" title="Calculator">
-    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-  </div>
-  <div class="ni" id="ni-tech" onclick="goPanel('tech')">
-    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>
-    <div class="ni-lbl" id="nl-tech">التقرير الفني</div>
-  </div>
-  <div class="ni" id="ni-hist" onclick="goPanel('hist')">
-    <div style="position:relative;display:inline-flex;">
-      <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
-      <span id="hist-dot" class="nav-red-dot" style="display:none;"></span>
-    </div>
-    <div class="ni-lbl" id="nl-hist">عرض السعر</div>
-  </div>
-  <div class="ni" id="ni-projects" onclick="goPanel('projects')">
-    <div style="position:relative;display:inline-flex;">
-      <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h6l2 3h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-      <span id="projects-dot" class="nav-red-dot" style="display:none;"></span>
-    </div>
-    <div class="ni-lbl" id="nl-projects">المشاريع</div>
-  </div>
-  <div class="ni" id="ni-contact" onclick="goPanel('contact')">
-    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    <div class="ni-lbl" id="nl-contact">تواصل</div>
-  </div>
-  <div class="ni" id="ni-settings" onclick="goPanel('settings')">
-    <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <div class="ni-lbl" id="nl-settings">الإعدادات</div>
-  </div>
-</div>
-
-<!-- DEVICE MODAL -->
-<div class="overlay" id="overlay" onclick="overlayClick(event)">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-hdr">
-      <div class="modal-ttl" id="lbl-modal">اختر نوع الجهاز</div>
-      <div class="modal-x" onclick="closeModal()">✕</div>
-    </div>
-    <div class="ftabs">
-      <div class="ftab on" onclick="filterTab(this,null)">الكل / All</div>
-      <div class="ftab" onclick="filterTab(this,'office')">Office</div>
-      <div class="ftab" onclick="filterTab(this,'light')">Lighting</div>
-      <div class="ftab" onclick="filterTab(this,'home')">Domestic</div>
-      <div class="ftab" onclick="filterTab(this,'health')">Healthcare</div>
-    </div>
-    <div class="cat-grid" id="cat-grid"></div>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
-
-<!-- ACCOUNT AUTH MODAL -->
-<div class="upgrade-overlay hidden" id="auth-overlay" onclick="closeAuthModal(event)">
-  <div class="upgrade-sheet auth-sheet" onclick="event.stopPropagation()">
-    <div class="upgrade-sheet-handle" onclick="closeAuthModal()"></div>
-    <div style="position:relative;">
-      <button class="upgrade-sheet-close" type="button" onclick="closeAuthModal()">✕</button>
-    </div>
-    <div class="upgrade-hero auth-hero">
-      <div class="upgrade-hero-icon">🔐</div>
-      <div class="upgrade-hero-title" id="auth-modal-title">الحساب</div>
-      <div class="upgrade-hero-sub" id="auth-modal-sub">يمكنك استخدام التطبيق بدون تسجيل دخول</div>
-    </div>
-    <div class="auth-mode-tabs" id="auth-mode-tabs">
-      <button class="auth-mode-btn active" id="auth-tab-signin" type="button">تسجيل الدخول</button>
-      <button class="auth-mode-btn" id="auth-tab-create" type="button">إنشاء حساب</button>
-    </div>
-    <div class="auth-user-summary" id="auth-user-summary" style="display:none;">
-      <div class="auth-user-summary-name" id="auth-summary-name">—</div>
-      <div class="auth-user-summary-email" id="auth-summary-email">—</div>
-    </div>
-    <div class="auth-form-wrap" id="auth-form-wrap">
-      <div class="auth-field" id="auth-fullname-row" style="display:none;">
-        <div class="lbl" id="auth-fullname-lbl">الاسم الكامل</div>
-        <div class="ifield-wrap"><input class="ninput auth-input" id="auth-fullname" type="text" autocomplete="name"></div>
-      </div>
-      <div class="auth-field">
-        <div class="lbl" id="auth-email-lbl">البريد الإلكتروني</div>
-        <div class="ifield-wrap"><input class="ninput auth-input" id="auth-email" type="email" autocomplete="email"></div>
-      </div>
-      <div class="auth-field">
-        <div class="lbl" id="auth-password-lbl">كلمة المرور</div>
-        <div class="ifield-wrap"><input class="ninput auth-input" id="auth-password" type="password" autocomplete="current-password"></div>
-      </div>
-      <div class="auth-field" id="auth-confirm-row" style="display:none;">
-        <div class="lbl" id="auth-confirm-lbl">تأكيد كلمة المرور</div>
-        <div class="ifield-wrap"><input class="ninput auth-input" id="auth-confirm" type="password" autocomplete="new-password"></div>
-      </div>
-      <div class="load-factor-helper auth-helper" id="auth-helper-note">يتطلب تسجيل الدخول للحفظ السحابي</div>
-      <div class="upgrade-cta auth-cta">
-        <button class="btn-upgrade-primary auth-primary-btn" id="auth-primary-btn" type="button">تسجيل الدخول</button>
-        <button class="btn-upgrade-secondary auth-link-btn" id="auth-forgot-btn" type="button">نسيت كلمة المرور؟</button>
-        <button class="btn-upgrade-secondary auth-link-btn" id="auth-logout-modal-btn" type="button" style="display:none;">تسجيل الخروج</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Phase 3: core foundation (sync) -->
-<script src="./js/core/state.js"></script>
-<script src="./js/core/helpers.js"></script>
-<script src="./js/core/storage.js"></script>
-<script src="./js/core/i18n.js"></script>
-<script src="./js/core/calc.js"></script>
-
-
-<!-- Phase 3: modules (sync — window.App* must exist before app.js defer) -->
-<script src="./modules/plan.js"></script>
-<script src="./modules/devices.js"></script>
-<script src="./modules/history.js"></script>
-<script src="./modules/duct.js"></script>
-<script src="./modules/rooms.js"></script>
-<script src="./modules/calc.js"></script>
-<script src="./modules/quote.js"></script>
-<script src="./modules/pdf.js"></script>
-<script src="./modules/projects.js"></script>
-
-<!-- Legacy app logic (deferred — overwrites module globals with live-state versions) -->
-<script src="./app.js" defer></script>
-<script type="module" src="./js/firebase-auth.js"></script>
-
-<!-- Bootstrap (deferred — runs after app.js defines loadAppData/initApp) -->
-<script src="./main.js" defer></script>
+    applyLang('ar');
+  </script>
 </body>
 </html>

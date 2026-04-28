@@ -1093,6 +1093,13 @@ body.light-theme{
   min-width:0;
 }
 
+.app-title-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0;
+}
+
 .app-title{
   font-size:22px;
   line-height:1.1;
@@ -1121,6 +1128,10 @@ html[dir="rtl"] .app-brand-text{
   text-align:right;
 }
 
+html[dir="rtl"] .app-title-row{
+  flex-direction:row-reverse;
+}
+
 html[dir="ltr"] .app-header{
   flex-direction:row;
 }
@@ -1128,6 +1139,10 @@ html[dir="ltr"] .app-header{
 html[dir="ltr"] .app-brand-text{
   align-items:flex-start;
   text-align:left;
+}
+
+html[dir="ltr"] .app-title-row{
+  flex-direction:row;
 }
 
 .logo>div{
@@ -1171,6 +1186,9 @@ body.light-theme .header{
   }
   .app-title{
     font-size:20px;
+  }
+  .app-title-row{
+    gap:6px;
   }
   .logo-subtitle{
     font-size:10px;

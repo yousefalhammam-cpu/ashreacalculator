@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AirCalc Pro — Landing</title>
+  <link rel="stylesheet" href="./landing.css">
+</head>
+<body>
+  <div class="landing-shell">
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="AirCalc Pro">
+        <img src="../assets/logo/logo-header.png" alt="AirCalc Pro" class="brand-logo">
+        <div class="brand-copy">
+          <div class="brand-title">AirCalc Pro <span class="pro-badge">PRO</span></div>
+          <div class="brand-subtitle" data-i18n="subtitle">منصة حسابات وعروض أسعار التكييف</div>
+        </div>
+      </a>
+
+      <nav class="site-nav">
+        <a href="#top" data-i18n="nav_home">الرئيسية</a>
+        <a href="https://yousefalhammam-cpu.github.io/ashreacalculator/" target="_blank" rel="noreferrer" data-i18n="nav_app">التطبيق</a>
+        <a href="#contact" data-i18n="nav_contact">تواصل</a>
+      </nav>
+
+      <button class="lang-toggle" id="langToggle" type="button">EN</button>
+    </header>
+
+    <main>
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <div class="eyebrow">HVAC SaaS</div>
+          <h1>AirCalc Pro</h1>
+          <p class="hero-subtitle" data-i18n="subtitle">منصة حسابات وعروض أسعار التكييف</p>
+          <p class="hero-text" data-i18n="hero_desc">
+            حاسبة تكييف ذكية للمهندسين والمقاولين، لحساب الأحمال والتدفق وإصدار عروض أسعار احترافية بسرعة.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://yousefalhammam-cpu.github.io/ashreacalculator/" target="_blank" rel="noreferrer" data-i18n="start_now">ابدأ الآن</a>
+            <a class="btn btn-secondary" href="#screenshots" data-i18n="view_demo">عرض التطبيق</a>
+          </div>
+          <div class="early-access-card">
+            <div class="early-access-title">Early Access</div>
+            <div class="early-access-text" data-i18n="early_access">
+              المستخدمين الحاليين يحصلون على وصول مجاني
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-preview">
+          <div class="preview-card">
+            <img src="../home.png" alt="AirCalc Pro main calculator">
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div class="eyebrow" data-i18n="features_eyebrow">الميزات</div>
+          <h2 data-i18n="features_title">كل ما يحتاجه مهندس التكييف في مكان واحد</h2>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon">❄</div>
+            <h3 data-i18n="f1_title">حساب الأحمال</h3>
+            <p data-i18n="f1_text">Cooling load calculation for single rooms and multi-room projects.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">🌀</div>
+            <h3 data-i18n="f2_title">حساب تدفق الهواء</h3>
+            <p data-i18n="f2_text">Airflow, CFM, duct sizing, and preliminary ESP support.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">🏥</div>
+            <h3 data-i18n="f3_title">دعم ASHRAE للمستشفيات</h3>
+            <p data-i18n="f3_text">Healthcare spaces stay aligned with ASHRAE airflow and pressure logic.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">💰</div>
+            <h3 data-i18n="f4_title">نظام عرض سعر ذكي</h3>
+            <p data-i18n="f4_text">Build quotations with unit selection, pricing, totals, and VAT instantly.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3 data-i18n="f5_title">تصدير Excel</h3>
+            <p data-i18n="f5_text">Export HAP-style spreadsheets for coordination and documentation.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">📁</div>
+            <h3 data-i18n="f6_title">إدارة المشاريع</h3>
+            <p data-i18n="f6_text">Save, revisit, duplicate, and manage multi-room HVAC studies.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="screenshots">
+        <div class="section-head">
+          <div class="eyebrow" data-i18n="screens_eyebrow">لقطات التطبيق</div>
+          <h2 data-i18n="screens_title">واجهة عملية جاهزة للمشاريع الفعلية</h2>
+        </div>
+        <div class="shot-grid">
+          <article class="shot-card">
+            <div class="shot-title" data-i18n="shot_calc">الحاسبة الرئيسية</div>
+            <img src="../home.png" alt="Main calculator screenshot">
+          </article>
+          <article class="shot-card">
+            <div class="shot-title" data-i18n="shot_quote">عرض السعر</div>
+            <img src="../quotation.png" alt="Quotation screenshot">
+          </article>
+          <article class="shot-card">
+            <div class="shot-title" data-i18n="shot_report">التقرير الفني</div>
+            <img src="../ui-check-mobile.png" alt="Technical report screenshot">
+          </article>
+          <article class="shot-card">
+            <div class="shot-title" data-i18n="shot_dashboard">لوحة المشاريع</div>
+            <img src="../quotation.png" alt="Project dashboard preview">
+          </article>
+        </div>
+      </section>
+
+      <section class="section split-section">
+        <div class="section-block">
+          <div class="section-head">
+            <div class="eyebrow" data-i18n="usecases_eyebrow">لمن</div>
+            <h2 data-i18n="usecases_title">مصمم ليخدم فرق HVAC كاملة</h2>
+          </div>
+          <div class="pill-list">
+            <span class="pill" data-i18n="uc1">المهندسين</span>
+            <span class="pill" data-i18n="uc2">المقاولين</span>
+            <span class="pill" data-i18n="uc3">الاستشاريين</span>
+            <span class="pill" data-i18n="uc4">مدراء المرافق</span>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-head">
+            <div class="eyebrow" data-i18n="why_eyebrow">لماذا AirCalc Pro</div>
+            <h2 data-i18n="why_title">أسرع من العمل اليدوي وأقرب للمشروع الواقعي</h2>
+          </div>
+          <div class="why-list">
+            <div class="why-item" data-i18n="why1">أسرع من الحسابات اليدوية التقليدية</div>
+            <div class="why-item" data-i18n="why2">أذكى من الأدوات العامة غير المتخصصة</div>
+            <div class="why-item" data-i18n="why3">مبني للمشاريع الفعلية وعروض الأسعار</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-band">
+        <div>
+          <div class="eyebrow">AirCalc Pro</div>
+          <h2 data-i18n="cta_title">ابدأ الآن وجرّب التجربة الكاملة</h2>
+          <p data-i18n="cta_text">AirCalc Pro helps you calculate, document, and quote HVAC work in one streamlined flow.</p>
+        </div>
+        <div class="cta-actions">
+          <a class="btn btn-primary" href="https://yousefalhammam-cpu.github.io/ashreacalculator/" target="_blank" rel="noreferrer" data-i18n="start_now">ابدأ الآن</a>
+          <a class="btn btn-secondary" href="https://yousefalhammam-cpu.github.io/ashreacalculator/" target="_blank" rel="noreferrer" data-i18n="try_free">جرّب مجانًا</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="footer-brand">
+        <div class="brand-title">AirCalc Pro</div>
+        <div class="footer-note" data-i18n="footer_note">HVAC Calculation & Quotation Suite</div>
+      </div>
+      <div class="footer-links">
+        <a href="#top" data-i18n="nav_home">الرئيسية</a>
+        <a href="https://yousefalhammam-cpu.github.io/ashreacalculator/" target="_blank" rel="noreferrer" data-i18n="nav_app">التطبيق</a>
+        <a href="#contact" data-i18n="nav_contact">تواصل</a>
+      </div>
+      <div class="footer-contact">
+        <a href="tel:0560282701" data-i18n="footer_mobile">رقم الجوال: 0560282701</a>
+        <a href="mailto:yousef.alhammam@live.com" data-i18n="footer_email">البريد الإلكتروني: yousef.alhammam@live.com</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const T = {
+      ar: {
+        subtitle: 'منصة حسابات وعروض أسعار التكييف',
+        nav_home: 'الرئيسية',
+        nav_app: 'التطبيق',
+        nav_contact: 'تواصل',
+        hero_desc: 'حاسبة تكييف ذكية للمهندسين والمقاولين، لحساب الأحمال والتدفق وإصدار عروض أسعار احترافية بسرعة.',
+        start_now: 'ابدأ الآن',
+        view_demo: 'عرض التطبيق',
+        features_eyebrow: 'الميزات',
+        features_title: 'كل ما يحتاجه مهندس التكييف في مكان واحد',
+        f1_title: 'حساب الأحمال',
+        f1_text: 'حساب حمل التبريد للغرف المفردة والمشاريع متعددة الغرف.',
+        f2_title: 'حساب تدفق الهواء',
+        f2_text: 'حساب CFM والدكت وESP التقديري ضمن نفس المسار.',
+        f3_title: 'دعم ASHRAE للمستشفيات',
+        f3_text: 'الغرف الصحية تبقى مرتبطة بمنطق ASHRAE للتدفق والضغط.',
+        f4_title: 'نظام عرض سعر ذكي',
+        f4_text: 'تكوين عروض الأسعار مع اختيار الوحدات والأسعار والضريبة تلقائيًا.',
+        f5_title: 'تصدير Excel',
+        f5_text: 'تصدير ملفات بصيغة HAP-style للتوثيق والتنسيق.',
+        f6_title: 'إدارة المشاريع',
+        f6_text: 'حفظ المشاريع والرجوع لها ونسخها وإدارتها باحترافية.',
+        screens_eyebrow: 'لقطات التطبيق',
+        screens_title: 'واجهة عملية جاهزة للمشاريع الفعلية',
+        shot_calc: 'الحاسبة الرئيسية',
+        shot_quote: 'عرض السعر',
+        shot_report: 'التقرير الفني',
+        shot_dashboard: 'لوحة المشاريع',
+        usecases_eyebrow: 'لمن',
+        usecases_title: 'مصمم ليخدم فرق HVAC كاملة',
+        uc1: 'المهندسين',
+        uc2: 'المقاولين',
+        uc3: 'الاستشاريين',
+        uc4: 'مدراء المرافق',
+        why_eyebrow: 'لماذا AirCalc Pro',
+        why_title: 'أسرع من العمل اليدوي وأقرب للمشروع الواقعي',
+        why1: 'أسرع من الحسابات اليدوية التقليدية',
+        why2: 'أذكى من الأدوات العامة غير المتخصصة',
+        why3: 'مبني للمشاريع الفعلية وعروض الأسعار',
+        cta_title: 'ابدأ الآن وجرّب التجربة الكاملة',
+        cta_text: 'AirCalc Pro يجمع بين الحساب والتوثيق والتسعير في مسار عمل واحد وواضح.',
+        try_free: 'جرّب مجانًا',
+        footer_note: 'منصة حسابات وعروض أسعار التكييف',
+        footer_mobile: 'رقم الجوال: 0560282701',
+        footer_email: 'البريد الإلكتروني: yousef.alhammam@live.com',
+        early_access: 'المستخدمين الحاليين يحصلون على وصول مجاني'
+      },
+      en: {
+        subtitle: 'HVAC Calculation & Quotation Suite',
+        nav_home: 'Home',
+        nav_app: 'App',
+        nav_contact: 'Contact',
+        hero_desc: 'Smart HVAC calculator for engineers, contractors, and consultants. Calculate cooling loads, airflow, and generate professional quotations instantly.',
+        start_now: 'Start Using App',
+        view_demo: 'View Demo',
+        features_eyebrow: 'Features',
+        features_title: 'Everything HVAC teams need in one workspace',
+        f1_title: 'Cooling Load Calculation',
+        f1_text: 'Calculate cooling loads for single rooms and multi-room projects.',
+        f2_title: 'Airflow & Duct sizing',
+        f2_text: 'Handle CFM, duct sizing, and preliminary ESP in the same workflow.',
+        f3_title: 'ASHRAE Healthcare Support',
+        f3_text: 'Healthcare spaces stay aligned with ASHRAE ventilation and pressure logic.',
+        f4_title: 'Smart Quotation System',
+        f4_text: 'Build quotations with unit selection, pricing, VAT, and totals instantly.',
+        f5_title: 'Export to Excel',
+        f5_text: 'Generate HAP-style spreadsheets for documentation and coordination.',
+        f6_title: 'Multi-room Projects',
+        f6_text: 'Save, revisit, duplicate, and manage real HVAC studies professionally.',
+        screens_eyebrow: 'Screenshots',
+        screens_title: 'A practical interface built for real project work',
+        shot_calc: 'Main Calculator',
+        shot_quote: 'Quotation',
+        shot_report: 'Technical Report',
+        shot_dashboard: 'Dashboard',
+        usecases_eyebrow: 'Use Cases',
+        usecases_title: 'Built for complete HVAC delivery teams',
+        uc1: 'Engineers',
+        uc2: 'Contractors',
+        uc3: 'Consultants',
+        uc4: 'Facility managers',
+        why_eyebrow: 'Why AirCalc Pro',
+        why_title: 'Faster than manual work and closer to real projects',
+        why1: 'Faster than traditional manual calculations',
+        why2: 'Smarter than generic tools',
+        why3: 'Built for real HVAC projects and quotations',
+        cta_title: 'Start now and explore the full experience',
+        cta_text: 'AirCalc Pro helps you calculate, document, and quote HVAC work in one streamlined flow.',
+        try_free: 'Try for Free',
+        footer_note: 'HVAC Calculation & Quotation Suite',
+        footer_mobile: 'Mobile: 0560282701',
+        footer_email: 'Email: yousef.alhammam@live.com',
+        early_access: 'Early users get free access'
+      }
+    };
+
+    let lang = 'ar';
+
+    function applyLang(next) {
+      lang = next === 'en' ? 'en' : 'ar';
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.body.classList.toggle('ltr', lang === 'en');
+      document.getElementById('langToggle').textContent = lang === 'ar' ? 'EN' : 'ع';
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (T[lang][key]) el.textContent = T[lang][key];
+      });
+    }
+
+    document.getElementById('langToggle').addEventListener('click', () => {
+      applyLang(lang === 'ar' ? 'en' : 'ar');
+    });
+
+    applyLang('ar');
+  </script>
+</body>
+</html>
