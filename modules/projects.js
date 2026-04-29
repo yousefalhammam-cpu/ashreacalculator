@@ -285,6 +285,7 @@
 
   function saveCurrentProject(opts) {
     opts = opts || {};
+    if (window.AppPlan && !window.AppPlan.requireFeature('unlimitedProjects')) return;
     var projName = (_getCurrentProjectField('tech-project', '') || _getCurrentProjectField('quote-project', '') || '').trim();
 
     if (!projName) {
@@ -406,6 +407,7 @@
   }
 
   function saveQuotationToCurrentProject() {
+    if (window.AppPlan && !window.AppPlan.requireFeature('saveQuotation')) return false;
     var curId = _getCurrentId();
     if (!curId && window.AppStorage && typeof window.AppStorage.restoreCurrentProjectId === 'function') {
       curId = window.AppStorage.restoreCurrentProjectId();
@@ -783,6 +785,9 @@
       if (typeof goPanel === 'function' && !goPanel._pmPatched) {
         var originalGoPanel = goPanel;
         goPanel = function (name) {
+          if (name === 'projects' && window.AppPlan && !window.AppPlan.requireFeature('projectDashboard')) {
+            return;
+          }
           originalGoPanel(name);
           if (name === 'projects') {
             updateProjMgrLabels();

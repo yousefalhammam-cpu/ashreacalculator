@@ -357,6 +357,9 @@ Object.assign(T.ar,{
   ptmkt:'سعة السوق',
   authacct:'الحساب',
   authanon:'يمكنك استخدام التطبيق بدون تسجيل دخول',
+  authsigninunlock:'تسجيل الدخول / تفعيل PRO مجانًا',
+  authgueststatus:'سجّل الدخول لتفعيل PRO مجانًا',
+  authearlypro:'وصول مبكر PRO',
   authsignin:'تسجيل الدخول',
   authcreate:'إنشاء حساب',
   authfullname:'الاسم الكامل',
@@ -368,9 +371,10 @@ Object.assign(T.ar,{
   authsignedin:'تم تسجيل الدخول',
   authcreated:'تم إنشاء الحساب',
   authreset:'أرسلنا رابط إعادة تعيين كلمة المرور',
-  authcloudreq:'يتطلب تسجيل الدخول للحفظ السحابي',
+  authcloudreq:'يتطلب تسجيل الدخول للوصول إلى مزايا PRO والحفظ السحابي',
   authmodeanon:'يمكنك استخدام التطبيق بدون تسجيل دخول',
   authtrialfree:'ميزات Pro مجانية خلال الفترة التجريبية.',
+  authearlypromsg:'ميزات PRO مجانية خلال الوصول المبكر.',
   authloggedin:'تم تسجيل الدخول باسم',
   authfullname_req:'الاسم الكامل مطلوب',
   authemail_invalid:'أدخل بريدًا إلكترونيًا صحيحًا',
@@ -411,6 +415,9 @@ Object.assign(T.en,{
   ptmkt:'Mkt BTU',
   authacct:'Account',
   authanon:'You can use the app without signing in',
+  authsigninunlock:'Sign in / Unlock PRO for Free',
+  authgueststatus:'Sign in to unlock PRO for free',
+  authearlypro:'PRO Early Access',
   authsignin:'Sign In',
   authcreate:'Create Account',
   authfullname:'Full Name',
@@ -422,9 +429,10 @@ Object.assign(T.en,{
   authsignedin:'Signed in',
   authcreated:'Account created',
   authreset:'Password reset link sent',
-  authcloudreq:'Login required for cloud saving',
+  authcloudreq:'Login required for PRO features and cloud saving',
   authmodeanon:'You can use the app without signing in',
   authtrialfree:'Pro features are free during the trial period.',
+  authearlypromsg:'PRO features are free during Early Access.',
   authloggedin:'Signed in as',
   authfullname_req:'Full name is required',
   authemail_invalid:'Enter a valid email address',
@@ -4786,6 +4794,15 @@ function initProjDropdowns(){
   window.exportTechPDF = exportTechPDF;
 })();
 
+(function(){
+  var _origExportHAP = exportHAP;
+  exportHAP = function(){
+    if (!window.AppPlan || !window.AppPlan.requireFeature('exportHAP')) return;
+    _origExportHAP();
+  };
+  window.exportHAP = exportHAP;
+})();
+
 // ── I3) Gate setQuoteMode — block 'proj' on free plan ────────────
 (function(){
   var _origSetQuoteMode = setQuoteMode;
@@ -4803,33 +4820,34 @@ function initProjDropdowns(){
 function updatePlanUI(){
   var earlyAccess = window.AppPlan && window.AppPlan.isEarlyAccess ? window.AppPlan.isEarlyAccess() : true;
   var isPro = window.AppPlan ? window.AppPlan.isPro() : false;
-  var featuresOpen = earlyAccess || isPro;
+  var featuresOpen = isPro;
   var isAr  = lang === 'ar';
-  var earlyAccessText = isAr ? 'نسخة تجريبية مجانية' : 'Free Trial Version';
-  var freeEarlyText = isAr ? 'مجاني / نسخة تجريبية مجانية' : 'Free / Trial Version';
+  var guestText = isAr ? 'ضيف' : 'Guest';
+  var proEarlyText = isAr ? 'وصول مبكر PRO' : 'PRO Early Access';
+  var unlockText = isAr ? 'تفعيل PRO مجانًا' : 'Unlock PRO for Free';
 
   // Header badge
   var badge = G('header-plan-badge');
   if (badge) {
-    badge.textContent = earlyAccess ? earlyAccessText : (isPro ? 'PRO' : (isAr ? 'مجاني' : 'FREE'));
-    badge.className = earlyAccess ? 'early-badge' : (isPro ? 'pro-badge' : 'free-badge');
+    badge.textContent = isPro ? 'PRO' : guestText;
+    badge.className = isPro ? 'pro-badge' : 'free-badge';
   }
 
   // Settings status pill
   var pill = G('plan-status-pill');
   if (pill) {
-    pill.textContent = earlyAccess ? freeEarlyText : (isPro ? 'Pro ⭐' : (isAr ? 'مجاني' : 'Free'));
-    pill.className = 'plan-status-pill ' + (earlyAccess ? 'early' : (isPro ? 'pro' : 'free'));
+    pill.textContent = isPro ? proEarlyText : guestText;
+    pill.className = 'plan-status-pill ' + (isPro ? 'pro' : 'free');
   }
 
   // Settings upgrade row label
   var upgLbl = G('sl-upgrade-lbl');
-  if (upgLbl) upgLbl.textContent = isAr ? 'نسخة تجريبية مجانية' : 'Free Trial Version';
+  if (upgLbl) upgLbl.textContent = isPro ? proEarlyText : unlockText;
 
   var upgSub = G('sl-upgrade-sub');
-  if (upgSub) upgSub.textContent = isAr
-    ? 'ميزات Pro مجانية خلال الفترة التجريبية.'
-    : 'Pro features are free during the trial period.';
+  if (upgSub) upgSub.textContent = isPro
+    ? (isAr ? 'تم تفعيل جميع مزايا PRO خلال الوصول المبكر.' : 'All PRO features are unlocked during Early Access.')
+    : (isAr ? 'سجّل الدخول بالبريد الإلكتروني لتفعيل PRO مجانًا.' : 'Sign in with email to unlock PRO for free.');
 
   // PDF button locked state
   var btnPdf  = G('btn-pdf');
@@ -4853,15 +4871,17 @@ function updatePlanUI(){
   // Live badge in header of test card
   var liveBadge = G('ptg-live-badge');
   if (liveBadge) {
-    liveBadge.textContent = freeEarlyText;
-    liveBadge.className = 'plan-status-pill early';
+    liveBadge.textContent = isPro ? proEarlyText : guestText;
+    liveBadge.className = 'plan-status-pill ' + (isPro ? 'pro' : 'free');
   }
 
   // Title & sub
   var ptgTitle = G('ptg-title');
-  if (ptgTitle) ptgTitle.textContent = isAr ? 'نسخة تجريبية مجانية' : 'Free Trial Version';
+  if (ptgTitle) ptgTitle.textContent = isPro ? proEarlyText : unlockText;
   var ptgSub = G('ptg-sub');
-  if (ptgSub) ptgSub.textContent = isAr ? 'ميزات Pro مجانية خلال الفترة التجريبية.' : 'Pro features are free during the trial period.';
+  if (ptgSub) ptgSub.textContent = isPro
+    ? (isAr ? 'ميزات PRO مفعلة لك خلال الوصول المبكر.' : 'PRO features are enabled for you during Early Access.')
+    : (isAr ? 'سجّل الدخول للحصول على وصول مبكر PRO.' : 'Sign in to get PRO Early Access.');
   if (G('ea-monthly-name')) G('ea-monthly-name').textContent = isAr ? 'شهري' : 'Monthly';
   if (G('ea-monthly-price')) G('ea-monthly-price').textContent = isAr ? '19 ر.س / شهر' : '19 SAR / month';
   if (G('ea-yearly-name')) G('ea-yearly-name').textContent = isAr ? 'سنوي' : 'Yearly';
@@ -4875,9 +4895,11 @@ function updatePlanUI(){
     descEl.innerHTML =
       '<span style="color:var(--a);font-weight:700;">' +
       (isAr ? 'الحالة الحالية: ' : 'Current status: ') +
-      '</span>' + freeEarlyText +
+      '</span>' + (isPro ? proEarlyText : guestText) +
       ' &nbsp;·&nbsp; <span style="color:var(--g);">' +
-      (isAr ? 'ميزات Pro مجانية خلال الفترة التجريبية.' : 'Pro features are free during the trial period.') +
+      (isPro
+        ? (isAr ? 'جميع مزايا PRO مفعلة أثناء الوصول المبكر.' : 'All PRO features are unlocked during Early Access.')
+        : (isAr ? 'سجّل الدخول لتفعيل PRO مجانًا.' : 'Sign in to unlock PRO for free.')) +
       '</span><br><span style="color:var(--am);">' +
       (isAr ? 'الخطط المدفوعة قادمة قريبًا.' : 'Paid plans are coming soon.') +
       '</span>';
@@ -4889,14 +4911,17 @@ function updatePlanUI(){
     var features = [
       { key:'exportCSV',         ar:'تصدير CSV',           en:'CSV export' },
       { key:'exportPDF',         ar:'تصدير PDF',           en:'PDF export' },
+      { key:'exportHAP',         ar:'تصدير HAP',           en:'HAP export' },
       { key:'techReport',        ar:'التقرير الفني',        en:'Tech Report' },
+      { key:'saveQuotation',     ar:'حفظ عرض السعر',        en:'Save quotation' },
       { key:'projectMode',       ar:'وضع المشروع',          en:'Project mode' },
+      { key:'projectDashboard',  ar:'لوحة المشاريع',        en:'Project dashboard' },
       { key:'ductSizing',        ar:'تصميم المجاري',        en:'Duct sizing' },
       { key:'espCalc',           ar:'حساب ESP',             en:'ESP calc' },
       { key:'unlimitedProjects', ar:'مشاريع غير محدودة',    en:'Unlimited projects' }
     ];
     var fa = {};
-    features.forEach(function(f){ fa[f.key] = true; });
+    features.forEach(function(f){ fa[f.key] = window.AppPlan ? window.AppPlan.hasAccess(f.key) : false; });
     featEl.innerHTML = features.map(function(f){
       var ok = fa[f.key] === true;
       return '<div class="ptg-feat ' + (ok?'ok':'no') + '">' +

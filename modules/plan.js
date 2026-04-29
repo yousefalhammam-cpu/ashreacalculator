@@ -1,136 +1,131 @@
-// ── AirCalc Pro — modules/plan.js ─────────────────────────────────────────
-// Central Free vs Pro plan system.
-// Storage key: aircalc_plan
-// Plans: 'free' | 'pro' | 'monthly' | 'yearly' | 'lifetime'
-// All 'pro' variants share the same feature set.
-// ─────────────────────────────────────────────────────────────────────────
+// AirCalc Pro — modules/plan.js
+// Firebase-backed Guest vs PRO Early Access plan system.
 (function () {
   'use strict';
 
-  var PLAN_KEY        = 'aircalc_plan';
-  var FREE_PROJ_LIMIT = 3;
-  var EARLY_ACCESS_OPEN = true;
+  var GUEST_PROJECT_LIMIT = 0;
 
-  // ── Feature map ──────────────────────────────────────────────────────────
-  // true = available on plan
   var FEATURE_MAP = {
-    free: {
+    guest: {
       exportCSV:         true,
       exportPDF:         false,
+      exportHAP:         false,
       techReport:        false,
       unlimitedProjects: false,
       projectMode:       false,
+      projectDashboard:  false,
       ductSizing:        false,
       espCalc:           false,
-      advancedDuct:      false
+      advancedDuct:      false,
+      saveQuotation:     false
     },
     pro: {
       exportCSV:         true,
       exportPDF:         true,
+      exportHAP:         true,
       techReport:        true,
       unlimitedProjects: true,
       projectMode:       true,
+      projectDashboard:  true,
       ductSizing:        true,
       espCalc:           true,
-      advancedDuct:      true
+      advancedDuct:      true,
+      saveQuotation:     true
     }
   };
-  // monthly / yearly / lifetime share pro features
-  FEATURE_MAP.monthly  = FEATURE_MAP.pro;
-  FEATURE_MAP.yearly   = FEATURE_MAP.pro;
-  FEATURE_MAP.lifetime = FEATURE_MAP.pro;
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
   function _lang() { return (typeof lang !== 'undefined') ? lang : 'ar'; }
+  function _isAr() { return _lang() === 'ar'; }
   function _toast(msg) {
     if (typeof toast === 'function') { toast(msg); return; }
-    if (window.AppHelpers) window.AppHelpers.toast(msg);
+    if (window.AppHelpers && typeof window.AppHelpers.toast === 'function') window.AppHelpers.toast(msg);
   }
-  function _isAr() { return _lang() === 'ar'; }
-
-  // ── Core API ─────────────────────────────────────────────────────────────
+  function _auth() { return window.AppAuth || null; }
+  function _user() {
+    var auth = _auth();
+    return auth && typeof auth.getCurrentUser === 'function' ? auth.getCurrentUser() : null;
+  }
+  function _profile() {
+    var auth = _auth();
+    return auth && typeof auth.getCurrentProfile === 'function' ? (auth.getCurrentProfile() || null) : null;
+  }
 
   function getCurrentPlan() {
-    return localStorage.getItem(PLAN_KEY) || 'free';
+    return _user() ? 'pro' : 'guest';
   }
 
-  function setCurrentPlan(plan) {
-    var valid = ['free','pro','monthly','yearly','lifetime'];
-    if (valid.indexOf(plan) < 0) plan = 'free';
-    localStorage.setItem(PLAN_KEY, plan);
+  function getAccessType() {
+    if (!_user()) return 'guest';
+    var profile = _profile();
+    return (profile && profile.accessType) || 'early_access';
+  }
+
+  function setCurrentPlan() {
+    // No-op for backward compatibility. Auth state is the source of truth.
     if (typeof updatePlanUI === 'function') updatePlanUI();
-    console.log('[AirCalc] Plan set to:', plan);
+    return getCurrentPlan();
   }
 
   function isPro() {
-    return getCurrentPlan() !== 'free';
+    return getCurrentPlan() === 'pro';
   }
 
   function isEarlyAccess() {
-    return EARLY_ACCESS_OPEN === true;
+    return isPro() && getAccessType() === 'early_access';
   }
 
   function getFeatureAccess(plan) {
-    return FEATURE_MAP[plan] || FEATURE_MAP.free;
+    return FEATURE_MAP[plan] || FEATURE_MAP.guest;
   }
 
   function hasAccess(featureKey) {
-    if (EARLY_ACCESS_OPEN) return true;
     var plan = getCurrentPlan();
-    var map  = getFeatureAccess(plan);
+    var map = getFeatureAccess(plan);
     return map[featureKey] === true;
   }
 
-  // requireFeature — returns true if allowed, shows toast + returns false if not
   function requireFeature(featureKey) {
-    if (EARLY_ACCESS_OPEN) return true;
     if (hasAccess(featureKey)) return true;
     var msgs = {
-      exportPDF:         _isAr() ? '📄 تصدير PDF متاح في نسخة Pro فقط'           : '📄 PDF export is a Pro feature',
-      techReport:        _isAr() ? '🛠️ التقرير الفني متاح في نسخة Pro فقط'       : '🛠️ Tech Report is a Pro feature',
-      unlimitedProjects: _isAr() ? '📁 رُقِّ إلى Pro لحفظ مشاريع غير محدودة'    : '📁 Upgrade to Pro for unlimited projects',
-      projectMode:       _isAr() ? '🏢 وضع المشروع متاح في نسخة Pro فقط'        : '🏢 Project mode is a Pro feature',
-      ductSizing:        _isAr() ? '🌬 تصميم مجاري الهواء متاح في نسخة Pro فقط' : '🌬 Duct sizing is a Pro feature',
-      espCalc:           _isAr() ? '🔧 حساب ESP متاح في نسخة Pro فقط'           : '🔧 ESP calc is a Pro feature',
-      advancedDuct:      _isAr() ? 'التحليل المتقدم للمجاري متاح في نسخة Pro فقط' : 'Advanced duct analysis is a Pro feature'
+      exportPDF:         _isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا وتصدير PDF' : 'Sign in to unlock PRO for free and export PDF',
+      exportHAP:         _isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا وتصدير HAP' : 'Sign in to unlock PRO for free and export HAP',
+      techReport:        _isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا واستخدام التقرير الفني' : 'Sign in to unlock PRO for free and use the tech report',
+      unlimitedProjects: _isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا وحفظ المشاريع' : 'Sign in to unlock PRO for free and save projects',
+      projectMode:       _isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا واستخدام وضع المشروع' : 'Sign in to unlock PRO for free and use project mode',
+      projectDashboard:  _isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا وفتح لوحة المشاريع' : 'Sign in to unlock PRO for free and open the project dashboard',
+      ductSizing:        _isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا واستخدام تصميم المجاري' : 'Sign in to unlock PRO for free and use duct sizing',
+      espCalc:           _isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا واستخدام ESP' : 'Sign in to unlock PRO for free and use ESP',
+      advancedDuct:      _isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا والتحليل المتقدم' : 'Sign in to unlock PRO for free and use advanced analysis',
+      saveQuotation:     _isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا وحفظ عرض السعر' : 'Sign in to unlock PRO for free and save the quotation'
     };
-    var msg = msgs[featureKey]
-      || (_isAr() ? '🔒 هذه الميزة متاحة في نسخة Pro فقط' : '🔒 This feature requires Pro');
-    _toast(msg);
-    // Flash upgrade button in settings
-    setTimeout(function() {
-      var btn = document.getElementById('set-upgrade-btn');
-      if (btn) {
-        btn.classList.add('upgrade-pulse');
-        setTimeout(function(){ btn.classList.remove('upgrade-pulse'); }, 1200);
-      }
-    }, 300);
+    _toast(msgs[featureKey] || (_isAr() ? 'سجّل الدخول لتفعيل PRO مجانًا' : 'Sign in to unlock PRO for free'));
+    if (window.AppAuth && typeof window.AppAuth.openAuthModal === 'function') {
+      setTimeout(function () { window.AppAuth.openAuthModal(); }, 120);
+    }
     return false;
   }
 
   function getProjectLimit() {
-    if (EARLY_ACCESS_OPEN) return Infinity;
-    return hasAccess('unlimitedProjects') ? Infinity : FREE_PROJ_LIMIT;
+    return hasAccess('unlimitedProjects') ? Infinity : GUEST_PROJECT_LIMIT;
   }
 
-  // ── Expose ────────────────────────────────────────────────────────────────
   window.AppPlan = {
-    getCurrentPlan:  getCurrentPlan,
-    setCurrentPlan:  setCurrentPlan,
-    isPro:           isPro,
-    isEarlyAccess:   isEarlyAccess,
-    getFeatureAccess:getFeatureAccess,
-    hasAccess:       hasAccess,
-    requireFeature:  requireFeature,
-    getProjectLimit: getProjectLimit,
-    FREE_PROJ_LIMIT: FREE_PROJ_LIMIT
+    getCurrentPlan:   getCurrentPlan,
+    getAccessType:    getAccessType,
+    setCurrentPlan:   setCurrentPlan,
+    isPro:            isPro,
+    isEarlyAccess:    isEarlyAccess,
+    getFeatureAccess: getFeatureAccess,
+    hasAccess:        hasAccess,
+    requireFeature:   requireFeature,
+    getProjectLimit:  getProjectLimit,
+    GUEST_PROJECT_LIMIT: GUEST_PROJECT_LIMIT
   };
 
-  // Backward-compat shortcuts
-  window.getCurrentPlan  = getCurrentPlan;
-  window.setCurrentPlan  = setCurrentPlan;
-  window.hasAccess       = hasAccess;
-  window.requireFeature  = requireFeature;
+  window.getCurrentPlan = getCurrentPlan;
+  window.setCurrentPlan = setCurrentPlan;
+  window.hasAccess = hasAccess;
+  window.requireFeature = requireFeature;
 
-  console.log('[AirCalc] AppPlan initialised — plan:', getCurrentPlan());
+  console.log('[AirCalc] AppPlan initialised — Firebase-backed access control');
 })();

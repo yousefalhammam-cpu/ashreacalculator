@@ -12,6 +12,7 @@ let firebaseReady = false;
 let auth = null;
 let db = null;
 let currentUser = null;
+let currentProfile = null;
 let authMode = 'signin';
 
 let createUserWithEmailAndPasswordFn = null;
@@ -56,6 +57,13 @@ function getDisplayName(user){
 function getDisplayEmail(user){
   return (user && user.email) || '--';
 }
+function notifyPlanDependents(){
+  try{
+    if(typeof window.updatePlanUI === 'function') window.updatePlanUI();
+    if(typeof window.renderProjects === 'function') window.renderProjects();
+    if(typeof window.updateNavDots === 'function') window.updateNavDots();
+  }catch(e){}
+}
 
 function setAuthMode(mode){
   authMode = mode === 'create' ? 'create' : 'signin';
@@ -86,13 +94,13 @@ function updateAuthUI(){
 
   if(openBtn){
     openBtn.textContent = loggedIn
-      ? tt('authacct', 'Account')
-      : (isAr() ? 'تسجيل الدخول / إنشاء حساب' : 'Sign In / Create Account');
+      ? tt('authearlypro', 'PRO Early Access')
+      : tt('authsigninunlock', 'Sign in / Unlock PRO for Free');
   }
   if(statusSub){
     statusSub.textContent = loggedIn
       ? `${tt('authloggedin', 'Signed in as')} ${getDisplayName(currentUser)}`
-      : tt('authanon', 'You can use the app without signing in');
+      : tt('authgueststatus', 'Sign in to unlock PRO for free');
   }
   if(userName) userName.textContent = getDisplayName(currentUser);
   if(userEmail) userEmail.textContent = getDisplayEmail(currentUser);
@@ -118,7 +126,7 @@ function updateAuthUI(){
 
   if(primaryBtn){
     primaryBtn.textContent = loggedIn
-      ? tt('authacct', 'Account')
+      ? tt('authearlypro', 'PRO Early Access')
       : (authMode === 'create' ? tt('authcreate', 'Create Account') : tt('authsignin', 'Sign In'));
     primaryBtn.disabled = loggedIn;
   }
@@ -135,14 +143,14 @@ function updateAuthUI(){
 
   if(helper){
     helper.textContent = loggedIn
-      ? tt('authtrialfree', 'Pro features are free during the trial period.')
-      : tt('authcloudreq', 'Login required for cloud saving');
+      ? tt('authearlypromsg', 'PRO features are free during Early Access.')
+      : tt('authcloudreq', 'Login required for PRO features and cloud saving');
   }
 
   if(modalSub){
     modalSub.textContent = loggedIn
       ? `${tt('authloggedin', 'Signed in as')} ${getDisplayName(currentUser)}`
-      : tt('authanon', 'You can use the app without signing in');
+      : tt('authgueststatus', 'Sign in to unlock PRO for free');
   }
 
   if(GG('auth-panel-title')) GG('auth-panel-title').textContent = tt('authacct', 'Account');
@@ -158,6 +166,18 @@ function clearAuthForm(){
     const el = GG(id);
     if(el) el.value = '';
   });
+}
+
+async function loadUserProfileDoc(user){
+  if(!firebaseReady || !db || !user) return null;
+  const ref = docFn(db, 'users', user.uid);
+  try{
+    const snap = await getDocFn(ref);
+    if(snap && typeof snap.exists === 'function' && snap.exists()){
+      return snap.data() || null;
+    }
+  }catch(e){}
+  return null;
 }
 
 async function ensureFirebase(options = {}){
@@ -187,10 +207,13 @@ async function ensureFirebase(options = {}){
     firebaseReady = true;
     onAuthStateChangedFn(auth, async (user) => {
       currentUser = user || null;
+      currentProfile = null;
       if(currentUser){
         await updateUserLoginRecord(currentUser).catch(() => {});
+        currentProfile = await loadUserProfileDoc(currentUser).catch(() => null);
       }
       updateAuthUI();
+      notifyPlanDependents();
     });
     return true;
   }catch(err){
@@ -204,6 +227,7 @@ async function ensureFirebase(options = {}){
       );
     }
     updateAuthUI();
+    notifyPlanDependents();
     return false;
   }
 }
@@ -212,10 +236,10 @@ async function createUserProfileDoc(user, fullName){
   if(!firebaseReady || !db || !user) return;
   const ref = docFn(db, 'users', user.uid);
   await setDocFn(ref, {
-    uid: user.uid,
-    fullName: fullName || user.displayName || '',
     email: user.email || '',
-    plan: 'free_trial',
+    plan: 'pro',
+    accessType: 'early_access',
+    fullName: fullName || user.displayName || '',
     createdAt: serverTimestampFn(),
     lastLoginAt: serverTimestampFn()
   }, { merge: true });
@@ -226,12 +250,13 @@ async function updateUserLoginRecord(user){
   const ref = docFn(db, 'users', user.uid);
   let snap = null;
   try{ snap = await getDocFn(ref); }catch(e){}
-  const prev = snap && snap.exists ? (snap.data() || {}) : {};
+  const prev = snap && typeof snap.exists === 'function' && snap.exists() ? (snap.data() || {}) : {};
   await setDocFn(ref, {
-    uid: user.uid,
-    fullName: user.displayName || prev.fullName || '',
     email: user.email || prev.email || '',
-    plan: prev.plan || 'free_trial',
+    plan: 'pro',
+    accessType: 'early_access',
+    fullName: user.displayName || prev.fullName || '',
+    createdAt: prev.createdAt || serverTimestampFn(),
     lastLoginAt: serverTimestampFn()
   }, { merge: true });
 }
@@ -269,16 +294,20 @@ async function handlePrimaryAuth(){
       if(cred && cred.user){
         await updateProfileFn(cred.user, { displayName: fullName });
         await createUserProfileDoc(cred.user, fullName);
+        currentProfile = await loadUserProfileDoc(cred.user).catch(() => null);
       }
       toastMsg(tt('authcreated', 'Account created'));
     } else {
       const cred = await signInWithEmailAndPasswordFn(auth, email, password);
       if(cred && cred.user){
         await updateUserLoginRecord(cred.user);
+        currentProfile = await loadUserProfileDoc(cred.user).catch(() => null);
       }
       toastMsg(tt('authsignedin', 'Signed in'));
     }
     clearAuthForm();
+    updateAuthUI();
+    notifyPlanDependents();
     closeAuthModal();
   }catch(err){
     const msg = (err && err.message) ? err.message : tt('authfirebase_unavailable', 'Account service is unavailable right now');
@@ -305,14 +334,19 @@ async function handleForgotPassword(){
 async function logoutAuth(){
   if(!firebaseReady || !auth || !currentUser){
     currentUser = null;
+    currentProfile = null;
     updateAuthUI();
+    notifyPlanDependents();
     closeAuthModal();
     return;
   }
   try{
     await signOutFn(auth);
     currentUser = null;
+    currentProfile = null;
     toastMsg(tt('authlogout', 'Log Out'));
+    updateAuthUI();
+    notifyPlanDependents();
     closeAuthModal();
   }catch(err){
     toastMsg((err && err.message) ? err.message : tt('authfirebase_unavailable', 'Account service is unavailable right now'));
@@ -331,7 +365,7 @@ function closeAuthModal(e){
 
 function requireLoginForCloudFeature(){
   if(!currentUser){
-    toastMsg(tt('authcloudreq', 'Login required for cloud saving'));
+    toastMsg(tt('authcloudreq', 'Login required for PRO features and cloud saving'));
     return false;
   }
   return true;
@@ -377,11 +411,17 @@ window.AppAuth = {
   requireLoginForCloudFeature,
   saveProjectToCloud,
   loadUserProjectsFromCloud,
-  getCurrentUser: () => currentUser
+  getCurrentUser: () => currentUser,
+  getCurrentProfile: () => currentProfile,
+  isSignedIn: () => !!currentUser,
+  hasProEarlyAccess: () => !!currentUser
 };
 
 document.addEventListener('DOMContentLoaded', () => {
   bindAuthUI();
   updateAuthUI();
-  ensureFirebase({ silent:true }).then(() => updateAuthUI());
+  ensureFirebase({ silent:true }).then(() => {
+    updateAuthUI();
+    notifyPlanDependents();
+  });
 });
