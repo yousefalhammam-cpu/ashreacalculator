@@ -14,6 +14,7 @@ let db = null;
 let currentUser = null;
 let currentProfile = null;
 let authMode = 'signin';
+let proUnlockContext = null;
 
 let createUserWithEmailAndPasswordFn = null;
 let signInWithEmailAndPasswordFn = null;
@@ -91,6 +92,15 @@ function updateAuthUI(){
   const helper = GG('auth-helper-note');
   const tabSignIn = GG('auth-tab-signin');
   const tabCreate = GG('auth-tab-create');
+  const laterBtn = GG('auth-later-btn');
+  const modalTitle = GG('auth-modal-title');
+
+  const unlockTitle = tt('authunlocktitle', isAr() ? 'تسجيل الدخول لتفعيل PRO' : 'Sign in to unlock PRO');
+  const unlockSub = tt('authunlocksub', isAr() ? 'سجّل الدخول أو أنشئ حسابًا لتفعيل PRO Early Access.' : 'Sign in or create an account to unlock PRO Early Access.');
+  const defaultTitle = tt('authacct', 'Account');
+  const defaultSub = tt('authgueststatus', 'Sign in to unlock PRO for free');
+  const modalTitleText = (!loggedIn && proUnlockContext) ? unlockTitle : defaultTitle;
+  const modalSubText = (!loggedIn && proUnlockContext) ? unlockSub : defaultSub;
 
   if(openBtn){
     openBtn.textContent = loggedIn
@@ -150,15 +160,19 @@ function updateAuthUI(){
   if(modalSub){
     modalSub.textContent = loggedIn
       ? `${tt('authloggedin', 'Signed in as')} ${getDisplayName(currentUser)}`
-      : tt('authgueststatus', 'Sign in to unlock PRO for free');
+      : modalSubText;
   }
 
   if(GG('auth-panel-title')) GG('auth-panel-title').textContent = tt('authacct', 'Account');
-  if(GG('auth-modal-title')) GG('auth-modal-title').textContent = tt('authacct', 'Account');
+  if(modalTitle) modalTitle.textContent = modalTitleText;
   if(GG('auth-fullname-lbl')) GG('auth-fullname-lbl').textContent = tt('authfullname', 'Full Name');
   if(GG('auth-email-lbl')) GG('auth-email-lbl').textContent = tt('authemail', 'Email');
   if(GG('auth-password-lbl')) GG('auth-password-lbl').textContent = tt('authpassword', 'Password');
   if(GG('auth-confirm-lbl')) GG('auth-confirm-lbl').textContent = tt('authconfirm', 'Confirm Password');
+  if(laterBtn){
+    laterBtn.textContent = tt('authlater', isAr() ? 'لاحقًا' : 'Later');
+    laterBtn.style.display = loggedIn ? 'none' : '';
+  }
 }
 
 function clearAuthForm(){
@@ -296,12 +310,24 @@ async function handlePrimaryAuth(){
         await createUserProfileDoc(cred.user, fullName);
         currentProfile = await loadUserProfileDoc(cred.user).catch(() => null);
       }
+      if(typeof window.trackEvent === 'function'){
+        window.trackEvent('signup_success', {
+          language: isAr() ? 'ar' : 'en',
+          access_type: 'early_access'
+        });
+      }
       toastMsg(tt('authcreated', 'Account created'));
     } else {
       const cred = await signInWithEmailAndPasswordFn(auth, email, password);
       if(cred && cred.user){
         await updateUserLoginRecord(cred.user);
         currentProfile = await loadUserProfileDoc(cred.user).catch(() => null);
+      }
+      if(typeof window.trackEvent === 'function'){
+        window.trackEvent('login_success', {
+          language: isAr() ? 'ar' : 'en',
+          access_type: 'early_access'
+        });
       }
       toastMsg(tt('authsignedin', 'Signed in'));
     }
@@ -354,16 +380,29 @@ async function logoutAuth(){
 }
 
 function openAuthModal(){
+  proUnlockContext = null;
+  updateAuthUI();
+  openOverlay('auth-overlay');
+}
+
+function openAuthModalWithContext(options){
+  proUnlockContext = options && options.proUnlock ? {
+    featureKey: options.featureKey || ''
+  } : null;
   updateAuthUI();
   openOverlay('auth-overlay');
 }
 
 function closeAuthModal(e){
   if(e && e.target !== GG('auth-overlay')) return;
+  proUnlockContext = null;
   closeOverlay('auth-overlay');
 }
 
 function requireLoginForCloudFeature(){
+  if (window.AppPlan && typeof window.AppPlan.requirePro === 'function') {
+    return window.AppPlan.requirePro('cloud_save');
+  }
   if(!currentUser){
     toastMsg(tt('authcloudreq', 'Login required for PRO features and cloud saving'));
     return false;
@@ -389,12 +428,14 @@ function bindAuthUI(){
   const primaryBtn = GG('auth-primary-btn');
   const forgotBtn = GG('auth-forgot-btn');
   const logoutBtn = GG('auth-logout-modal-btn');
+  const laterBtn = GG('auth-later-btn');
 
   if(signInTab) signInTab.addEventListener('click', () => setAuthMode('signin'));
   if(createTab) createTab.addEventListener('click', () => setAuthMode('create'));
   if(primaryBtn) primaryBtn.addEventListener('click', handlePrimaryAuth);
   if(forgotBtn) forgotBtn.addEventListener('click', handleForgotPassword);
   if(logoutBtn) logoutBtn.addEventListener('click', logoutAuth);
+  if(laterBtn) laterBtn.addEventListener('click', closeAuthModal);
 }
 
 window.openAuthModal = openAuthModal;
@@ -404,7 +445,7 @@ window.requireLoginForCloudFeature = requireLoginForCloudFeature;
 window.saveProjectToCloud = saveProjectToCloud;
 window.loadUserProjectsFromCloud = loadUserProjectsFromCloud;
 window.AppAuth = {
-  openAuthModal,
+  openAuthModal: openAuthModalWithContext,
   closeAuthModal,
   logoutAuth,
   updateAuthUI,

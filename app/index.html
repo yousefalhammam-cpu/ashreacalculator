@@ -1,6 +1,24 @@
 ﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3FZ87Q1V31"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-3FZ87Q1V31');
+  function trackEvent(eventName, params = {}) {
+    try {
+      if (typeof window.gtag === "function") {
+        window.gtag("event", eventName, params);
+      }
+    } catch (error) {
+      console.warn("GA event failed silently:", eventName);
+    }
+  }
+  console.log("GA4 loaded:", typeof window.gtag === "function");
+</script>
 <meta charset="UTF-8">
 <base href="../">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -134,7 +152,7 @@
           </div>
         </div>
         <div>
-          <div class="lbl" id="lbl-ppl">👤 Persons — 400 BTU/h each</div>
+          <div class="lbl" id="lbl-ppl">عدد الأشخاص — 400 BTU/h</div>
           <div class="ifield-wrap horizontal-stepper" id="persons-stepper" aria-label="تعديل عدد الأشخاص">
             <button type="button" class="qbtn" onclick="stepRoomNumber('inp-ppl',1,0)" aria-label="زيادة عدد الأشخاص">+</button>
             <input class="ninput count-like-input" id="inp-ppl" type="number" inputmode="numeric" min="0" step="1" placeholder="0" oninput="onPplInput()">
@@ -144,22 +162,17 @@
       </div>
       <div class="row2 load-factor-row" id="load-factor-row">
         <div>
-          <div class="lbl" id="lbl-load-factor">Load Factor BTU/m³</div>
+          <div class="lbl" id="lbl-load-factor">المدينة</div>
           <div class="ifield-wrap load-factor-preset-wrap">
-            <select class="qs-sel" id="inp-load-factor-preset" onchange="onLoadFactorPresetChange()">
-              <option value="">—</option>
-              <option value="220">خفيف 220</option>
-              <option value="260">متوسط 260</option>
-              <option value="300">عالي 300</option>
-              <option value="340">شديد 340</option>
-              <option value="custom">مخصص</option>
+            <select class="qs-sel" id="inp-load-factor-preset" onchange="onCityChange()">
+              <option value="al_kharj">الخرج</option>
             </select>
           </div>
         </div>
-        <div>
-          <div class="lbl" id="lbl-load-factor-value">BTU/m³</div>
+        <div class="city-factor-hidden" aria-hidden="true">
+          <div class="lbl" id="lbl-load-factor-value">معامل المدينة</div>
           <div class="ifield-wrap load-factor-value-wrap">
-            <input class="ninput" id="inp-load-factor" type="number" inputmode="numeric" min="100" max="800" step="10" placeholder="260" oninput="onLoadFactorInput()">
+            <input class="ninput readonly-like sync-readonly" id="inp-load-factor" type="number" inputmode="numeric" min="100" max="800" step="10" placeholder="265" readonly>
             <span class="unit-chip">BTU/m³</span>
           </div>
         </div>
@@ -178,6 +191,7 @@
         </div>
       </div>
       <div class="calc-mode-note fresh-air-warning" id="fresh-air-warning" style="display:none"></div>
+      <div class="advanced-helper people-helper" id="occupancy-helper">—</div>
       <div class="dim-grid" id="dim-grid" aria-label="أبعاد الغرفة">
         <div>
           <div class="lbl" id="lbl-len">Length (m)</div>
@@ -195,6 +209,37 @@
       <div class="row1">
         <div class="lbl" id="lbl-vol">Calculated Volume</div>
         <div class="ifield-wrap calc-volume-wrap"><input class="ninput calculated-volume-input" id="inp-vol" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0.0" oninput="onVolInput()" readonly><span class="unit-chip">m³</span></div>
+      </div>
+      <div class="advanced-inputs" id="advanced-inputs">
+        <div class="advanced-inputs-head">
+          <div class="lbl advanced-title" id="lbl-advanced-inputs">مدخلات متقدمة</div>
+        </div>
+        <div class="advanced-row advanced-row-three">
+          <div>
+            <div class="lbl" id="lbl-insulation-type">نوع الجدار / العزل</div>
+            <div class="ifield-wrap adv-select-wrap">
+              <select class="qs-sel" id="inp-insulation-type" onchange="onInsulationTypeChange()">
+                <option value="medium">متوسط</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <div class="lbl" id="lbl-window-area">مساحة النوافذ (م²)</div>
+            <div class="ifield-wrap dim-field">
+              <input class="ninput" id="inp-window-area" type="text" inputmode="decimal" pattern="[0-9٠-٩۰-۹.,٫]*" placeholder="0.0" oninput="onWindowAreaInput()">
+              <span class="unit-chip">m²</span>
+            </div>
+          </div>
+          <div>
+            <div class="lbl" id="lbl-exposure-type">نوع التعرض</div>
+            <div class="ifield-wrap adv-select-wrap">
+              <select class="qs-sel" id="inp-exposure-type" onchange="onExposureTypeChange()">
+                <option value="shaded">مظلل</option>
+                <option value="direct">شمس مباشرة</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="card input-card devices-card">
@@ -229,8 +274,17 @@
     </div>
     <div class="card breakdown" id="breakdown">
       <div class="sec-ttl" id="breakdown-ttl">التفصيل</div>
+      <div class="breakdown-meta-grid" id="breakdown-meta-grid" style="display:none">
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-city-lbl">المدينة</span><strong class="breakdown-meta-val" id="brm-city-val">—</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-factor-lbl">معامل المدينة</span><strong class="breakdown-meta-val" id="brm-factor-val">—</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-insulation-lbl">نوع العزل</span><strong class="breakdown-meta-val" id="brm-insulation-val">—</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-multiplier-lbl">معامل العزل</span><strong class="breakdown-meta-val" id="brm-multiplier-val">—</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-people-lbl">عدد الأشخاص</span><strong class="breakdown-meta-val" id="brm-people-val">—</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-window-area-lbl">مساحة النوافذ</span><strong class="breakdown-meta-val" id="brm-window-area-val">—</strong></div>
+      </div>
       <div class="br-row"><span class="br-lbl" id="brl-vol">حجم الغرفة</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-vol">—</span><span class="badge ba">m³</span></div></div>
       <div class="br-row"><span class="br-lbl" id="brl-base">الحمل الأساسي</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-base">—</span><span class="badge bam">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-window">حمل النوافذ</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-window">—</span><span class="badge bg">BTU/h</span></div></div>
       <div class="br-row"><span class="br-lbl" id="brl-ppl">حمل الأشخاص</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-ppl">—</span><span class="badge bg">BTU/h</span></div></div>
       <div class="br-row"><span class="br-lbl" id="brl-dev">حمل الأجهزة</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-dev">—</span><span class="badge bam">BTU/h</span></div></div>
       <div class="br-row"><span class="br-lbl" id="brl-sub">الإجمالي</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sub">—</span><span class="badge ba">BTU/h</span></div></div>
@@ -293,7 +347,7 @@
       <button class="mode-btn active" id="mode-btn-room" onclick="setQuoteMode('room')">
         <span id="mode-lbl-room">🏠 وحدة لكل غرفة</span>
       </button>
-      <button class="mode-btn" id="mode-btn-proj" onclick="setQuoteMode('proj')">
+      <button class="mode-btn" id="mode-btn-proj" data-pro-feature="projectMode" onclick="setQuoteMode('proj')">
         <span id="mode-lbl-proj">🏢 وحدة للمشروع</span>
       </button>
     </div>
@@ -331,7 +385,7 @@
       </div>
       <div class="proj-unit-row">
         <div class="proj-input-group" id="proj-up-group">
-          <span class="proj-input-lbl" id="proj-lbl-up">سعر الوحدة (ر.س)</span>
+          <span class="proj-input-lbl" id="proj-lbl-up">سعر الوحدة (﷼)</span>
           <input class="minp" id="proj-up" type="number" min="0" step="0.01" value="" placeholder="0.00" onchange="renderProjBlock(); refreshGrandTotal();" style="width:100%;font-size:14px;padding:7px 8px;">
         </div>
       </div>
@@ -473,7 +527,7 @@
       <button class="calc-mode-btn active" id="calc-mode-btn-basic" onclick="setCalcMode('basic')">
         <span id="calc-mode-lbl-basic">سريع</span>
       </button>
-      <button class="calc-mode-btn" id="calc-mode-btn-advanced" onclick="setCalcMode('advanced')">
+      <button class="calc-mode-btn" id="calc-mode-btn-advanced" data-pro-feature="advancedDuct" onclick="setCalcMode('advanced')">
         <span id="calc-mode-lbl-advanced">متقدم</span>
       </button>
     </div>
@@ -559,6 +613,7 @@
             <button
               id="quote-save-btn"
               onclick="saveQuotationToCurrentProject()"
+              data-pro-feature="saveQuotation"
               title="Save Quotation"
               style="height:44px;border-radius:12px;border:1px solid rgba(52,211,153,.35);background:linear-gradient(135deg,rgba(52,211,153,.18),rgba(52,211,153,.08));color:var(--g);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;padding:0 12px;gap:8px;min-width:120px;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="18" height="18">
@@ -590,8 +645,8 @@
       <div class="exp-row" style="grid-template-columns:1fr 1fr 1fr">
         <button class="exp-btn-csv" onclick="exportCSV()"><span id="lbl-export">CSV</span></button>
         <button class="exp-btn-inv" onclick="exportInvoiceHTML()"><span id="lbl-export2">فاتورة HTML</span></button>
-        <button class="exp-btn-pdf" id="btn-pdf" onclick="exportPDF()"><span id="lbl-export3">تحميل PDF</span></button>
-        <button class="exp-btn-tech" id="btn-techpdf" onclick="exportTechPDF()" style="display:none"><span id="lbl-export4">تقرير فني</span></button>
+        <button class="exp-btn-pdf" id="btn-pdf" data-pro-feature="exportPDF" onclick="exportPDF()"><span id="lbl-export3">تحميل PDF</span></button>
+        <button class="exp-btn-tech" id="btn-techpdf" data-pro-feature="techReport" onclick="exportTechPDF()" style="display:none"><span id="lbl-export4">تقرير فني</span></button>
       </div>
     </div>
 
@@ -652,6 +707,7 @@
             <button
               id="tech-save-btn"
               onclick="saveCurrentProject()"
+              data-pro-feature="unlimitedProjects"
               title="Save Project"
               style="width:44px;height:44px;border-radius:12px;border:1px solid rgba(52,211,153,.35);background:linear-gradient(135deg,rgba(52,211,153,.18),rgba(52,211,153,.08));color:var(--g);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="18" height="18">
@@ -680,8 +736,8 @@
       <div id="tech-proj-slot"></div>
       <div id="tech-analysis-slot"></div>
       <div class="exp-row tech-exp-row">
-        <button class="exp-btn-hap" onclick="exportHAP()"><span id="lbl-export-hap">تصدير إلى HAP</span></button>
-        <button class="exp-btn-tech" id="btn-techpdf-panel" onclick="exportTechPDFFromPanel()"><span id="tech-export-lbl">تقرير فني PDF</span></button>
+        <button class="exp-btn-hap" id="btn-export-hap" data-pro-feature="exportHAP" onclick="exportHAP()"><span id="lbl-export-hap">تصدير إلى HAP</span></button>
+        <button class="exp-btn-tech" id="btn-techpdf-panel" data-pro-feature="techReport" onclick="exportTechPDFFromPanel()"><span id="tech-export-lbl">تقرير فني PDF</span></button>
       </div>
     </div>
   </div>
@@ -701,7 +757,7 @@
   <div class="panel" id="p-projects">
     <div class="proj-mgr-header">
       <div class="proj-mgr-title" id="pm-ttl">📁 لوحة المشاريع</div>
-      <button class="proj-mgr-save-btn" id="pm-save-btn" onclick="saveCurrentProject()">
+      <button class="proj-mgr-save-btn" id="pm-save-btn" data-pro-feature="unlimitedProjects" onclick="saveCurrentProject()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         <span id="pm-save-lbl">حفظ المشروع الحالي</span>
       </button>
@@ -825,7 +881,7 @@
           <div class="ea-price-head">
             <div>
               <div class="ea-price-name" id="ea-monthly-name">شهري</div>
-              <div class="ea-price-amount" id="ea-monthly-price">19 ر.س / شهر</div>
+              <div class="ea-price-amount" id="ea-monthly-price">19 ﷼ / شهر</div>
             </div>
             <span class="ea-soon-badge" id="ea-soon-monthly">قريبًا</span>
           </div>
@@ -834,7 +890,7 @@
           <div class="ea-price-head">
             <div>
               <div class="ea-price-name" id="ea-yearly-name">سنوي</div>
-              <div class="ea-price-amount" id="ea-yearly-price">149 ر.س / سنة</div>
+              <div class="ea-price-amount" id="ea-yearly-price">149 ﷼ / سنة</div>
             </div>
             <span class="ea-soon-badge" id="ea-soon-yearly">قريبًا</span>
           </div>
@@ -900,12 +956,12 @@
     <div class="upgrade-pricing">
       <div class="price-row">
         <div class="price-pill coming-soon-pill" id="pp-yearly">
-          <div class="price-pill-amount" id="pp-yr-amt">149 ر.س</div>
+          <div class="price-pill-amount" id="pp-yr-amt">149 ﷼</div>
           <div class="price-pill-period" id="pp-yr-per">سنوياً</div>
           <div class="price-pill-badge" id="pp-yr-badge">قريبًا</div>
         </div>
         <div class="price-pill coming-soon-pill" id="pp-monthly">
-          <div class="price-pill-amount" id="pp-mo-amt">19 ر.س</div>
+          <div class="price-pill-amount" id="pp-mo-amt">19 ﷼</div>
           <div class="price-pill-period" id="pp-mo-per">شهرياً</div>
           <div class="price-pill-badge" id="pp-mo-badge">قريبًا</div>
         </div>
@@ -941,7 +997,7 @@
     </div>
     <div class="ni-lbl" id="nl-hist">عرض السعر</div>
   </div>
-  <div class="ni" id="ni-projects" onclick="goPanel('projects')">
+  <div class="ni" id="ni-projects" data-pro-feature="projectDashboard" onclick="goPanel('projects')">
     <div style="position:relative;display:inline-flex;">
       <svg class="ni-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h6l2 3h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
       <span id="projects-dot" class="nav-red-dot" style="display:none;"></span>
@@ -1018,6 +1074,7 @@
       <div class="upgrade-cta auth-cta">
         <button class="btn-upgrade-primary auth-primary-btn" id="auth-primary-btn" type="button">تسجيل الدخول</button>
         <button class="btn-upgrade-secondary auth-link-btn" id="auth-forgot-btn" type="button">نسيت كلمة المرور؟</button>
+        <button class="btn-upgrade-secondary auth-link-btn" id="auth-later-btn" type="button">لاحقًا</button>
         <button class="btn-upgrade-secondary auth-link-btn" id="auth-logout-modal-btn" type="button" style="display:none;">تسجيل الخروج</button>
       </div>
     </div>

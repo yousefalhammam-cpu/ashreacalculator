@@ -1,6 +1,33 @@
 ﻿// ── ERROR HANDLERS ──────────────────────────────────────────────────────
 window.addEventListener('error', function(e){ console.error('[AirCalc]', e.message, e.error); });
 window.addEventListener('unhandledrejection', function(e){ console.error('[AirCalc] Unhandled:', e.reason); });
+if(typeof window.trackEvent !== 'function'){
+  window.trackEvent = function(eventName, params){
+    try{
+      if(typeof window.gtag === 'function') window.gtag('event', eventName, params || {});
+    }catch(error){
+      console.warn('GA event failed silently:', eventName);
+    }
+  };
+}
+function trackAppEvent(eventName, params){
+  try{
+    window.trackEvent(eventName, params || {});
+  }catch(error){
+    console.warn('GA event failed silently:', eventName);
+  }
+}
+function currentAnalyticsLanguage(){
+  var active = window.lang || document.documentElement.lang || 'ar';
+  return active === 'en' ? 'en' : 'ar';
+}
+function currentAnalyticsRoomType(){
+  if(!curRoom) return '';
+  return curRoom.id || curRoom.en || curRoom.ar || '';
+}
+window.addEventListener('load', function(){
+  trackAppEvent('app_open', { language: currentAnalyticsLanguage() });
+});
 
 // ── DATA PLACEHOLDERS (populated by loadAppData) ─────────────────────────
 var ROOMS = {};
@@ -152,13 +179,52 @@ var qlines = []; // [{qty,up}] parallel to hist
 var editIdx = -1;
 var calcRoomsOpenIdx = -1;
 var resultsMode = 'total';
-var hcFreshAirMode = 'ashrae';
 var vatOn = true;
 var instPct = 10;
 var qsValidity = 14;
 var qsNotes = '';
 var lastRoomDims = null;
 var LEGACY_VOL_KEY = 'legacyVolume';
+var DEFAULT_CITY_KEY = 'al_kharj';
+var hcFreshAirMode = 'ashrae';
+var peopleManualOverride = false;
+var _syncingPeopleEstimate = false;
+var CITY_FACTORS = {
+  riyadh:{ar:'الرياض',en:'Riyadh',factor:260},
+  al_kharj:{ar:'الخرج',en:'Al Kharj',factor:265},
+  jeddah:{ar:'جدة',en:'Jeddah',factor:250},
+  dammam:{ar:'الدمام',en:'Dammam',factor:255},
+  al_khobar:{ar:'الخبر',en:'Al Khobar',factor:255},
+  makkah:{ar:'مكة',en:'Makkah',factor:270},
+  madinah:{ar:'المدينة المنورة',en:'Madinah',factor:255},
+  abha:{ar:'أبها',en:'Abha',factor:140},
+  taif:{ar:'الطائف',en:'Taif',factor:170},
+  al_baha:{ar:'الباحة',en:'Al Baha',factor:165},
+  tabuk:{ar:'تبوك',en:'Tabuk',factor:200},
+  hail:{ar:'حائل',en:'Hail',factor:210},
+  najran:{ar:'نجران',en:'Najran',factor:245},
+  jazan:{ar:'جازان',en:'Jazan',factor:270}
+};
+var CITY_FACTOR_ORDER = ['riyadh','al_kharj','jeddah','dammam','al_khobar','makkah','madinah','abha','taif','al_baha','tabuk','hail','najran','jazan'];
+var WINDOW_EXPOSURE = {
+  shaded:{ar:'مظلل',en:'Shaded',factor:500},
+  direct:{ar:'شمس مباشرة',en:'Direct Sun',factor:650}
+};
+var INSULATION_TYPES = {
+  excellent:{ar:'عزل ممتاز',en:'Excellent insulation',multiplier:0.90},
+  medium:{ar:'عزل متوسط',en:'Medium insulation',multiplier:1.00},
+  none:{ar:'بدون عزل',en:'No insulation',multiplier:1.15}
+};
+var OCCUPANCY_TYPES = {
+  normal:{ar:'عادي',en:'Normal',density:1.2},
+  medium:{ar:'متوسط',en:'Medium',density:1.0},
+  crowded:{ar:'مزدحم',en:'Crowded',density:0.8}
+};
+var MOSQUE_OCCUPANCY_TYPES = {
+  regular:{ar:'صلاة اعتيادية',en:'Regular Prayer',density:1.0},
+  friday:{ar:'صلاة الجمعة',en:'Friday Prayer',density:0.8},
+  very_crowded:{ar:'شديد الازدحام',en:'Very Crowded',density:0.65}
+};
 
 function qsPersist(){
   var vatTog = G('vat-tog');
@@ -273,12 +339,12 @@ var T = {
       acroomtot:'إجمالي الوحدات',
       acround_btu:'خطوات السوق BTU/h',acround_htr:'خطوات 0.5 TR',acround_1tr:'خطوات 1 TR',
       acsplit:'سبليت (Split)',acducted:'سبليت مخفي (Ducted)',acpackage:'وحدة مركزية (Package)',acvrf:'VRF',acchiller:'تبريد مركزي (Chiller)',accassette:'كاسيت (Cassette)',acchillerfcu:'فريش إير + FCU',acwindow:'تكييف شباك (Window)',
-      lvol:'الحجم المحسوب (م³)',llen:'الطول (م)',lwidth:'العرض (م)',lheight:'الارتفاع (م)',ltype:'نوع الغرفة',lroomcount:'عدد الغرف',lloadfactor:'معامل الحمل',lloadfactorval:'القيمة الحالية',lppl:'👤 عدد الأشخاص — 400 BTU/h',ladd:'+ إضافة جهاز',
+      lvol:'الحجم المحسوب (م³)',llen:'الطول (م)',lwidth:'العرض (م)',lheight:'الارتفاع (م)',ltype:'نوع الغرفة',lroomcount:'عدد الغرف',lloadfactor:'معامل الحمل',lloadfactorval:'القيمة الحالية',lppl:'عدد الأشخاص',ladd:'+ إضافة جهاز',
       lmodal:'اختر نوع الجهاز',ldtot:'إجمالي حمل الأجهزة',sroom:'الغرفة',sdev:'الأجهزة',
       bvol:'حجم الغرفة',bbase:'الحمل الأساسي',bppl:'حمل الأشخاص',bdev:'حمل الأجهزة',bsub:'الإجمالي',bsf:'+ معامل أمان 10%',
       hempty:'لا توجد حسابات بعد',
       qempty:'لا توجد غرف — احسب غرفة أولاً',delroom:'حذف',delroomconfirm:'هل تريد حذف هذه الغرفة؟',
-      cur:'ر.س',dempty:'لا أجهزة — اضغط + للإضافة',
+      cur:'﷼',dempty:'لا أجهزة — اضغط + للإضافة',
       tnov:'⚠️ أدخل أبعاد الغرفة أولاً',tcalc:'✅ تم الحساب',tclr:'🗑️ تم المسح',
       slang:'اللغة / Language',slsub:'تبديل واجهة اللغة',
       hcttl:'ASHRAE 170 — تدفق الهواء',
@@ -305,12 +371,12 @@ var T = {
       acroomtot:'Total Units',
       acround_btu:'BTU/h Market Steps',acround_htr:'0.5 TR Steps',acround_1tr:'1 TR Steps',
       acsplit:'Split (Wall)',acducted:'Ducted Split',acpackage:'Package Unit',acvrf:'VRF',acchiller:'Chiller',accassette:'Cassette',acchillerfcu:'Chiller FCU',acwindow:'Window AC',
-      lvol:'Calculated Volume (m³)',llen:'Length (m)',lwidth:'Width (m)',lheight:'Height (m)',ltype:'Room Type',lroomcount:'Room Count',lloadfactor:'Load Factor',lloadfactorval:'Current Value',lppl:'👤 Persons — 400 BTU/h each',ladd:'+ Add Device',
+      lvol:'Calculated Volume (m³)',llen:'Length (m)',lwidth:'Width (m)',lheight:'Height (m)',ltype:'Room Type',lroomcount:'Room Count',lloadfactor:'Load Factor',lloadfactorval:'Current Value',lppl:'People Count',ladd:'+ Add Device',
       lmodal:'Select Device Type',ldtot:'Total Device Load',sroom:'ROOM',sdev:'DEVICES',
       bvol:'Room Volume',bbase:'Base Load',bppl:'People Load',bdev:'Device Load',bsub:'Sub-total',bsf:'+ Safety 10%',
       hempty:'No calculations yet',
       qempty:'No rooms — calculate a room first',
-      cur:'SAR',dempty:'No devices — tap + to add',
+      cur:'﷼',dempty:'No devices — tap + to add',
       tnov:'⚠️ Enter room dimensions first',tcalc:'✅ Calculated',tclr:'🗑️ Cleared',
       slang:'Language',slsub:'Switch interface language',
       hcttl:'ASHRAE 170 — Airflow',
@@ -335,9 +401,9 @@ Object.assign(T.ar,{
   rmlast:'آخر غرفة',
   rmtotal:'إجمالي الغرف',
   cmhc:'وضع الحساب: ASHRAE للرعاية الصحية',
-  cmrot:'وضع الحساب: معامل الحمل السريع',
-  cmhcsub:'معايير ASHRAE محفوظة لهذه الغرفة — لا يتم استبدال تهوية ASHRAE بمعامل الحمل.',
-  cmrotsub:'معامل الحمل BTU/m³ مستخدم لهذه الغرفة قبل تنفيذ الحساب.',
+  cmrot:'وضع الحساب: تقدير المدينة',
+  cmhcsub:'معايير ASHRAE محفوظة لهذه الغرفة — لا يتم استبدال تهوية ASHRAE بعوامل التقدير العامة.',
+  cmrotsub:'تقدير المدينة والعزل والنوافذ والإشغال مستخدم لهذه الغرفة قبل تنفيذ الحساب.',
   step1:'الخطوة 1',
   step2:'الخطوة 2',
   step3:'الخطوة 3',
@@ -382,7 +448,33 @@ Object.assign(T.ar,{
   authconfirm_mismatch:'تأكيد كلمة المرور غير مطابق',
   authfirebase_unavailable:'تعذّر الاتصال بخدمة الحساب الآن',
   authoffline:'أنت غير متصل حاليًا — يمكن استخدام التطبيق محليًا',
-  authcloudcoming:'الحفظ السحابي قادم قريبًا'
+  authcloudcoming:'الحفظ السحابي قادم قريبًا',
+  lcity:'المدينة',
+  lcityfactor:'معامل المدينة',
+  lcustomfactor:'تخصيص المعامل',
+  lcustomfactorval:'القيمة المخصصة',
+  lfactordefault:'افتراضي',
+  lfactorcustom:'مخصص',
+  ladvanced:'مدخلات متقدمة',
+  loccupancy:'نوع الإشغال',
+  lwindowarea:'مساحة النوافذ (م²)',
+  lexposure:'نوع التعرض',
+  linsulation:'نوع الجدار / العزل',
+  lexpshaded:'مظلل',
+  lexpdirect:'شمس مباشرة',
+  linsulexcellent:'عزل ممتاز',
+  linsulmedium:'عزل متوسط',
+  linsulnone:'بدون عزل',
+  peopleautohelper:'تم تقدير عدد الأشخاص تلقائيًا حسب المساحة، ويمكن تعديله يدويًا.',
+  occmanual:'تم تعديل عدد الأشخاص يدويًا',
+  bwindow:'حمل النوافذ',
+  bwindowarea:'مساحة النوافذ',
+  bcity:'المدينة',
+  bcityfactor:'معامل المدينة',
+  binsulation:'نوع العزل',
+  binsulationm:'معامل العزل',
+  bpeoplecount:'عدد الأشخاص',
+  healthcaremode:'وضع صحي (ASHRAE)'
 });
 Object.assign(T.en,{
   settingssec:'Settings',
@@ -393,9 +485,9 @@ Object.assign(T.en,{
   rmlast:'Last Room',
   rmtotal:'All Rooms Total',
   cmhc:'Calculation Mode: ASHRAE Healthcare',
-  cmrot:'Calculation Mode: Load Factor Estimate',
-  cmhcsub:'ASHRAE standards are preserved for this room — ventilation is not replaced by load factor.',
-  cmrotsub:'Load Factor BTU/m³ is used for this room before calculation.',
+  cmrot:'Calculation Mode: City Estimate',
+  cmhcsub:'ASHRAE standards are preserved for this room — ventilation is not replaced by general estimate inputs.',
+  cmrotsub:'City factor, insulation, windows, and occupancy are used for this room before calculation.',
   step1:'Step 1',
   step2:'Step 2',
   step3:'Step 3',
@@ -440,7 +532,33 @@ Object.assign(T.en,{
   authconfirm_mismatch:'Confirm password does not match',
   authfirebase_unavailable:'Account service is unavailable right now',
   authoffline:'You appear to be offline — local calculator remains available',
-  authcloudcoming:'Cloud saving is coming soon'
+  authcloudcoming:'Cloud saving is coming soon',
+  lcity:'City',
+  lcityfactor:'City Factor',
+  lcustomfactor:'Customize Factor',
+  lcustomfactorval:'Custom Value',
+  lfactordefault:'Default',
+  lfactorcustom:'Custom',
+  ladvanced:'Advanced Inputs',
+  loccupancy:'Occupancy Type',
+  lwindowarea:'Window Area (m²)',
+  lexposure:'Exposure Type',
+  linsulation:'Wall / Insulation Type',
+  lexpshaded:'Shaded',
+  lexpdirect:'Direct Sun',
+  linsulexcellent:'Excellent insulation',
+  linsulmedium:'Medium insulation',
+  linsulnone:'No insulation',
+  peopleautohelper:'People count is estimated automatically based on area and can be edited manually.',
+  occmanual:'People count manually overridden',
+  bwindow:'Window Load',
+  bwindowarea:'Window Area',
+  bcity:'City',
+  bcityfactor:'City Factor',
+  binsulation:'Insulation Type',
+  binsulationm:'Insulation Multiplier',
+  bpeoplecount:'People Count',
+  healthcaremode:'Healthcare Mode (ASHRAE)'
 });
 function t(k){ return T[lang][k]||k; }
 
@@ -467,11 +585,13 @@ function applyLangStaticTexts(){
     'devices-title':'devtitle','devices-note':'devnote',
     'calc-title':'calctitle','calc-note':'calcnote',
     'nl-calc':'ncalc','nl-hist':'nhist','nl-contact':'ncontact','nl-settings':'nset','nl-projects':'nprojects',
-    'lbl-vol':'lvol','lbl-len':'llen','lbl-width':'lwidth','lbl-height':'lheight','lbl-type':'ltype','lbl-room-count':'lroomcount','lbl-load-factor':'lloadfactor','lbl-load-factor-value':'lloadfactorval','lbl-ppl':'lppl',
+    'lbl-vol':'lvol','lbl-len':'llen','lbl-width':'lwidth','lbl-height':'lheight','lbl-type':'ltype','lbl-room-count':'lroomcount','lbl-load-factor':'lcity','lbl-load-factor-value':'lcityfactor','lbl-ppl':'lppl',
+    'lbl-advanced-inputs':'ladvanced','lbl-window-area':'lwindowarea','lbl-exposure-type':'lexposure','lbl-insulation-type':'linsulation',
     'lbl-add':'ladd','lbl-modal':'lmodal','lbl-dtot':'ldtot',
     'st-room':'sroom','st-dev':'sdev',
     'breakdown-ttl':'bttl','hc-note-lbl':'notelbl',
-    'brl-vol':'bvol','brl-base':'bbase','brl-ppl':'bppl','brl-dev':'bdev','brl-sub':'bsub','brl-sf':'bsf',
+    'brl-vol':'bvol','brl-base':'bbase','brl-window':'bwindow','brl-ppl':'bppl','brl-dev':'bdev','brl-sub':'bsub','brl-sf':'bsf',
+    'brm-city-lbl':'bcity','brm-factor-lbl':'bcityfactor','brm-insulation-lbl':'binsulation','brm-multiplier-lbl':'binsulationm','brm-people-lbl':'bpeoplecount','brm-window-area-lbl':'bwindowarea',
     'sl-lang':'slang','sl-sub':'slsub',
     'settings-section-title':'settingssec','account-section-title':'accountsec','plan-section-title':'plansec',
     'auth-panel-title':'authacct','auth-modal-title':'authacct',
@@ -533,24 +653,26 @@ function applyLangInputsAndLabels(){
 
   var inpPpl = G('inp-ppl');
   if (inpPpl) inpPpl.placeholder = '0';
+  var windowAreaInp = G('inp-window-area');
+  if (windowAreaInp) windowAreaInp.placeholder = '0.0';
   var loadFactorInp = G('inp-load-factor');
-  if (loadFactorInp) loadFactorInp.placeholder = curRoom && curRoom.factor ? String(curRoom.factor) : '260';
+  if (loadFactorInp) loadFactorInp.placeholder = String(getSelectedCityFactor());
+  if (loadFactorInp) loadFactorInp.value = String(getSelectedCityFactor());
   var loadFactorHelper = G('load-factor-helper');
   if (loadFactorHelper) loadFactorHelper.textContent = t('lfhelper');
   var loadFactorPreset = G('inp-load-factor-preset');
-  if (loadFactorPreset && loadFactorPreset.options.length >= 6){
-    loadFactorPreset.options[0].text = '—';
-    loadFactorPreset.options[1].text = lang === 'ar' ? 'خفيف 220' : 'Light 220';
-    loadFactorPreset.options[2].text = lang === 'ar' ? 'متوسط 260' : 'Medium 260';
-    loadFactorPreset.options[3].text = lang === 'ar' ? 'عالي 300' : 'High 300';
-    loadFactorPreset.options[4].text = lang === 'ar' ? 'شديد 340' : 'Severe 340';
-    loadFactorPreset.options[5].text = lang === 'ar' ? 'مخصص' : 'Custom';
-  }
+  if (loadFactorPreset) populateCityOptions(loadFactorPreset);
+  var insulationType = G('inp-insulation-type');
+  if (insulationType) populateInsulationOptions(insulationType);
+  var exposureType = G('inp-exposure-type');
+  if (exposureType) populateExposureOptions(exposureType);
   var freshAirMode = G('inp-fresh-air-mode');
   if(freshAirMode && freshAirMode.options.length >= 2){
     freshAirMode.options[0].text = t('freshairashrae');
     freshAirMode.options[1].text = t('freshair100');
   }
+  updateFactorInputsUI();
+  updateOccupancyHelper();
 
   var quoteProject = G('quote-project');
   if (quoteProject) quoteProject.placeholder = lang === 'ar' ? 'اسم المشروع' : 'Project Name';
@@ -712,6 +834,9 @@ function goPanel(name){
   var p=G('p-'+name), n=G('ni-'+name);
   if(p) p.classList.add('on');
   if(n) n.classList.add('on');
+  if(name==='projects') trackAppEvent('dashboard_view', { language: currentAnalyticsLanguage() });
+  if(name==='tech') trackAppEvent('report_view', { language: currentAnalyticsLanguage() });
+  if(name==='hist') trackAppEvent('quotation_view', { language: currentAnalyticsLanguage() });
 }
 
 function syncProjectFields(source){
@@ -840,7 +965,7 @@ function renderRoomDropdown(){
   var dd = G('dd-room');
   if(!dd || !ROOMS) return;
   function roomBadge(room){
-    return room.mode === 'hc' ? 'ASHRAE' : 'BTU/m³';
+    return room.mode === 'hc' ? 'ASHRAE' : (lang === 'ar' ? 'مدينة' : 'City');
   }
   function roomSub(room){
     if(room.mode === 'hc'){
@@ -851,7 +976,7 @@ function renderRoomDropdown(){
           : (lang === 'ar' ? 'ضغط محايد' : 'Neutral');
       return room.oach + ' OA · ' + room.tach + ' ACH · ' + pressure;
     }
-    return lang === 'ar' ? 'تقدير سريع بمعامل حمل' : 'Quick load factor estimate';
+    return lang === 'ar' ? 'تقدير سريع بمعامل مدينة' : 'Quick city factor estimate';
   }
   function itemHtml(roomId){
     var room = ROOMS[roomId];
@@ -861,7 +986,7 @@ function renderRoomDropdown(){
       '<div class="dd-item-info"><div>'+rLabel(room)+'</div><div class="dd-item-sub">'+roomSub(room)+'</div></div>'+
       '<span class="dd-badge">'+roomBadge(room)+'</span></div>';
   }
-  var generalHdr = lang === 'ar' ? 'عام — معامل حمل' : 'General — Load Factor';
+  var generalHdr = lang === 'ar' ? 'عام — معامل مدينة' : 'General — City Factor';
   var hcHdr = lang === 'ar' ? 'رعاية صحية — ASHRAE' : 'Healthcare — ASHRAE';
   dd.innerHTML =
     '<div class="dd-cat-hdr">'+generalHdr+'</div>'+
@@ -881,12 +1006,18 @@ function pickRoom(el,rid){
   updateCalculationModeUI(r);
   clearRoomDimensionInputs();
   G('inp-vol').value=''; G('inp-ppl').value='';
+  peopleManualOverride = false;
   var roomKey = inferRoomStandardKey(curRoom);
   applyRoomEquipmentPreset(roomKey);
   renderDevs();
   G('breakdown').classList.remove('show');
   G('hc-card').style.display='none';
   flash('vtr','0.00'); flash('vcfm','0'); flash('vbtu','0'); flash('vmkt','0');
+  trackAppEvent('room_type_selected', {
+    room_type: r.id || rid || '',
+    language: currentAnalyticsLanguage(),
+    is_healthcare: !!(r && r.mode === 'hc')
+  });
 }
 
 // Expose inline HTML handlers explicitly.
@@ -898,6 +1029,10 @@ window.stepRoomNumber = stepRoomNumber;
 window.onRoomCountInput = onRoomCountInput;
 window.onLoadFactorPresetChange = onLoadFactorPresetChange;
 window.onLoadFactorInput = onLoadFactorInput;
+window.onCityChange = onCityChange;
+window.onInsulationTypeChange = onInsulationTypeChange;
+window.onWindowAreaInput = onWindowAreaInput;
+window.onExposureTypeChange = onExposureTypeChange;
 window.onPplInput = onPplInput;
 window.onDimInput = onDimInput;
 window.onVolInput = onVolInput;
@@ -1225,22 +1360,26 @@ function setRoomVolumeFromDimensions(){
     if(volEl) volEl.value=formatVolumeValue(displayVol);
     if(volEl) delete volEl.dataset[LEGACY_VOL_KEY];
     lastRoomDims={len:dims.len,width:dims.width,height:dims.height};
+    syncPeopleEstimate(false);
     return {volume:displayVol,dims:lastRoomDims,complete:true,source:'dimensions'};
   }
   if(dims.hasAny){
     if(volEl) volEl.value='';
     if(volEl) delete volEl.dataset[LEGACY_VOL_KEY];
     lastRoomDims=null;
+    syncPeopleEstimate(false);
     return {volume:0,dims:null,complete:false,source:'incomplete'};
   }
   if(volEl && volEl.dataset[LEGACY_VOL_KEY]){
     var legacyVol=parseFloat(volEl.dataset[LEGACY_VOL_KEY])||0;
     volEl.value=formatVolumeValue(legacyVol);
     lastRoomDims=null;
+    syncPeopleEstimate(false);
     return {volume:legacyVol,dims:null,complete:false,source:'legacy'};
   }
   if(volEl) volEl.value='';
   lastRoomDims=null;
+  syncPeopleEstimate(false);
   return {volume:0,dims:null,complete:false,source:'empty'};
 }
 function clearRoomDimensionInputs(){
@@ -1261,7 +1400,11 @@ function setRoomDimensionInputs(dims){
 }
 function onDimInput(){ setRoomVolumeFromDimensions(); }
 function onVolInput(){ setRoomVolumeFromDimensions(); }
-function onPplInput(){ normalizeNumericInput(G('inp-ppl')); }
+function onPplInput(){
+  normalizeNumericInput(G('inp-ppl'));
+  if(!_syncingPeopleEstimate) peopleManualOverride = true;
+  updateOccupancyHelper();
+}
 function stepRoomNumber(id, delta, min){
   var el=G(id);
   if(!el) return;
@@ -1285,6 +1428,13 @@ function onRoomCountInput(){
   el.value=String(Math.max(0,n));
 }
 
+function parsePositiveFieldValue(id){
+  var el = G(id);
+  var raw = normalizeNumericInput(el);
+  if(!raw) return 0;
+  return Math.max(0, parseFloat(raw) || 0);
+}
+
 function setLoadFactorPresetValue(factor){
   var presetEl = G('inp-load-factor-preset');
   if(!presetEl) return;
@@ -1301,13 +1451,203 @@ function setLoadFactorInputMode(isCustom){
   inputEl.classList.toggle('readonly-like', !isCustom);
 }
 
-function syncLoadFactorFromRoom(room){
-  var inputEl = G('inp-load-factor');
-  if(!inputEl) return;
-  var factor = room && room.factor ? Number(room.factor) : 0;
-  inputEl.value = factor ? String(factor) : '';
-  setLoadFactorPresetValue(factor);
+function getCityConfig(cityKey){
+  return CITY_FACTORS[cityKey] || CITY_FACTORS[DEFAULT_CITY_KEY];
 }
+
+function getSelectedCityKey(){
+  var el = G('inp-load-factor-preset');
+  return (el && el.value && CITY_FACTORS[el.value]) ? el.value : DEFAULT_CITY_KEY;
+}
+
+function isHealthcareRoom(room){
+  return !!(room && room.mode === 'hc');
+}
+
+function isMosqueRoom(room){
+  return !!(room && room.id === 'r_mosque');
+}
+
+function populateCityOptions(selectEl){
+  if(!selectEl) return;
+  var selected = getSelectedCityKey();
+  selectEl.innerHTML = CITY_FACTOR_ORDER.map(function(cityKey){
+    var city = getCityConfig(cityKey);
+    var label = lang === 'ar' ? city.ar : city.en;
+    return '<option value="'+cityKey+'">'+label+'</option>';
+  }).join('');
+  selectEl.value = selected;
+}
+
+function populateExposureOptions(selectEl){
+  if(!selectEl) return;
+  var current = selectEl.value || 'shaded';
+  selectEl.innerHTML = ''+
+    '<option value="shaded">'+t('lexpshaded')+'</option>'+
+    '<option value="direct">'+t('lexpdirect')+'</option>';
+  selectEl.value = WINDOW_EXPOSURE[current] ? current : 'shaded';
+}
+
+function populateInsulationOptions(selectEl){
+  if(!selectEl) return;
+  var current = selectEl.value || 'medium';
+  selectEl.innerHTML = ''+
+    '<option value="excellent">'+t('linsulexcellent')+'</option>'+
+    '<option value="medium">'+t('linsulmedium')+'</option>'+
+    '<option value="none">'+t('linsulnone')+'</option>';
+  selectEl.value = INSULATION_TYPES[current] ? current : 'medium';
+}
+
+function getSelectedCityFactor(){
+  return Number(getCityConfig(getSelectedCityKey()).factor || 265);
+}
+
+function getEffectiveFactor(){
+  return getSelectedCityFactor();
+}
+
+function setLoadFactorPresetValue(){
+  updateFactorInputsUI();
+}
+
+function setLoadFactorInputMode(isCustom){
+  updateFactorInputsUI();
+}
+
+function updateFactorInputsUI(){
+  var factorEl = G('inp-load-factor');
+  var cityEl = G('inp-load-factor-preset');
+  var isHC = isHealthcareRoom(curRoom);
+  if(cityEl){
+    if(!cityEl.value || !CITY_FACTORS[cityEl.value]) cityEl.value = DEFAULT_CITY_KEY;
+    cityEl.disabled = isHC;
+  }
+  if(factorEl){
+    factorEl.value = String(Math.round(getSelectedCityFactor()));
+  }
+}
+
+function syncLoadFactorFromRoom(room){
+  var cityEl = G('inp-load-factor-preset');
+  if(cityEl){
+    cityEl.value = DEFAULT_CITY_KEY;
+    populateCityOptions(cityEl);
+    cityEl.value = DEFAULT_CITY_KEY;
+  }
+  var insEl = G('inp-insulation-type');
+  if(insEl) populateInsulationOptions(insEl);
+  if(insEl) insEl.value = 'medium';
+  var expEl = G('inp-exposure-type');
+  if(expEl) populateExposureOptions(expEl);
+  if(expEl) expEl.value = 'shaded';
+  var winEl = G('inp-window-area');
+  if(winEl) winEl.value = '';
+  peopleManualOverride = false;
+  updateFactorInputsUI();
+  updateOccupancyHelper();
+}
+
+function onCityChange(){
+  updateFactorInputsUI();
+  trackAppEvent('city_selected', {
+    city: getSelectedCityKey(),
+    language: currentAnalyticsLanguage(),
+    is_healthcare: isHealthcareRoom(curRoom)
+  });
+}
+
+function onFactorModeChange(){ updateFactorInputsUI(); }
+function onCustomFactorInput(){ updateFactorInputsUI(); }
+
+function onLoadFactorPresetChange(){ onCityChange(); }
+function onLoadFactorInput(){ updateFactorInputsUI(); }
+
+function getInsulationConfig(){
+  var insEl = G('inp-insulation-type');
+  var key = insEl && INSULATION_TYPES[insEl.value] ? insEl.value : 'medium';
+  var item = INSULATION_TYPES[key];
+  return { key:key, label:lang === 'ar' ? item.ar : item.en, multiplier:Number(item.multiplier||1) };
+}
+
+function onInsulationTypeChange(){
+  updateOccupancyHelper();
+}
+
+function getWindowArea(){
+  return parsePositiveFieldValue('inp-window-area');
+}
+
+function getWindowExposureConfig(){
+  var expEl = G('inp-exposure-type');
+  var key = expEl && WINDOW_EXPOSURE[expEl.value] ? expEl.value : 'shaded';
+  var item = WINDOW_EXPOSURE[key];
+  return { key:key, label:lang === 'ar' ? item.ar : item.en, factor:Number(item.factor||0) };
+}
+
+function getWindowLoad(){
+  var exposure = getWindowExposureConfig();
+  return getWindowArea() * exposure.factor;
+}
+
+function onWindowAreaInput(){
+  parsePositiveFieldValue('inp-window-area');
+}
+
+function onExposureTypeChange(){
+  updateOccupancyHelper();
+}
+
+function getPeopleDensityForRoom(room){
+  if(!room) return 10;
+  if(room.id === 'r_mosque') return 1.0;
+  if(room.id === 'r_classroom') return 2.0;
+  if(room.id === 'r_restaurant') return 1.5;
+  return 10;
+}
+
+function getRoomArea(){
+  var dims = readRoomDimensions();
+  if(dims.len > 0 && dims.width > 0) return dims.len * dims.width;
+  if(lastRoomDims && lastRoomDims.len > 0 && lastRoomDims.width > 0) return Number(lastRoomDims.len) * Number(lastRoomDims.width);
+  return 0;
+}
+
+function getEstimatedPeopleCount(){
+  var area = getRoomArea();
+  var density = getPeopleDensityForRoom(curRoom);
+  if(!area || !density) return 0;
+  return Math.max(0, Math.round(area / density));
+}
+
+function updateOccupancyHelper(){
+  var helper = G('occupancy-helper');
+  if(!helper) return;
+  if(isHealthcareRoom(curRoom)){
+    helper.textContent = t('healthcaremode');
+    return;
+  }
+  var manualText = peopleManualOverride ? ' — ' + t('occmanual') : '';
+  helper.textContent = t('peopleautohelper') + manualText;
+}
+
+function syncPeopleEstimate(force){
+  if(isHealthcareRoom(curRoom)){
+    updateOccupancyHelper();
+    return 0;
+  }
+  var pplEl = G('inp-ppl');
+  if(!pplEl) return 0;
+  var estimated = getEstimatedPeopleCount();
+  if(force || !peopleManualOverride){
+    _syncingPeopleEstimate = true;
+    pplEl.value = estimated > 0 ? String(estimated) : '';
+    _syncingPeopleEstimate = false;
+  }
+  updateOccupancyHelper();
+  return estimated;
+}
+
+function onOccupancyTypeChange(){}
 
 function setFreshAirMode(mode){
   hcFreshAirMode = mode === 'fresh100' ? 'fresh100' : 'ashrae';
@@ -1335,10 +1675,14 @@ function updateCalculationModeUI(room){
   var helper = G('load-factor-helper');
   var note = G('calc-mode-note');
   var freshAirRow = G('fresh-air-row');
-  var isHC = !!(room && room.mode === 'hc');
+  var advancedInputs = G('advanced-inputs');
+  var isHC = isHealthcareRoom(room);
   if(row) row.style.display = isHC ? 'none' : '';
   if(helper) helper.style.display = isHC ? 'none' : '';
+  if(advancedInputs) advancedInputs.style.display = isHC ? 'none' : '';
   if(freshAirRow) freshAirRow.style.display = isHC ? '' : 'none';
+  updateFactorInputsUI();
+  updateOccupancyHelper();
   if(!note) return;
   if(!room){
     note.style.display = 'none';
@@ -1355,47 +1699,12 @@ function updateCalculationModeUI(room){
   setFreshAirMode(getFreshAirMode());
 }
 
-function onLoadFactorPresetChange(){
-  var presetEl = G('inp-load-factor-preset');
-  var inputEl = G('inp-load-factor');
-  if(!presetEl || !inputEl) return;
-  var val = presetEl.value;
-  setLoadFactorInputMode(val === 'custom');
-  if(val === 'custom') return;
-  if(!val){
-    inputEl.value = '';
-    return;
-  }
-  inputEl.value = String(val);
-}
-
-function onLoadFactorInput(){
-  var inputEl = G('inp-load-factor');
-  if(!inputEl) return;
-  if(inputEl.readOnly) return;
-  normalizeNumericInput(inputEl);
-  var raw = (inputEl.value||'').replace(/[^\d.]/g,'');
-  inputEl.value = raw;
-  if(!raw){
-    setLoadFactorPresetValue('');
-    return;
-  }
-  var factor = parseFloat(raw);
-  if(isNaN(factor)) return;
-  factor = Math.max(100, Math.min(800, factor));
-  inputEl.value = String(Math.round(factor));
-  setLoadFactorPresetValue(Math.round(factor));
-}
-
 function getFreshAirMode(){
   return hcFreshAirMode === 'fresh100' ? 'fresh100' : 'ashrae';
 }
 
 function getSelectedLoadFactor(){
-  var inputEl = G('inp-load-factor');
-  var raw = inputEl ? parseFloat(inputEl.value) : NaN;
-  if(!isNaN(raw) && raw >= 100 && raw <= 800) return raw;
-  return curRoom && curRoom.factor ? Number(curRoom.factor) : 260;
+  return getEffectiveFactor();
 }
 
 function getRoomCount(){
@@ -1406,6 +1715,7 @@ function getRoomCount(){
 function doCalc(){
   var wasEditing = editIdx >= 0;
   var volState=setRoomVolumeFromDimensions();
+  if(curRoom && curRoom.mode !== 'hc' && !peopleManualOverride) syncPeopleEstimate(true);
   var vol=volState.volume||0;
   var ppl=parseInt(G('inp-ppl').value)||0;
   if(!curRoom){
@@ -1413,6 +1723,12 @@ function doCalc(){
     return;
   }
   if(!vol){ toast(t('tnov')); return; }
+  trackAppEvent('calculate_click', {
+    room_type: currentAnalyticsRoomType(),
+    city: isHealthcareRoom(curRoom) ? '' : getSelectedCityKey(),
+    language: currentAnalyticsLanguage(),
+    is_healthcare: isHealthcareRoom(curRoom)
+  });
   if(curRoom.mode==='hc') calcHC(vol,ppl);
   else calcROT(vol,ppl);
   if(!wasEditing){
@@ -1422,20 +1738,55 @@ function doCalc(){
   }
 }
 function calcROT(vol,ppl){
-  var loadFactor = getSelectedLoadFactor();
-  var base=vol*loadFactor, pplb=ppl*400, devb=totalDevBtu();
-  var sub=base+pplb+devb, total=sub*1.10;
+  var cityKey = getSelectedCityKey();
+  var city = getCityConfig(cityKey);
+  var cityFactor = getSelectedCityFactor();
+  var effectiveFactor = getEffectiveFactor();
+  var insulation = getInsulationConfig();
+  var windowArea = getWindowArea();
+  var exposure = getWindowExposureConfig();
+  var windowLoad = getWindowLoad();
+  var base=vol*effectiveFactor*insulation.multiplier, pplb=ppl*400, devb=totalDevBtu();
+  var sub=base+windowLoad+pplb+devb, total=sub*1.10;
   var tr=total/12000, cfm=Math.round(tr*400), mkt=Math.ceil(total/9000)*9000;
   var std=getRoomStandard(curRoom);
   flash('vtr',tr.toFixed(2)); flash('vcfm',cfm.toLocaleString()); flash('vbtu',Math.round(total).toLocaleString()); flash('vmkt',mkt.toLocaleString());
   G('brv-vol').textContent=vol; G('brv-base').textContent=Math.round(base).toLocaleString();
+  G('brv-window').textContent=Math.round(windowLoad).toLocaleString();
   G('brv-ppl').textContent=Math.round(pplb).toLocaleString(); G('brv-dev').textContent=Math.round(devb).toLocaleString();
   G('brv-sub').textContent=Math.round(sub).toLocaleString(); G('brv-sf').textContent=Math.round(total).toLocaleString();
+  var metaGrid = G('breakdown-meta-grid');
+  if(metaGrid) metaGrid.style.display = '';
+  if(G('brm-city-val')) G('brm-city-val').textContent = lang === 'ar' ? city.ar : city.en;
+  if(G('brm-factor-val')) G('brm-factor-val').textContent = Math.round(effectiveFactor) + ' BTU/m³';
+  if(G('brm-insulation-val')) G('brm-insulation-val').textContent = insulation.label;
+  if(G('brm-multiplier-val')) G('brm-multiplier-val').textContent = insulation.multiplier.toFixed(2);
+  if(G('brm-people-val')) G('brm-people-val').textContent = ppl.toLocaleString();
+  if(G('brm-window-area-val')) G('brm-window-area-val').textContent = Number(windowArea||0).toLocaleString() + ' m²';
   G('breakdown').classList.add('show');
   updateRoomStandardCard(std, cfm);
   G('hc-card').style.display='block';
   saveHist(vol,ppl,tr,cfm,total,mkt,devb,{
-    loadFactor: loadFactor,
+    loadFactor: effectiveFactor,
+    cityKey: cityKey,
+    cityLabelAr: city.ar,
+    cityLabelEn: city.en,
+    cityFactor: cityFactor,
+    insulationType: insulation.key,
+    insulationLabelAr: INSULATION_TYPES[insulation.key].ar,
+    insulationLabelEn: INSULATION_TYPES[insulation.key].en,
+    insulationMultiplier: insulation.multiplier,
+    windowArea: windowArea,
+    exposureType: exposure.key,
+    exposureLabelAr: WINDOW_EXPOSURE[exposure.key].ar,
+    exposureLabelEn: WINDOW_EXPOSURE[exposure.key].en,
+    windowFactor: exposure.factor,
+    windowLoad: windowLoad,
+    manualOverride: peopleManualOverride,
+    peopleManualOverride: peopleManualOverride,
+    peopleLoad: pplb,
+    baseLoad: base,
+    subtotalLoad: sub,
     category: std.category,
     roomType: std.roomType,
     ach: std.ach,
@@ -1449,7 +1800,6 @@ function calcROT(vol,ppl){
 }
 function calcHC(vol,ppl){
   var r=curRoom, ft3=m3toft3(vol);
-  var loadFactor = getSelectedLoadFactor();
   var freshMode = getFreshAirMode();
   var sup=Math.round((r.tach*ft3)/60), oa=freshMode === 'fresh100' ? Math.round((r.tach*ft3)/60) : Math.round((r.oach*ft3)/60);
   var recirc=Math.max(0,sup-oa);
@@ -1459,8 +1809,11 @@ function calcHC(vol,ppl){
   var tr=total/12000, mkt=Math.ceil(total/9000)*9000;
   flash('vtr',tr.toFixed(2)); flash('vcfm',sup.toLocaleString()); flash('vbtu',Math.round(total).toLocaleString()); flash('vmkt',mkt.toLocaleString());
   G('brv-vol').textContent=vol; G('brv-base').textContent=Math.round(base).toLocaleString();
+  G('brv-window').textContent='0';
   G('brv-ppl').textContent=Math.round(pplb).toLocaleString(); G('brv-dev').textContent=Math.round(devb).toLocaleString();
   G('brv-sub').textContent=Math.round(sub).toLocaleString(); G('brv-sf').textContent=Math.round(total).toLocaleString();
+  var metaGrid = G('breakdown-meta-grid');
+  if(metaGrid) metaGrid.style.display = 'none';
   G('breakdown').classList.add('show');
   var pill=G('hc-pill');
   var pk=r.pres==='positive'?'ppos':r.pres==='negative'?'pneg':'pneu';
@@ -1475,7 +1828,6 @@ function calcHC(vol,ppl){
   }else{G('hc-note-row').style.display='none';}
   G('hc-card').style.display='block';
   saveHist(vol,ppl,tr,sup,total,mkt,devb,{
-    loadFactor: loadFactor,
     sup:sup,
     oa:oa,
     recirc:recirc,
@@ -1498,11 +1850,12 @@ function calcHC(vol,ppl){
 function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
   var eq = getEquipmentSummary();
   var roomCount = getRoomCount();
+  var isHCMode = curRoom && curRoom.mode === 'hc';
   var rec={
     time:new Date().toLocaleString('ar-SA'),
     rid:curRoom.id, ar:curRoom.ar, en:curRoom.en,
-    vol:vol, ppl:ppl, roomCount:roomCount, loadFactor:getSelectedLoadFactor(),
-    calcMode: curRoom && curRoom.mode === 'hc' ? 'hc' : 'rot',
+    vol:vol, ppl:ppl, peopleCount:ppl, roomCount:roomCount, loadFactor:isHCMode ? 0 : getSelectedLoadFactor(),
+    calcMode: isHCMode ? 'hc' : 'rot',
     dims:lastRoomDims,
     devSum:eq.text,
     devBtu:eq.totalBtu,
@@ -1512,20 +1865,10 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     tr:tr.toFixed(2), cfm:cfm, btu:Math.round(totalBtu), mkt:mkt
   };
   if(hcdata){
-    if(hcdata.loadFactor != null) rec.loadFactor = hcdata.loadFactor;
-    rec.sup=hcdata.sup;
-    rec.oa=hcdata.oa;
-    rec.recirc=hcdata.recirc;
-    rec.exh=hcdata.exh;
-    rec.pres=hcdata.pres;
-    rec.freshAirMode=hcdata.freshAirMode;
-    rec.category=hcdata.category;
-    rec.roomType=hcdata.roomType;
-    rec.ach=hcdata.ach;
-    rec.oaStd=hcdata.oa;
-    rec.exhaust=hcdata.exhaust;
-    rec.pressure=hcdata.pressure;
-    rec.notes=hcdata.notes;
+    Object.keys(hcdata).forEach(function(key){
+      if(hcdata[key] !== undefined) rec[key] = hcdata[key];
+    });
+    if(hcdata.oa != null) rec.oaStd = hcdata.oa;
   }
   if(editIdx>=0&&editIdx<hist.length){
     var _editAt=editIdx;
@@ -1561,13 +1904,19 @@ function resetCalcEntryForm(){
   var volEl = G('inp-vol'); if(volEl) volEl.value = '';
   var pplEl = G('inp-ppl'); if(pplEl) pplEl.value = '';
   var roomCountEl = G('inp-room-count'); if(roomCountEl) roomCountEl.value = '0';
-  var loadFactorEl = G('inp-load-factor'); if(loadFactorEl) loadFactorEl.value = '';
-  var loadFactorPresetEl = G('inp-load-factor-preset'); if(loadFactorPresetEl) loadFactorPresetEl.value = '';
+  var loadFactorEl = G('inp-load-factor'); if(loadFactorEl) loadFactorEl.value = String(getCityConfig(DEFAULT_CITY_KEY).factor);
+  var loadFactorPresetEl = G('inp-load-factor-preset'); if(loadFactorPresetEl) loadFactorPresetEl.value = DEFAULT_CITY_KEY;
+  var windowAreaEl = G('inp-window-area'); if(windowAreaEl) windowAreaEl.value = '';
+  var exposureEl = G('inp-exposure-type'); if(exposureEl) exposureEl.value = 'shaded';
+  var insulationEl = G('inp-insulation-type'); if(insulationEl) insulationEl.value = 'medium';
+  peopleManualOverride = false;
   setFreshAirMode('ashrae');
+  updateFactorInputsUI();
   updateCalculationModeUI(null);
   devs = [];
   renderDevs();
   G('breakdown').classList.remove('show');
+  if(G('breakdown-meta-grid')) G('breakdown-meta-grid').style.display = 'none';
   G('hc-card').style.display='none';
 }
 
@@ -1578,6 +1927,7 @@ function toggleCalcRoom(idx){
 
 function calcRoomDetailHtml(h, idx){
   var rc = Math.max(1,parseInt(h.roomCount,10)||1);
+  var isHC = h.calcMode === 'hc';
   var dimsLine = '';
   if(h.dims && (h.dims.len || h.dims.width || h.dims.height)){
     dimsLine = '<div class="calc-room-detail-row calc-room-detail-row-wide calc-room-detail-dims"><span class="calc-room-detail-lbl">'+(lang==='ar'?'الأبعاد':'Dimensions')+'</span><span class="calc-room-detail-val">'+
@@ -1585,6 +1935,18 @@ function calcRoomDetailHtml(h, idx){
     '</span></div>';
   }
   var roomTypeLine = h.roomType ? h.roomType : ((lang==='ar'?(h.ar||h.en):(h.en||h.ar))||'');
+  var generalMeta = '';
+  if(!isHC){
+    var cityName = lang === 'ar' ? (h.cityLabelAr || getCityConfig(h.cityKey || DEFAULT_CITY_KEY).ar) : (h.cityLabelEn || getCityConfig(h.cityKey || DEFAULT_CITY_KEY).en);
+    var insulationName = lang === 'ar' ? (h.insulationLabelAr || '') : (h.insulationLabelEn || '');
+    generalMeta =
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+t('bcity')+'</span><span class="calc-room-detail-val">'+cityName+'</span></div>'+
+      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+t('bcityfactor')+'</span><span class="calc-room-detail-val">'+Number(h.loadFactor||0).toLocaleString()+' BTU/m³</span></div>'+
+      (insulationName?'<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+t('binsulation')+'</span><span class="calc-room-detail-val">'+insulationName+'</span></div>':'')+
+      (h.insulationMultiplier != null?'<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+t('binsulationm')+'</span><span class="calc-room-detail-val">'+Number(h.insulationMultiplier).toFixed(2)+'</span></div>':'')+
+      (h.windowArea != null?'<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+t('bwindowarea')+'</span><span class="calc-room-detail-val">'+Number(h.windowArea||0).toLocaleString()+' m²</span></div>':'')+
+      (h.windowLoad != null?'<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+t('bwindow')+'</span><span class="calc-room-detail-val">'+Number(h.windowLoad||0).toLocaleString()+' BTU/h</span></div>':'');
+  }
   var hcLine = '';
   if(h.ach || h.pressure || h.oaStd || h.exhaust){
     var hcBits = [];
@@ -1604,7 +1966,7 @@ function calcRoomDetailHtml(h, idx){
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'الحجم':'Volume')+'</span><span class="calc-room-detail-val">'+h.vol+' m³</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'عدد الغرف':'Room Count')+'</span><span class="calc-room-detail-val">'+rc+'</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'عدد الأشخاص':'People')+'</span><span class="calc-room-detail-val">'+h.ppl+'</span></div>'+
-      '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">'+(lang==='ar'?'معامل الحمل':'Load Factor')+'</span><span class="calc-room-detail-val">'+Number(h.loadFactor||0).toLocaleString()+' BTU/m³</span></div>'+
+      generalMeta+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">TR</span><span class="calc-room-detail-val">'+h.tr+'</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">CFM</span><span class="calc-room-detail-val">'+Number(h.cfm||0).toLocaleString()+'</span></div>'+
       '<div class="calc-room-detail-row calc-room-detail-stat"><span class="calc-room-detail-lbl">BTU/h</span><span class="calc-room-detail-val">'+Number(h.btu||0).toLocaleString()+'</span></div>'+
@@ -1743,15 +2105,23 @@ function editRec(idx){
   G('inp-vol').value=h.vol; G('inp-ppl').value=h.ppl;
   setFreshAirMode(h.freshAirMode || 'ashrae');
   syncLoadFactorFromRoom(curRoom);
+  var cityEl = G('inp-load-factor-preset');
+  if(cityEl && h.cityKey && CITY_FACTORS[h.cityKey]) cityEl.value = h.cityKey;
+  var windowAreaEl = G('inp-window-area');
+  if(windowAreaEl) windowAreaEl.value = h.windowArea != null && h.windowArea !== 0 ? String(h.windowArea) : '';
+  var exposureEl = G('inp-exposure-type');
+  if(exposureEl && h.exposureType) exposureEl.value = h.exposureType;
+  var insulationEl = G('inp-insulation-type');
+  if(insulationEl && h.insulationType) insulationEl.value = h.insulationType;
+  peopleManualOverride = !!(h.peopleManualOverride || h.manualOverride);
+  updateFactorInputsUI();
   updateCalculationModeUI(curRoom);
-  if(h.loadFactor != null){
-    var lfEl = G('inp-load-factor');
-    if(lfEl) lfEl.value = String(h.loadFactor);
-    setLoadFactorPresetValue(h.loadFactor);
-  }
   var rcInput=G('inp-room-count'); if(rcInput) rcInput.value=Math.max(1,parseInt(h.roomCount,10)||getQty(idx)||1);
   setRoomDimensionInputs(h.dims);
   if(!h.dims) setLegacyRoomVolume(h.vol);
+  if(G('inp-ppl')) G('inp-ppl').value = h.ppl;
+  if(!peopleManualOverride) syncPeopleEstimate(true);
+  else updateOccupancyHelper();
   devs=[];
   if(h.devSum){ h.devSum.split(' | ').forEach(function(part){
     var m=part.match(/^(.+?)×(\d+)$/); if(!m) return;
@@ -2078,7 +2448,7 @@ function ductRecommendation(supRt, retRt, isAr){
 }
 function getQuotationSaveButtonHtml(extraClass){
   var cls = 'quote-inline-save-btn' + (extraClass ? ' ' + extraClass : '');
-  return '<button type="button" class="'+cls+'" onclick="saveQuotationToCurrentProject()" title="'+t('qsave')+'" aria-label="'+t('qsave')+'">💾 <span>'+t('qsave')+'</span></button>';
+  return '<button type="button" class="'+cls+'" data-pro-feature="saveQuotation" onclick="saveQuotationToCurrentProject()" title="'+t('qsave')+'" aria-label="'+t('qsave')+'">💾 <span>'+t('qsave')+'</span></button>';
 }
 function renderQuote(){
   var list=G('qi-list'); if(list) list.innerHTML='';
@@ -2365,6 +2735,10 @@ function renderQuote(){
     }
   });
   refreshGrandTotal();
+  if (window.AppPlan && typeof window.AppPlan.syncLockedUI === 'function') {
+    window.AppPlan.syncLockedUI(list || document);
+    if (quoteView) window.AppPlan.syncLockedUI(quoteView);
+  }
 }
 
 function setQtyAuto(i, enabled){
@@ -2479,11 +2853,11 @@ function exportCSV(){
       rows.push([i+1,h.en||h.ar,_ut2,Number(_sb2).toLocaleString()+' BTU',h.vol,getRecordRoomCount(i),h.ppl,h.devBtu||0,h.tr,h.cfm,h.btu,h.mkt,hc,getQty(i),getUP(i),money(getQty(i)*getUP(i))]);
     });
     rows.push(['','','','','','','','','','','','','']);
-    rows.push(['Equipment Subtotal','SAR '+money(subtotal),'','','','','','','','','','','']);
-    rows.push(['Installation ('+ip+'%)','SAR '+money(instAmt),'','','','','','','','','','','']);
-    if(vatOn) rows.push(['VAT 15%','SAR '+money(vatAmt),'','','','','','','','','','','']);
+  rows.push(['Equipment Subtotal',money(subtotal)+' ﷼','','','','','','','','','','','']);
+  rows.push(['Installation ('+ip+'%)',money(instAmt)+' ﷼','','','','','','','','','','','']);
+  if(vatOn) rows.push(['VAT 15%',money(vatAmt)+' ﷼','','','','','','','','','','','']);
     rows.push(['Total Quantity',totalQty,'','','','','','','','','','','']);
-    rows.push(['Grand Total','SAR '+money(grand),'','','','','','','','','','','']);
+  rows.push(['Grand Total',money(grand)+' ﷼','','','','','','','','','','','']);
     if(notes) rows.push(['Notes',notes,'','','','','','','','','','','']);
     rows.push(['','','','','','','','','','','','','']);
     rows.push(['Notice: Preliminary estimate \u2014 not for final design submittal','','','','','','','','','','','','']);
@@ -2628,6 +3002,10 @@ function exportHAP(){
     toast(lang==='ar'?'⚠️ مكتبة Excel غير متاحة الآن':'⚠️ Excel library is not available right now');
     return;
   }
+  trackAppEvent('export_hap', {
+    language: currentAnalyticsLanguage(),
+    rooms: hist.length
+  });
   var projectName = ((G('quote-project')||{value:''}).value || (G('tech-project')||{value:''}).value || '').trim() || (lang==='ar'?'غير محدد':'Untitled');
   var today = new Date().toISOString().slice(0,10);
   var roomRows = [];
@@ -2648,7 +3026,16 @@ function exportHAP(){
       'Height': safeExportCell(Number(dims.height||0)),
       'People': safeExportCell(Number(h.ppl||0)),
       'Equipment Load': safeExportCell(Number(h.equipmentBtu||0)),
+      'City': safeExportCell(h.calcMode === 'hc' ? '' : (h.cityLabelEn || h.cityLabelAr || '')),
+      'City Factor': safeExportCell(h.calcMode === 'hc' ? '' : Number(h.cityFactor||0)),
       'Load Factor': safeExportCell(h.calcMode === 'hc' ? '' : Number(h.loadFactor||0)),
+      'Insulation Type': safeExportCell(h.calcMode === 'hc' ? '' : (h.insulationLabelEn || h.insulationLabelAr || '')),
+      'Insulation Multiplier': safeExportCell(h.calcMode === 'hc' ? '' : Number(h.insulationMultiplier||0)),
+      'Window Area': safeExportCell(h.calcMode === 'hc' ? '' : Number(h.windowArea||0)),
+      'Exposure Type': safeExportCell(h.calcMode === 'hc' ? '' : (h.exposureLabelEn || h.exposureLabelAr || '')),
+      'Window Factor': safeExportCell(h.calcMode === 'hc' ? '' : Number(h.windowFactor||0)),
+      'Window Load': safeExportCell(h.calcMode === 'hc' ? '' : Number(h.windowLoad||0)),
+      'Manual Override': safeExportCell(h.calcMode === 'hc' ? '' : (h.manualOverride ? 'Yes' : 'No')),
       'Fresh Air Mode': safeExportCell(freshAirModeLabel),
       'Outdoor Air CFM': safeExportCell(Number(h.oa||0)),
       'Recirculated CFM': safeExportCell(Number(h.recirc||0)),
@@ -3185,6 +3572,11 @@ function buildInvoiceHTML(){
 
 function exportPDF(){
   if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف':'⚠️ No rooms saved'); return; }
+  trackAppEvent('export_pdf', {
+    language: currentAnalyticsLanguage(),
+    report_type: 'quotation',
+    rooms: hist.length
+  });
   // Lazy-load PDF libraries on first use
   var h2cReady = typeof html2canvas !== 'undefined';
   var jspdfReady = typeof window.jspdf !== 'undefined';
@@ -3304,6 +3696,11 @@ function _doExportPDF(){
 // ── TECH REPORT PDF EXPORT ────────────────────────────────────────────────
 function exportTechPDF(){
   if(!hist.length){ toast(lang==='ar'?'⚠️ لا توجد غرف':'⚠️ No rooms'); return; }
+  trackAppEvent('export_pdf', {
+    language: currentAnalyticsLanguage(),
+    report_type: 'technical',
+    rooms: hist.length
+  });
   var h2cReady = typeof html2canvas !== 'undefined';
   var jspdfReady = typeof window.jspdf !== 'undefined';
   if(h2cReady && jspdfReady){ _doExportTechPDF(); return; }
@@ -4860,6 +5257,9 @@ function updatePlanUI(){
   // Project mode button locked state
   var btnProj = G('mode-btn-proj');
   if (btnProj) { btnProj.classList.toggle('btn-locked', !featuresOpen); }
+  if (window.AppPlan && typeof window.AppPlan.syncLockedUI === 'function') {
+    window.AppPlan.syncLockedUI(document);
+  }
 
   // Duct and ESP blocks — lock overlay when free
   var ductBlock = G('proj-duct-block');
@@ -4883,9 +5283,9 @@ function updatePlanUI(){
     ? (isAr ? 'ميزات PRO مفعلة لك خلال الوصول المبكر.' : 'PRO features are enabled for you during Early Access.')
     : (isAr ? 'سجّل الدخول للحصول على وصول مبكر PRO.' : 'Sign in to get PRO Early Access.');
   if (G('ea-monthly-name')) G('ea-monthly-name').textContent = isAr ? 'شهري' : 'Monthly';
-  if (G('ea-monthly-price')) G('ea-monthly-price').textContent = isAr ? '19 ر.س / شهر' : '19 SAR / month';
+  if (G('ea-monthly-price')) G('ea-monthly-price').textContent = isAr ? '19 ﷼ / شهر' : '19 ﷼ / month';
   if (G('ea-yearly-name')) G('ea-yearly-name').textContent = isAr ? 'سنوي' : 'Yearly';
-  if (G('ea-yearly-price')) G('ea-yearly-price').textContent = isAr ? '149 ر.س / سنة' : '149 SAR / year';
+  if (G('ea-yearly-price')) G('ea-yearly-price').textContent = isAr ? '149 ﷼ / سنة' : '149 ﷼ / year';
   if (G('ea-soon-monthly')) G('ea-soon-monthly').textContent = isAr ? 'قريبًا' : 'Coming Soon';
   if (G('ea-soon-yearly')) G('ea-soon-yearly').textContent = isAr ? 'قريبًا' : 'Coming Soon';
 
@@ -4981,10 +5381,10 @@ function _syncUpgradeSheetLang(){
   sl('pcp6','Duct Sizing',             'Duct Sizing');
   sl('pcp7','ESP Calculation',         'ESP Calculation');
   sl('pcp8','مزايا مستقبلية',           'Future Pro tools');
-  sl('pp-yr-amt','149 ر.س',  '149 SAR');
+  sl('pp-yr-amt','149 ﷼',  '149 ﷼');
   sl('pp-yr-per','سنوياً',    'Yearly');
   sl('pp-yr-badge','قريبًا', 'Coming Soon');
-  sl('pp-mo-amt','19 ر.س',   '19 SAR');
+  sl('pp-mo-amt','19 ﷼',   '19 ﷼');
   sl('pp-mo-per','شهرياً',    'Monthly');
   sl('pp-mo-badge','قريبًا', 'Coming Soon');
   sl('ush-cta',   'الخطط المدفوعة قادمة قريبًا', 'Paid plans are coming soon');

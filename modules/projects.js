@@ -285,7 +285,7 @@
 
   function saveCurrentProject(opts) {
     opts = opts || {};
-    if (window.AppPlan && !window.AppPlan.requireFeature('unlimitedProjects')) return;
+    if (window.AppPlan && !window.AppPlan.requirePro('save_project')) return;
     var projName = (_getCurrentProjectField('tech-project', '') || _getCurrentProjectField('quote-project', '') || '').trim();
 
     if (!projName) {
@@ -352,6 +352,12 @@
 
     renderProjects();
     updateNavDots();
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('save_project', {
+        language: _isAr() ? 'ar' : 'en',
+        rooms: (snap && snap.hist && snap.hist.length) || 0
+      });
+    }
     if (!opts.silentNavigate && typeof goPanel === 'function') goPanel('projects');
   }
 
@@ -407,7 +413,7 @@
   }
 
   function saveQuotationToCurrentProject() {
-    if (window.AppPlan && !window.AppPlan.requireFeature('saveQuotation')) return false;
+    if (window.AppPlan && !window.AppPlan.requirePro('save_quotation')) return false;
     var curId = _getCurrentId();
     if (!curId && window.AppStorage && typeof window.AppStorage.restoreCurrentProjectId === 'function') {
       curId = window.AppStorage.restoreCurrentProjectId();
@@ -432,6 +438,12 @@
 
     renderProjects();
     updateNavDots();
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('save_quotation', {
+        language: _isAr() ? 'ar' : 'en',
+        rooms: (found.project.snapshot && found.project.snapshot.hist && found.project.snapshot.hist.length) || 0
+      });
+    }
     _toast(_t('تم حفظ عرض السعر', 'Quotation saved'));
     return true;
   }
@@ -488,16 +500,19 @@
   }
 
   function openProjectReport(id) {
+    if (window.AppPlan && !window.AppPlan.requirePro('dashboard')) return;
     var proj = _restoreProjectForAction(id, 'tech');
     if (proj) _toast(_t('تم فتح التقرير: ', 'Report opened: ') + proj.name);
   }
 
   function openProjectQuotation(id) {
+    if (window.AppPlan && !window.AppPlan.requirePro('dashboard')) return;
     var proj = _restoreProjectForAction(id, 'hist');
     if (proj) _toast(_t('تم فتح عرض السعر: ', 'Quotation opened: ') + proj.name);
   }
 
   function exportProjectPDF(id) {
+    if (window.AppPlan && !window.AppPlan.requirePro('export_pdf')) return;
     var proj = setActiveProject(id);
     if (!proj) return;
     if (typeof exportTechPDF === 'function') {
@@ -510,6 +525,7 @@
   }
 
   function exportProjectHAP(id) {
+    if (window.AppPlan && !window.AppPlan.requirePro('export_hap')) return;
     var proj = setActiveProject(id);
     if (!proj) return;
     if (typeof exportHAP === 'function') {
@@ -520,6 +536,7 @@
   }
 
   function duplicateProject(id) {
+    if (window.AppPlan && !window.AppPlan.requirePro('dashboard')) return;
     var found = _findProject(id);
     if (!found.project) {
       _toast(_t('المشروع غير موجود', 'Project not found'));
@@ -633,24 +650,27 @@
             '<div class="pm-stat"><div class="pm-stat-lbl">' + (isAr ? 'إجمالي الحمل' : 'Total Load') + '</div><div class="pm-stat-val">' + Number(tot.btu || 0).toLocaleString() + '<small> BTU/h</small></div></div>' +
             '<div class="pm-stat"><div class="pm-stat-lbl">' + (isAr ? 'إجمالي طن التبريد' : 'Total TR') + '</div><div class="pm-stat-val">' + Number(tot.tr || 0).toFixed(2) + '<small> TR</small></div></div>' +
             '<div class="pm-stat"><div class="pm-stat-lbl">' + (isAr ? 'إجمالي الهواء' : 'Total CFM') + '</div><div class="pm-stat-val">' + Number(tot.cfm || 0).toLocaleString() + '<small> CFM</small></div></div>' +
-            '<div class="pm-stat"><div class="pm-stat-lbl">' + (isAr ? 'قيمة العرض' : 'Quotation Total') + '</div><div class="pm-stat-val">' + quotationTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '<small> SAR</small></div></div>' +
+            '<div class="pm-stat"><div class="pm-stat-lbl">' + (isAr ? 'قيمة العرض' : 'Quotation Total') + '</div><div class="pm-stat-val">' + quotationTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '<small> ﷼</small></div></div>' +
             '<div class="pm-stat"><div class="pm-stat-lbl">' + (isAr ? 'آخر تحديث' : 'Last Updated') + '</div><div class="pm-stat-val"><small>' + _fmtDate(proj.updatedAt) + '</small></div></div>' +
           '</div>' +
           '<div class="pm-card-actions primary">' +
-            '<button class="pm-act-btn open" onclick="loadProject(\'' + pid + '\')">' + (isAr ? 'فتح المشروع' : 'Open Project') + '</button>' +
-            '<button class="pm-act-btn report" onclick="openProjectReport(\'' + pid + '\')">' + (isAr ? 'عرض التقرير' : 'View Report') + '</button>' +
-            '<button class="pm-act-btn quote" onclick="openProjectQuotation(\'' + pid + '\')">' + (isAr ? 'عرض السعر' : 'View Quotation') + '</button>' +
+            '<button class="pm-act-btn open" data-pro-feature="projectDashboard" onclick="loadProject(\'' + pid + '\')">' + (isAr ? 'فتح المشروع' : 'Open Project') + '</button>' +
+            '<button class="pm-act-btn report" data-pro-feature="projectDashboard" onclick="openProjectReport(\'' + pid + '\')">' + (isAr ? 'عرض التقرير' : 'View Report') + '</button>' +
+            '<button class="pm-act-btn quote" data-pro-feature="projectDashboard" onclick="openProjectQuotation(\'' + pid + '\')">' + (isAr ? 'عرض السعر' : 'View Quotation') + '</button>' +
           '</div>' +
           '<div class="pm-card-actions">' +
-            '<button class="pm-act-btn export" onclick="exportProjectPDF(\'' + pid + '\')">' + (isAr ? 'تصدير PDF' : 'Export PDF') + '</button>' +
-            '<button class="pm-act-btn export" onclick="exportProjectHAP(\'' + pid + '\')">' + (isAr ? 'تصدير HAP' : 'Export HAP') + '</button>' +
-            '<button class="pm-act-btn copy" onclick="duplicateProject(\'' + pid + '\')">' + (isAr ? 'نسخ المشروع' : 'Duplicate Project') + '</button>' +
-            '<button class="pm-act-btn del" onclick="_pmConfirmDelete(\'' + pid + '\',\'' + pname + '\')">' + (isAr ? 'حذف المشروع' : 'Delete Project') + '</button>' +
+            '<button class="pm-act-btn export" data-pro-feature="exportPDF" onclick="exportProjectPDF(\'' + pid + '\')">' + (isAr ? 'تصدير PDF' : 'Export PDF') + '</button>' +
+            '<button class="pm-act-btn export" data-pro-feature="exportHAP" onclick="exportProjectHAP(\'' + pid + '\')">' + (isAr ? 'تصدير HAP' : 'Export HAP') + '</button>' +
+            '<button class="pm-act-btn copy" data-pro-feature="projectDashboard" onclick="duplicateProject(\'' + pid + '\')">' + (isAr ? 'نسخ المشروع' : 'Duplicate Project') + '</button>' +
+            '<button class="pm-act-btn del" data-pro-feature="projectDashboard" onclick="_pmConfirmDelete(\'' + pid + '\',\'' + pname + '\')">' + (isAr ? 'حذف المشروع' : 'Delete Project') + '</button>' +
           '</div>' +
         '</div>';
     });
 
     list.innerHTML = html;
+    if (window.AppPlan && typeof window.AppPlan.syncLockedUI === 'function') {
+      window.AppPlan.syncLockedUI(list);
+    }
     updateNavDots();
   }
 

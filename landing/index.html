@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3FZ87Q1V31"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-3FZ87Q1V31');
+    function trackEvent(eventName, params = {}) {
+      try {
+        if (typeof window.gtag === "function") {
+          window.gtag("event", eventName, params);
+        }
+      } catch (error) {
+        console.warn("GA event failed silently:", eventName);
+      }
+    }
+    console.log("GA4 loaded:", typeof window.gtag === "function");
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AirCalc Pro — Landing</title>
@@ -292,6 +310,17 @@
     });
 
     applyLang('ar');
+    trackEvent('landing_page_view', { language: lang, page: 'legacy_landing' });
+
+    document.querySelectorAll('a[href*="app/index.html"], a[href*="ashreacalculator"]').forEach((link) => {
+      link.addEventListener('click', () => {
+        trackEvent('start_calculating_click', {
+          language: lang,
+          page: 'legacy_landing',
+          target: link.getAttribute('href') || ''
+        });
+      });
+    });
   </script>
 </body>
 </html>
