@@ -97,7 +97,6 @@
     snap.hist = (typeof hist !== 'undefined') ? _clone(hist) : [];
     snap.qlines = (typeof qlines !== 'undefined') ? _clone(qlines) : [];
     snap.devs = (typeof devs !== 'undefined') ? _clone(devs) : [];
-
     snap.projName = (_getCurrentProjectField('tech-project', '') || _getCurrentProjectField('quote-project', '') || '').trim();
     snap.quoteNo = (_getCurrentProjectField('tech-no', '') || _getCurrentProjectField('quote-no', 'Q-001') || 'Q-001').trim() || 'Q-001';
 
@@ -159,13 +158,24 @@
       },
       selectedUnits: (snap.hist || []).map(function (h, idx) {
         var line = (snap.qlines || [])[idx] || {};
+        var pricing = (line.systemPrices && typeof line.systemPrices === 'object')
+          ? line.systemPrices
+          : ((line.systemPricing && typeof line.systemPricing === 'object') ? line.systemPricing : {});
+        var systemsSubtotal = (line.systems || []).reduce(function (sum, sys) {
+          var priceEntry = pricing[sys.id];
+          var rawPrice = (priceEntry && typeof priceEntry === 'object') ? priceEntry.unitPrice : priceEntry;
+          return sum + ((_safeNum(sys.qty || 0) || 0) * (_safeNum(rawPrice || sys.unitPrice || 0, 2) || 0));
+        }, 0);
         return {
           roomName: h.roomType || h.ar || h.en || '',
           unitType: line.unitType || '',
           selectedBtu: _safeNum(line.selectedBtu || 0),
           qty: _safeNum(line.qty || 0),
           unitPrice: _safeNum(line.up || 0, 2),
-          lineTotal: _safeNum((line.qty || 0) * (line.up || 0), 2)
+          systemPrices: _clone(pricing || {}),
+          systemPricing: _clone(pricing || {}),
+          systems: _clone(line.systems || []),
+          lineTotal: _safeNum((line.systems && line.systems.length ? systemsSubtotal : ((line.qty || 0) * (line.up || 0))), 2)
         };
       }),
       roomBreakdown: (snap.hist || []).map(function (h, idx) {
@@ -176,9 +186,14 @@
           people: _safeNum(h.ppl || 0),
           cfm: _safeNum(h.cfm || 0),
           btu: _safeNum(h.btu || 0),
+          requiredBtu: _safeNum(h.requiredBtu || h.finalBtu || h.btu || 0),
+          selectedCapacityBtu: _safeNum(h.selectedCapacityBtu || 0),
+          capacityDifference: _safeNum(h.capacityDifference || 0),
+          capacityStatus: h.capacityStatus || '',
           tr: _safeNum(h.tr || 0, 2),
           marketBtu: _safeNum(h.mkt || 0),
-          line: _clone((snap.qlines || [])[idx] || {})
+          line: _clone((snap.qlines || [])[idx] || {}),
+          systems: _clone((((snap.qlines || [])[idx] || {}).systems) || [])
         };
       }),
       total: _safeNum((function () {
@@ -248,6 +263,7 @@
         qsValidity: (qState && qState.settings && qState.settings.qsValidity) || snap.qsValidity,
         qsNotes: (qState && qState.settings && qState.settings.qsNotes !== undefined) ? qState.settings.qsNotes : snap.qsNotes
       }));
+      localStorage.removeItem('acp_mixed_systems');
       localStorage.setItem('acp9mode', snap.quoteMode || 'room');
       if (snap.bundleConfig) localStorage.setItem('ac_bundleConfig', JSON.stringify(snap.bundleConfig));
     } catch (e) {}

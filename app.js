@@ -38,6 +38,7 @@ var UT_LABELS_AR = {};
 var UT_LABELS_EN = {};
 var ROOM_STANDARDS = {};
 var ROOM_EQUIPMENT_PRESETS = {};
+var roomSystemDrafts = {};
 var _DUCT_WIDTHS  = [150,200,250,300,350,400,450,500,600,700,800,900,1000,1100,1200];
 var _DUCT_HEIGHTS = [100,150,200,250,300,350,400,450,500,600,700,800];
 
@@ -57,6 +58,25 @@ function loadAppData(data){
   buildDuctStd();
 }
 
+function loadMixedSystems(){
+  try{
+    var raw = localStorage.getItem(MIXED_SYSTEMS_KEY);
+    var parsed = raw ? JSON.parse(raw) : [];
+    var migrated = false;
+    if(Array.isArray(parsed) && parsed.length && qlines.length === 1){
+      var line = ensureQuoteLine(0);
+      if(!Array.isArray(line.systems) || !line.systems.length){
+        line.systems = parsed.map(normalizeQuoteSystem);
+        migrated = true;
+      }
+    }
+    if(migrated){
+      localStorage.removeItem(MIXED_SYSTEMS_KEY);
+      try{ AppStorage.saveHistory(hist, qlines); }catch(err){}
+    }
+  }catch(e){}
+}
+
 function initApp(){
   // Restore state via AppStorage
   try {
@@ -67,6 +87,7 @@ function initApp(){
     hist = [];
     qlines = [];
   }
+  loadMixedSystems();
 
   // Restore quote settings
   try{
@@ -215,6 +236,8 @@ var INSULATION_TYPES = {
   medium:{ar:'عزل متوسط',en:'Medium insulation',multiplier:1.00},
   none:{ar:'بدون عزل',en:'No insulation',multiplier:1.15}
 };
+var MIXED_SYSTEMS_KEY = 'acp_mixed_systems';
+var MIXED_SYSTEM_TYPES = ['split','floor','ducted','cassette','package','vrf','chiller_air','chiller_water','fcu','ahu','window'];
 var OCCUPANCY_TYPES = {
   normal:{ar:'عادي',en:'Normal',density:1.2},
   medium:{ar:'متوسط',en:'Medium',density:1.0},
@@ -279,9 +302,19 @@ function toast(msg){
   },2600);
 }
 function save(){
+  syncAllRoomSystemStates();
   try{
     AppStorage.saveHistory(hist, qlines);
   }catch(e){}
+}
+function persistQuoteState(){
+  save();
+}
+function renderTechReport(){
+  renderQuote();
+}
+function renderQuotation(){
+  renderQuote();
 }
 function rLabel(r){ return lang==='ar'?r.ar:r.en; }
 
@@ -474,7 +507,30 @@ Object.assign(T.ar,{
   binsulation:'نوع العزل',
   binsulationm:'معامل العزل',
   bpeoplecount:'عدد الأشخاص',
-  healthcaremode:'وضع صحي (ASHRAE)'
+  healthcaremode:'وضع صحي (ASHRAE)',
+  mixedsystems:'الأنظمة المقترحة لهذه الغرفة',
+  mixedadd:'إضافة وحدة',
+  mixedtype:'نوع النظام',
+  mixedcapacity:'السعة',
+  mixedqty:'عدد الوحدات',
+  mixedunitprice:'سعر الوحدة',
+  mixedlinetotal:'إجمالي السطر',
+  mixedtotalcapacity:'إجمالي السعة',
+  mixedrequiredcapacity:'السعة المطلوبة',
+  mixeddifference:'الفرق',
+  mixedremove:'حذف',
+  mixedclear:'مسح الأنظمة',
+  mixedempty:'لا توجد أنظمة مضافة حتى الآن',
+  mixedselectedtotal:'إجمالي السعة المختارة',
+  mixedmatched:'مطابقة',
+  mixedundersized:'الأنظمة المختارة أقل من الحمل المطلوب',
+  mixedoversized:'الأنظمة المختارة أعلى من الحمل المطلوب',
+  smartsuggestions:'الاقتراحات الذكية',
+  suggestionapply:'تطبيق الاقتراح',
+  suggestionstatus:'الحالة',
+  suggestiontotal:'إجمالي السعة',
+  suggestiondifference:'الفرق',
+  suggestionempty:'لا توجد اقتراحات مناسبة لهذه الغرفة حاليًا'
 });
 Object.assign(T.en,{
   settingssec:'Settings',
@@ -558,9 +614,646 @@ Object.assign(T.en,{
   binsulation:'Insulation Type',
   binsulationm:'Insulation Multiplier',
   bpeoplecount:'People Count',
-  healthcaremode:'Healthcare Mode (ASHRAE)'
+  healthcaremode:'Healthcare Mode (ASHRAE)',
+  mixedsystems:'Selected HVAC Systems',
+  mixedadd:'Add Unit',
+  mixedtype:'System Type',
+  mixedcapacity:'Capacity',
+  mixedqty:'Unit Qty',
+  mixedunitprice:'Unit Price',
+  mixedlinetotal:'Line Total',
+  mixedtotalcapacity:'Total Capacity',
+  mixedrequiredcapacity:'Required Capacity',
+  mixeddifference:'Difference',
+  mixedremove:'Remove',
+  mixedclear:'Clear Systems',
+  mixedempty:'No systems added yet',
+  mixedselectedtotal:'Total Selected Capacity',
+  mixedmatched:'Capacity matched',
+  mixedundersized:'Selected systems are undersized',
+  mixedoversized:'Selected systems are oversized',
+  smartsuggestions:'Smart Unit Suggestions',
+  suggestionapply:'Apply Suggestion',
+  suggestionstatus:'Status',
+  suggestiontotal:'Total Capacity',
+  suggestiondifference:'Difference',
+  suggestionempty:'No suitable suggestions available for this room yet'
 });
 function t(k){ return T[lang][k]||k; }
+
+function createQuoteSystemId(){
+  return 'sys_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+}
+function toSystemBtu(value){
+  return parseInt(String(value == null ? '' : value).replace(/[^0-9.-]/g,''), 10) || 0;
+}
+function getAllowedSystemType(unitType){
+  return MIXED_SYSTEM_TYPES.indexOf(unitType) >= 0 ? unitType : 'split';
+}
+function getDefaultSystemCapacity(unitType){
+  var catalog = getCatalog(getAllowedSystemType(unitType));
+  return catalog && catalog.length ? (parseInt(catalog[0].btu, 10) || 0) : 0;
+}
+function normalizeQuoteSystem(item){
+  var row = item && typeof item === 'object' ? item : {};
+  var unitType = getAllowedSystemType(row.unitType);
+  var catalog = getCatalog(unitType);
+  var validBtus = catalog.map(function(entry){ return toSystemBtu(entry.btu); });
+  var selectedBtu = toSystemBtu(row.selectedBtu);
+  if(!selectedBtu || validBtus.indexOf(selectedBtu) < 0){
+    selectedBtu = getDefaultSystemCapacity(unitType);
+  }
+  return {
+    id: row.id || createQuoteSystemId(),
+    unitType: unitType,
+    selectedBtu: selectedBtu,
+    qty: Math.max(1, parseInt(row.qty, 10) || 1)
+  };
+}
+function ensureRoomSystems(i){
+  var line = ensureQuoteLine(i);
+  if(!Array.isArray(line.systems)) line.systems = [];
+  var used = {};
+  line.systems = line.systems.map(function(system){
+    var normalized = normalizeQuoteSystem(system);
+    if(!normalized.id || used[normalized.id]){
+      normalized.id = createQuoteSystemId();
+    }
+    used[normalized.id] = true;
+    return normalized;
+  });
+  return line.systems;
+}
+function getQuoteSystems(i){
+  var line = ensureQuoteLine(i);
+  line.systems = ensureRoomSystems(i);
+  if(!line.systemPrices || typeof line.systemPrices !== 'object') line.systemPrices = {};
+  if(!line.systemPricing || typeof line.systemPricing !== 'object') line.systemPricing = line.systemPrices;
+  return line.systems;
+}
+function getRoomSystemPricingMap(i){
+  var line = ensureQuoteLine(i);
+  if(!line.systemPrices || typeof line.systemPrices !== 'object') line.systemPrices = {};
+  if(line.systemPricing && typeof line.systemPricing === 'object'){
+    Object.keys(line.systemPricing).forEach(function(key){
+      if(line.systemPrices[key] === undefined) line.systemPrices[key] = line.systemPricing[key];
+    });
+  }
+  line.systemPricing = line.systemPrices;
+  return line.systemPrices;
+}
+function getRoomSystemUnitPrice(i, systemId){
+  var pricing = getRoomSystemPricingMap(i);
+  var entry = pricing[systemId];
+  var raw = (entry && typeof entry === 'object') ? entry.unitPrice : entry;
+  return Math.max(0, parseFloat(raw) || 0);
+}
+function getRoomSystemDraft(i){
+  if(!roomSystemDrafts[i]){
+    roomSystemDrafts[i] = {
+      unitType:'split',
+      selectedBtu:getDefaultSystemCapacity('split'),
+      qty:1
+    };
+  }
+  var draft = roomSystemDrafts[i];
+  draft.unitType = getAllowedSystemType(draft.unitType);
+  var draftCatalog = getCatalog(draft.unitType);
+  var validBtus = draftCatalog.map(function(entry){ return parseInt(entry.btu, 10) || 0; });
+  var draftBtu = parseInt(draft.selectedBtu, 10) || 0;
+  if(!draftBtu || validBtus.indexOf(draftBtu) < 0){
+    draft.selectedBtu = getDefaultSystemCapacity(draft.unitType);
+  }
+  draft.qty = Math.max(1, parseInt(draft.qty, 10) || 1);
+  return draft;
+}
+function updateRoomSystemDraft(i, field, value){
+  var draft = getRoomSystemDraft(i);
+  if(field === 'unitType'){
+    draft.unitType = getAllowedSystemType(value);
+    draft.selectedBtu = getDefaultSystemCapacity(draft.unitType);
+  } else if(field === 'selectedBtu'){
+    draft.selectedBtu = parseInt(value, 10) || getDefaultSystemCapacity(draft.unitType);
+  } else if(field === 'qty'){
+    draft.qty = Math.max(1, parseInt(value, 10) || 1);
+  }
+  renderQuote();
+}
+function getQuoteSystemIndex(i, systemId){
+  var systems = ensureRoomSystems(i);
+  for(var si=0;si<systems.length;si++){
+    if(systems[si] && systems[si].id === systemId) return si;
+  }
+  return -1;
+}
+function getQuoteSystemLineTotal(i, system){
+  if(!system) return 0;
+  return Math.max(1, parseInt(system.qty, 10) || 1) * getRoomSystemUnitPrice(i, system.id);
+}
+function getRoomSystemsSelectedCapacity(i){
+  return ensureRoomSystems(i).reduce(function(sum, system){
+    return sum + (toSystemBtu(system.selectedBtu) * Math.max(1, parseInt(system.qty, 10) || 1));
+  }, 0);
+}
+function getRoomSystemsSubtotal(i){
+  var subtotal = 0;
+  getQuoteSystems(i).forEach(function(system){
+    subtotal += getQuoteSystemLineTotal(i, system);
+  });
+  return subtotal;
+}
+function getRoomSystemsQty(i){
+  var qty = 0;
+  getQuoteSystems(i).forEach(function(system){
+    qty += Math.max(1, parseInt(system.qty, 10) || 1);
+  });
+  return qty;
+}
+function hasRoomSystems(i){
+  return getQuoteSystems(i).length > 0;
+}
+function getRoomRequiredBtu(i){
+  var room = hist[i] || {};
+  return parseInt(room.finalBtu || room.requiredBtu || room.btu, 10) || 0;
+}
+function getRoomQuoteSubtotal(i){
+  return hasRoomSystems(i) ? getRoomSystemsSubtotal(i) : (getQty(i) * getUP(i));
+}
+function getRoomQuoteTotalQty(i){
+  return hasRoomSystems(i) ? getRoomSystemsQty(i) : getQty(i);
+}
+function getRoomModeQuoteTotals(){
+  var totalQty = 0, subtotal = 0;
+  syncAllRoomSystemStates();
+  for(var i=0;i<hist.length;i++){
+    totalQty += getRoomQuoteTotalQty(i);
+    subtotal += getRoomQuoteSubtotal(i);
+  }
+  return { totalQty: totalQty, subtotal: subtotal };
+}
+function getCapacityStatus(requiredBtu, selectedCapacityBtu){
+  requiredBtu = Math.max(0, parseInt(requiredBtu, 10) || 0);
+  selectedCapacityBtu = Math.max(0, parseInt(selectedCapacityBtu, 10) || 0);
+  if(selectedCapacityBtu <= 0){
+    return {
+      key:'no_system_selected',
+      delta:0,
+      deltaText:'0.0%',
+      label:lang==='ar' ? 'لم يتم اختيار وحدات تكييف بعد' : 'No HVAC systems selected yet',
+      css:'pending'
+    };
+  }
+  if(requiredBtu <= 0){
+    return {
+      key:'matched',
+      delta:0,
+      deltaText:'0.0%',
+      label:lang==='ar' ? 'السعة المختارة مناسبة' : 'Selected capacity is suitable',
+      css:'matched'
+    };
+  }
+  var raw = ((selectedCapacityBtu - requiredBtu) / requiredBtu) * 100;
+  var rounded = Math.round(raw * 10) / 10;
+  var deltaText = (rounded >= 0 ? '+' : '') + rounded.toFixed(1) + '%';
+  if(raw < 0){
+    return {
+      key:'undersized',
+      delta:rounded,
+      deltaText:deltaText,
+      label:lang==='ar' ? 'السعة المختارة أقل من المطلوب' : 'Selected capacity is below required load',
+      css:'deficit-mild'
+    };
+  }
+  if(selectedCapacityBtu <= requiredBtu * 1.10){
+    return {
+      key:'matched',
+      delta:rounded,
+      deltaText:deltaText,
+      label:lang==='ar' ? 'السعة المختارة مناسبة' : 'Selected capacity is suitable',
+      css:'matched'
+    };
+  }
+  return {
+    key:'oversized',
+    delta:rounded,
+    deltaText:deltaText,
+    label:lang==='ar' ? 'السعة المختارة أعلى من المطلوب' : 'Selected capacity is higher than required load',
+    css:raw <= 25 ? 'oversize-ok' : 'oversize-high'
+  };
+}
+function getSystemCapacityStatus(requiredBtu, selectedCapacityBtu){
+  return getCapacityStatus(requiredBtu, selectedCapacityBtu);
+}
+function getRoomSystemState(i){
+  var requiredBtu = getRoomRequiredBtu(i);
+  var systems = ensureRoomSystems(i).map(normalizeQuoteSystem);
+  var selectedCapacityBtu = systems.reduce(function(sum, system){
+    return sum + (toSystemBtu(system.selectedBtu) * Math.max(1, parseInt(system.qty, 10) || 1));
+  }, 0);
+  var capacityDifference = selectedCapacityBtu - requiredBtu;
+  var status = getCapacityStatus(requiredBtu, selectedCapacityBtu);
+  return {
+    systems: systems,
+    requiredBtu: requiredBtu,
+    selectedCapacityBtu: selectedCapacityBtu,
+    capacityDifference: capacityDifference,
+    capacityStatus: status.key,
+    capacityStatusMeta: status
+  };
+}
+function syncRoomSystemState(i){
+  if(i < 0 || i >= hist.length) return null;
+  var line = ensureQuoteLine(i);
+  var state = getRoomSystemState(i);
+  line.systems = state.systems.map(normalizeQuoteSystem);
+  line.selectedCapacityBtu = state.selectedCapacityBtu;
+  line.capacityDifference = state.capacityDifference;
+  line.capacityStatus = state.capacityStatus;
+  hist[i].requiredBtu = state.requiredBtu;
+  hist[i].finalBtu = state.requiredBtu;
+  hist[i].systems = state.systems.map(normalizeQuoteSystem);
+  hist[i].selectedCapacityBtu = state.selectedCapacityBtu;
+  hist[i].capacityDifference = state.capacityDifference;
+  hist[i].capacityStatus = state.capacityStatus;
+  hist[i].capacityDeltaPct = state.capacityStatusMeta.delta;
+  return state;
+}
+function syncAllRoomSystemStates(){
+  for(var i=0;i<hist.length;i++) syncRoomSystemState(i);
+}
+function recalcRoomSystems(i){
+  var state = syncRoomSystemState(i);
+  persistQuoteState();
+  renderTechReport();
+  refreshGrandTotal();
+  return state;
+}
+function addRoomSystem(i){
+  ensureRoomSystems(i).push(normalizeQuoteSystem({
+    unitType:'split',
+    selectedBtu:getDefaultSystemCapacity('split'),
+    qty:1
+  }));
+  return recalcRoomSystems(i);
+}
+function updateRoomSystem(i, systemId, field, value){
+  var systems = ensureRoomSystems(i);
+  var system = null;
+  for(var si=0;si<systems.length;si++){
+    if(systems[si] && systems[si].id === systemId){
+      system = systems[si];
+      break;
+    }
+  }
+  if(!system) return null;
+  if(field === 'unitType'){
+    system.unitType = getAllowedSystemType(value);
+    system.selectedBtu = getDefaultSystemCapacity(system.unitType);
+  } else if(field === 'selectedBtu'){
+    system.selectedBtu = toSystemBtu(value) || getDefaultSystemCapacity(system.unitType);
+  } else if(field === 'qty'){
+    system.qty = Math.max(1, parseInt(value, 10) || 1);
+  }
+  return recalcRoomSystems(i);
+}
+function incrementSystemQty(i, systemId){
+  var idx = getQuoteSystemIndex(i, systemId);
+  if(idx < 0) return null;
+  var currentQty = Math.max(1, parseInt(getQuoteSystems(i)[idx].qty, 10) || 1);
+  return updateRoomSystem(i, systemId, 'qty', currentQty + 1);
+}
+function decrementSystemQty(i, systemId){
+  var idx = getQuoteSystemIndex(i, systemId);
+  if(idx < 0) return null;
+  var currentQty = Math.max(1, parseInt(getQuoteSystems(i)[idx].qty, 10) || 1);
+  return updateRoomSystem(i, systemId, 'qty', Math.max(1, currentQty - 1));
+}
+function removeRoomSystem(i, systemId){
+  var line = ensureQuoteLine(i);
+  if(!line || !Array.isArray(line.systems)) return null;
+  ensureRoomSystems(i);
+  if(!systemId) return null;
+  line.systems = line.systems.filter(function(system){
+    return system && system.id !== systemId;
+  });
+  if(line.systemPrices && line.systemPrices[systemId]){
+    delete line.systemPrices[systemId];
+  }
+  if(line.systemPricing && line.systemPricing[systemId]){
+    delete line.systemPricing[systemId];
+  }
+  recalcRoomSystems(i);
+  persistQuoteState();
+  renderTechReport();
+  renderQuotation();
+  refreshGrandTotal();
+  return line.systems;
+}
+function setRoomSystemUnitPrice(i, systemId, value){
+  if(getQuoteSystemIndex(i, systemId) < 0) return;
+  getRoomSystemPricingMap(i)[systemId] = { unitPrice: Math.max(0, parseFloat(value) || 0) };
+  save();
+  renderQuote();
+}
+function buildRoomSystemsSummaryText(i){
+  var systems = getQuoteSystems(i);
+  if(!systems.length) return '';
+  return systems.map(function(system){
+    return utLabel(system.unitType) + ' × ' + Math.max(1, parseInt(system.qty, 10) || 1);
+  }).join(' + ');
+}
+function renderQuoteSystemsPricing(i){
+  var systems = getQuoteSystems(i);
+  if(!systems.length) return '';
+  var cur = t('cur');
+  var rows = systems.map(function(system){
+    var qty = Math.max(1, parseInt(system.qty, 10) || 1);
+    var unitPrice = getRoomSystemUnitPrice(i, system.id);
+    var lineTotal = getQuoteSystemLineTotal(i, system);
+    return ''+
+      '<div class="mixed-system-row quote-system-row">'+
+        '<div class="mixed-system-grid">'+
+          '<div class="proj-input-group"><div class="qi-plbl">'+t('mixedtype')+'</div><div class="ninput" style="display:flex;align-items:center">'+utLabel(system.unitType)+'</div></div>'+
+          '<div class="proj-input-group"><div class="qi-plbl">'+t('mixedcapacity')+'</div><div class="ninput" style="display:flex;align-items:center">'+Number(system.selectedBtu||0).toLocaleString()+' BTU</div></div>'+
+          '<div class="proj-input-group"><div class="qi-plbl">'+t('mixedqty')+'</div><div class="ninput" style="display:flex;align-items:center">'+qty+'</div></div>'+
+          '<div class="proj-input-group"><div class="qi-plbl">'+t('mixedunitprice')+'</div><input class="minp" type="number" min="0" step="0.01" value="'+(unitPrice||'')+'" placeholder="0.00" onchange="setRoomSystemUnitPrice('+i+',\''+system.id+'\',this.value)"></div>'+
+        '</div>'+
+        '<div class="mixed-system-foot">'+
+          '<div class="mixed-system-total"><span class="mixed-system-total-label">'+t('mixedlinetotal')+'</span><span>'+cur+' '+money(lineTotal)+'</span></div>'+
+        '</div>'+
+      '</div>';
+  }).join('');
+  return ''+
+    '<div class="mixed-systems-card room-mixed-systems quote-mixed-systems">'+
+      '<div class="mixed-systems-head"><div class="mixed-systems-title">'+t('mixedsystems')+'</div></div>'+
+      '<div class="mixed-systems-list">'+rows+'</div>'+
+    '</div>';
+}
+function renderRoomSystemsEditor(i, requiredBtu){
+  var roomState = syncRoomSystemState(i) || getRoomSystemState(i);
+  var systems = roomState.systems;
+  var selectedCapacity = roomState.selectedCapacityBtu;
+  var status = roomState.capacityStatusMeta;
+  var requiredVal = roomState.requiredBtu;
+  var diffVal = roomState.capacityDifference;
+  var rowsHtml = systems.map(function(system){
+    var typeOpts = MIXED_SYSTEM_TYPES.map(function(key){
+      return '<option value="'+key+'"'+(system.unitType===key?' selected':'')+'>'+utLabel(key)+'</option>';
+    }).join('');
+    var capOpts = getCatalog(system.unitType).map(function(item){
+      var lbl = lang === 'ar' ? item.label.ar : item.label.en;
+      return '<option value="'+item.btu+'"'+((parseInt(system.selectedBtu,10)||0)===(parseInt(item.btu,10)||0)?' selected':'')+'>'+lbl+'</option>';
+    }).join('');
+    var totalSelected = (parseInt(system.selectedBtu,10)||0) * Math.max(1, parseInt(system.qty,10)||1);
+    var typeControl = '<div class="system-select-field"><select class="qi-utype-sel system-select-control" onchange="updateRoomSystem('+i+',\''+system.id+'\',\'unitType\',this.value)">'+typeOpts+'</select></div>';
+    return ''+
+      '<div class="mixed-system-row">'+
+        '<div class="mixed-system-grid">'+
+          '<div class="proj-input-group mixed-field mixed-field-type"><div class="qi-plbl">'+t('mixedtype')+'</div>'+typeControl+'</div>'+
+          '<div class="proj-input-group mixed-field mixed-field-qty"><div class="qi-plbl">'+t('mixedqty')+'</div><div class="mixed-qty-stepper"><button type="button" class="qbtn" onclick="decrementSystemQty('+i+',\''+system.id+'\')">-</button><input class="mixed-qty-value" type="text" readonly value="'+system.qty+'"><button type="button" class="qbtn" onclick="incrementSystemQty('+i+',\''+system.id+'\')">+</button></div></div>'+
+          '<div class="proj-input-group mixed-field mixed-field-capacity"><div class="qi-plbl">'+t('mixedcapacity')+'</div><div class="system-select-field"><select class="qi-cap-sel system-select-control" onchange="updateRoomSystem('+i+',\''+system.id+'\',\'selectedBtu\',this.value)">'+capOpts+'</select></div></div>'+
+          '<div class="proj-input-group mixed-field mixed-field-total"><div class="qi-plbl">'+t('mixedtotalcapacity')+'</div><div class="mixed-total-remove-row"><div class="ninput mixed-total-display" style="display:flex;align-items:center">'+Number(totalSelected).toLocaleString()+' BTU/h</div><button type="button" class="mixed-system-remove" onclick="removeRoomSystem('+i+',\''+system.id+'\')">'+t('mixedremove')+'</button></div></div>'+
+        '</div>'+
+      '</div>';
+  }).join('');
+  var diffLabel = diffVal < 0
+    ? (lang==='ar'
+        ? 'السعة المختارة أقل من المطلوب بمقدار '+Number(Math.abs(diffVal)||0).toLocaleString()+' BTU/h'
+        : 'Selected capacity is short by '+Number(Math.abs(diffVal)||0).toLocaleString()+' BTU/h')
+    : (lang==='ar'
+        ? 'السعة المختارة أعلى من المطلوب بمقدار '+Number(diffVal||0).toLocaleString()+' BTU/h'
+        : 'Selected capacity exceeds required load by '+Number(diffVal||0).toLocaleString()+' BTU/h');
+  var statusHtml = '<div class="qi-cap-status"><span class="qi-cap-badge '+status.css+'">'+status.label+(status.key!=='no_system_selected'?' '+status.deltaText:'')+'</span></div>';
+  var statusNoteHtml = '<div class="qty-auto-note" style="margin-top:6px">'+(status.key==='no_system_selected' ? status.label : diffLabel)+'</div>';
+  return ''+
+    '<div class="mixed-systems-card room-mixed-systems">'+
+      '<div class="mixed-systems-head">'+
+        '<div class="mixed-systems-title">'+t('mixedsystems')+'</div>'+
+      '</div>'+
+      '<div class="mixed-systems-list">'+
+        (rowsHtml || '<div class="mixed-systems-empty">'+t('mixedempty')+'</div>')+
+      '</div>'+
+      '<div class="mixed-systems-actions mixed-systems-add-row"><button type="button" class="mixed-systems-btn primary" onclick="addRoomSystem('+i+')" aria-label="'+t('mixedadd')+'">'+t('mixedadd')+'</button></div>'+
+      '<div class="mixed-system-foot" style="margin-top:10px">'+
+        '<div class="mixed-system-total"><span class="mixed-system-total-label">'+t('mixedrequiredcapacity')+'</span><span>'+Number(requiredVal||0).toLocaleString()+' BTU/h</span></div>'+
+        '<div class="mixed-system-total"><span class="mixed-system-total-label">'+t('mixedselectedtotal')+'</span><span>'+Number(selectedCapacity||0).toLocaleString()+' BTU/h</span></div>'+
+        '<div class="mixed-system-total"><span class="mixed-system-total-label">'+t('mixeddifference')+'</span><span>'+(diffVal>=0?'+':'')+Number(diffVal||0).toLocaleString()+' BTU/h</span></div>'+
+      '</div>'+
+      statusHtml+
+      statusNoteHtml+
+    '</div>';
+}
+function getSuggestionTypePriority(room){
+  var source = [
+    room && room.roomType,
+    room && room.category,
+    room && room.rid,
+    room && room.en,
+    room && room.ar
+  ].filter(Boolean).join(' ').toLowerCase();
+  if((room && room.sup) || source.indexOf('health') >= 0 || source.indexOf('icu') >= 0 || source.indexOf('operating') >= 0 || source.indexOf('patient') >= 0){
+    return ['ahu','fcu','chiller_air','chiller_water','ducted'];
+  }
+  if(source.indexOf('mosque') >= 0 || source.indexOf('retail') >= 0 || source.indexOf('hall') >= 0 || source.indexOf('shop') >= 0){
+    return ['package','ducted','cassette','vrf','split'];
+  }
+  if(source.indexOf('home') >= 0 || source.indexOf('bedroom') >= 0 || source.indexOf('living') >= 0 || source.indexOf('residential') >= 0){
+    return ['split','floor','ducted','cassette'];
+  }
+  if(source.indexOf('office') >= 0 || source.indexOf('class') >= 0 || source.indexOf('meeting') >= 0){
+    return ['split','ducted','cassette','vrf'];
+  }
+  return ['split','ducted','package','cassette','vrf','floor','ahu','fcu','chiller_air','chiller_water','window'];
+}
+function getSuggestionScore(requiredBtu, suggestion){
+  var status = getCapacityStatus(requiredBtu, suggestion.totalBtu);
+  var diff = Math.abs((suggestion.totalBtu || 0) - (requiredBtu || 0));
+  var oversizePct = requiredBtu > 0 ? Math.max(0, ((suggestion.totalBtu - requiredBtu) / requiredBtu) * 100) : 0;
+  var units = suggestion.systems.reduce(function(sum, sys){ return sum + (parseInt(sys.qty,10)||0); }, 0);
+  var penalty = 0;
+  if(status.key === 'undersized') penalty += 1000000;
+  if(status.key === 'oversized') penalty += oversizePct * 150;
+  penalty += diff;
+  penalty += units * (requiredBtu > 250000 ? 12 : 6);
+  penalty += (suggestion.systems.length - 1) * 200;
+  return penalty;
+}
+function createSmartSuggestion(requiredBtu, systems){
+  var normalized = (systems || []).map(function(sys){
+    return normalizeQuoteSystem({
+      unitType: sys.unitType,
+      selectedBtu: sys.selectedBtu,
+      qty: sys.qty
+    });
+  }).filter(function(sys){ return (parseInt(sys.selectedBtu,10)||0) > 0 && (parseInt(sys.qty,10)||0) > 0; });
+  if(!normalized.length) return null;
+  var totalBtu = normalized.reduce(function(sum, sys){
+    return sum + (toSystemBtu(sys.selectedBtu) * (parseInt(sys.qty,10)||0));
+  }, 0);
+  var status = getCapacityStatus(requiredBtu, totalBtu);
+  return {
+    systems: normalized,
+    totalBtu: totalBtu,
+    difference: totalBtu - requiredBtu,
+    status: status,
+    score: 0
+  };
+}
+function getBestSingleTypeSuggestion(requiredBtu, unitType){
+  var catalog = (getCatalog(unitType) || []).map(function(item){
+    return {
+      btu: toSystemBtu(item.btu),
+      label: lang === 'ar' ? item.label.ar : item.label.en
+    };
+  }).filter(function(item){ return item.btu > 0; });
+  if(!catalog.length || requiredBtu <= 0) return null;
+  var best = null;
+  catalog.forEach(function(item){
+    var qty = Math.max(1, Math.ceil(requiredBtu / item.btu));
+    var candidate = createSmartSuggestion(requiredBtu, [{ unitType: unitType, selectedBtu: item.btu, qty: qty }]);
+    if(!candidate) return;
+    candidate.score = getSuggestionScore(requiredBtu, candidate);
+    if(!best || candidate.score < best.score) best = candidate;
+  });
+  return best;
+}
+function getBestMixedSuggestion(requiredBtu, primaryType, secondaryType){
+  var primaryCatalog = (getCatalog(primaryType) || []).map(function(item){ return toSystemBtu(item.btu); }).filter(Boolean).sort(function(a,b){ return b-a; });
+  var secondaryCatalog = (getCatalog(secondaryType) || []).map(function(item){ return toSystemBtu(item.btu); }).filter(Boolean).sort(function(a,b){ return b-a; });
+  if(!primaryCatalog.length || !secondaryCatalog.length || requiredBtu <= 0) return null;
+  var best = null;
+  primaryCatalog.slice(0,4).forEach(function(primaryBtu){
+    var maxPrimaryQty = Math.max(1, Math.ceil(requiredBtu / primaryBtu));
+    for(var pq=1; pq<=Math.min(maxPrimaryQty, 4); pq++){
+      secondaryCatalog.slice(0,5).forEach(function(secondaryBtu){
+        var used = primaryBtu * pq;
+        var remaining = Math.max(0, requiredBtu - used);
+        var sq = remaining > 0 ? Math.ceil(remaining / secondaryBtu) : 1;
+        var candidate = createSmartSuggestion(requiredBtu, [
+          { unitType: primaryType, selectedBtu: primaryBtu, qty: pq },
+          { unitType: secondaryType, selectedBtu: secondaryBtu, qty: Math.max(1, sq) }
+        ]);
+        if(!candidate) return;
+        candidate.score = getSuggestionScore(requiredBtu, candidate) + 120;
+        if(!best || candidate.score < best.score) best = candidate;
+      });
+    }
+  });
+  return best;
+}
+function getSuggestionSignature(suggestion){
+  return suggestion.systems.map(function(sys){
+    return [sys.unitType, toSystemBtu(sys.selectedBtu), parseInt(sys.qty,10)||0].join(':');
+  }).join('|');
+}
+function getSmartUnitSuggestions(i){
+  var room = hist[i] || {};
+  var requiredBtu = getRoomRequiredBtu(i);
+  if(requiredBtu <= 0) return [];
+  var preferred = getSuggestionTypePriority(room);
+  var candidates = [];
+  preferred.slice(0,5).forEach(function(unitType){
+    var single = getBestSingleTypeSuggestion(requiredBtu, unitType);
+    if(single) candidates.push(single);
+  });
+  if(preferred.length >= 2){
+    var mixedA = getBestMixedSuggestion(requiredBtu, preferred[0], preferred[1]);
+    var mixedB = getBestMixedSuggestion(requiredBtu, preferred[0], preferred[Math.min(2, preferred.length - 1)]);
+    if(mixedA) candidates.push(mixedA);
+    if(mixedB) candidates.push(mixedB);
+  }
+  var seen = {};
+  candidates = candidates.filter(function(candidate){
+    var sig = getSuggestionSignature(candidate);
+    if(seen[sig]) return false;
+    seen[sig] = true;
+    candidate.signature = sig;
+    candidate.score = candidate.score || getSuggestionScore(requiredBtu, candidate);
+    return true;
+  }).sort(function(a,b){ return a.score - b.score; });
+  return candidates.slice(0,5);
+}
+function applySmartSuggestion(i, suggestionIndex){
+  var suggestions = getSmartUnitSuggestions(i);
+  var suggestion = suggestions[suggestionIndex];
+  if(!suggestion) return;
+  var line = ensureQuoteLine(i);
+  line.systems = suggestion.systems.map(function(sys){
+    return normalizeQuoteSystem({
+      id: createQuoteSystemId(),
+      unitType: sys.unitType,
+      selectedBtu: sys.selectedBtu,
+      qty: sys.qty
+    });
+  });
+  line.systemPrices = {};
+  line.systemPricing = line.systemPrices;
+  recalcRoomSystems(i);
+}
+function renderSmartSuggestions(i){
+  var roomState = getRoomSystemState(i);
+  var requiredBtu = roomState.requiredBtu;
+  if(requiredBtu <= 0) return '';
+  var suggestions = getSmartUnitSuggestions(i);
+  if(!suggestions.length){
+    return '<div class="mixed-systems-card smart-suggestions-card"><div class="mixed-systems-head"><div class="mixed-systems-title">'+t('smartsuggestions')+'</div></div><div class="mixed-systems-empty">'+t('suggestionempty')+'</div></div>';
+  }
+  var cards = suggestions.map(function(suggestion, idx){
+    var systemsHtml = suggestion.systems.map(function(sys){
+      return '<div class="smart-suggestion-line"><span>'+Math.max(1, parseInt(sys.qty,10)||1)+' × '+utLabel(sys.unitType)+'</span><span>'+Number(sys.selectedBtu||0).toLocaleString()+' BTU</span></div>';
+    }).join('');
+    var diff = suggestion.difference || 0;
+    return ''+
+      '<div class="smart-suggestion-item">'+
+        '<div class="smart-suggestion-lines">'+systemsHtml+'</div>'+
+        '<div class="smart-suggestion-meta">'+
+          '<div class="smart-suggestion-stat"><span class="mixed-system-total-label">'+t('suggestiontotal')+'</span><span>'+Number(suggestion.totalBtu||0).toLocaleString()+' BTU/h</span></div>'+
+          '<div class="smart-suggestion-stat"><span class="mixed-system-total-label">'+t('suggestiondifference')+'</span><span>'+(diff>=0?'+':'')+Number(diff||0).toLocaleString()+' BTU/h</span></div>'+
+          '<div class="smart-suggestion-stat"><span class="mixed-system-total-label">'+t('suggestionstatus')+'</span><span class="qi-cap-badge '+suggestion.status.css+'">'+suggestion.status.label+(suggestion.status.key!=='no_system_selected'?' '+suggestion.status.deltaText:'')+'</span></div>'+
+        '</div>'+
+        '<div class="smart-suggestion-actions"><button type="button" class="mixed-systems-btn primary" onclick="applySmartSuggestion('+i+','+idx+')">'+t('suggestionapply')+'</button></div>'+
+      '</div>';
+  }).join('');
+  return ''+
+    '<div class="mixed-systems-card smart-suggestions-card">'+
+      '<div class="mixed-systems-head"><div class="mixed-systems-title">'+t('smartsuggestions')+'</div></div>'+
+      '<div class="smart-suggestion-list">'+cards+'</div>'+
+    '</div>';
+}
+function buildRoomSystemsTableHtml(i, requiredBtu, isAr, cur){
+  var roomState = syncRoomSystemState(i) || getRoomSystemState(i);
+  var systems = roomState.systems;
+  if(!systems.length) return '';
+  var selectedCapacity = roomState.selectedCapacityBtu;
+  var status = roomState.capacityStatusMeta;
+  var requiredVal = roomState.requiredBtu;
+  var diffVal = roomState.capacityDifference;
+  var rows = systems.map(function(system){
+    var totalSelected = (parseInt(system.selectedBtu, 10) || 0) * Math.max(1, parseInt(system.qty, 10) || 1);
+    return '<tr>'+
+      '<td style="padding:6px 8px;border:1px solid #dbeafe;text-align:'+(isAr?'right':'left')+'">'+utLabel(system.unitType)+'</td>'+
+      '<td style="padding:6px 8px;border:1px solid #dbeafe;text-align:center;font-family:monospace">'+Number(system.selectedBtu||0).toLocaleString()+'</td>'+
+      '<td style="padding:6px 8px;border:1px solid #dbeafe;text-align:center;font-family:monospace">'+Math.max(1, parseInt(system.qty, 10) || 1)+'</td>'+
+      '<td style="padding:6px 8px;border:1px solid #dbeafe;text-align:center;font-family:monospace">'+Number(totalSelected).toLocaleString()+'</td>'+
+    '</tr>';
+  }).join('');
+  return ''+
+    '<div style="margin-top:10px;border:1px solid #dbeafe;border-radius:8px;padding:10px;background:#f8fbff">'+
+      '<div style="font-size:11px;font-weight:700;color:#0369a1;margin-bottom:8px">'+t('mixedsystems')+'</div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:8px"><thead><tr style="background:#eff6ff">'+
+        '<th style="padding:6px 8px;border:1px solid #dbeafe;text-align:'+(isAr?'right':'left')+'">'+t('mixedtype')+'</th>'+
+        '<th style="padding:6px 8px;border:1px solid #dbeafe;text-align:center">'+t('mixedcapacity')+'</th>'+
+        '<th style="padding:6px 8px;border:1px solid #dbeafe;text-align:center">'+t('mixedqty')+'</th>'+
+        '<th style="padding:6px 8px;border:1px solid #dbeafe;text-align:center">BTU Total</th>'+
+      '</tr></thead><tbody>'+rows+'</tbody></table>'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:10px;color:#334155;font-weight:700">'+
+        '<span>'+t('mixedrequiredcapacity')+': '+Number(requiredVal).toLocaleString()+' BTU/h</span>'+
+        '<span>'+t('mixedselectedtotal')+': '+Number(selectedCapacity).toLocaleString()+' BTU/h</span>'+
+        '<span>'+t('mixeddifference')+': '+(diffVal>=0?'+':'')+Number(diffVal).toLocaleString()+' BTU/h</span>'+
+      '</div>'+
+      '<div style="margin-top:8px;font-size:10px;font-weight:700;color:'+(status.key==='matched'?'#166534':status.key==='undersized'?'#dc2626':status.key==='oversized'?'#4f46e5':'#64748b')+'">'+status.label+(status.key!=='no_system_selected'?' '+status.deltaText:'')+'</div>'+
+    '</div>';
+}
 
 function applyDocumentLang(){
   document.documentElement.lang = lang;
@@ -1928,6 +2621,7 @@ function toggleCalcRoom(idx){
 function calcRoomDetailHtml(h, idx){
   var rc = Math.max(1,parseInt(h.roomCount,10)||1);
   var isHC = h.calcMode === 'hc';
+  var roomSystemState = idx >= 0 ? syncRoomSystemState(idx) : null;
   var dimsLine = '';
   if(h.dims && (h.dims.len || h.dims.width || h.dims.height)){
     dimsLine = '<div class="calc-room-detail-row calc-room-detail-row-wide calc-room-detail-dims"><span class="calc-room-detail-lbl">'+(lang==='ar'?'الأبعاد':'Dimensions')+'</span><span class="calc-room-detail-val">'+
@@ -1958,6 +2652,17 @@ function calcRoomDetailHtml(h, idx){
     if(h.freshAirMode) hcBits.push((lang==='ar'?'هواء نقي':'Fresh Air')+' '+(h.freshAirMode==='fresh100'?(lang==='ar'?'100%':'100%'):(lang==='ar'?'ASHRAE':'ASHRAE')));
     hcLine = '<div class="calc-room-detail-note">'+hcBits.join(' · ')+'</div>';
   }
+  var systemsSummaryLine = '';
+  if(roomSystemState && roomSystemState.systems.length){
+    var statusMeta = roomSystemState.capacityStatusMeta || { key:'no_system_selected', label:'', deltaText:'' };
+    var statusColor = statusMeta.key === 'matched' ? '#16a34a' : statusMeta.key === 'undersized' ? '#dc2626' : statusMeta.key === 'oversized' ? '#d97706' : '#64748b';
+    systemsSummaryLine =
+      '<div class="calc-room-detail-note" style="color:'+statusColor+'">'+
+      (lang==='ar'?'السعة المختارة':'Selected Capacity')+': '+Number(roomSystemState.selectedCapacityBtu||0).toLocaleString()+' BTU/h · '+
+      (lang==='ar'?'الفرق':'Difference')+': '+(roomSystemState.capacityDifference>=0?'+':'')+Number(roomSystemState.capacityDifference||0).toLocaleString()+' BTU/h · '+
+      (statusMeta.label || '')+' '+(statusMeta.deltaText || '')+
+      '</div>';
+  }
   return '<div class="calc-room-detail">'+
     '<div class="calc-room-detail-grid">'+
       '<div class="calc-room-detail-row calc-room-detail-row-wide calc-room-detail-type"><span class="calc-room-detail-lbl">'+(lang==='ar'?'نوع الغرفة':'Room Type')+'</span><span class="calc-room-detail-val">'+roomTypeLine+'</span></div>'+
@@ -1975,6 +2680,7 @@ function calcRoomDetailHtml(h, idx){
       (h.devSum?'<div class="calc-room-detail-row calc-room-detail-row-wide calc-room-detail-equipment"><span class="calc-room-detail-lbl">'+(lang==='ar'?'الأجهزة':'Equipment')+'</span><span class="calc-room-detail-val">'+h.devSum+'</span></div>':'')+
     '</div>'+
     hcLine+
+    systemsSummaryLine+
     '<div class="calc-room-detail-actions">'+
       '<button class="hact-btn calc-room-edit-btn" onclick="event.stopPropagation();editRec('+idx+')">✏️ '+(lang==='ar'?'تعديل':'Edit')+'</button>'+
       '<button class="hact-btn del-btn calc-room-del-btn" onclick="event.stopPropagation();delRec('+idx+')">🗑️ '+t('delroom')+'</button>'+
@@ -2028,6 +2734,7 @@ function showCalcQuoteAction(){
 }
 
 function renderHist(){
+  syncAllRoomSystemStates();
   var list=G('hist-list'); list.innerHTML='';
   G('hist-count').textContent=hist.length;
   if(!hist.length){
@@ -2211,7 +2918,7 @@ function getQtyAuto(i){ return !qlines[i] || qlines[i].qtyAuto !== false; }
 function getQtyAutoReason(i){ return (qlines[i]||{}).autoReason || ''; }
 function ensureQuoteLine(i){
   if(!qlines[i]){
-    qlines[i]={qty:1,up:0,unitType:'split',selectedBtu:0,qtyAuto:true,autoReason:''};
+    qlines[i]={qty:1,up:0,unitType:'split',selectedBtu:0,qtyAuto:true,autoReason:'',systems:[],systemPrices:{},systemPricing:{}};
   } else {
     if(qlines[i].qtyAuto === undefined) qlines[i].qtyAuto = true;
     if(qlines[i].autoReason === undefined) qlines[i].autoReason = '';
@@ -2219,6 +2926,19 @@ function ensureQuoteLine(i){
     if(qlines[i].selectedBtu === undefined) qlines[i].selectedBtu = 0;
     if(qlines[i].up === undefined) qlines[i].up = 0;
     if(qlines[i].qty === undefined) qlines[i].qty = 1;
+    if(!Array.isArray(qlines[i].systems)) qlines[i].systems = [];
+    if(!qlines[i].systemPrices || typeof qlines[i].systemPrices !== 'object') qlines[i].systemPrices = {};
+    if(qlines[i].systemPricing && typeof qlines[i].systemPricing === 'object'){
+      Object.keys(qlines[i].systemPricing).forEach(function(key){
+        if(qlines[i].systemPrices[key] === undefined) qlines[i].systemPrices[key] = qlines[i].systemPricing[key];
+      });
+    }
+    qlines[i].systems.forEach(function(system){
+      if(system && system.id && qlines[i].systemPrices[system.id] === undefined && system.unitPrice !== undefined){
+        qlines[i].systemPrices[system.id] = { unitPrice: Math.max(0, parseFloat(system.unitPrice) || 0) };
+      }
+    });
+    qlines[i].systemPricing = qlines[i].systemPrices;
   }
   return qlines[i];
 }
@@ -2241,6 +2961,7 @@ function getCatalogMaxBtu(utKey){
 }
 function getProjectReferenceRoomLoad(){
   var maxBtu=0, maxCfm=0;
+  syncAllRoomSystemStates();
   for(var i=0;i<hist.length;i++){
     maxBtu=Math.max(maxBtu, parseInt((hist[i]||{}).btu)||0);
     maxCfm=Math.max(maxCfm, parseInt((hist[i]||{}).cfm)||0);
@@ -2463,7 +3184,12 @@ function renderQuote(){
       var em2=document.createElement('div'); em2.className='qi-empty'; em2.textContent=t('qempty');
       quoteView.appendChild(em2);
     }
-    G('qt-total-qty').textContent='0'; G('qt-grand').textContent='0.00'; return;
+    refreshGrandTotal();
+    if (window.AppPlan && typeof window.AppPlan.syncLockedUI === 'function') {
+      window.AppPlan.syncLockedUI(list || document);
+      if (quoteView) window.AppPlan.syncLockedUI(quoteView);
+    }
+    return;
   }
   if(quoteMode==='proj' && quoteView){
     var projReqBtu = getProjTotalBtu();
@@ -2482,7 +3208,9 @@ function renderQuote(){
   }
   hist.forEach(function(h,i){
     ensureQuoteLine(i);
-    if(getQtyAuto(i)) syncQuoteLineRecommendation(i,{keepSelectedCapacity:true});
+    var roomSystemState = getRoomSystemState(i);
+    var hasMixedSystems = roomSystemState.systems.length > 0;
+    if(getQtyAuto(i) && !hasMixedSystems) syncQuoteLineRecommendation(i,{keepSelectedCapacity:true});
     var qty=getQty(i), roomCount=getRecordRoomCount(i), up=getUP(i), lt=qty*up;
     var _rn=lang==='ar'?(h.ar||h.en):(h.en||h.ar);
     var name=_rn.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}]/gu,'').trim();
@@ -2555,9 +3283,13 @@ function renderQuote(){
         : getQtyAutoReason(i))+'</div>'+
       '</div>';
     var capHtml = '';
+    roomSystemState = syncRoomSystemState(i) || roomSystemState;
+    var roomSystemsSelected = roomSystemState.selectedCapacityBtu;
+    var roomSystemsSubtotal = getRoomSystemsSubtotal(i);
+    var roomQuoteSystemsHtml = renderQuoteSystemsPricing(i);
     // In bundle mode: per-room warnings are suppressed (project-level shown separately)
     var reqCompareBtu = getQuoteRequiredBtu(i, curUT);
-    var effCap = _bundleLocked ? reqCompareBtu : selBtu * qty; // neutralise per-room warnings in bundle mode
+    var effCap = _bundleLocked ? reqCompareBtu : (roomSystemsSelected > 0 ? roomSystemsSelected : (selBtu * qty)); // neutralise per-room warnings in bundle mode
     // Delta% = ((selBtu*qty - reqBtu) / reqBtu) * 100 — TRUE percentage
     var warnHtml = '';
     var capBadge = '';
@@ -2601,7 +3333,9 @@ function renderQuote(){
         capBadge = '<span class="qi-cap-badge oversize-high">'+(lang==='ar'?'سعة عالية':'High oversize')+' '+pctStr+'</span>';
       }
     }
-    if(!_bundleLocked && capBadge) capHtml = '<div class="qi-cap-status">'+capBadge+'</div>';
+    if(!_bundleLocked && capBadge && !hasMixedSystems) capHtml = '<div class="qi-cap-status">'+capBadge+'</div>';
+    var roomSystemsHtml = renderRoomSystemsEditor(i, parseInt(h.btu)||0);
+    var smartSuggestionsHtml = renderSmartSuggestions(i);
 
     // Duct sizing for this room (if ducted) — Q only, no load change
     var roomDuctHtml = '';
@@ -2690,7 +3424,7 @@ function renderQuote(){
     }
 
     item.innerHTML=
-      '<div class="qi-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+utHtml+_lockNote+
+      '<div class="qi-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+_lockNote+
       '<div class="qi-body">'+
         '<div class="qi-tech">'+
           '<div class="qi-stat"><div class="qi-slbl">m³</div><div class="qi-sval">'+h.vol+'</div></div>'+
@@ -2702,35 +3436,58 @@ function renderQuote(){
           '<div class="qi-stat"><div class="qi-slbl">Mkt BTU</div><div class="qi-sval">'+Number(h.mkt).toLocaleString()+'</div></div>'+
           (h.devBtu>0?'<div class="qi-stat"><div class="qi-slbl">Dev</div><div class="qi-sval cam">'+Number(h.devBtu).toLocaleString()+'</div></div>':'')+
         '</div>'+
-        devLine+hcLine+capHtml+(_bundleLocked?'':warnHtml)+roomDuctHtml+
+        devLine+hcLine+capHtml+((_bundleLocked || hasMixedSystems)?'':warnHtml)+roomSystemsHtml+smartSuggestionsHtml+roomDuctHtml+
       '</div>';
     if(list) list.appendChild(item);
     if(quoteView && quoteMode!=='proj'){
       var ro=document.createElement('div');
       ro.className='quote-readonly-card';
-      ro.innerHTML=
-        '<div class="quote-readonly-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+
-        '<div class="quote-readonly-grid">'+
-          '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'نوع الوحدة':'Unit Type')+'</div><div class="quote-readonly-value">'+utLabel(curUT)+'</div></div>'+
-          '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'سعة الوحدة':'Unit Capacity')+'</div><div class="quote-readonly-value">'+Number(selBtu||0).toLocaleString()+' BTU</div></div>'+
-          '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'عدد الوحدات':'Unit Count')+'</div><div class="quote-readonly-value">'+qty+'</div></div>'+
-          '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'عدد الغرف':'Room Count')+'</div><div class="quote-readonly-value">'+roomCount+'</div></div>'+
-        '</div>'+
-        '<div class="qi-price-row qi-price-row-simple quote-price-row">'+
-          '<div>'+
-            '<div class="qi-plbl">'+(lang==='ar'?'سعر الوحدة':'Unit Price')+'</div>'+
-            '<input class="minp" type="number" min="0" step="0.01" value="'+(up||'')+'" placeholder="0.00" onchange="setUp('+i+',this.value)">'+
+      if(hasMixedSystems){
+        ro.innerHTML=
+          '<div class="quote-readonly-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+
+          '<div class="quote-readonly-grid">'+
+            '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'عدد الغرف':'Room Count')+'</div><div class="quote-readonly-value">'+roomCount+'</div></div>'+
+            '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'الحمل المطلوب':'Required Load')+'</div><div class="quote-readonly-value">'+Number(getRoomRequiredBtu(i)||0).toLocaleString()+' BTU/h</div></div>'+
+            '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'السعة المختارة':'Selected Capacity')+'</div><div class="quote-readonly-value">'+Number(roomSystemsSelected||0).toLocaleString()+' BTU/h</div></div>'+
+            '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'عدد الوحدات':'Unit Qty')+'</div><div class="quote-readonly-value">'+getRoomQuoteTotalQty(i)+'</div></div>'+
           '</div>'+
-          '<div class="qi-save-box">'+
-            '<div class="qi-plbl">'+t('qsave')+'</div>'+
-            getQuotationSaveButtonHtml('quote-inline-save-btn-row')+
+          roomQuoteSystemsHtml+
+          '<div class="qi-price-row qi-price-row-simple quote-price-row">'+
+            '<div class="qi-save-box">'+
+              '<div class="qi-plbl">'+t('qsave')+'</div>'+
+              getQuotationSaveButtonHtml('quote-inline-save-btn-row')+
+            '</div>'+
+            '<div class="qi-lt-box">'+
+              '<div class="qi-lt-lbl">'+(lang==='ar'?'الإجمالي':'Total')+'</div>'+
+              '<div class="qi-lt-val" id="qlt-'+i+'">'+money(getRoomQuoteSubtotal(i))+'</div>'+
+            '</div>'+
           '</div>'+
-          '<div class="qi-lt-box">'+
-            '<div class="qi-lt-lbl">'+(lang==='ar'?'الإجمالي':'Total')+'</div>'+
-            '<div class="qi-lt-val" id="qlt-'+i+'">'+money(lt)+'</div>'+
+          '<div class="quote-readonly-note">'+(lang==='ar'?'تظهر الأنظمة المختارة من التقرير الفني هنا للتسعير فقط.':'Selected systems from the technical report appear here for pricing only.')+'</div>';
+      } else {
+        ro.innerHTML=
+          '<div class="quote-readonly-head"><span class="qi-num">#'+(i+1)+'</span><span class="qi-name">'+name+'</span></div>'+
+          '<div class="quote-readonly-grid">'+
+            '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'نوع الوحدة':'Unit Type')+'</div><div class="quote-readonly-value">'+utLabel(curUT)+'</div></div>'+
+            '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'سعة الوحدة':'Unit Capacity')+'</div><div class="quote-readonly-value">'+Number(selBtu||0).toLocaleString()+' BTU</div></div>'+
+            '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'عدد الوحدات':'Unit Count')+'</div><div class="quote-readonly-value">'+qty+'</div></div>'+
+            '<div class="quote-readonly-stat"><div class="quote-readonly-label">'+(lang==='ar'?'عدد الغرف':'Room Count')+'</div><div class="quote-readonly-value">'+roomCount+'</div></div>'+
           '</div>'+
-        '</div>'+
-        '<div class="quote-readonly-note">'+(getQtyAutoReason(i)?getQtyAutoReason(i)+'<br>':'')+(lang==='ar'?'يتم تعديل نوع التكييف والسعة من التقرير الفني فقط.':'AC type and capacity are edited from the technical report only.')+'</div>';
+          '<div class="qi-price-row qi-price-row-simple quote-price-row">'+
+            '<div>'+
+              '<div class="qi-plbl">'+(lang==='ar'?'سعر الوحدة':'Unit Price')+'</div>'+
+              '<input class="minp" type="number" min="0" step="0.01" value="'+(up||'')+'" placeholder="0.00" onchange="setUp('+i+',this.value)">'+
+            '</div>'+
+            '<div class="qi-save-box">'+
+              '<div class="qi-plbl">'+t('qsave')+'</div>'+
+              getQuotationSaveButtonHtml('quote-inline-save-btn-row')+
+            '</div>'+
+            '<div class="qi-lt-box">'+
+              '<div class="qi-lt-lbl">'+(lang==='ar'?'الإجمالي':'Total')+'</div>'+
+              '<div class="qi-lt-val" id="qlt-'+i+'">'+money(getRoomQuoteSubtotal(i))+'</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="quote-readonly-note">'+(getQtyAutoReason(i)?getQtyAutoReason(i)+'<br>':'')+(lang==='ar'?'يتم تعديل الأنظمة والسعات من التقرير الفني فقط.':'Systems and capacities are edited from the technical report only.')+'</div>';
+      }
       quoteView.appendChild(ro);
     }
   });
@@ -2758,7 +3515,7 @@ function setQty(i,v){
   line.qty=Math.max(1,parseInt(v)||1);
   line.autoReason = buildAutoQtyReason('manual');
   save();
-  var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i));
+  var e=G('qlt-'+i); if(e) e.textContent=money(getRoomQuoteSubtotal(i));
   refreshGrandTotal();
   renderQuote();
 }
@@ -2779,11 +3536,11 @@ function setUnitType(i,v){
   save(); renderQuote();
 }
 
-function setUp(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].up=parseFloat(v)||0; save(); var e=G('qlt-'+i); if(e) e.textContent=money(getQty(i)*getUP(i)); refreshGrandTotal(); }
+function setUp(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].up=parseFloat(v)||0; save(); var e=G('qlt-'+i); if(e) e.textContent=money(getRoomQuoteSubtotal(i)); refreshGrandTotal(); }
 
 function refreshGrandTotal(){
-  var totalQty=0, subtotal=0;
-  for(var i=0;i<hist.length;i++){ totalQty+=getQty(i); subtotal+=getQty(i)*getUP(i); }
+  var roomTotals = getRoomModeQuoteTotals();
+  var totalQty = roomTotals.totalQty, subtotal = roomTotals.subtotal;
   var ip=parseInt((G('qs-inst')||{value:'10'}).value)||10;
   var instAmt=subtotal*ip/100;
   var vatBase=subtotal+instAmt;
@@ -3095,7 +3852,16 @@ function invCommon(){
   var dir  = isAr?'rtl':'ltr';
   var cur  = t('cur');
   var subtotal=0, totalQty=0;
-  for(var i=0;i<hist.length;i++){ totalQty+=getQty(i); subtotal+=getQty(i)*getUP(i); }
+  if(quoteMode==='proj'){
+    var pQty = Math.max(1, parseInt((G('proj-qty')||{value:'1'}).value)||1);
+    var pUP  = parseFloat((G('proj-up')||{value:'0'}).value)||0;
+    totalQty = pQty;
+    subtotal = pQty * pUP;
+  } else {
+    var roomTotals = getRoomModeQuoteTotals();
+    subtotal = roomTotals.subtotal;
+    totalQty = roomTotals.totalQty;
+  }
   var instAmt = subtotal*ip/100;
   var vatBase = subtotal+instAmt;
   var vatAmt  = vatOn ? vatBase*0.15 : 0;
@@ -3165,23 +3931,29 @@ function buildPage1(c){
     var name=_nm.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}]/gu,'').trim();
     var utKey=getUT(i); var utLbl=c.utLbls[utKey]||utKey;
     var selBtu=getSelBtu(i)||acRoundBtu(parseInt(h.btu)||0,'btu');
-    var selTR=(selBtu/12000).toFixed(1);
-    var lt=getQty(i)*getUP(i);
+    var roomSystemsSelected = getRoomSystemsSelectedCapacity(i);
+    var roomSystemsSummary = buildRoomSystemsSummaryText(i);
+    var effBtu = roomSystemsSelected > 0 ? roomSystemsSelected : (selBtu * getQty(i));
+    var selTR=(effBtu/12000).toFixed(1);
+    var lt=getRoomQuoteSubtotal(i);
     var bg=i%2===0?'#ffffff':'#f8fafc';
     rows+='<tr style="background:'+bg+'">'
       +'<td style="color:#64748b">'+(i+1)+'</td>'
-      +'<td class="td-name">'+name+'<div style="font-size:10px;color:#0ea5e9;margin-top:1px;font-weight:600">'+utLbl+'</div></td>'
+      +'<td class="td-name">'+name
+        +'<div style="font-size:10px;color:#0ea5e9;margin-top:1px;font-weight:600">'+utLbl+'</div>'
+        +(roomSystemsSummary?'<div style="font-size:10px;color:#475569;margin-top:4px;line-height:1.5">'+roomSystemsSummary+'</div>':'')
+      +'</td>'
       +'<td>'+h.vol+'</td>'
       +'<td>'+getRecordRoomCount(i)+'</td>'
-      +'<td>'+Number(selBtu).toLocaleString()+' BTU</td>'
+      +'<td>'+Number(effBtu).toLocaleString()+' BTU</td>'
       +'<td>'+selTR+' TR</td>'
-      +'<td>'+getQty(i)+'</td>'
+      +'<td>'+getRoomQuoteTotalQty(i)+'</td>'
       +'<td>'+c.cur+' '+money(getUP(i))+'</td>'
       +'<td style="color:#059669;font-weight:700">'+c.cur+' '+money(lt)+'</td>'
       +(function(){
         var _rb=parseInt(h.btu)||0;
-        var _sb=getSelBtu(i)||acRoundBtu(_rb,'btu');
-        var _ef=_sb*getQty(i);
+        var _sb=roomSystemsSelected>0 ? roomSystemsSelected : (getSelBtu(i)||acRoundBtu(_rb,'btu'));
+        var _ef=roomSystemsSelected>0 ? roomSystemsSelected : (_sb*getQty(i));
         var _raw=_rb>0?((_ef-_rb)/_rb*100):0;
         var _rnd=Math.round(_raw*10)/10;
         var _pct=(_rnd>=0?'+':'')+_rnd.toFixed(1)+'%';
@@ -3260,10 +4032,12 @@ function buildPage2(c){
     var name=_nm.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{2702}-\u{27B0}\u{24C2}-\u{1F251}]/gu,'').trim();
     var utKey=getUT(i); var utLbl=c.utLbls[utKey]||utKey;
     var reqBtu=parseInt(h.btu)||0;
+    var roomSystemsSelected = getRoomSystemsSelectedCapacity(i);
+    var roomSystemsTableHtml = buildRoomSystemsTableHtml(i, reqBtu, c.isAr, c.cur);
     // In project/bundle mode, per-room selBtu is irrelevant — use reqBtu to neutralise room warnings
     var _isBundleMode = (quoteMode==='proj') || bundleOn;
     var selBtu = _isBundleMode ? acRoundBtu(reqBtu,'btu') : (getSelBtu(i)||acRoundBtu(reqBtu,'btu'));
-    var effCap = _isBundleMode ? reqBtu : selBtu*getQty(i);
+    var effCap = _isBundleMode ? reqBtu : (roomSystemsSelected>0 ? roomSystemsSelected : selBtu*getQty(i));
     var marginPct=reqBtu>0?Math.round((effCap/reqBtu-1)*100):0;
     if(!_isBundleMode && reqBtu>0&&effCap<reqBtu){ anyUndersized=true; undersizedCount++; }
     var reqTR=(reqBtu/12000).toFixed(1), effTR=(effCap/12000).toFixed(1);
@@ -3460,9 +4234,11 @@ function buildPage2(c){
         +(c.isBundleProj?'':'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
         +'<span style="font-size:10px;color:#64748b;font-weight:600">'+(c.isAr?'الحالة':'Status')+':</span>'
         +warnHtml
-        +'<span style="font-size:10px;color:#94a3b8;margin-'+( c.isAr?'right':'left')+':auto">'+Number(selBtu).toLocaleString()+' BTU × '+getQty(i)+(getQty(i)>1?' = '+Number(effCap).toLocaleString()+' BTU/h':'')+' </span>'
+        +'<span style="font-size:10px;color:#94a3b8;margin-'+( c.isAr?'right':'left')+':auto">'+(roomSystemsSelected>0
+          ? (Number(roomSystemsSelected).toLocaleString()+' BTU/h')
+          : (Number(selBtu).toLocaleString()+' BTU × '+getQty(i)+(getQty(i)>1?' = '+Number(effCap).toLocaleString()+' BTU/h':'')))+' </span>'
         +'</div>')
-        +roomLogicHtml+hcHtml+devHtml+equipmentHtml+techDuctHtml
+        +roomLogicHtml+hcHtml+devHtml+equipmentHtml+roomSystemsTableHtml+techDuctHtml
       +'</div>'
     +'</div>';
   }
@@ -4631,7 +5407,9 @@ refreshGrandTotal = function(){
     totalQty = pQty;
     subtotal = pQty * pUP;
   } else {
-    for(var i=0;i<hist.length;i++){ totalQty+=getQty(i); subtotal+=getQty(i)*getUP(i); }
+    var roomTotals = getRoomModeQuoteTotals();
+    totalQty = roomTotals.totalQty;
+    subtotal = roomTotals.subtotal;
   }
   var ip=parseInt((G('qs-inst')||{value:'10'}).value)||10;
   var instAmt=subtotal*ip/100;
