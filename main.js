@@ -1,4 +1,4 @@
-// ── AirCalc Pro — main.js ────────────────────────────────────────────────
+﻿// ── AirCalc Pro — main.js ────────────────────────────────────────────────
 // Bootstrap entry point. Runs after DOM ready.
 // Phase 3: uses AppStorage directly instead of raw localStorage calls.
 
@@ -267,291 +267,348 @@
         css: raw <= 25 ? 'oversize-ok' : 'oversize-high'
       };
     }
-
-    function getAirflowStatus(requiredCfm, selectedCfm) {
-      requiredCfm = Math.max(0, parseInt(requiredCfm, 10) || 0);
-      selectedCfm = Math.max(0, parseInt(selectedCfm, 10) || 0);
-      if (selectedCfm <= 0) {
+    function getProjectCapacityStatus(requiredBtu, selectedCapacityBtu) {
+      requiredBtu = Math.max(0, parseInt(requiredBtu, 10) || 0);
+      selectedCapacityBtu = Math.max(0, parseInt(selectedCapacityBtu, 10) || 0);
+      var difference = selectedCapacityBtu - requiredBtu;
+      var percent = requiredBtu > 0 ? (difference / requiredBtu) * 100 : 0;
+      var percentRounded = Math.round(percent * 10) / 10;
+      var percentText = (percentRounded >= 0 ? '+' : '') + percentRounded.toFixed(1) + '%';
+      if (selectedCapacityBtu <= 0) {
         return {
           key: 'no_system_selected',
-          delta: 0,
-          deltaText: '',
+          difference: difference,
+          percent: percentRounded,
+          percentText: percentText,
           label: lang === 'ar' ? 'لم يتم اختيار وحدات تكييف بعد' : 'No HVAC systems selected yet',
-          css: 'deficit-mild'
+          css: 'pending'
         };
       }
-      if (requiredCfm <= 0) {
+      if (requiredBtu <= 0) {
         return {
           key: 'matched',
-          delta: 0,
-          deltaText: '',
-          label: lang === 'ar' ? 'تدفق الهواء المختار مناسب' : 'Selected airflow is suitable',
+          difference: difference,
+          percent: percentRounded,
+          percentText: percentText,
+          label: lang === 'ar' ? 'السعة المختارة مناسبة' : 'Selected capacity is suitable',
           css: 'matched'
         };
       }
-      var raw = ((selectedCfm - requiredCfm) / requiredCfm) * 100;
-      var rounded = Math.round(raw * 10) / 10;
-      var deltaText = (rounded >= 0 ? '+' : '') + rounded.toFixed(1) + '%';
-      if (selectedCfm < requiredCfm) {
+      if (selectedCapacityBtu < requiredBtu) {
         return {
           key: 'undersized',
-          delta: rounded,
-          deltaText: deltaText,
-          label: lang === 'ar' ? 'تدفق الهواء المختار أقل من المطلوب' : 'Selected airflow is below required airflow',
-          css: 'deficit-mild'
+          difference: difference,
+          percent: percentRounded,
+          percentText: percentText,
+          label: lang === 'ar' ? 'السعة المختارة أقل من المطلوب بنسبة ' + Math.abs(percentRounded).toFixed(1) + '%' : 'Selected capacity is ' + Math.abs(percentRounded).toFixed(1) + '% below required load',
+          css: percentRounded <= -15 ? 'deficit-severe' : 'deficit-mild'
         };
       }
-      if (selectedCfm <= requiredCfm * 1.10) {
+      if (selectedCapacityBtu <= requiredBtu * 1.10) {
         return {
           key: 'matched',
-          delta: rounded,
-          deltaText: deltaText,
-          label: lang === 'ar' ? 'تدفق الهواء المختار مناسب' : 'Selected airflow is suitable',
+          difference: difference,
+          percent: percentRounded,
+          percentText: percentText,
+          label: lang === 'ar' ? 'السعة المختارة مناسبة' : 'Selected capacity is suitable',
           css: 'matched'
         };
       }
       return {
         key: 'oversized',
-        delta: rounded,
-        deltaText: deltaText,
-        label: lang === 'ar' ? 'تدفق الهواء المختار أعلى من المطلوب' : 'Selected airflow is higher than required airflow',
-        css: raw <= 25 ? 'oversize-ok' : 'oversize-high'
-      };
-    }
+        difference: difference,
+        percent: percentRounded,
+        percentText: percentText,
+        label: lang === 'ar' ? 'السعة المختارة أعلى من المطلوب بنسبة ' + percentRounded.toFixed(1) + '%' : 'Selected capacity is ' + percentRounded.toFixed(1) + '% above required load',
+          css: 'oversize-high'
+        };
+      }
 
-    function getRoomSystemState(i) {
-      var room = hist[i] || {};
-      var requiredBtu = getRoomRequiredBtu(i);
-      var requiredCfm = getRoomRequiredCfm(i);
-      var systems = ensureRoomSystems(i).map(normalizeQuoteSystem);
-      var selectedCapacityBtu = systems.reduce(function(sum, system) {
-        var btu = typeof toSystemBtu === 'function' ? toSystemBtu(system.selectedBtu) : (parseInt(system.selectedBtu, 10) || 0);
-        return sum + (btu * Math.max(1, parseInt(system.qty, 10) || 1));
-      }, 0);
-      var selectedSystemCfm = systems.reduce(function(sum, system) {
-        return sum + (getUnitAirflowCfm(system) * Math.max(1, parseInt(system.qty, 10) || 1));
-      }, 0);
-      var capacityDifference = selectedCapacityBtu - requiredBtu;
-      var airflowDifference = selectedSystemCfm - requiredCfm;
-      var status = getCapacityStatus(requiredBtu, selectedCapacityBtu);
-      var isHealthcare = typeof isHealthcareRoom === 'function' ? isHealthcareRoom(room) : !!(room && room.mode === 'hc');
-      var airflowStatus = isHealthcare ? getAirflowStatus(requiredCfm, selectedSystemCfm) : null;
-      return {
-        systems: systems,
-        requiredBtu: requiredBtu,
-        requiredCfm: requiredCfm,
-        selectedCapacityBtu: selectedCapacityBtu,
-        selectedSystemCfm: selectedSystemCfm,
-        capacityDifference: capacityDifference,
-        airflowDifference: airflowDifference,
-        capacityStatus: status.key,
-        capacityStatusMeta: status,
-        airflowStatus: airflowStatus ? airflowStatus.key : '',
-        airflowStatusMeta: airflowStatus,
-        isHealthcare: isHealthcare,
-        pressureRequirement: room.pres || room.pressure || ''
-      };
-    }
+      function getAirflowStatus(requiredCfm, selectedCfm) {
+        requiredCfm = Math.max(0, parseInt(requiredCfm, 10) || 0);
+        selectedCfm = Math.max(0, parseInt(selectedCfm, 10) || 0);
+        if (selectedCfm <= 0) {
+          return {
+            key: 'no_system_selected',
+            delta: 0,
+            deltaText: '',
+            label: lang === 'ar' ? 'لم يتم اختيار وحدات تكييف بعد' : 'No HVAC systems selected yet',
+            css: 'deficit-mild'
+          };
+        }
+        if (requiredCfm <= 0) {
+          return {
+            key: 'matched',
+            delta: 0,
+            deltaText: '',
+            label: lang === 'ar' ? 'تدفق الهواء المختار مناسب' : 'Selected airflow is suitable',
+            css: 'matched'
+          };
+        }
+        var raw = ((selectedCfm - requiredCfm) / requiredCfm) * 100;
+        var rounded = Math.round(raw * 10) / 10;
+        var deltaText = (rounded >= 0 ? '+' : '') + rounded.toFixed(1) + '%';
+        if (selectedCfm < requiredCfm) {
+          return {
+            key: 'undersized',
+            delta: rounded,
+            deltaText: deltaText,
+            label: lang === 'ar' ? 'تدفق الهواء المختار أقل من المطلوب' : 'Selected airflow is below required airflow',
+            css: 'deficit-mild'
+          };
+        }
+        if (selectedCfm <= requiredCfm * 1.10) {
+          return {
+            key: 'matched',
+            delta: rounded,
+            deltaText: deltaText,
+            label: lang === 'ar' ? 'تدفق الهواء المختار مناسب' : 'Selected airflow is suitable',
+            css: 'matched'
+          };
+        }
+        return {
+          key: 'oversized',
+          delta: rounded,
+          deltaText: deltaText,
+          label: lang === 'ar' ? 'تدفق الهواء المختار أعلى من المطلوب' : 'Selected airflow is higher than required airflow',
+          css: raw <= 25 ? 'oversize-ok' : 'oversize-high'
+        };
+      }
 
-    function syncRoomSystemState(i) {
-      if (i < 0 || i >= hist.length) return null;
-      var line = ensureQuoteLine(i);
-      var state = getRoomSystemState(i);
-      line.systems = state.systems.map(normalizeQuoteSystem);
-      line.selectedCapacityBtu = state.selectedCapacityBtu;
-      line.capacityDifference = state.capacityDifference;
-      line.capacityStatus = state.capacityStatus;
-      line.requiredCfm = state.requiredCfm;
-      line.selectedSystemCfm = state.selectedSystemCfm;
-      line.airflowDifference = state.airflowDifference;
-      line.airflowStatus = state.airflowStatus;
-      hist[i].requiredBtu = state.requiredBtu;
-      hist[i].finalBtu = state.requiredBtu;
-      hist[i].systems = state.systems.map(normalizeQuoteSystem);
-      hist[i].selectedCapacityBtu = state.selectedCapacityBtu;
-      hist[i].capacityDifference = state.capacityDifference;
-      hist[i].capacityStatus = state.capacityStatus;
-      hist[i].capacityDeltaPct = state.capacityStatusMeta.delta;
-      hist[i].requiredCfm = state.requiredCfm;
-      hist[i].selectedSystemCfm = state.selectedSystemCfm;
-      hist[i].airflowDifference = state.airflowDifference;
-      hist[i].airflowStatus = state.airflowStatus;
-      return state;
-    }
+      function getRoomSystemState(i) {
+        var room = hist[i] || {};
+        var requiredBtu = getRoomRequiredBtu(i);
+        var requiredCfm = getRoomRequiredCfm(i);
+        var systems = ensureRoomSystems(i).map(normalizeQuoteSystem);
+        var selectedCapacityBtu = systems.reduce(function(sum, system) {
+          var btu = typeof toSystemBtu === 'function' ? toSystemBtu(system.selectedBtu) : (parseInt(system.selectedBtu, 10) || 0);
+          return sum + (btu * Math.max(1, parseInt(system.qty, 10) || 1));
+        }, 0);
+        var selectedSystemCfm = systems.reduce(function(sum, system) {
+          return sum + (getUnitAirflowCfm(system) * Math.max(1, parseInt(system.qty, 10) || 1));
+        }, 0);
+        var capacityDifference = selectedCapacityBtu - requiredBtu;
+        var airflowDifference = selectedSystemCfm - requiredCfm;
+        var status = getCapacityStatus(requiredBtu, selectedCapacityBtu);
+        var isHealthcare = typeof isHealthcareRoom === 'function' ? isHealthcareRoom(room) : !!(room && room.mode === 'hc');
+        var airflowStatus = isHealthcare ? getAirflowStatus(requiredCfm, selectedSystemCfm) : null;
+        return {
+          systems: systems,
+          requiredBtu: requiredBtu,
+          requiredCfm: requiredCfm,
+          selectedCapacityBtu: selectedCapacityBtu,
+          selectedSystemCfm: selectedSystemCfm,
+          capacityDifference: capacityDifference,
+          airflowDifference: airflowDifference,
+          capacityStatus: status.key,
+          capacityStatusMeta: status,
+          airflowStatus: airflowStatus ? airflowStatus.key : '',
+          airflowStatusMeta: airflowStatus,
+          isHealthcare: isHealthcare,
+          pressureRequirement: room.pres || room.pressure || ''
+        };
+      }
 
-    function syncAllRoomSystemStates() {
-      for (var i = 0; i < hist.length; i++) syncRoomSystemState(i);
-    }
+      function syncRoomSystemState(i) {
+        if (i < 0 || i >= hist.length) return null;
+        var line = ensureQuoteLine(i);
+        var state = getRoomSystemState(i);
+        line.systems = state.systems.map(normalizeQuoteSystem);
+        line.selectedCapacityBtu = state.selectedCapacityBtu;
+        line.capacityDifference = state.capacityDifference;
+        line.capacityStatus = state.capacityStatus;
+        line.requiredCfm = state.requiredCfm;
+        line.selectedSystemCfm = state.selectedSystemCfm;
+        line.airflowDifference = state.airflowDifference;
+        line.airflowStatus = state.airflowStatus;
+        hist[i].requiredBtu = state.requiredBtu;
+        hist[i].finalBtu = state.requiredBtu;
+        hist[i].systems = state.systems.map(normalizeQuoteSystem);
+        hist[i].selectedCapacityBtu = state.selectedCapacityBtu;
+        hist[i].capacityDifference = state.capacityDifference;
+        hist[i].capacityStatus = state.capacityStatus;
+        hist[i].capacityDeltaPct = state.capacityStatusMeta.delta;
+        hist[i].requiredCfm = state.requiredCfm;
+        hist[i].selectedSystemCfm = state.selectedSystemCfm;
+        hist[i].airflowDifference = state.airflowDifference;
+        hist[i].airflowStatus = state.airflowStatus;
+        return state;
+      }
 
-    function recalcRoomSystems(i) {
-      var state = syncRoomSystemState(i);
-      if (typeof persistQuoteState === 'function') persistQuoteState();
-      if (typeof renderTechReport === 'function') renderTechReport();
-      if (typeof renderQuotation === 'function') renderQuotation();
-      if (typeof updateDirectResults === 'function') updateDirectResults();
-      if (typeof refreshGrandTotal === 'function') refreshGrandTotal();
-      return state;
-    }
+      function syncAllRoomSystemStates() {
+        for (var i = 0; i < hist.length; i++) syncRoomSystemState(i);
+      }
 
-    function renderRoomSystemsEditor(i, requiredBtu) {
-      var roomState = syncRoomSystemState(i) || getRoomSystemState(i);
-      var systems = roomState.systems;
-      var selectedCapacity = roomState.selectedCapacityBtu;
-      var status = roomState.capacityStatusMeta;
-      var requiredVal = roomState.requiredBtu;
-      var diffVal = roomState.capacityDifference;
-      var rowsHtml = systems.map(function(system) {
-        var typeOpts = MIXED_SYSTEM_TYPES.map(function(key) {
-          return '<option value="' + key + '"' + (system.unitType === key ? ' selected' : '') + '>' + utLabel(key) + '</option>';
+      function recalcRoomSystems(i) {
+        var state = syncRoomSystemState(i);
+        if (typeof persistQuoteState === 'function') persistQuoteState();
+        if (typeof renderTechReport === 'function') renderTechReport();
+        if (typeof renderQuotation === 'function') renderQuotation();
+        if (typeof updateDirectResults === 'function') updateDirectResults();
+        if (typeof refreshGrandTotal === 'function') refreshGrandTotal();
+        return state;
+      }
+
+      function renderRoomSystemsEditor(i, requiredBtu) {
+        var roomState = syncRoomSystemState(i) || getRoomSystemState(i);
+        var systems = roomState.systems;
+        var selectedCapacity = roomState.selectedCapacityBtu;
+        var status = roomState.capacityStatusMeta;
+        var requiredVal = roomState.requiredBtu;
+        var diffVal = roomState.capacityDifference;
+        var rowsHtml = systems.map(function(system) {
+          var typeOpts = MIXED_SYSTEM_TYPES.map(function(key) {
+            return '<option value="' + key + '"' + (system.unitType === key ? ' selected' : '') + '>' + utLabel(key) + '</option>';
+          }).join('');
+          var capOpts = getCatalog(system.unitType).map(function(item) {
+            var lbl = lang === 'ar' ? item.label.ar : item.label.en;
+            return '<option value="' + item.btu + '"' + ((parseInt(system.selectedBtu, 10) || 0) === (parseInt(item.btu, 10) || 0) ? ' selected' : '') + '>' + lbl + '</option>';
+          }).join('');
+          var totalSelected = (parseInt(system.selectedBtu, 10) || 0) * Math.max(1, parseInt(system.qty, 10) || 1);
+          var typeControl = '<div class="system-select-field"><select class="qi-utype-sel system-select-control" onchange="updateRoomSystem(' + i + ',\'' + system.id + '\',\'unitType\',this.value)">' + typeOpts + '</select></div>';
+          return '' +
+            '<div class="mixed-system-row">' +
+              '<div class="mixed-system-grid">' +
+                '<div class="proj-input-group mixed-field mixed-field-type"><div class="qi-plbl">' + t('mixedtype') + '</div>' + typeControl + '</div>' +
+                '<div class="proj-input-group mixed-field mixed-field-qty"><div class="qi-plbl">' + t('mixedqty') + '</div><div class="mixed-qty-stepper"><button type="button" class="qbtn" onclick="decrementSystemQty(' + i + ',\'' + system.id + '\')">-</button><input class="mixed-qty-value" type="text" readonly value="' + system.qty + '"><button type="button" class="qbtn" onclick="incrementSystemQty(' + i + ',\'' + system.id + '\')">+</button></div></div>' +
+                '<div class="proj-input-group mixed-field mixed-field-capacity"><div class="qi-plbl">' + t('mixedcapacity') + '</div><div class="system-select-field"><select class="qi-cap-sel system-select-control" onchange="updateRoomSystem(' + i + ',\'' + system.id + '\',\'selectedBtu\',this.value)">' + capOpts + '</select></div></div>' +
+                '<div class="proj-input-group mixed-field mixed-field-total"><div class="qi-plbl">' + t('mixedtotalcapacity') + '</div><div class="mixed-total-remove-row"><div class="ninput mixed-total-display" style="display:flex;align-items:center">' + Number(totalSelected).toLocaleString() + ' BTU/h</div><button type="button" class="mixed-system-remove" onclick="removeRoomSystem(' + i + ',\'' + system.id + '\')">' + t('mixedremove') + '</button></div></div>' +
+              '</div>' +
+            '</div>';
         }).join('');
-        var capOpts = getCatalog(system.unitType).map(function(item) {
-          var lbl = lang === 'ar' ? item.label.ar : item.label.en;
-          return '<option value="' + item.btu + '"' + ((parseInt(system.selectedBtu, 10) || 0) === (parseInt(item.btu, 10) || 0) ? ' selected' : '') + '>' + lbl + '</option>';
-        }).join('');
-        var totalSelected = (parseInt(system.selectedBtu, 10) || 0) * Math.max(1, parseInt(system.qty, 10) || 1);
-        var typeControl = '<div class="system-select-field"><select class="qi-utype-sel system-select-control" onchange="updateRoomSystem(' + i + ',\'' + system.id + '\',\'unitType\',this.value)">' + typeOpts + '</select></div>';
-        return '' +
-          '<div class="mixed-system-row">' +
-            '<div class="mixed-system-grid">' +
-              '<div class="proj-input-group mixed-field mixed-field-type"><div class="qi-plbl">' + t('mixedtype') + '</div>' + typeControl + '</div>' +
-              '<div class="proj-input-group mixed-field mixed-field-qty"><div class="qi-plbl">' + t('mixedqty') + '</div><div class="mixed-qty-stepper"><button type="button" class="qbtn" onclick="decrementSystemQty(' + i + ',\'' + system.id + '\')">-</button><input class="mixed-qty-value" type="text" readonly value="' + system.qty + '"><button type="button" class="qbtn" onclick="incrementSystemQty(' + i + ',\'' + system.id + '\')">+</button></div></div>' +
-              '<div class="proj-input-group mixed-field mixed-field-capacity"><div class="qi-plbl">' + t('mixedcapacity') + '</div><div class="system-select-field"><select class="qi-cap-sel system-select-control" onchange="updateRoomSystem(' + i + ',\'' + system.id + '\',\'selectedBtu\',this.value)">' + capOpts + '</select></div></div>' +
-              '<div class="proj-input-group mixed-field mixed-field-total"><div class="qi-plbl">' + t('mixedtotalcapacity') + '</div><div class="mixed-total-remove-row"><div class="ninput mixed-total-display" style="display:flex;align-items:center">' + Number(totalSelected).toLocaleString() + ' BTU/h</div><button type="button" class="mixed-system-remove" onclick="removeRoomSystem(' + i + ',\'' + system.id + '\')">' + t('mixedremove') + '</button></div></div>' +
-            '</div>' +
-          '</div>';
-      }).join('');
-      var diffLabel = diffVal < 0
-        ? (lang === 'ar'
-            ? 'السعة المختارة أقل من المطلوب بمقدار ' + Number(Math.abs(diffVal) || 0).toLocaleString() + ' BTU/h'
-            : 'Selected capacity is short by ' + Number(Math.abs(diffVal) || 0).toLocaleString() + ' BTU/h')
-        : (lang === 'ar'
-            ? 'السعة المختارة أعلى من المطلوب بمقدار ' + Number(diffVal || 0).toLocaleString() + ' BTU/h'
-            : 'Selected capacity exceeds required load by ' + Number(diffVal || 0).toLocaleString() + ' BTU/h');
-      var statusHtml = '<div class="qi-cap-status"><span class="qi-cap-badge ' + status.css + '">' + status.label + (status.key !== 'no_system_selected' ? ' ' + status.deltaText : '') + '</span></div>';
-      var statusNoteHtml = '<div class="qty-auto-note" style="margin-top:6px">' + (status.key === 'no_system_selected' ? status.label : diffLabel) + '</div>';
-      var airflowSummaryHtml = '';
-      if (roomState.isHealthcare) {
-        var airflowStatus = roomState.airflowStatusMeta || getAirflowStatus(roomState.requiredCfm, roomState.selectedSystemCfm);
-        var airflowDiff = roomState.airflowDifference;
-        var airflowDiffLabel = airflowDiff < 0
+        var diffLabel = diffVal < 0
           ? (lang === 'ar'
-              ? 'تدفق الهواء المختار أقل من المطلوب بمقدار ' + Number(Math.abs(airflowDiff) || 0).toLocaleString() + ' CFM'
-              : 'Selected airflow is short by ' + Number(Math.abs(airflowDiff) || 0).toLocaleString() + ' CFM')
+              ? 'السعة المختارة أقل من المطلوب بمقدار ' + Number(Math.abs(diffVal) || 0).toLocaleString() + ' BTU/h'
+              : 'Selected capacity is short by ' + Number(Math.abs(diffVal) || 0).toLocaleString() + ' BTU/h')
           : (lang === 'ar'
-              ? 'تدفق الهواء المختار أعلى من المطلوب بمقدار ' + Number(airflowDiff || 0).toLocaleString() + ' CFM'
-              : 'Selected airflow exceeds required airflow by ' + Number(airflowDiff || 0).toLocaleString() + ' CFM');
-        var pressureText = roomState.pressureRequirement
-          ? (lang === 'ar' ? 'متطلب الضغط: ' : 'Pressure requirement: ') + roomState.pressureRequirement
-          : '';
-        airflowSummaryHtml =
-          '<div class="mixed-system-total"><span class="mixed-system-total-label">' + (lang === 'ar' ? 'التدفق المطلوب' : 'Required CFM') + '</span><span>' + Number(roomState.requiredCfm || 0).toLocaleString() + ' CFM</span></div>' +
-          '<div class="mixed-system-total"><span class="mixed-system-total-label">' + (lang === 'ar' ? 'تدفق الوحدات المختارة' : 'Selected System CFM') + '</span><span>' + Number(roomState.selectedSystemCfm || 0).toLocaleString() + ' CFM</span></div>' +
-          '<div class="mixed-system-total"><span class="mixed-system-total-label">' + (lang === 'ar' ? 'حالة تدفق الهواء' : 'Airflow Status') + '</span><span class="qi-cap-badge ' + airflowStatus.css + '">' + airflowStatus.label + (airflowStatus.key !== 'no_system_selected' ? ' ' + airflowStatus.deltaText : '') + '</span></div>' +
-          '<div class="qty-auto-note" style="margin-top:6px">' + (airflowStatus.key === 'no_system_selected' ? airflowStatus.label : airflowDiffLabel) + (pressureText ? '<br>' + pressureText : '') + '</div>';
+              ? 'السعة المختارة أعلى من المطلوب بمقدار ' + Number(diffVal || 0).toLocaleString() + ' BTU/h'
+              : 'Selected capacity exceeds required load by ' + Number(diffVal || 0).toLocaleString() + ' BTU/h');
+        var statusHtml = '<div class="qi-cap-status"><span class="qi-cap-badge ' + status.css + '">' + status.label + (status.key !== 'no_system_selected' ? ' ' + status.deltaText : '') + '</span></div>';
+        var statusNoteHtml = '<div class="qty-auto-note" style="margin-top:6px">' + (status.key === 'no_system_selected' ? status.label : diffLabel) + '</div>';
+        var airflowSummaryHtml = '';
+        if (roomState.isHealthcare) {
+          var airflowStatus = roomState.airflowStatusMeta || getAirflowStatus(roomState.requiredCfm, roomState.selectedSystemCfm);
+          var airflowDiff = roomState.airflowDifference;
+          var airflowDiffLabel = airflowDiff < 0
+            ? (lang === 'ar'
+                ? 'تدفق الهواء المختار أقل من المطلوب بمقدار ' + Number(Math.abs(airflowDiff) || 0).toLocaleString() + ' CFM'
+                : 'Selected airflow is short by ' + Number(Math.abs(airflowDiff) || 0).toLocaleString() + ' CFM')
+            : (lang === 'ar'
+                ? 'تدفق الهواء المختار أعلى من المطلوب بمقدار ' + Number(airflowDiff || 0).toLocaleString() + ' CFM'
+                : 'Selected airflow exceeds required airflow by ' + Number(airflowDiff || 0).toLocaleString() + ' CFM');
+          var pressureText = roomState.pressureRequirement
+            ? (lang === 'ar' ? 'متطلب الضغط: ' : 'Pressure requirement: ') + roomState.pressureRequirement
+            : '';
+          airflowSummaryHtml =
+            '<div class="mixed-system-total"><span class="mixed-system-total-label">' + (lang === 'ar' ? 'التدفق المطلوب' : 'Required CFM') + '</span><span>' + Number(roomState.requiredCfm || 0).toLocaleString() + ' CFM</span></div>' +
+            '<div class="mixed-system-total"><span class="mixed-system-total-label">' + (lang === 'ar' ? 'تدفق الوحدات المختارة' : 'Selected System CFM') + '</span><span>' + Number(roomState.selectedSystemCfm || 0).toLocaleString() + ' CFM</span></div>' +
+            '<div class="mixed-system-total"><span class="mixed-system-total-label">' + (lang === 'ar' ? 'حالة تدفق الهواء' : 'Airflow Status') + '</span><span class="qi-cap-badge ' + airflowStatus.css + '">' + airflowStatus.label + (airflowStatus.key !== 'no_system_selected' ? ' ' + airflowStatus.deltaText : '') + '</span></div>' +
+            '<div class="qty-auto-note" style="margin-top:6px">' + (airflowStatus.key === 'no_system_selected' ? airflowStatus.label : airflowDiffLabel) + (pressureText ? '<br>' + pressureText : '') + '</div>';
+        }
+        return '' +
+          '<div class="mixed-systems-card room-mixed-systems">' +
+            '<div class="mixed-systems-head">' +
+              '<div class="mixed-systems-title">' + t('mixedsystems') + '</div>' +
+            '</div>' +
+            '<div class="mixed-systems-list">' +
+              (rowsHtml || '<div class="mixed-systems-empty">' + t('mixedempty') + '</div>') +
+            '</div>' +
+            '<div class="mixed-systems-actions mixed-systems-add-row"><button type="button" class="mixed-systems-btn primary" onclick="addRoomSystem(' + i + ')" aria-label="' + t('mixedadd') + '">' + t('mixedadd') + '</button></div>' +
+            '<div class="mixed-system-foot" style="margin-top:10px">' +
+              '<div class="mixed-system-total"><span class="mixed-system-total-label">' + t('mixedrequiredcapacity') + '</span><span>' + Number(requiredVal || 0).toLocaleString() + ' BTU/h</span></div>' +
+              '<div class="mixed-system-total"><span class="mixed-system-total-label">' + t('mixedselectedtotal') + '</span><span>' + Number(selectedCapacity || 0).toLocaleString() + ' BTU/h</span></div>' +
+              '<div class="mixed-system-total"><span class="mixed-system-total-label">' + t('mixeddifference') + '</span><span>' + (diffVal >= 0 ? '+' : '') + Number(diffVal || 0).toLocaleString() + ' BTU/h</span></div>' +
+            '</div>' +
+            statusHtml +
+            statusNoteHtml +
+            airflowSummaryHtml +
+          '</div>';
       }
-      return '' +
-        '<div class="mixed-systems-card room-mixed-systems">' +
-          '<div class="mixed-systems-head">' +
-            '<div class="mixed-systems-title">' + t('mixedsystems') + '</div>' +
-          '</div>' +
-          '<div class="mixed-systems-list">' +
-            (rowsHtml || '<div class="mixed-systems-empty">' + t('mixedempty') + '</div>') +
-          '</div>' +
-          '<div class="mixed-systems-actions mixed-systems-add-row"><button type="button" class="mixed-systems-btn primary" onclick="addRoomSystem(' + i + ')" aria-label="' + t('mixedadd') + '">' + t('mixedadd') + '</button></div>' +
-          '<div class="mixed-system-foot" style="margin-top:10px">' +
-            '<div class="mixed-system-total"><span class="mixed-system-total-label">' + t('mixedrequiredcapacity') + '</span><span>' + Number(requiredVal || 0).toLocaleString() + ' BTU/h</span></div>' +
-            '<div class="mixed-system-total"><span class="mixed-system-total-label">' + t('mixedselectedtotal') + '</span><span>' + Number(selectedCapacity || 0).toLocaleString() + ' BTU/h</span></div>' +
-            '<div class="mixed-system-total"><span class="mixed-system-total-label">' + t('mixeddifference') + '</span><span>' + (diffVal >= 0 ? '+' : '') + Number(diffVal || 0).toLocaleString() + ' BTU/h</span></div>' +
-          '</div>' +
-          statusHtml +
-          statusNoteHtml +
-          airflowSummaryHtml +
-        '</div>';
+
+      function setQuoteMode(mode) {
+        mode = setSharedQuoteMode(mode);
+        var btnRoom = G('mode-btn-room'), btnProj = G('mode-btn-proj');
+        var qiList = G('qi-list'), projBlock = G('proj-block');
+        var bundleRow = G('bundle-row');
+        if (mode === 'proj') {
+          if (btnRoom) btnRoom.classList.remove('active');
+          if (btnProj) btnProj.classList.add('active');
+          if (qiList) qiList.style.display = 'none';
+          if (projBlock) projBlock.style.display = '';
+          if (bundleRow) bundleRow.style.display = '';
+        } else {
+          if (btnRoom) btnRoom.classList.add('active');
+          if (btnProj) btnProj.classList.remove('active');
+          if (qiList) qiList.style.display = '';
+          if (projBlock) projBlock.style.display = 'none';
+          if (bundleRow) bundleRow.style.display = hist.length > 1 ? '' : 'none';
+        }
+        if (typeof _updateBundleUI === 'function') _updateBundleUI();
+        refreshModeDependentUi();
+      }
+
+      window.normalizeQuoteMode = normalizeQuoteMode;
+      window.setSharedQuoteMode = setSharedQuoteMode;
+      window.refreshModeDependentUi = refreshModeDependentUi;
+      window.getRoomRequiredBtu = getRoomRequiredBtu;
+      window.getRoomRequiredCfm = getRoomRequiredCfm;
+      window.getUnitAirflowCfm = getUnitAirflowCfm;
+      window.getCapacityStatus = getCapacityStatus;
+      window.getProjectCapacityStatus = getProjectCapacityStatus;
+      window.getSystemCapacityStatus = getCapacityStatus;
+      window.getAirflowStatus = getAirflowStatus;
+      window.getRoomSystemState = getRoomSystemState;
+      window.syncRoomSystemState = syncRoomSystemState;
+      window.syncAllRoomSystemStates = syncAllRoomSystemStates;
+      window.recalcRoomSystems = recalcRoomSystems;
+      window.renderRoomSystemsEditor = renderRoomSystemsEditor;
+      window.setQuoteMode = setQuoteMode;
     }
 
-    function setQuoteMode(mode) {
-      mode = setSharedQuoteMode(mode);
-      var btnRoom = G('mode-btn-room'), btnProj = G('mode-btn-proj');
-      var qiList = G('qi-list'), projBlock = G('proj-block');
-      var bundleRow = G('bundle-row');
-      if (mode === 'proj') {
-        if (btnRoom) btnRoom.classList.remove('active');
-        if (btnProj) btnProj.classList.add('active');
-        if (qiList) qiList.style.display = 'none';
-        if (projBlock) projBlock.style.display = '';
-        if (bundleRow) bundleRow.style.display = '';
-      } else {
-        if (btnRoom) btnRoom.classList.add('active');
-        if (btnProj) btnProj.classList.remove('active');
-        if (qiList) qiList.style.display = '';
-        if (projBlock) projBlock.style.display = 'none';
-        if (bundleRow) bundleRow.style.display = hist.length > 1 ? '' : 'none';
-      }
-      if (typeof _updateBundleUI === 'function') _updateBundleUI();
-      refreshModeDependentUi();
-    }
+    // ── Boot sequence ────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('[AirCalc] main.js DOMContentLoaded — starting boot');
+      installRuntimePatches();
 
-    window.normalizeQuoteMode = normalizeQuoteMode;
-    window.setSharedQuoteMode = setSharedQuoteMode;
-    window.refreshModeDependentUi = refreshModeDependentUi;
-    window.getRoomRequiredBtu = getRoomRequiredBtu;
-    window.getRoomRequiredCfm = getRoomRequiredCfm;
-    window.getUnitAirflowCfm = getUnitAirflowCfm;
-    window.getCapacityStatus = getCapacityStatus;
-    window.getSystemCapacityStatus = getCapacityStatus;
-    window.getAirflowStatus = getAirflowStatus;
-    window.getRoomSystemState = getRoomSystemState;
-    window.syncRoomSystemState = syncRoomSystemState;
-    window.syncAllRoomSystemStates = syncAllRoomSystemStates;
-    window.recalcRoomSystems = recalcRoomSystems;
-    window.renderRoomSystemsEditor = renderRoomSystemsEditor;
-    window.setQuoteMode = setQuoteMode;
-  }
+      // 1. Fetch and validate data.json
+      loadAppBootstrapData()
+        .then(function(data) {
+          // 2. Validate
+          H.validateAppData(data);
+          console.log('[AirCalc] data.json validated ✅ —',
+            Object.keys(data.ROOMS).length, 'rooms,',
+            data.DEVS.length, 'devices'
+          );
 
-  // ── Boot sequence ────────────────────────────────────────────────────
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('[AirCalc] main.js DOMContentLoaded — starting boot');
-    installRuntimePatches();
+          // 3. Load into AppState
+          S.data.ROOMS        = data.ROOMS;
+          S.data.DEVS         = data.DEVS;
+          S.data.AC_CATALOG   = data.AC_CATALOG;
+          S.data.UT_TO_CAT    = data.UT_TO_CAT;
+          S.data.UT_LABELS_AR = data.UT_LABELS_AR;
+          S.data.UT_LABELS_EN = data.UT_LABELS_EN;
+          if (data.DUCT_WIDTHS)  S.data.DUCT_WIDTHS  = data.DUCT_WIDTHS;
+          if (data.DUCT_HEIGHTS) S.data.DUCT_HEIGHTS = data.DUCT_HEIGHTS;
 
-    // 1. Fetch and validate data.json
-    loadAppBootstrapData()
-      .then(function(data) {
-        // 2. Validate
-        H.validateAppData(data);
-        console.log('[AirCalc] data.json validated ✅ —',
-          Object.keys(data.ROOMS).length, 'rooms,',
-          data.DEVS.length, 'devices'
-        );
+          // 4. Restore localStorage state
+          restoreState();
 
-        // 3. Load into AppState
-        S.data.ROOMS        = data.ROOMS;
-        S.data.DEVS         = data.DEVS;
-        S.data.AC_CATALOG   = data.AC_CATALOG;
-        S.data.UT_TO_CAT    = data.UT_TO_CAT;
-        S.data.UT_LABELS_AR = data.UT_LABELS_AR;
-        S.data.UT_LABELS_EN = data.UT_LABELS_EN;
-        if (data.DUCT_WIDTHS)  S.data.DUCT_WIDTHS  = data.DUCT_WIDTHS;
-        if (data.DUCT_HEIGHTS) S.data.DUCT_HEIGHTS = data.DUCT_HEIGHTS;
+          // 5. Sync AppState → legacy app.js vars
+          S.syncToLegacy();
 
-        // 4. Restore localStorage state
-        restoreState();
+          // 6. Hand off to existing app.js bootstrap functions
+          //    (loadAppData + initApp are still defined in app.js)
+          if (typeof loadAppData === 'function') loadAppData(data);
+          if (typeof initApp     === 'function') initApp();
 
-        // 5. Sync AppState → legacy app.js vars
-        S.syncToLegacy();
+          // 7. Register service worker
+          registerSW();
 
-        // 6. Hand off to existing app.js bootstrap functions
-        //    (loadAppData + initApp are still defined in app.js)
-        if (typeof loadAppData === 'function') loadAppData(data);
-        if (typeof initApp     === 'function') initApp();
-
-        // 7. Register service worker
-        registerSW();
-
-        console.log('[AirCalc] Boot complete ✅');
-      })
-      .catch(function(err) {
-        showFatalError(err);
-      });
-  });
+          console.log('[AirCalc] Boot complete ✅');
+        })
+        .catch(function(err) {
+          showFatalError(err);
+        });
+    });
 
 })();
