@@ -29,6 +29,13 @@ let serverTimestampFn = null;
 
 function GG(id){ return document.getElementById(id); }
 function isAr(){ return (window.lang || 'ar') === 'ar'; }
+function isFileProtocol(){
+  try{
+    return !!(window.location && window.location.protocol === 'file:');
+  }catch(e){
+    return false;
+  }
+}
 function tt(key, fallback){
   try{
     if(window.t) return window.t(key);
@@ -154,7 +161,11 @@ function updateAuthUI(){
   if(helper){
     helper.textContent = loggedIn
       ? tt('authearlypromsg', 'PRO features are free during Early Access.')
-      : tt('authcloudreq', 'Login required for PRO features and cloud saving');
+      : (isFileProtocol()
+          ? (isAr()
+              ? 'تسجيل الدخول يتطلب تشغيل التطبيق من الموقع أو من خادم محلي، وليس من file://'
+              : 'Sign in requires running the app from the website or a local server, not from file://')
+          : tt('authcloudreq', 'Login required for PRO features and cloud saving'));
   }
 
   if(modalSub){
@@ -197,6 +208,19 @@ async function loadUserProfileDoc(user){
 async function ensureFirebase(options = {}){
   const silent = options && options.silent === true;
   if(firebaseReady) return true;
+  if(isFileProtocol()){
+    firebaseReady = false;
+    if(!silent){
+      toastMsg(
+        isAr()
+          ? 'تسجيل الدخول لا يعمل عند فتح التطبيق مباشرة من الملف. شغّل AirCalc Pro من الموقع أو من خادم محلي.'
+          : 'Sign in does not work when the app is opened directly from a file. Run AirCalc Pro from the website or a local server.'
+      );
+    }
+    updateAuthUI();
+    notifyPlanDependents();
+    return false;
+  }
   try{
     const appMod = await import('https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js');
     const authMod = await import('https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js');
