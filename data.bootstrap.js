@@ -1,4 +1,4 @@
-{
+window.__AIRCALC_BOOT_DATA__ = {
   "ROOMS": {
     "r_office": {
       "id": "r_office",
@@ -2680,3 +2680,4 @@
     "corridor": []
   }
 }
+;
