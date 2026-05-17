@@ -1103,8 +1103,8 @@ function getCapacityValidationAction(requiredBtu, selectedBtu, unitCapacity, qua
     }
     return buildValidationAction(
       lang === 'ar'
-        ? 'السعة المختارة أقل من المطلوب. زِد عدد الوحدات أو اختر سعة أعلى.' + (suggestedQty > 0 ? ' ارفع عدد الوحدات من ' + quantity + ' إلى ' + suggestedQty + '، لتصبح السعة ' + Number(correctedBtu).toLocaleString() + ' BTU بنسبة ' + (correctedPct >= 0 ? '+' : '') + correctedPct.toFixed(1) + '%.' : '')
-        : 'Selected capacity is below required. Increase unit quantity or choose a higher capacity.' + (suggestedQty > 0 ? ' Raise quantity from ' + quantity + ' to ' + suggestedQty + ' for ' + Number(correctedBtu).toLocaleString() + ' BTU and ' + (correctedPct >= 0 ? '+' : '') + correctedPct.toFixed(1) + '%.' : ''),
+        ? 'السعة المختارة أقل من المطلوب. زِد عدد الوحدات أو اختر سعة أعلى.' + (suggestedQty > 0 ? '<br>ارفع عدد الوحدات من ' + quantity + ' إلى ' + suggestedQty + '<br>السعة بعد التعديل: ' + Number(correctedBtu).toLocaleString() + ' BTU' + '<br>نسبة الزيادة بعد التعديل: ' + (correctedPct >= 0 ? '+' : '') + correctedPct.toFixed(1) + '%' : '')
+        : 'Selected capacity is below required. Increase unit quantity or choose a higher capacity.' + (suggestedQty > 0 ? '<br>Raise quantity from ' + quantity + ' to ' + suggestedQty + '<br>Capacity after fix: ' + Number(correctedBtu).toLocaleString() + ' BTU' + '<br>Post-fix increase: ' + (correctedPct >= 0 ? '+' : '') + correctedPct.toFixed(1) + '%' : ''),
       fix
     );
   }
@@ -1118,15 +1118,19 @@ function getCapacityValidationAction(requiredBtu, selectedBtu, unitCapacity, qua
   var reducedBtu = reducedQty > 0 ? reducedQty * unitCapacity : 0;
   var reduceHint = (reducedQty > 0 && reducedBtu >= requiredBtu)
     ? (lang === 'ar'
-        ? ' جرّب تقليل العدد من ' + quantity + ' إلى ' + reducedQty + ' لتصبح السعة ' + Number(reducedBtu).toLocaleString() + ' BTU.'
-        : ' Try reducing quantity from ' + quantity + ' to ' + reducedQty + ' for ' + Number(reducedBtu).toLocaleString() + ' BTU.')
+        ? '<br>قلل عدد الوحدات من ' + quantity + ' إلى ' + reducedQty + '<br>السعة بعد التعديل: ' + Number(reducedBtu).toLocaleString() + ' BTU'
+        : '<br>Reduce quantity from ' + quantity + ' to ' + reducedQty + '<br>Capacity after fix: ' + Number(reducedBtu).toLocaleString() + ' BTU')
     : (lang === 'ar'
-        ? ' راجع اختيار سعة أقرب أقل إذا كانت متاحة.'
-        : ' Review a lower nearby capacity if available.');
+        ? '<br>راجع اختيار سعة أقرب أقل إذا كانت متاحة.'
+        : '<br>Review a lower nearby capacity if available.');
+  var oversizeFix = (reducedQty > 0 && reducedBtu >= requiredBtu && reducedQty < quantity && targetId)
+    ? { scope: scope, targetId: targetId, qty: reducedQty }
+    : null;
   return buildValidationAction(
     (lang === 'ar'
       ? 'السعة المختارة أعلى بكثير من المطلوب. قلل عدد الوحدات أو اختر سعة أقل لتجنب الهدر أو التشغيل المتقطع.'
-      : 'Selected capacity is far above required. Reduce unit quantity or choose a lower capacity to avoid waste or short cycling.') + reduceHint
+      : 'Selected capacity is far above required. Reduce unit quantity or choose a lower capacity to avoid waste or short cycling.') + reduceHint,
+    oversizeFix
   );
 }
 function getCfmValidationAction(requiredCfm, selectedCfm){
@@ -1141,8 +1145,8 @@ function getCfmValidationAction(requiredCfm, selectedCfm){
     var addTr = addCfm / cfmPerTr;
     return buildValidationAction(
       lang === 'ar'
-        ? 'تدفق الهواء أقل من المطلوب. اختر وحدة ذات CFM أعلى أو زد عدد الوحدات. تحتاج تقريبًا +' + Number(addCfm).toLocaleString() + ' CFM إضافية، ما يعادل تقريبًا +' + addTr.toFixed(1) + ' TR.'
-        : 'Airflow is below required. Choose a higher-CFM unit or increase quantity. You need about +' + Number(addCfm).toLocaleString() + ' CFM, roughly +' + addTr.toFixed(1) + ' TR.'
+        ? 'تدفق الهواء أقل من المطلوب. اختر وحدة ذات CFM أعلى أو زد عدد الوحدات.' + '<br>تحتاج تقريبًا +' + Number(addCfm).toLocaleString() + ' CFM إضافية، ما يعادل تقريبًا +' + addTr.toFixed(1) + ' TR.'
+        : 'Airflow is below required. Choose a higher-CFM unit or increase quantity.' + '<br>You need about +' + Number(addCfm).toLocaleString() + ' CFM, roughly +' + addTr.toFixed(1) + ' TR.'
     );
   }
   if(selectedCfm <= requiredCfm * 1.10){
@@ -1170,7 +1174,7 @@ function getDuctVelocityValidationAction(statusKey, values){
     if(v.label.indexOf('الرجوع') >= 0 || v.label.indexOf('Return') >= 0) ret = parseInt(v.value, 10) || ret;
   });
   if(statusKey === 'pass'){
-    return buildValidationAction(lang === 'ar' ? 'لا يلزم إجراء. السرعات ضمن النطاق المقبول.' : 'No action needed. Velocities are within the accepted range.');
+    return buildValidationAction(lang === 'ar' ? 'لا يلزم إجراء. سرعات الدكت ضمن النطاق المقبول.' : 'No action needed. Duct velocities are within the accepted range.');
   }
   if(statusKey === 'warning' || statusKey === 'fail'){
     var parts = [];
@@ -1190,7 +1194,7 @@ function getEspValidationAction(item, espValue){
   if(item && (item.status === 'warning' || item.status === 'fail')){
     return buildValidationAction(lang === 'ar' ? 'راجع مكونات النظام مثل الفلاتر، الكويل، المخارج، الدكت، والمخمدات. قد تحتاج مروحة بضغط أعلى أو تقليل مقاومة الدكت.' : 'Review filters, coil, outlets, ductwork, and dampers. A higher-pressure fan or lower duct resistance may be needed.');
   }
-  return buildValidationAction(lang === 'ar' ? 'لا يلزم إجراء. قيمة ESP الحالية ضمن النطاق المقبول.' : 'No action needed. Current ESP is within the accepted range.');
+  return buildValidationAction(lang === 'ar' ? 'لا يلزم إجراء. الضغط الساكن ضمن نطاق مقبول.' : 'No action needed. Static pressure is within an acceptable range.');
 }
 function applyValidationFix(scope, targetId, qty){
   qty = Math.max(1, parseInt(qty, 10) || 1);
@@ -1316,35 +1320,37 @@ function evaluateAshraeGuidedValidation(roomState, room){
   if(!roomState || !roomState.isHealthcare){
     return buildValidationItem(lang==='ar' ? 'تحقق مسترشد بـ ASHRAE' : 'ASHRAE-guided check', 'not_applicable', lang==='ar' ? 'لا ينطبق على الغرف غير الصحية.' : 'Not applicable to non-healthcare rooms.');
   }
+  var requiredCfm = Math.max(0, parseInt(roomState.requiredCfm, 10) || 0);
+  var selectedCfm = Math.max(0, parseInt(roomState.selectedSystemCfm, 10) || 0);
+  var cfmDiff = selectedCfm - requiredCfm;
+  var pressureReq = roomState.pressureRequirement || room.pressure || room.pres || '';
+  var baseValues = [
+    buildValidationValue('ACH', 'ACH', room.ach != null ? String(room.ach) : (lang === 'ar' ? 'غير متاح' : 'N/A')),
+    buildValidationValue('OA', 'OA', room.oaStd != null ? String(room.oaStd) : room.oa != null ? String(room.oa) : (lang === 'ar' ? 'غير متاح' : 'N/A')),
+    buildValidationValue('العادم', 'Exhaust', room.exhaust != null ? String(room.exhaust) : room.exh != null ? String(room.exh) : (lang === 'ar' ? 'غير متاح' : 'N/A')),
+    buildValidationValue('الضغط', 'Pressure', pressureReq || (lang === 'ar' ? 'غير متاح' : 'N/A')),
+    buildValidationValue('CFM المطلوب', 'Required CFM', Number(requiredCfm || 0).toLocaleString() + ' CFM'),
+    buildValidationValue('CFM المختار', 'Selected CFM', Number(selectedCfm || 0).toLocaleString() + ' CFM'),
+    buildValidationValue('الفرق', 'Difference', (cfmDiff >= 0 ? '+' : '-') + Number(Math.abs(cfmDiff) || 0).toLocaleString() + ' CFM')
+  ];
   var hasInputs = !!(room && (room.ach != null || room.sup || room.oaStd != null || room.oa != null || room.exhaust != null || room.exh != null || room.pressure || room.pres));
   if(!hasInputs){
-    return buildValidationItem(lang==='ar' ? 'تحقق مسترشد بـ ASHRAE' : 'ASHRAE-guided check', 'warning', lang==='ar' ? 'بيانات ASHRAE لهذه الغرفة غير مكتملة.' : 'ASHRAE guidance data for this room is incomplete.');
+    return buildValidationItem(lang==='ar' ? 'تحقق مسترشد بـ ASHRAE' : 'ASHRAE-guided check', 'warning', lang==='ar' ? 'بيانات ASHRAE لهذه الغرفة غير مكتملة.' : 'ASHRAE guidance data for this room is incomplete.', baseValues);
   }
-  if((roomState.selectedSystemCfm || 0) < (roomState.requiredCfm || 0)){
+  if(selectedCfm < requiredCfm){
     return buildValidationItem(
       lang==='ar' ? 'تحقق مسترشد بـ ASHRAE' : 'ASHRAE-guided check',
       'fail',
       lang==='ar'
         ? 'هذه غرفة صحية وتتطلب مراجعة ACH والضغط وتدفق الهواء؛ التدفق الحالي أقل من المطلوب.'
         : 'This healthcare room requires ACH, pressure, and airflow review; current airflow is below required.',
-      [
-        buildValidationValue('ACH', 'ACH', room.ach != null ? String(room.ach) : (lang === 'ar' ? 'غير متاح' : 'N/A')),
-        buildValidationValue('الضغط', 'Pressure', roomState.pressureRequirement || room.pressure || room.pres || (lang === 'ar' ? 'غير متاح' : 'N/A')),
-        buildValidationValue('CFM المطلوب', 'Required CFM', Number(roomState.requiredCfm || 0).toLocaleString() + ' CFM'),
-        buildValidationValue('CFM المختار', 'Selected CFM', Number(roomState.selectedSystemCfm || 0).toLocaleString() + ' CFM')
-      ]
+      baseValues
     );
   }
-  var pressureReq = roomState.pressureRequirement || room.pressure || room.pres || '';
   var detail = lang==='ar'
     ? 'تمت مراجعة ACH/OA/Exhaust/Pressure بشكل استرشادي' + (pressureReq ? ' — الضغط: ' + pressureReq : '') + '.'
     : 'ACH/OA/Exhaust/Pressure reviewed as an ASHRAE-guided check' + (pressureReq ? ' — pressure: ' + pressureReq : '') + '.';
-  return buildValidationItem(lang==='ar' ? 'تحقق مسترشد بـ ASHRAE' : 'ASHRAE-guided check', pressureReq ? 'pass' : 'warning', detail, [
-    buildValidationValue('ACH', 'ACH', room.ach != null ? String(room.ach) : (lang === 'ar' ? 'غير متاح' : 'N/A')),
-    buildValidationValue('OA', 'OA', room.oaStd != null ? String(room.oaStd) : room.oa != null ? String(room.oa) : (lang === 'ar' ? 'غير متاح' : 'N/A')),
-    buildValidationValue('العادم', 'Exhaust', room.exhaust != null ? String(room.exhaust) : room.exh != null ? String(room.exh) : (lang === 'ar' ? 'غير متاح' : 'N/A')),
-    buildValidationValue('الضغط', 'Pressure', pressureReq || (lang === 'ar' ? 'غير متاح' : 'N/A'))
-  ]);
+  return buildValidationItem(lang==='ar' ? 'تحقق مسترشد بـ ASHRAE' : 'ASHRAE-guided check', pressureReq ? 'pass' : 'warning', detail, baseValues);
 }
 function evaluateDuctVelocityValidation(selectedCfm, isDuctedSystem){
   if(!isDuctedSystem || selectedCfm <= 0){
@@ -1361,8 +1367,10 @@ function evaluateDuctVelocityValidation(selectedCfm, isDuctedSystem){
   var worst = Math.max(supFpm, retFpm);
   var detail = (lang==='ar' ? 'الإمداد ' : 'Supply ') + supFpm + ' fpm · ' + (lang==='ar' ? 'الرجوع ' : 'Return ') + retFpm + ' fpm';
   var values = [
-    buildValidationValue('الإمداد', 'Supply', supFpm + ' fpm'),
-    buildValidationValue('الرجوع', 'Return', retFpm + ' fpm')
+    buildValidationValue('إمداد مستهدف', 'Supply target', supTarget + ' fpm'),
+    buildValidationValue('إمداد فعلي', 'Supply actual', supFpm + ' fpm'),
+    buildValidationValue('راجع مستهدف', 'Return target', retTarget + ' fpm'),
+    buildValidationValue('راجع فعلي', 'Return actual', retFpm + ' fpm')
   ];
   if(supFpm <= 1200 && retFpm <= 1000){
     return buildValidationItem(lang==='ar' ? 'فحص سرعة المجرى' : 'Duct Velocity Check', 'pass', detail, values);
@@ -1381,26 +1389,39 @@ function evaluateEspValidation(isDuctedSystem){
     return buildValidationItem(lang==='ar' ? 'فحص ESP' : 'ESP Check', 'warning', lang==='ar' ? 'تقدير ESP غير متاح بعد أو يحتاج إدخال مسار المجاري.' : 'ESP estimate is not available yet or needs duct path inputs.');
   }
   var detail = (lang==='ar' ? 'ESP الكلي: ' : 'Total ESP: ') + Number(esp.totalPa).toLocaleString() + ' Pa';
-  var values = [buildValidationValue('ESP الحالي', 'Current ESP', Number(esp.totalPa).toLocaleString() + ' Pa')];
+  var values = [
+    buildValidationValue('ESP الحالي', 'Current ESP', Number(esp.totalPa).toLocaleString() + ' Pa'),
+    buildValidationValue('حد المراجعة', 'Review limit', '125 Pa'),
+    buildValidationValue('حد الفشل', 'Fail limit', '225 Pa')
+  ];
   if(esp.totalPa <= 125) return buildValidationItem(lang==='ar' ? 'فحص ESP' : 'ESP Check', 'pass', detail, values);
-  if(esp.totalPa <= 225) return buildValidationItem(lang==='ar' ? 'فحص ESP' : 'ESP Check', 'warning', detail, values);
-  return buildValidationItem(lang==='ar' ? 'فحص ESP' : 'ESP Check', 'fail', detail, values);
+  if(esp.totalPa <= 225) return buildValidationItem(lang==='ar' ? 'فحص ESP' : 'ESP Check', 'warning', detail, values.concat([
+    buildValidationValue('التجاوز', 'Overage', '+' + Number(esp.totalPa - 125).toLocaleString() + ' Pa')
+  ]));
+  return buildValidationItem(lang==='ar' ? 'فحص ESP' : 'ESP Check', 'fail', detail, values.concat([
+    buildValidationValue('التجاوز', 'Overage', '+' + Number(esp.totalPa - 225).toLocaleString() + ' Pa')
+  ]));
 }
 function buildEngineeringNotesFromValidation(items, isHealthcare){
   var notes = [];
   items.forEach(function(item){
     if(!item) return;
-    if(item.title.indexOf('Capacity') >= 0 || item.title.indexOf('السعة') >= 0){
-      if(item.status === 'fail' && item.detail) notes.push(item.detail);
-      if(item.status === 'warning' && item.detail) notes.push(item.detail);
+    if((item.title.indexOf('Capacity') >= 0 || item.title.indexOf('السعة') >= 0) && item.status === 'fail'){
+      notes.push(lang==='ar' ? 'السعة المختارة تحتاج تصحيحًا قبل الاعتماد.' : 'Selected capacity needs correction before approval.');
+    } else if((item.title.indexOf('Capacity') >= 0 || item.title.indexOf('السعة') >= 0) && item.status === 'warning'){
+      notes.push(lang==='ar' ? 'السعة المختارة أعلى من المطلوب وتحتاج مراجعة تشغيلية.' : 'Selected capacity is above required and should be operationally reviewed.');
     }
-    if((item.title.indexOf('CFM') >= 0 || item.title.indexOf('تدفق') >= 0) && item.status === 'pass'){
-      notes.push(lang==='ar' ? 'معدل تدفق الهواء يحقق الحد الأدنى المطلوب.' : 'Airflow meets the minimum requirement.');
+    if((item.title.indexOf('CFM') >= 0 || item.title.indexOf('تدفق') >= 0) && item.status === 'fail'){
+      notes.push(lang==='ar' ? 'تدفق الهواء لا يحقق الحد الأدنى المطلوب.' : 'Airflow does not meet the minimum required flow.');
+    }
+    if((item.title.indexOf('ESP') >= 0) && item.status === 'warning'){
+      notes.push(lang==='ar' ? 'الضغط الساكن يحتاج مراجعة مع مكونات النظام.' : 'Static pressure should be reviewed with the system components.');
     }
   });
   if(isHealthcare){
     notes.push(lang==='ar' ? 'هذه الغرفة صحية وتتطلب مراجعة ACH والضغط.' : 'This is a healthcare room and requires ACH and pressure validation.');
   }
+  notes = notes.filter(function(note, idx){ return note && notes.indexOf(note) === idx; });
   if(!notes.length){
     notes.push(lang==='ar' ? 'لم تُسجّل ملاحظات هندسية إضافية.' : 'No additional engineering notes were generated.');
   }
