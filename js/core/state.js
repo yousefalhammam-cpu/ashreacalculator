@@ -6,13 +6,7 @@
 window.AppState = {
 
   // ── Language & Theme ────────────────────────────────────────────────
-  lang:       (function(){
-    try{
-      return localStorage.getItem('aircalc_lang') === 'en' ? 'en' : 'ar';
-    }catch(e){
-      return 'ar';
-    }
-  })(),       // 'ar' | 'en'
+  lang:       'ar',       // 'ar' | 'en'
   theme:      'dark',     // 'dark' | 'light'
 
   // ── Room / Device state ─────────────────────────────────────────────
