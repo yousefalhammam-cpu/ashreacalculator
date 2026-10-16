@@ -162,7 +162,8 @@ function updateAuthUI(){
   }
   ['auth-email', 'auth-password'].forEach(id => {
     const input = GG(id);
-    if(input) input.closest('.auth-field').hidden = loggedIn;
+    const field = input && input.closest('.auth-field');
+    if(field) field.hidden = loggedIn;
   });
   if(GG('auth-password')) GG('auth-password').autocomplete = authMode === 'create' ? 'new-password' : 'current-password';
   const openBtn = GG('auth-open-btn');
@@ -536,9 +537,10 @@ function openAuthModal(){
 
 function showAccountDialog(){
   authReturnFocus = document.activeElement;
+  // Opening the dialog must not depend on Firebase or the plan UI refreshing.
+  openOverlay('auth-overlay');
   showAuthMessage('');
   updateAuthUI();
-  openOverlay('auth-overlay');
   const target = GG(currentUser ? 'auth-logout-modal-btn' : 'auth-email');
   if(target) target.focus();
 }
@@ -865,6 +867,10 @@ async function updateSharedProjectRole(projectId, userId, role){
 }
 
 function bindAuthUI(){
+  ['topbar-account-btn','auth-open-btn'].forEach(id => {
+    const button=GG(id);
+    if(button) button.onclick = event => { event.preventDefault(); openAuthModal(); };
+  });
   const signInTab = GG('auth-tab-signin');
   const createTab = GG('auth-tab-create');
   const primaryBtn = GG('auth-primary-btn');
@@ -892,6 +898,7 @@ function bindAuthUI(){
 }
 
 window.openAuthModal = openAuthModal;
+window.showAirCalcAccount = openAuthModal;
 window.closeAuthModal = closeAuthModal;
 window.logoutAuth = logoutAuth;
 window.submitAirCalcAuth = handlePrimaryAuth;
