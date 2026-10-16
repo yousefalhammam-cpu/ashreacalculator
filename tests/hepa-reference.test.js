@@ -1,0 +1,15 @@
+const assert=require('assert');
+const fs=require('fs');
+const vm=require('vm');
+const app=fs.readFileSync(require('path').join(__dirname,'../app.js'),'utf8');
+const fn=app.slice(app.indexOf('function renderHepaFilterReference('),app.indexOf('function renderHvacDesignScenariosPanel('));
+const ctx={lang:'ar'};vm.createContext(ctx);vm.runInContext(fn,ctx);
+let html=ctx.renderHepaFilterReference();
+assert(html.includes('AstroCel II') && html.includes('Megalam ProSafe'));
+assert(html.includes('ليس شهادة اعتماد ASHRAE') && html.includes('تأكيد'));
+assert(html.includes('فقد الضغط') && html.includes('اختبار التسرب'));
+ctx.lang='en';html=ctx.renderHepaFilterReference();
+assert(!/[\u0600-\u06ff]/.test(html));
+assert(html.includes('not an ASHRAE manufacturer certification'));
+assert(app.includes('renderReportFilterEditor()+renderHepaFilterReference()'));
+console.log('HEPA reference localization and qualification passed.');

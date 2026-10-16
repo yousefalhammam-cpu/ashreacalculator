@@ -239,6 +239,7 @@
       projState.selBtu  = 0;
       projState.qty     = 1;
       projState.up      = 0;
+      projState.ductDimensions = {};
     }
     if (typeof bundleConfig !== 'undefined') {
       bundleConfig.unitType    = 'package';

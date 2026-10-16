@@ -57,14 +57,20 @@
   // Preserved verbatim from app.js — do NOT change formulas.
   function calcROT(vol, ppl) {
     var room  = (typeof curRoom !== 'undefined') ? curRoom : {};
-    var base  = vol * (room.factor || 0);
-    var pplb  = ppl * 400;
     var devb  = totalDevBtu();
-    var sub   = base + pplb + devb;
-    var total = sub * 1.10;   // 10% safety factor
-    var tr    = total / 12000;
-    var cfm   = Math.round(tr * 400);
-    var mkt   = Math.ceil(total / 9000) * 9000;
+    var eng = window.AirCalcEngineering && window.AirCalcEngineering.calculateGeneralRoom({
+      volumeM3: vol,
+      loadFactorBtuhPerM3: room.factor || 0,
+      peopleCount: ppl,
+      deviceLoadBtuh: devb
+    });
+    var base  = eng && eng.ok ? eng.baseBtuh : vol * (room.factor || 0);
+    var pplb  = eng && eng.ok ? eng.peopleBtuh : ppl * 400;
+    var sub   = eng && eng.ok ? eng.subtotalBtuh : base + pplb + devb;
+    var total = eng && eng.ok ? eng.totalBtuh : sub * 1.10;   // 10% safety factor
+    var tr    = eng && eng.ok ? eng.tr : total / 12000;
+    var cfm   = eng && eng.ok ? eng.supplyCfm : Math.round(tr * 400);
+    var mkt   = eng && eng.ok ? eng.marketBtuh : Math.ceil(total / 9000) * 9000;
 
     // Flash metric cards
     if (typeof flash === 'function') {
@@ -90,25 +96,25 @@
   // Preserved verbatim from app.js — do NOT change formulas.
   function calcHC(vol, ppl) {
     var r    = (typeof curRoom !== 'undefined') ? curRoom : {};
-    var ft3  = (H ? H.m3toft3(vol) : vol * 35.3147);
-    var sup  = Math.round((r.tach * ft3) / 60);
-    var oa   = Math.round((r.oach * ft3) / 60);
-    var exh;
-    if (r.pres === 'negative') {
-      exh = Math.round(sup * 1.10);
-    } else if (r.pres === 'positive') {
-      exh = Math.round(sup * 0.90);
-    } else {
-      exh = sup;
-    }
-
-    var base  = sup * 1.08 * 20;
-    var pplb  = ppl * 400;
     var devb  = totalDevBtu();
-    var sub   = base + pplb + devb;
-    var total = sub * 1.10;
-    var tr    = total / 12000;
-    var mkt   = Math.ceil(total / 9000) * 9000;
+    var eng = window.AirCalcEngineering && window.AirCalcEngineering.calculateHealthcareRoom({
+      volumeM3: vol,
+      totalAch: r.tach,
+      outdoorAch: r.oach,
+      pressure: r.pres,
+      peopleCount: ppl,
+      deviceLoadBtuh: devb
+    });
+    var ft3  = (H ? H.m3toft3(vol) : vol * 35.3147);
+    var sup  = eng && eng.ok ? eng.supplyCfm : Math.round((r.tach * ft3) / 60);
+    var oa   = eng && eng.ok ? eng.outdoorAirCfm : Math.round((r.oach * ft3) / 60);
+    var exh  = eng && eng.ok ? eng.exhaustCfm : (r.pres === 'negative' ? Math.round(sup * 1.10) : (r.pres === 'positive' ? Math.round(sup * 0.90) : sup));
+    var base  = eng && eng.ok ? eng.baseBtuh : sup * 1.08 * 20;
+    var pplb  = eng && eng.ok ? eng.peopleBtuh : ppl * 400;
+    var sub   = eng && eng.ok ? eng.subtotalBtuh : base + pplb + devb;
+    var total = eng && eng.ok ? eng.totalBtuh : sub * 1.10;
+    var tr    = eng && eng.ok ? eng.tr : total / 12000;
+    var mkt   = eng && eng.ok ? eng.marketBtuh : Math.ceil(total / 9000) * 9000;
 
     if (typeof flash === 'function') {
       flash('vtr', tr.toFixed(2));

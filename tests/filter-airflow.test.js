@@ -1,0 +1,15 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const source=fs.readFileSync(require('path').join(__dirname,'../app.js'),'utf8');
+const ctx={};vm.createContext(ctx);
+vm.runInContext(source.slice(source.indexOf('function calculateFilterAirflow('),source.indexOf('function applyReportFilter(')),ctx);
+const calc=ctx.calculateFilterAirflow;
+assert(Math.abs(calc(1000,300,600,0).cfm-1000)<1e-8);
+const a=calc(1000,300,600,150),b=calc(1000,300,600,300);
+assert(a.cfm<1000 && a.cfm>b.cfm && b.cfm>0);
+const ratio=a.cfm/1000;
+assert(Math.abs((600-300*ratio)-450*ratio*ratio)<1e-8);
+assert.strictEqual(calc(0,300,600,100),null);
+assert.strictEqual(calc(1000,300,200,100),null);
+assert.strictEqual(calc(1000,300,600,-10),null);
+assert.strictEqual(calc(1000,NaN,600,100),null);
+console.log('Filter airflow intersection and validation passed.');

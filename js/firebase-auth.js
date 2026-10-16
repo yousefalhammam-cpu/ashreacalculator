@@ -1,3 +1,5 @@
+(function(){
+'use strict';
 const firebaseConfig = {
   apiKey: "AIzaSyCybA-8hTTps0Xy5iR2HxntSSASIeibYaU",
   authDomain: "aircalcpro-24809.firebaseapp.com",
@@ -15,6 +17,9 @@ let currentUser = null;
 let currentProfile = null;
 let authMode = 'signin';
 let proUnlockContext = null;
+let firebaseInitPromise = null;
+let authBusy = false;
+let authReturnFocus = null;
 
 let createUserWithEmailAndPasswordFn = null;
 let signInWithEmailAndPasswordFn = null;
@@ -25,7 +30,15 @@ let updateProfileFn = null;
 let docFn = null;
 let setDocFn = null;
 let getDocFn = null;
+let collectionFn = null;
+let getDocsFn = null;
 let serverTimestampFn = null;
+
+const PROJECT_ROLES = Object.freeze({
+  OWNER: 'owner',
+  EDITOR: 'editor',
+  VIEWER: 'viewer'
+});
 
 function GG(id){ return document.getElementById(id); }
 function isAr(){ return (window.lang || 'ar') === 'ar'; }
@@ -48,6 +61,30 @@ function tt(key, fallback){
 function toastMsg(msg){
   if(typeof window.toast === 'function') window.toast(msg);
 }
+function showAuthMessage(message){
+  const status = GG('auth-message');
+  if(status){ status.textContent = message || ''; status.hidden = !message; }
+}
+function authErrorMessage(err){
+  const code = err && err.code;
+  const messages = {
+    'auth/invalid-credential': ['البريد الإلكتروني أو كلمة المرور غير صحيحة.', 'Incorrect email or password.'],
+    'auth/wrong-password': ['البريد الإلكتروني أو كلمة المرور غير صحيحة.', 'Incorrect email or password.'],
+    'auth/user-not-found': ['البريد الإلكتروني أو كلمة المرور غير صحيحة.', 'Incorrect email or password.'],
+    'auth/email-already-in-use': ['هذا البريد مسجل بالفعل. سجّل الدخول أو استعد كلمة المرور.', 'This email is already registered. Sign in or reset your password.'],
+    'auth/too-many-requests': ['محاولات كثيرة. انتظر قليلًا ثم أعد المحاولة.', 'Too many attempts. Please try again later.'],
+    'auth/network-request-failed': ['تعذر الاتصال. تحقق من الإنترنت وأعد المحاولة.', 'Connection failed. Check your internet and try again.'],
+    'auth/invalid-email': ['صيغة البريد الإلكتروني غير صحيحة.', 'The email address is not valid.'],
+    'auth/user-disabled': ['تم تعطيل هذا الحساب. تواصل مع الدعم.', 'This account has been disabled. Contact support.'],
+    'auth/weak-password': ['كلمة المرور ضعيفة. استخدم 8 أحرف على الأقل.', 'The password is too weak. Use at least 8 characters.'],
+    'auth/internal-error': ['حدث خطأ داخلي في خدمة الحساب. أعد المحاولة.', 'The account service returned an internal error. Please try again.'],
+    'auth/operation-not-allowed': ['تسجيل الدخول بالبريد غير مفعّل في إعدادات Firebase لهذا التطبيق.', 'Email/password sign-in is not enabled in this app’s Firebase settings.'],
+    'auth/unauthorized-domain': ['نطاق هذا الموقع غير مصرح به في Firebase.', 'This website domain is not authorized in Firebase.']
+  };
+  if(messages[code]) return messages[code][isAr() ? 0 : 1];
+  const fallback = tt('authfirebase_unavailable', 'Account service is unavailable right now');
+  return code ? `${fallback} (${code})` : fallback;
+}
 function validEmail(v){
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
 }
@@ -65,6 +102,40 @@ function getDisplayName(user){
 function getDisplayEmail(user){
   return (user && user.email) || '--';
 }
+function buildProjectLink(projectId){
+  try{
+    if(!window.location || !projectId) return '';
+    if(window.location.protocol !== 'http:' && window.location.protocol !== 'https:') return '';
+    const url = new URL(window.location.href);
+    url.searchParams.set('project', projectId);
+    return url.toString();
+  }catch(e){
+    return '';
+  }
+}
+function normalizeProjectRole(role){
+  const value = String(role || '').toLowerCase();
+  if(value === PROJECT_ROLES.EDITOR) return PROJECT_ROLES.EDITOR;
+  if(value === PROJECT_ROLES.VIEWER) return PROJECT_ROLES.VIEWER;
+  return PROJECT_ROLES.OWNER;
+}
+function canEditProjectRole(role){
+  const normalized = normalizeProjectRole(role);
+  return normalized === PROJECT_ROLES.OWNER || normalized === PROJECT_ROLES.EDITOR;
+}
+function canViewProjectRole(role){
+  return !!normalizeProjectRole(role);
+}
+function normalizeCollaborationRoles(roles, ownerId){
+  const out = {};
+  const source = roles && typeof roles === 'object' ? roles : {};
+  Object.keys(source).forEach((uid) => {
+    const cleanUid = String(uid || '').trim();
+    if(cleanUid) out[cleanUid] = normalizeProjectRole(source[uid]);
+  });
+  if(ownerId) out[ownerId] = PROJECT_ROLES.OWNER;
+  return out;
+}
 function notifyPlanDependents(){
   try{
     if(typeof window.updatePlanUI === 'function') window.updatePlanUI();
@@ -74,12 +145,26 @@ function notifyPlanDependents(){
 }
 
 function setAuthMode(mode){
+  if(authBusy) return;
   authMode = mode === 'create' ? 'create' : 'signin';
+  showAuthMessage('');
   updateAuthUI();
 }
 
 function updateAuthUI(){
   const loggedIn = !!currentUser;
+  const accountButton = GG('topbar-account-btn');
+  if(accountButton){
+    const label = loggedIn ? `${tt('authacct', 'Account')}: ${getDisplayName(currentUser)}` : tt('authsignin', 'Sign In');
+    accountButton.title = label;
+    accountButton.setAttribute('aria-label', label);
+    accountButton.classList.toggle('signed-in', loggedIn);
+  }
+  ['auth-email', 'auth-password'].forEach(id => {
+    const input = GG(id);
+    if(input) input.closest('.auth-field').hidden = loggedIn;
+  });
+  if(GG('auth-password')) GG('auth-password').autocomplete = authMode === 'create' ? 'new-password' : 'current-password';
   const openBtn = GG('auth-open-btn');
   const logoutBtn = GG('auth-logout-btn');
   const userRow = GG('auth-user-row');
@@ -145,7 +230,8 @@ function updateAuthUI(){
     primaryBtn.textContent = loggedIn
       ? tt('authearlypro', 'PRO Early Access')
       : (authMode === 'create' ? tt('authcreate', 'Create Account') : tt('authsignin', 'Sign In'));
-    primaryBtn.disabled = loggedIn;
+    primaryBtn.disabled = loggedIn || authBusy;
+    if(authBusy) primaryBtn.textContent = isAr() ? 'جارٍ الاتصال...' : 'Connecting...';
   }
 
   if(forgotBtn){
@@ -206,11 +292,23 @@ async function loadUserProfileDoc(user){
 }
 
 async function ensureFirebase(options = {}){
+  if(firebaseReady) return true;
+  if(firebaseInitPromise) return firebaseInitPromise;
+  const timeout = new Promise((resolve) => {
+    window.setTimeout(() => resolve(false), 15000);
+  });
+  firebaseInitPromise = Promise.race([initializeFirebase(options), timeout]);
+  try { return await firebaseInitPromise; }
+  finally { firebaseInitPromise = null; }
+}
+
+async function initializeFirebase(options = {}){
   const silent = options && options.silent === true;
   if(firebaseReady) return true;
   if(isFileProtocol()){
     firebaseReady = false;
     if(!silent){
+      showAuthMessage(isAr() ? 'افتح التطبيق من رابط الخادم المحلي لتسجيل الدخول. تبقى بيانات الملف محفوظة في المتصفح.' : 'Open the app using the local server URL to sign in. Your file-based data remains saved in this browser.');
       toastMsg(
         isAr()
           ? 'تسجيل الدخول لا يعمل عند فتح التطبيق مباشرة من الملف. شغّل AirCalc Pro من الموقع أو من خادم محلي.'
@@ -222,13 +320,23 @@ async function ensureFirebase(options = {}){
     return false;
   }
   try{
-    const appMod = await import('https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js');
-    const authMod = await import('https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js');
-    const fsMod = await import('https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js');
+    const [appMod, authMod, fsMod] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js')
+    ]);
 
-    const app = appMod.initializeApp(firebaseConfig);
+    const app = appMod.getApps().length ? appMod.getApp() : appMod.initializeApp(firebaseConfig);
     auth = authMod.getAuth(app);
     db = fsMod.getFirestore(app);
+
+    // Keep the signed-in account across refreshes. If storage is unavailable,
+    // Firebase still falls back to its in-memory session for the current page.
+    try{
+      await authMod.setPersistence(auth, authMod.browserLocalPersistence);
+    }catch(err){
+      console.warn('[AirCalc] Persistent auth session unavailable:', err);
+    }
 
     createUserWithEmailAndPasswordFn = authMod.createUserWithEmailAndPassword;
     signInWithEmailAndPasswordFn = authMod.signInWithEmailAndPassword;
@@ -240,15 +348,19 @@ async function ensureFirebase(options = {}){
     docFn = fsMod.doc;
     setDocFn = fsMod.setDoc;
     getDocFn = fsMod.getDoc;
+    collectionFn = fsMod.collection;
+    getDocsFn = fsMod.getDocs;
     serverTimestampFn = fsMod.serverTimestamp;
 
     firebaseReady = true;
     onAuthStateChangedFn(auth, async (user) => {
       currentUser = user || null;
       currentProfile = null;
+      updateAuthUI();
+      notifyPlanDependents();
       if(currentUser){
-        await updateUserLoginRecord(currentUser).catch(() => {});
-        currentProfile = await loadUserProfileDoc(currentUser).catch(() => null);
+        const profile = await loadUserProfileDoc(user).catch(() => null);
+        if(currentUser && currentUser.uid === user.uid) currentProfile = profile;
       }
       updateAuthUI();
       notifyPlanDependents();
@@ -258,6 +370,7 @@ async function ensureFirebase(options = {}){
     console.warn('[AirCalc] Firebase auth unavailable:', err);
     firebaseReady = false;
     if(!silent){
+      showAuthMessage(authErrorMessage(err));
       toastMsg(
         navigator.onLine
           ? tt('authfirebase_unavailable', 'Account service is unavailable right now')
@@ -300,9 +413,8 @@ async function updateUserLoginRecord(user){
 }
 
 async function handlePrimaryAuth(){
-  if(currentUser) return;
-  const ready = await ensureFirebase();
-  if(!ready) return;
+  if(currentUser || authBusy) return;
+  showAuthMessage('');
 
   const fullName = (GG('auth-fullname')?.value || '').trim();
   const email = (GG('auth-email')?.value || '').trim();
@@ -310,29 +422,41 @@ async function handlePrimaryAuth(){
   const confirm = GG('auth-confirm')?.value || '';
 
   if(authMode === 'create' && !fullName){
-    toastMsg(tt('authfullname_req', 'Full name is required'));
+    showAuthMessage(tt('authfullname_req', 'Full name is required'));
     return;
   }
   if(!validEmail(email)){
-    toastMsg(tt('authemail_invalid', 'Enter a valid email address'));
+    showAuthMessage(tt('authemail_invalid', 'Enter a valid email address'));
     return;
   }
-  if(password.length < 8){
-    toastMsg(tt('authpassword_min', 'Password must be at least 8 characters'));
+  if(!password || (authMode === 'create' && password.length < 8)){
+    showAuthMessage(authMode === 'create' ? tt('authpassword_min', 'Password must be at least 8 characters') : (isAr() ? 'أدخل كلمة المرور.' : 'Enter your password.'));
     return;
   }
   if(authMode === 'create' && password !== confirm){
-    toastMsg(tt('authconfirm_mismatch', 'Confirm password does not match'));
+    showAuthMessage(tt('authconfirm_mismatch', 'Confirm password does not match'));
     return;
   }
 
+  authBusy = true;
+  updateAuthUI();
   try{
+    const ready = await ensureFirebase();
+    if(!ready){
+      showAuthMessage(
+        isFileProtocol()
+          ? (isAr() ? 'افتح التطبيق من رابط الخادم المحلي لتسجيل الدخول.' : 'Open the app using the local server URL to sign in.')
+          : tt('authfirebase_unavailable', 'Account service is unavailable right now')
+      );
+      return;
+    }
     if(authMode === 'create'){
       const cred = await createUserWithEmailAndPasswordFn(auth, email, password);
       if(cred && cred.user){
-        await updateProfileFn(cred.user, { displayName: fullName });
-        await createUserProfileDoc(cred.user, fullName);
-        currentProfile = await loadUserProfileDoc(cred.user).catch(() => null);
+        currentUser = cred.user;
+        // Firestore availability must not turn successful Authentication into a failed login.
+        updateProfileFn(cred.user, { displayName: fullName }).then(updateAuthUI).catch(() => {});
+        createUserProfileDoc(cred.user, fullName).catch(() => {});
       }
       if(typeof window.trackEvent === 'function'){
         window.trackEvent('signup_success', {
@@ -344,8 +468,8 @@ async function handlePrimaryAuth(){
     } else {
       const cred = await signInWithEmailAndPasswordFn(auth, email, password);
       if(cred && cred.user){
-        await updateUserLoginRecord(cred.user);
-        currentProfile = await loadUserProfileDoc(cred.user).catch(() => null);
+        currentUser = cred.user;
+        updateUserLoginRecord(cred.user).catch(() => {});
       }
       if(typeof window.trackEvent === 'function'){
         window.trackEvent('login_success', {
@@ -360,8 +484,10 @@ async function handlePrimaryAuth(){
     notifyPlanDependents();
     closeAuthModal();
   }catch(err){
-    const msg = (err && err.message) ? err.message : tt('authfirebase_unavailable', 'Account service is unavailable right now');
-    toastMsg(msg);
+    showAuthMessage(authErrorMessage(err));
+  }finally{
+    authBusy = false;
+    updateAuthUI();
   }
 }
 
@@ -405,25 +531,37 @@ async function logoutAuth(){
 
 function openAuthModal(){
   proUnlockContext = null;
+  showAccountDialog();
+}
+
+function showAccountDialog(){
+  authReturnFocus = document.activeElement;
+  showAuthMessage('');
   updateAuthUI();
   openOverlay('auth-overlay');
+  const target = GG(currentUser ? 'auth-logout-modal-btn' : 'auth-email');
+  if(target) target.focus();
 }
 
 function openAuthModalWithContext(options){
   proUnlockContext = options && options.proUnlock ? {
     featureKey: options.featureKey || ''
   } : null;
-  updateAuthUI();
-  openOverlay('auth-overlay');
+  showAccountDialog();
 }
 
 function closeAuthModal(e){
   if(e && e.target !== GG('auth-overlay')) return;
   proUnlockContext = null;
   closeOverlay('auth-overlay');
+  if(authReturnFocus && authReturnFocus.isConnected) authReturnFocus.focus();
 }
 
 function requireLoginForCloudFeature(){
+  if(!currentUser){
+    toastMsg(typeof lang!=='undefined' && lang==='ar'?'سجل الدخول لحماية بياناتك السحابية.':'Sign in to access your private cloud data.');
+    return false;
+  }
   if (window.AppPlan && typeof window.AppPlan.requirePro === 'function') {
     return window.AppPlan.requirePro('cloud_save');
   }
@@ -435,15 +573,295 @@ function requireLoginForCloudFeature(){
 }
 
 async function saveProjectToCloud(project){
-  if(!requireLoginForCloudFeature()) return false;
-  toastMsg(tt('authcloudcoming', 'Cloud saving is coming soon'));
-  return { ok:false, reason:'coming_soon', project:project || null };
+  if(!requireLoginForCloudFeature()) return { ok:false, reason:'login_required', project:project || null };
+  const ready = await ensureFirebase({ silent:true });
+  if(!ready || !db || !currentUser || !docFn || !setDocFn){
+    return { ok:false, reason:navigator.onLine ? 'firebase_unavailable' : 'offline', project:project || null };
+  }
+  if(!project || typeof project !== 'object'){
+    return { ok:false, reason:'invalid_project', project:null };
+  }
+
+  const localId = String(project.id || '').trim();
+  const cloudId = String(project.cloudId || localId || '').trim();
+  if(!cloudId){
+    return { ok:false, reason:'missing_project_id', project:project || null };
+  }
+
+  const projectUrl = buildProjectLink(cloudId);
+  const existingCollaboration = (project.collaboration && typeof project.collaboration === 'object')
+    ? project.collaboration
+    : {};
+  const existingRoles = (existingCollaboration.roles && typeof existingCollaboration.roles === 'object')
+    ? existingCollaboration.roles
+    : {};
+  const collaboration = {
+    ownerId: currentUser.uid,
+    ownerEmail: currentUser.email || '',
+    visibility: existingCollaboration.visibility || 'private',
+    roles: {
+      ...existingRoles,
+      [currentUser.uid]: PROJECT_ROLES.OWNER
+    },
+    updatedBy: currentUser.uid
+  };
+  const ref = docFn(db, 'users', currentUser.uid, 'projects', cloudId);
+  const payload = {
+    id: localId || cloudId,
+    cloudId,
+    name: String(project.name || '').trim(),
+    ownerId: currentUser.uid,
+    ownerEmail: currentUser.email || '',
+    role: PROJECT_ROLES.OWNER,
+    collaboration,
+    status: project.status || 'active',
+    localUpdatedAt: project.updatedAt || '',
+    updatedAt: serverTimestampFn(),
+    lastSyncedAt: serverTimestampFn(),
+    projectUrl,
+    schemaVersion: 1,
+    snapshot: project.snapshot || {}
+  };
+
+  try{
+    await setDocFn(ref, payload, { merge:true });
+    return { ok:true, cloudId, projectUrl, ownerId:currentUser.uid };
+  }catch(err){
+    console.warn('[AirCalc] Cloud project save failed:', err);
+    return {
+      ok:false,
+      reason:navigator.onLine ? 'write_failed' : 'offline',
+      error:(err && err.message) ? err.message : String(err || ''),
+      project:project || null
+    };
+  }
 }
 
 async function loadUserProjectsFromCloud(){
   if(!requireLoginForCloudFeature()) return [];
-  toastMsg(tt('authcloudcoming', 'Cloud saving is coming soon'));
-  return [];
+  const ready = await ensureFirebase({ silent:true });
+  if(!ready || !db || !currentUser || !collectionFn || !getDocsFn) return [];
+
+  try{
+    const ref = collectionFn(db, 'users', currentUser.uid, 'projects');
+    const snap = await getDocsFn(ref);
+    const projects = [];
+    snap.forEach((docSnap) => {
+      const data = docSnap.data() || {};
+      projects.push({
+        id: data.id || docSnap.id,
+        cloudId: data.cloudId || docSnap.id,
+        name: data.name || '',
+        createdAt: data.createdAt || '',
+        updatedAt: data.localUpdatedAt || '',
+        ownerId: data.ownerId || currentUser.uid,
+        ownerEmail: data.ownerEmail || currentUser.email || '',
+        role: normalizeProjectRole(data.role),
+        collaboration: data.collaboration || {
+          ownerId: data.ownerId || currentUser.uid,
+          ownerEmail: data.ownerEmail || currentUser.email || '',
+          visibility: 'private',
+          roles: { [currentUser.uid]: normalizeProjectRole(data.role) }
+        },
+        status: data.status || 'active',
+        syncStatus: 'synced',
+        projectUrl: data.projectUrl || buildProjectLink(data.cloudId || docSnap.id),
+        snapshot: data.snapshot || {}
+      });
+    });
+    projects.sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime());
+    return projects;
+  }catch(err){
+    console.warn('[AirCalc] Cloud project load failed:', err);
+    return [];
+  }
+}
+
+function normalizeEquipmentCloudRecord(record){
+  const source = record && typeof record === 'object' ? record : {};
+  return {
+    ...source,
+    ownerId: currentUser ? currentUser.uid : '',
+    ownerEmail: currentUser ? (currentUser.email || '') : '',
+    updatedAt: serverTimestampFn ? serverTimestampFn() : '',
+    schemaVersion: 1
+  };
+}
+
+async function saveEquipmentCatalogueToCloud(store, options = {}){
+  const silent = options && options.silent === true;
+  if(!silent && !requireLoginForCloudFeature()) return { ok:false, reason:'login_required' };
+  const ready = await ensureFirebase({ silent:true });
+  if(!ready || !db || !currentUser || !docFn || !setDocFn){
+    return { ok:false, reason:navigator.onLine ? 'firebase_unavailable' : 'offline' };
+  }
+  const catalogues = Array.isArray(store && store.catalogues) ? store.catalogues : [];
+  const versions = Array.isArray(store && store.versions) ? store.versions : [];
+  const records = Array.isArray(store && store.records) ? store.records : [];
+
+  try{
+    for(const catalogue of catalogues){
+      const id = String(catalogue && catalogue.id || '').trim();
+      if(!id) continue;
+      await setDocFn(docFn(db, 'users', currentUser.uid, 'equipmentCatalogues', id), normalizeEquipmentCloudRecord(catalogue), { merge:true });
+    }
+    for(const version of versions){
+      const id = String(version && version.id || '').trim();
+      if(!id) continue;
+      await setDocFn(docFn(db, 'users', currentUser.uid, 'equipmentCatalogueVersions', id), normalizeEquipmentCloudRecord(version), { merge:true });
+    }
+    for(const record of records){
+      const id = String(record && record.id || '').trim();
+      if(!id || record.sampleData) continue;
+      await setDocFn(docFn(db, 'users', currentUser.uid, 'equipmentRecords', id), normalizeEquipmentCloudRecord(record), { merge:true });
+    }
+    return {
+      ok:true,
+      ownerId:currentUser.uid,
+      catalogues:catalogues.length,
+      versions:versions.length,
+      records:records.filter((record) => record && !record.sampleData).length
+    };
+  }catch(err){
+    console.warn('[AirCalc] Equipment catalogue cloud save failed:', err);
+    return {
+      ok:false,
+      reason:navigator.onLine ? 'write_failed' : 'offline',
+      error:(err && err.message) ? err.message : String(err || '')
+    };
+  }
+}
+
+async function loadEquipmentCatalogueFromCloud(options = {}){
+  const silent = options && options.silent === true;
+  if(!silent && !requireLoginForCloudFeature()) return { ok:false, reason:'login_required', catalogues:[], versions:[], records:[] };
+  const ready = await ensureFirebase({ silent:true });
+  if(!ready || !db || !currentUser || !collectionFn || !getDocsFn){
+    return { ok:false, reason:navigator.onLine ? 'firebase_unavailable' : 'offline', catalogues:[], versions:[], records:[] };
+  }
+  async function readCollection(name){
+    const ref = collectionFn(db, 'users', currentUser.uid, name);
+    const snap = await getDocsFn(ref);
+    const rows = [];
+    snap.forEach((docSnap) => {
+      rows.push({ id:docSnap.id, ...(docSnap.data() || {}) });
+    });
+    return rows;
+  }
+  try{
+    return {
+      ok:true,
+      catalogues:await readCollection('equipmentCatalogues'),
+      versions:await readCollection('equipmentCatalogueVersions'),
+      records:await readCollection('equipmentRecords')
+    };
+  }catch(err){
+    console.warn('[AirCalc] Equipment catalogue cloud load failed:', err);
+    return {
+      ok:false,
+      reason:navigator.onLine ? 'read_failed' : 'offline',
+      error:(err && err.message) ? err.message : String(err || ''),
+      catalogues:[],
+      versions:[],
+      records:[]
+    };
+  }
+}
+
+async function publishSharedProject(project){
+  if(!requireLoginForCloudFeature()) return { ok:false, reason:'login_required' };
+  const ready = await ensureFirebase({ silent:true });
+  if(!ready || !db || !currentUser || !docFn || !setDocFn){
+    return { ok:false, reason:navigator.onLine ? 'firebase_unavailable' : 'offline' };
+  }
+  if(!project || typeof project !== 'object') return { ok:false, reason:'invalid_project' };
+
+  const projectId = String(project.cloudId || project.id || '').trim();
+  if(!projectId) return { ok:false, reason:'missing_project_id' };
+
+  const existing = project.collaboration && typeof project.collaboration === 'object'
+    ? project.collaboration
+    : {};
+  const roles = normalizeCollaborationRoles(existing.roles, currentUser.uid);
+  const collaboration = {
+    ownerId: currentUser.uid,
+    ownerEmail: currentUser.email || '',
+    visibility: 'shared',
+    roles,
+    updatedBy: currentUser.uid
+  };
+  const ref = docFn(db, 'sharedProjects', projectId);
+  const payload = {
+    id: project.id || projectId,
+    cloudId: projectId,
+    name: String(project.name || '').trim(),
+    ownerId: currentUser.uid,
+    ownerEmail: currentUser.email || '',
+    role: PROJECT_ROLES.OWNER,
+    collaboration,
+    status: project.status || 'active',
+    localUpdatedAt: project.updatedAt || '',
+    updatedAt: serverTimestampFn(),
+    lastSyncedAt: serverTimestampFn(),
+    projectUrl: buildProjectLink(projectId),
+    schemaVersion: 1,
+    snapshot: project.snapshot || {}
+  };
+
+  try{
+    await setDocFn(ref, payload, { merge:true });
+    return { ok:true, cloudId:projectId, collaboration, projectUrl:payload.projectUrl };
+  }catch(err){
+    console.warn('[AirCalc] Shared project publish failed:', err);
+    return {
+      ok:false,
+      reason:navigator.onLine ? 'write_failed' : 'offline',
+      error:(err && err.message) ? err.message : String(err || '')
+    };
+  }
+}
+
+async function updateSharedProjectRole(projectId, userId, role){
+  if(!requireLoginForCloudFeature()) return { ok:false, reason:'login_required' };
+  const ready = await ensureFirebase({ silent:true });
+  if(!ready || !db || !currentUser || !docFn || !getDocFn || !setDocFn){
+    return { ok:false, reason:navigator.onLine ? 'firebase_unavailable' : 'offline' };
+  }
+  const cleanProjectId = String(projectId || '').trim();
+  const cleanUserId = String(userId || '').trim();
+  if(!cleanProjectId || !cleanUserId) return { ok:false, reason:'missing_ids' };
+  const normalizedRole = normalizeProjectRole(role);
+  const ref = docFn(db, 'sharedProjects', cleanProjectId);
+
+  try{
+    const snap = await getDocFn(ref);
+    if(!snap || !snap.exists()) return { ok:false, reason:'project_not_found' };
+    const data = snap.data() || {};
+    if(data.ownerId !== currentUser.uid) return { ok:false, reason:'owner_required' };
+    const collaboration = data.collaboration && typeof data.collaboration === 'object'
+      ? data.collaboration
+      : {};
+    const roles = normalizeCollaborationRoles(collaboration.roles, currentUser.uid);
+    roles[cleanUserId] = normalizedRole;
+    await setDocFn(ref, {
+      collaboration: {
+        ownerId: currentUser.uid,
+        ownerEmail: currentUser.email || data.ownerEmail || '',
+        visibility: 'shared',
+        roles,
+        updatedBy: currentUser.uid
+      },
+      updatedAt: serverTimestampFn()
+    }, { merge:true });
+    return { ok:true, projectId:cleanProjectId, userId:cleanUserId, role:normalizedRole };
+  }catch(err){
+    console.warn('[AirCalc] Shared role update failed:', err);
+    return {
+      ok:false,
+      reason:navigator.onLine ? 'write_failed' : 'offline',
+      error:(err && err.message) ? err.message : String(err || '')
+    };
+  }
 }
 
 function bindAuthUI(){
@@ -456,18 +874,32 @@ function bindAuthUI(){
 
   if(signInTab) signInTab.addEventListener('click', () => setAuthMode('signin'));
   if(createTab) createTab.addEventListener('click', () => setAuthMode('create'));
-  if(primaryBtn) primaryBtn.addEventListener('click', handlePrimaryAuth);
+  if(primaryBtn) primaryBtn.onclick = handlePrimaryAuth;
   if(forgotBtn) forgotBtn.addEventListener('click', handleForgotPassword);
   if(logoutBtn) logoutBtn.addEventListener('click', logoutAuth);
-  if(laterBtn) laterBtn.addEventListener('click', closeAuthModal);
+  if(laterBtn) laterBtn.addEventListener('click', () => closeAuthModal());
+  const overlay = GG('auth-overlay');
+  if(overlay) overlay.addEventListener('keydown', (event) => {
+    if(event.key === 'Escape'){ event.preventDefault(); closeAuthModal(); }
+    if(event.key === 'Enter' && event.target.matches('input')){ event.preventDefault(); handlePrimaryAuth(); }
+    if(event.key === 'Tab'){
+      const elements = [...overlay.querySelectorAll('button, input, a[href]')].filter(el => !el.disabled && el.getClientRects().length);
+      const first = elements[0], last = elements[elements.length - 1];
+      if(event.shiftKey && document.activeElement === first){ event.preventDefault(); last.focus(); }
+      else if(!event.shiftKey && document.activeElement === last){ event.preventDefault(); first.focus(); }
+    }
+  });
 }
 
 window.openAuthModal = openAuthModal;
 window.closeAuthModal = closeAuthModal;
 window.logoutAuth = logoutAuth;
+window.submitAirCalcAuth = handlePrimaryAuth;
 window.requireLoginForCloudFeature = requireLoginForCloudFeature;
 window.saveProjectToCloud = saveProjectToCloud;
 window.loadUserProjectsFromCloud = loadUserProjectsFromCloud;
+window.saveEquipmentCatalogueToCloud = saveEquipmentCatalogueToCloud;
+window.loadEquipmentCatalogueFromCloud = loadEquipmentCatalogueFromCloud;
 window.AppAuth = {
   openAuthModal: openAuthModalWithContext,
   closeAuthModal,
@@ -476,17 +908,58 @@ window.AppAuth = {
   requireLoginForCloudFeature,
   saveProjectToCloud,
   loadUserProjectsFromCloud,
+  saveEquipmentCatalogueToCloud,
+  loadEquipmentCatalogueFromCloud,
+  publishSharedProject,
+  updateSharedProjectRole,
   getCurrentUser: () => currentUser,
   getCurrentProfile: () => currentProfile,
   isSignedIn: () => !!currentUser,
   hasProEarlyAccess: () => !!currentUser
 };
+window.AppProjectRoles = {
+  PROJECT_ROLES,
+  normalizeProjectRole,
+  canEditProjectRole,
+  canViewProjectRole,
+  normalizeCollaborationRoles
+};
 
-document.addEventListener('DOMContentLoaded', () => {
+function initAccount(){
+  const actions = document.querySelector('.desktop-topbar-actions');
+  if(actions && !GG('topbar-account-btn')){
+    const button = document.createElement('button');
+    button.id = 'topbar-account-btn';
+    button.type = 'button';
+    button.className = 'desktop-topbar-btn icon-only';
+    button.setAttribute('aria-haspopup', 'dialog');
+    button.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg>';
+    button.addEventListener('click', openAuthModal);
+    actions.prepend(button);
+  }
+  const sheet = document.querySelector('#auth-overlay .auth-sheet');
+  if(sheet){
+    sheet.setAttribute('role', 'dialog');
+    sheet.setAttribute('aria-modal', 'true');
+    sheet.setAttribute('aria-labelledby', 'auth-modal-title');
+    const message = document.createElement('p');
+    message.id = 'auth-message';
+    message.setAttribute('role', 'alert');
+    message.hidden = true;
+    GG('auth-helper-note').after(message);
+    const close = sheet.querySelector('.upgrade-sheet-close');
+    if(close){ close.textContent = '\u00d7'; close.setAttribute('aria-label', 'Close'); }
+    ['email','password','fullname','confirm'].forEach(name => {
+      GG('auth-' + name).setAttribute('aria-labelledby', 'auth-' + name + '-lbl');
+    });
+  }
   bindAuthUI();
   updateAuthUI();
   ensureFirebase({ silent:true }).then(() => {
     updateAuthUI();
     notifyPlanDependents();
   });
-});
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAccount, {once:true});
+else initAccount();
+})();

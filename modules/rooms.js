@@ -21,10 +21,59 @@
     return typeof lang !== 'undefined' ? lang : 'ar';
   }
 
+  var ROOM_STANDARD_KEY_BY_ROOM_ID = {
+    h_patient_room: 'patient_room',
+    h_corridor: 'corridor',
+    h_or: 'operating_room',
+    h_icu: 'icu',
+    h_ccu: 'icu',
+    h_exam: 'exam_room',
+    h_treatment: 'treatment_room',
+    h_isolation: 'isolation_room',
+    h_airborne: 'isolation_room',
+    h_protective: 'protective_environment',
+    h_nicu: 'nicu',
+    h_lab: 'laboratory',
+    h_pathology: 'laboratory',
+    h_autopsy: 'laboratory',
+    h_cath_lab: 'cath_lab',
+    h_cardiac_cath: 'cath_lab',
+    h_ep_lab: 'cath_lab',
+    h_ir_lab: 'cath_lab',
+    h_neuro_angio: 'cath_lab',
+    h_hybrid_or: 'operating_room',
+    h_sterile_decontam: 'sterile_processing',
+    h_sterile_clean: 'sterile_processing',
+    h_sterile_storage: 'sterile_processing',
+    h_waiting: 'waiting_area',
+    h_pharmacy: 'pharmacy_clean',
+    h_clean: 'sterile_processing'
+  };
+
+  function titlePressure(value) {
+    var p = String(value || 'neutral').toLowerCase();
+    if (p === 'positive') return 'Positive';
+    if (p === 'negative') return 'Negative';
+    return 'Neutral';
+  }
+
+  function makeRoomSpecificHealthcareStandard(room) {
+    return {
+      category: 'healthcare_room_specific',
+      roomType: room ? (room.en || room.ar || 'Healthcare Room') : 'Healthcare Room',
+      ach: room && room.tach != null ? room.tach : null,
+      oa: room && room.oach != null ? room.oach : null,
+      exhaust: null,
+      pressure: titlePressure(room && room.pres),
+      notes: 'Room-specific healthcare data; source confirmation required'
+    };
+  }
+
   function inferRoomStandardKey(room) {
     if (!room) return 'office';
     var rid = (room.id || '').toLowerCase();
     var en  = (room.en || '').toLowerCase();
+    if (ROOM_STANDARD_KEY_BY_ROOM_ID[rid]) return ROOM_STANDARD_KEY_BY_ROOM_ID[rid];
 
     if (rid.indexOf('operating') >= 0 || en.indexOf('operating room') >= 0) return 'operating_room';
     if (rid.indexOf('procedure') >= 0 || en.indexOf('procedure') >= 0) return 'minor_procedure';
@@ -51,12 +100,15 @@
 
     if (rid.indexOf('wait') >= 0 || en.indexOf('waiting') >= 0) return 'waiting_area';
     if (rid.indexOf('corridor') >= 0 || en.indexOf('corridor') >= 0) return 'corridor';
+    if (room.mode === 'hc') return 'healthcare_room_specific';
     return 'office';
   }
 
   function getRoomStandard(room) {
     var key = inferRoomStandardKey(room);
-    return _standards()[key] || {
+    if (_standards()[key]) return _standards()[key];
+    if (room && room.mode === 'hc') return makeRoomSpecificHealthcareStandard(room);
+    return {
       category: 'unknown',
       roomType: room ? (room.en || room.ar || 'Room') : 'Room',
       ach: null,

@@ -1,0 +1,28 @@
+# Runtime/cache folders
+.env
+.env.*
+!.env.example
+*service-account*.json
+*serviceAccount*.json
+firebase-adminsdk*.json
+.firebase/
+.edge-profile/
+ashreacalculator-stabilization-v1/
+node_modules/
+dist/browser-audit/
+
+# Local server output
+.server.err
+.server.out
+
+# Temporary test artifacts
+test-hap-unzip/
+test-hap.xlsx
+test-hap.zip
+test-zip.zip
+ui-check-mobile.png
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.log

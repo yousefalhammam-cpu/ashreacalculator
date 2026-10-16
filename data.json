@@ -6,7 +6,7 @@
       "cat": "general",
       "ar": "مكتب",
       "en": "Office",
-      "factor": 400
+      "factor": 260
     },
     "r_residential": {
       "id": "r_residential",
@@ -489,6 +489,120 @@
         60
       ],
       "note": ""
+    },
+    "h_cath_lab": {
+      "id": "h_cath_lab",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "مختبر القسطرة",
+      "en": "Cath Lab",
+      "oach": 3,
+      "tach": 15,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        0,
+        60
+      ],
+      "note": "ASHRAE 170 Class 2 imaging room basis."
+    },
+    "h_cardiac_cath": {
+      "id": "h_cardiac_cath",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "قسطرة القلب",
+      "en": "Cardiac Cath Lab",
+      "oach": 3,
+      "tach": 15,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        0,
+        60
+      ],
+      "note": "ASHRAE 170 Class 2 imaging room basis for cardiac catheterization."
+    },
+    "h_ep_lab": {
+      "id": "h_ep_lab",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "مختبر الفيزيولوجيا الكهربائية",
+      "en": "EP Lab",
+      "oach": 3,
+      "tach": 15,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        0,
+        60
+      ],
+      "note": "ASHRAE 170 Class 2 imaging room basis for electrophysiology procedures."
+    },
+    "h_ir_lab": {
+      "id": "h_ir_lab",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "مختبر الأشعة التداخلية",
+      "en": "Interventional Radiology Lab",
+      "oach": 3,
+      "tach": 15,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        0,
+        60
+      ],
+      "note": "ASHRAE 170 Class 2 imaging room basis."
+    },
+    "h_neuro_angio": {
+      "id": "h_neuro_angio",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "مختبر القسطرة العصبية",
+      "en": "Neuro Angio Lab",
+      "oach": 3,
+      "tach": 15,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        0,
+        60
+      ],
+      "note": "ASHRAE 170 Class 2 imaging room basis for neuro/peripheral angiography."
+    },
+    "h_hybrid_or": {
+      "id": "h_hybrid_or",
+      "mode": "hc",
+      "cat": "healthcare",
+      "ar": "غرفة عمليات هجينة",
+      "en": "Hybrid OR / Class 3 Imaging",
+      "oach": 4,
+      "tach": 20,
+      "pres": "positive",
+      "tr": [
+        21,
+        24
+      ],
+      "rh": [
+        20,
+        60
+      ],
+      "note": "ASHRAE 170 Class 3 imaging room basis."
     },
     "h_sterile_decontam": {
       "id": "h_sterile_decontam",
@@ -2564,5 +2678,23 @@
     ],
     "waiting_area": [],
     "corridor": []
+  },
+  "ENGINEERING_SOURCE_STATUS": {
+    "healthcareRoomValues": {
+      "status": "requires_source_confirmation",
+      "basis": "Existing app healthcare ACH/OA/pressure/temperature/RH values labeled as ASHRAE 170.",
+      "scope": [
+        "ROOMS entries with mode=hc",
+        "ROOM_STANDARDS clinical entries"
+      ],
+      "approvalRequiredBeforeFinalDesign": true,
+      "todo": "Confirm against the adopted ASHRAE 170 edition and local authority requirements before final design approval."
+    },
+    "generalRoomLoadFactors": {
+      "status": "preliminary_app_baseline",
+      "basis": "Existing quick-load factors used by the current app.",
+      "approvalRequiredBeforeFinalDesign": true,
+      "todo": "Confirm project load basis or replace with detailed envelope/load calculation where required."
+    }
   }
 }

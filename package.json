@@ -1,0 +1,23 @@
+{
+  "name": "aircalc-pro",
+  "version": "1.0.0-beta.1",
+  "private": true,
+  "description": "AirCalc Pro HVAC engineering beta hardening workspace.",
+  "scripts": {
+    "ai:offline": "node scripts/offline-ai.js",
+    "ai:check": "node scripts/offline-ai.js --check",
+    "build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-syntax.ps1",
+    "test": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-tests.ps1",
+    "stress": "node scripts/stress-benchmark.js",
+    "browser:smoke": "node scripts/browser-smoke.js",
+    "browser:core-ux": "node scripts/core-ux-e2e.js",
+    "browser:visual": "node scripts/browser-visual-audit.js",
+    "firebase:check": "node scripts/firebase-predeploy-check.js",
+    "verify": "npm run build && npm test && npm run stress",
+    "package:release": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-release.ps1",
+    "verify:release": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-release-package.ps1",
+    "release:manifest": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/write-release-manifest.ps1",
+    "release:beta": "npm run verify && npm run browser:smoke && npm run firebase:check && npm run package:release && npm run verify:release && npm run release:manifest"
+  },
+  "license": "UNLICENSED"
+}

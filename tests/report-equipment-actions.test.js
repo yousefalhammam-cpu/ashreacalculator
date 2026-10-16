@@ -1,0 +1,56 @@
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const vm = require('vm');
+const source = fs.readFileSync(require('path').join(__dirname, '../app.js'), 'utf8');
+const names = ['getManufacturerRecommendationMatchRules','classifyManufacturerCapacityMatch','findManufacturerMatchesForScenario','applyReportCapacityAction','applyReportDuctAction','calcDuctSize','_makeDuctCandidate'];
+const calls = [];
+const ctx = {lang:'en', window:{}, projState:{}, DUCT_STD:[],
+  getAllowedSystemType:x=>x, isProjectSystemEquipmentRecordCompatible:()=>true,
+  getProjectRequiredLoadBtu:()=>30000, _ductCandidateScore:()=>0,
+  applyProjectSystemManualCapacity:(id,value)=>calls.push([id,value]),
+  renderTechReportFoundation:()=>{}, persistQuoteState:()=>{},renderProjBlock:()=>{},renderQuote:()=>{},renderAdvancedDuct:()=>{}};
+vm.createContext(ctx);
+names.forEach(name=>vm.runInContext(source.match(new RegExp('function '+name+'\\([^]*?\\n\\}'))[0],ctx));
+const scenario = {systemType:'split',standardUnitCapacityBtuH:30000,quantity:1,totalConceptualCapacityBtuH:30000,conceptualAirflowCfm:1000,requiredCoolingCapacityBtuH:30000};
+const records = [29000,30000,31000].map(n=>({id:String(n),manufacturerName:String(n),coolingCapacityBtuH:n,airflowNominalCfm:1000,verificationStatus:'verified'}));
+assert.strictEqual(ctx.classifyManufacturerCapacityMatch(0,{verificationStatus:'unverified'}),'Acceptable Match');
+assert.strictEqual(ctx.classifyManufacturerCapacityMatch(0,{verificationStatus:'verified'}),'Exact or Near Match');
+assert.deepStrictEqual(Array.from(ctx.findManufacturerMatchesForScenario(scenario,records).primary,x=>x.actualUnitCapacityBtuH),[30000,31000]);
+scenario.requiredCoolingCapacityBtuH=31000;
+assert(ctx.findManufacturerMatchesForScenario(scenario,records).all.every(x=>x.actualTotalCapacityBtuH>=31000));
+scenario.quantity=2; scenario.requiredCoolingCapacityBtuH=60000;
+assert(ctx.findManufacturerMatchesForScenario(scenario,records).all.every(x=>x.actualTotalCapacityBtuH>=60000));
+ctx.applyReportCapacityAction({elements:{capacity:{value:'36000'},systemId:{value:'unit-1'}}});
+assert.deepStrictEqual(calls,[['unit-1',36000]]);
+ctx.applyReportCapacityAction({elements:{capacity:{value:'-1'}}});
+assert.strictEqual(calls.length,1);
+ctx.applyReportDuctAction({elements:{width:{value:'500'},height:{value:'400'},side:{value:'sup'}}});
+const sized=ctx.calcDuctSize(1000,1000,'sup');
+assert.strictEqual(sized.std.w,500);
+assert.strictEqual(sized.std.h,400);
+assert.strictEqual(sized.std.actualFpm,Math.round(1000/(500*400/92903.04)));
+ctx.applyReportDuctAction({elements:{width:{value:'-1'},height:{value:'400'},side:{value:'sup'}}});
+assert.strictEqual(ctx.projState.ductDimensions.sup.w,500);
+console.log('Report equipment matching and synchronized actions passed.');
+vm.runInContext(source.match(/function renderReportAlertEditor\([^]*?\n\}/)[0],ctx);
+ctx.renderReportDuctEditor = () => '<form data-duct-editor></form>';
+assert(ctx.renderReportAlertEditor({sourceRule:'preliminary_load_basis'}).includes("openDesktopView('home')"));
+assert(ctx.renderReportAlertEditor({sourceRule:'missing_equipment_snapshot'}).includes("openDesktopView('hist')"));
+const airflowEditor = ctx.renderReportAlertEditor({sourceRule:'project_airflow_comparison'});
+assert(airflowEditor.includes('data-duct-editor'));
+assert(airflowEditor.includes("scrollTechnicalReportSection('report-air')"));
+assert(airflowEditor.includes('do not change recorded equipment airflow'));
+console.log('Report warning actions expose the relevant editors and equipment selection.');
+['getReportDuctSuggestions','selectReportDuctSuggestion'].forEach(name=>vm.runInContext(source.match(new RegExp('function '+name+'\\([^]*?\\n\\}'))[0],ctx));
+ctx.ASHRAE_RECT_MAX_RATIO=4;
+ctx.window._lastDuctSizing={supCfm:4238,retCfm:4238,vSup:1000,vRet:800};
+const suggestions=ctx.getReportDuctSuggestions('sup');
+assert.strictEqual(suggestions.length,3);
+suggestions.forEach(s=>assert(s.w*s.h>=4238/1000*92903.04 && s.actualFpm<=1000));
+ctx.selectReportDuctSuggestion('sup',0);
+assert.strictEqual(ctx.projState.ductDimensions.sup.w,suggestions[0].w);
+assert.strictEqual(ctx.calcDuctSize(4238,1000,'sup').std.actualFpm,suggestions[0].actualFpm);
+assert.strictEqual(ctx.getReportDuctSuggestions('invalid').length,0);
+ctx.window._lastDuctSizing={};
+assert.strictEqual(ctx.getReportDuctSuggestions('sup').length,0);

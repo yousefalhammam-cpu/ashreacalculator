@@ -2,13 +2,19 @@
   'use strict';
 
   function calcRoom(room, vol, ppl, devBtu) {
-    var base = vol * room.factor;
-    var pplb = ppl * 400;
-    var sub = base + pplb + devBtu;
-    var total = sub * 1.10;
-    var tr = total / 12000;
-    var cfm = Math.round(tr * 400);
-    var mkt = Math.ceil(total / 9000) * 9000;
+    var eng = window.AirCalcEngineering && window.AirCalcEngineering.calculateGeneralRoom({
+      volumeM3: vol,
+      loadFactorBtuhPerM3: room.factor,
+      peopleCount: ppl,
+      deviceLoadBtuh: devBtu
+    });
+    var base = eng && eng.ok ? eng.baseBtuh : vol * room.factor;
+    var pplb = eng && eng.ok ? eng.peopleBtuh : ppl * 400;
+    var sub = eng && eng.ok ? eng.subtotalBtuh : base + pplb + devBtu;
+    var total = eng && eng.ok ? eng.totalBtuh : sub * 1.10;
+    var tr = eng && eng.ok ? eng.tr : total / 12000;
+    var cfm = eng && eng.ok ? eng.supplyCfm : Math.round(tr * 400);
+    var mkt = eng && eng.ok ? eng.marketBtuh : Math.ceil(total / 9000) * 9000;
 
     return {
       base: base,
@@ -23,24 +29,29 @@
   }
 
   function calcHC(room, vol, ppl, devBtu) {
+    var eng = window.AirCalcEngineering && window.AirCalcEngineering.calculateHealthcareRoom({
+      volumeM3: vol,
+      totalAch: room.tach,
+      outdoorAch: room.oach,
+      pressure: room.pres,
+      peopleCount: ppl,
+      deviceLoadBtuh: devBtu
+    });
     var ft3 = vol * 35.3147;
-
-    var sup = Math.round((room.tach * ft3) / 60);
-    var oa = Math.round((room.oach * ft3) / 60);
-
-    var exh =
+    var sup = eng && eng.ok ? eng.supplyCfm : Math.round((room.tach * ft3) / 60);
+    var oa = eng && eng.ok ? eng.outdoorAirCfm : Math.round((room.oach * ft3) / 60);
+    var exh = eng && eng.ok ? eng.exhaustCfm :
       room.pres === 'negative'
         ? Math.round(sup * 1.10)
         : room.pres === 'positive'
         ? Math.round(sup * 0.90)
         : sup;
-
-    var base = sup * 1.08 * 20;
-    var pplb = ppl * 400;
-    var sub = base + pplb + devBtu;
-    var total = sub * 1.10;
-    var tr = total / 12000;
-    var mkt = Math.ceil(total / 9000) * 9000;
+    var base = eng && eng.ok ? eng.baseBtuh : sup * 1.08 * 20;
+    var pplb = eng && eng.ok ? eng.peopleBtuh : ppl * 400;
+    var sub = eng && eng.ok ? eng.subtotalBtuh : base + pplb + devBtu;
+    var total = eng && eng.ok ? eng.totalBtuh : sub * 1.10;
+    var tr = eng && eng.ok ? eng.tr : total / 12000;
+    var mkt = eng && eng.ok ? eng.marketBtuh : Math.ceil(total / 9000) * 9000;
 
     return {
       base: base,

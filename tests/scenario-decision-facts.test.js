@@ -1,0 +1,17 @@
+const assert=require('assert');
+const fs=require('fs');
+const vm=require('vm');
+const source=fs.readFileSync(require('path').join(__dirname,'../app.js'),'utf8');
+const fn=source.slice(source.indexOf('function renderScenarioDecisionFacts('),source.indexOf('function renderHvacDesignScenariosPanel('));
+const ctx={lang:'ar',esc:s=>String(s)};
+vm.createContext(ctx);vm.runInContext(fn,ctx);
+const scenario={initialCostClass:'low',estimatedComplexity:'medium',equipmentSelections:[{unitType:'split'}]};
+let html=ctx.renderScenarioDecisionFacts(scenario);
+assert(html.includes('التكلفة الأولية النسبية') && html.includes('منخفضة') && html.includes('متوسط'));
+assert(!html.includes('Low') && !html.includes('Medium'));
+ctx.lang='en';html=ctx.renderScenarioDecisionFacts(scenario);
+assert(html.includes('Relative initial cost') && html.includes('Medium') && html.includes('not a quotation'));
+assert(!/[\u0600-\u06ff]/.test(html));
+assert(html.includes('separate outdoor-air'));
+assert(ctx.renderScenarioDecisionFacts({}).includes('Not specified'));
+console.log('Scenario decision facts localization passed.');

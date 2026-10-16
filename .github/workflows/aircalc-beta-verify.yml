@@ -1,0 +1,58 @@
+name: AirCalc Pro Beta Verify
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+      - stabilization-v1
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Build, test, and stress check
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Validate package version
+        shell: pwsh
+        run: |
+          $pkg = Get-Content package.json | ConvertFrom-Json
+          if ($pkg.version -ne "1.0.0-beta.1") {
+            Write-Error "package.json version mismatch: $($pkg.version)"
+          }
+
+      - name: Build, test, stress, browser smoke, Firebase check, and package
+        run: npm run release:beta
+
+      - name: Upload beta release artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aircalc-pro-beta-artifacts
+          if-no-files-found: error
+          path: |
+            dist/aircalc-pro-v1.0.0-beta.1.zip
+            dist/aircalc-pro-v1.0.0-beta.1.manifest.json
+            dist/aircalc-pro-v1.0.0-beta.1.sha256
+            dist/test-report.json
+            dist/stress-report.json
+            dist/browser-smoke-report.json
+            dist/firebase-predeploy-report.json
+            PRODUCTION_AUDIT.md
+            SECURITY_REVIEW.md
+            COMPATIBILITY_REPORT.md
+            RELEASE_CHECKLIST.md
+            FINAL_BETA_CERTIFICATION.md

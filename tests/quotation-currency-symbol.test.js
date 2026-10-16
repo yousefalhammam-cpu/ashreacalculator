@@ -1,0 +1,14 @@
+const assert = require('assert');
+const fs = require('fs');
+const vm = require('vm');
+const source = fs.readFileSync('app.js', 'utf8');
+const symbolFunction = source.slice(source.indexOf('function quotationRiyalSymbol(){'), source.indexOf('var quotationCurrencyObserver;'));
+const context = {};
+vm.runInNewContext(symbolFunction, context);
+const symbol = context.quotationRiyalSymbol();
+assert(symbol.includes('viewBox="0 0 1124.14 1256.39"'));
+assert(symbol.includes('aria-label="SAR"'));
+assert(symbol.includes('fill:currentColor'));
+assert(!/https?:\/\/[^" ]+\.(svg|png)/.test(symbol));
+assert(source.slice(source.indexOf('function invCommon(){'), source.indexOf('function invCommon(){') + 1500).includes('quotationRiyalSymbol()'));
+console.log('Offline quotation currency symbol and print integration passed.');

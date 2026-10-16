@@ -1,0 +1,77 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function projectRole(project) {
+      return project.data.collaboration.roles[request.auth.uid];
+    }
+
+    function canReadShared(project) {
+      return signedIn() && (
+        project.data.collaboration.ownerId == request.auth.uid ||
+        projectRole(project) in ['owner', 'editor', 'viewer']
+      );
+    }
+
+    function canEditShared(project) {
+      return signedIn() && (
+        project.data.collaboration.ownerId == request.auth.uid ||
+        projectRole(project) in ['owner', 'editor']
+      );
+    }
+
+    function canManageShared(project) {
+      return signedIn() && (
+        project.data.collaboration.ownerId == request.auth.uid ||
+        projectRole(project) == 'owner'
+      );
+    }
+
+    function ownerRemainsOwner() {
+      return request.resource.data.collaboration.roles[resource.data.collaboration.ownerId] == 'owner';
+    }
+
+    match /users/{userId} {
+      allow read, create, update: if isSelf(userId);
+      allow delete: if false;
+
+      match /projects/{projectId} {
+        allow read, create, update, delete: if isSelf(userId);
+      }
+
+      match /equipmentCatalogues/{catalogueId} {
+        allow read, create, update, delete: if isSelf(userId);
+      }
+
+      match /equipmentCatalogueVersions/{versionId} {
+        allow read, create, update, delete: if isSelf(userId);
+      }
+
+      match /equipmentRecords/{recordId} {
+        allow read, create, update, delete: if isSelf(userId);
+      }
+    }
+
+    // Reserved for the future collaboration model. The current app still writes
+    // private local-first copies under users/{uid}/projects/{projectId}.
+    match /sharedProjects/{projectId} {
+      allow create: if signedIn()
+        && request.resource.data.collaboration.ownerId == request.auth.uid
+        && request.resource.data.collaboration.roles[request.auth.uid] == 'owner';
+
+      allow read: if canReadShared(resource);
+      allow update: if canEditShared(resource)
+        && request.resource.data.collaboration.ownerId == resource.data.collaboration.ownerId
+        && ownerRemainsOwner();
+      allow delete: if canManageShared(resource);
+    }
+  }
+}
