@@ -239,7 +239,10 @@ function loadProjectSystems(){
     projState.ductDimensions = {};
     ['sup','ret'].forEach(function(side){
       var size = dimensions && dimensions[side];
-      if(size && Number.isFinite(size.w) && Number.isFinite(size.h) && size.w>=100 && size.h>=100 && size.w<=1800 && size.h<=1800) projState.ductDimensions[side] = {w:size.w,h:size.h};
+      if(size){
+        var w=Number(size.w),h=Number(size.h);
+        if((w>=100 && w<=1800) || (h>=100 && h<=1800))projState.ductDimensions[side]={w:w>=100 && w<=1800?w:null,h:h>=100 && h<=1800?h:null};
+      }
     });
     var filter=JSON.parse(localStorage.getItem('aircalc_duct_filter') || 'null');
     projState.ductFilter=filter && typeof filter==='object'?filter:{type:'none'};
@@ -3135,10 +3138,43 @@ function updateInlineDuctFilter(form){
   projState.ductDimensions=projState.ductDimensions || {};
   [['sup','width','height'],['ret','retWidth','retHeight']].forEach(function(row){
     var w=Number(form.elements[row[1]].value),h=Number(form.elements[row[2]].value);
-    if(w>=100 && h>=100)projState.ductDimensions[row[0]]={w:w,h:h};
+    projState.ductDimensions[row[0]]={w:w>=100 && w<=1800?w:null,h:h>=100 && h<=1800?h:null};
   });
-  persistQuoteState();renderProjBlock();renderQuote();calcESP();renderAdvancedDuct();renderTechReportFoundation();
+  persistQuoteState();renderProjBlock();calcESP();syncDuctSelectionToQuotations();renderQuote();renderAdvancedDuct();renderTechReportFoundation();
   if(window.AppHvacDesignCopilot)window.AppHvacDesignCopilot.refresh();
+}
+function getDuctAndFilterSnapshot(){
+  var review=getDuctFilterReviewState(),cache=window._lastDuctSizing || {};
+  var size=projState.ductDimensions || {};
+  return {schemaVersion:'duct-filter-v1',supply:Object.assign({},size.sup || cache.sup || {}),returnDuct:Object.assign({},size.ret || cache.ret || {}),filter:Object.assign({},projState.ductFilter || {type:'none'}),review:review,espPa:window._lastEspCalc?window._lastEspCalc.totalPa:null};
+}
+function syncDuctSelectionToQuotations(){
+  var selection=getDuctAndFilterSnapshot();
+  (projectSystems || []).forEach(function(system){
+    if(system.quotationDraft){
+      system.quotationDraft.ductAndFilter=selection;
+      if(system.quotationDraft.snapshot)system.quotationDraft.snapshot.ductAndFilter=selection;
+    }
+  });
+  saveProjectSystems();
+}
+function renderDuctAndFilterSummary(isAr){
+  var data=getDuctAndFilterSnapshot();
+  if(!data.supply.w && !data.supply.h && !data.returnDuct.w && !data.returnDuct.h && data.filter.type==='none')return '';
+  var filter=getInlineFilterPresets().find(function(item){return item.id===data.filter.type;});
+  var fan=getDuctFanTypes().find(function(item){return item.id===data.filter.fanType;});
+  function size(s){return (s.w || '—')+' × '+(s.h || '—')+' mm';}
+  var rows=[
+    [isAr?'دكت الإمداد (العرض × الارتفاع)':'Supply duct (width × height)',size(data.supply)],
+    [isAr?'دكت الراجع (العرض × الارتفاع)':'Return duct (width × height)',size(data.returnDuct)],
+    [isAr?'الفلتر':'Filter',filter?(isAr?filter.ar:filter.en):data.filter.type],
+    [isAr?'نوع المروحة':'Fan type',fan?(isAr?fan.ar:fan.en):'—'],
+    [isAr?'مقاومة الفلتر الإضافي':'Added filter resistance',data.review.filterLossPa==null?'—':Number(data.review.filterLossPa).toFixed(1)+' Pa'],
+    [isAr?'تدفق المعدة قبل الفلتر':'Equipment flow before filter',Math.round(data.review.equipmentCfm)+' CFM'],
+    [isAr?'التدفق التقديري بعد الفلتر':'Estimated flow after filter',data.review.estimated?Math.round(data.review.effectiveCfm)+' CFM':(data.review.filterActive?(isAr?'يلزم استكمال بيانات المروحة':'Fan data required'):(isAr?'لا يوجد فلتر إضافي':'No added filter'))],
+    [isAr?'الضغط المحسوب':'Calculated pressure',data.espPa==null?'—':data.espPa+' Pa']
+  ];
+  return '<section class="duct-filter-summary" data-duct-filter-summary="true" style="border:1px solid #b0b0b0;border-radius:6px;padding:12px;margin:12px 0;page-break-inside:avoid"><h3 style="font-size:15px;margin:0 0 8px">'+(isAr?'الدكت والفلتر المعتمدان للتسعير والمراجعة':'Duct and filter selection for pricing and review')+'</h3><table style="width:100%;font-size:12px;border-collapse:collapse"><tbody>'+rows.map(function(row){return '<tr><th style="text-align:start;padding:5px;border-bottom:1px solid #ddd">'+esc(row[0])+'</th><td style="padding:5px;border-bottom:1px solid #ddd">'+esc(row[1])+'</td></tr>';}).join('')+'</tbody></table><small>'+(isAr?'اختيارات تصميمية؛ تقدير التدفق ليس قياسًا ميدانيًا. تكلفة التوريد والتركيب تُسعّر بشكل منفصل.':'Design selections; estimated airflow is not a field measurement. Supply and installation are priced separately.')+'</small></section>';
 }
 function renderInlineAirflowControls(){
   var ar=lang==='ar',cache=window._lastDuctSizing || {},f=projState.ductFilter || {type:'none'};
@@ -3240,6 +3276,7 @@ function applyReportDuctAction(form){
   renderProjBlock();
   renderQuote();
   calcESP();
+  syncDuctSelectionToQuotations();
   renderAdvancedDuct();
   renderTechReportFoundation();
   return false;
@@ -3251,6 +3288,7 @@ function resetReportDuctSize(side){
   renderProjBlock();
   renderQuote();
   calcESP();
+  syncDuctSelectionToQuotations();
   renderAdvancedDuct();
   renderTechReportFoundation();
 }
@@ -3644,6 +3682,7 @@ function buildTechnicalReportModel(project){
       exhaustCfm: getCentralizedReportSummary().summary ? getCentralizedReportSummary().summary.exhaustCfm : 0
     },
     ductEspReview: window._lastEspCalc || null,
+    ductAndFilter: getDuctAndFilterSnapshot(),
     complianceReview: validation,
     requiredActions: alerts.map(function(alert){ return alert.requiredAction; }).filter(Boolean),
     assumptions: scenarioSystems.reduce(function(list, item){ return list.concat(item.scenario.assumptions || []); }, []),
@@ -3938,7 +3977,8 @@ function getSystemQuotationEquipmentSnapshot(system){
     imageUrl: record.imageUrl || record.image || record.photoUrl || '',
     equipmentSnapshot: system.equipmentSnapshot || null,
     engineeringNotes: getProjectEngineeringValidation().notes || [],
-    freshAirNotes: renderFreshAirNotesForQuotation()
+    freshAirNotes: renderFreshAirNotesForQuotation(),
+    ductAndFilter: getDuctAndFilterSnapshot()
   };
 }
 function renderFreshAirNotesForQuotation(){
@@ -10757,7 +10797,7 @@ function layoutQuotationWorkspace(quoteView){
   if(!page || !quoteCard) return;
   var context=G('quote-project-context');
   if(!context){context=document.createElement('div');context.id='quote-project-context';}
-  context.innerHTML=renderProjectContextSummary({quotation:true});
+  context.innerHTML=renderProjectContextSummary({quotation:true})+renderDuctAndFilterSummary(lang==='ar');
   page.insertBefore(context,page.firstChild);
   var roomList=G('hist-list'),history=roomList && roomList.closest('.card');
   if(!history) return;
@@ -11729,7 +11769,7 @@ function buildPage2(c){
   var professionalReportData = refreshProfessionalReportDataCache({ language: c.isAr ? 'ar' : 'en' });
   var cards='';
   var anyUndersized=false, undersizedCount=0;
-  var reportPrelude = buildReportPreludeHtml(c.isAr);
+  var reportPrelude = buildReportPreludeHtml(c.isAr)+renderDuctAndFilterSummary(c.isAr);
   var assumptionsHtml =
     '<div style="border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;background:#fff;margin-bottom:12px;page-break-inside:avoid">'+
       '<div style="font-size:11px;font-weight:700;color:#0f172a;margin-bottom:6px">'+(c.isAr?'افتراضات وحدود':'Assumptions & Limitations')+'</div>'+
@@ -12003,7 +12043,7 @@ function buildPage2(c){
           '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:10px;text-align:center">'+
             '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'BTU المختار':'Selected BTU')+'</div>'+
             '<div style="font-size:13px;font-weight:700;color:'+_bmBtuClr+';font-family:monospace">'+Number(_bmSelBtu).toLocaleString()+'</div>'+
-            '<div style="font-size:9px;color:#94a3b8">'+_bmSelTr+' TR | '+_bmBtuSign+_bmBtuDelta+'%</div>'+
+            '<div style="font-size:9px;color:#94a3b8">'+_bmSelTr+' TR | '+esc(_bmProjStatus.percentText || '—')+'</div>'+
           '</div>'+
           '<div style="background:#fff;border:1px solid #dbeafe;border-radius:6px;padding:10px;text-align:center">'+
             '<div style="font-size:9px;color:#64748b;margin-bottom:3px">'+(c.isAr?'حالة BTU':'BTU Status')+'</div>'+
@@ -14542,3 +14582,18 @@ function calcDuctSize(cfm, velocityFpm, side){
 
   return {calc:best, std:stdBest || best};
 }
+
+// Both invoice HTML and quotation PDF call this final page builder.
+var buildQuotationPageWithoutDuctSelection=buildPage1;
+buildPage1=function(c){
+  var html=buildQuotationPageWithoutDuctSelection(c);
+  var summary=renderDuctAndFilterSummary(c.isAr);
+  if(!summary)return html;
+  var container=document.createElement('div');container.innerHTML=html;
+  var page=container.querySelector('.inv-page');
+  if(page){
+    var section=document.createElement('div');section.innerHTML=summary;
+    page.insertBefore(section,page.querySelector('.footer'));
+  }
+  return container.innerHTML;
+};

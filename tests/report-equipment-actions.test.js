@@ -10,7 +10,7 @@ const ctx = {lang:'en', window:{}, projState:{}, DUCT_STD:[],
   getAllowedSystemType:x=>x, isProjectSystemEquipmentRecordCompatible:()=>true,
   getProjectRequiredLoadBtu:()=>30000, _ductCandidateScore:()=>0,
   applyProjectSystemManualCapacity:(id,value)=>calls.push([id,value]),
-  renderTechReportFoundation:()=>{}, persistQuoteState:()=>{},renderProjBlock:()=>{},renderQuote:()=>{},calcESP:()=>{pressureRefreshes++;},renderAdvancedDuct:()=>{}};
+  renderTechReportFoundation:()=>{}, persistQuoteState:()=>{},syncDuctSelectionToQuotations:()=>{},renderProjBlock:()=>{},renderQuote:()=>{},calcESP:()=>{pressureRefreshes++;},renderAdvancedDuct:()=>{}};
 vm.createContext(ctx);
 names.forEach(name=>vm.runInContext(source.match(new RegExp('function '+name+'\\([^]*?\\n\\}'))[0],ctx));
 const scenario = {systemType:'split',standardUnitCapacityBtuH:30000,quantity:1,totalConceptualCapacityBtuH:30000,conceptualAirflowCfm:1000,requiredCoolingCapacityBtuH:30000};

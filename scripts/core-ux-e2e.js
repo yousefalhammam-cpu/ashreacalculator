@@ -282,6 +282,24 @@ async function run() {
         enter('[data-auto-quote-draft-field="discount"]', '100');
         var pricingTotals = getQuotationDraftTotals(projectSystems[0].quotationDraft);
         var visibleGrand = document.querySelector('[data-auto-quote-summary="grand"]').textContent;
+        openDesktopView('tech');renderTechReportFoundation();
+        function chooseDuctField(name,value){
+          var el=document.querySelector('#health-airflow-controls [name="'+name+'"]');
+          if(!el)throw Error('Missing duct control: '+name);
+          el.value=value;el.dispatchEvent(new Event('change',{bubbles:true}));
+        }
+        chooseDuctField('width','450');
+        if(document.querySelector('#health-airflow-controls [name="width"]').value!=='450')throw Error('Width was lost before height selection');
+        chooseDuctField('height','300');chooseDuctField('retWidth','450');chooseDuctField('retHeight','300');
+        chooseDuctField('filterType','other');chooseDuctField('fanType','centrifugal_backward');
+        chooseDuctField('drop','100');chooseDuctField('operating','200');chooseDuctField('shutoff','500');
+        var ductReview=getDuctFilterReviewState(),copilotSnapshot=AirCalcCopilotStateAdapter.readProjectSnapshot();
+        if(!ductReview.estimated || copilotSnapshot.totals.selectedCfm!==ductReview.effectiveCfm)throw Error('Filtered CFM is not synchronized with health snapshot');
+        if(!document.querySelector('#quote-project-context [data-duct-filter-summary]'))throw Error('Quotation is missing duct/filter selection');
+        var invoice=buildInvoiceHTML(),technical=buildPage2(invCommon());
+        if(!invoice.includes('450 × 300 mm') || !invoice.includes('data-duct-filter-summary'))throw Error('Invoice export is missing duct dimensions');
+        if(!technical.includes('450 × 300 mm') || !technical.includes('data-duct-filter-summary'))throw Error('Technical report export is missing duct dimensions');
+        if(getQuotationDraftTotals(projectSystems[0].quotationDraft).grand!==pricingTotals.grand)throw Error('Duct selection changed commercial prices');
         document.getElementById('desktop-project').value = 'Isolated acceptance project';
         syncDesktopProjectFields('desktop');
         saveCurrentProject({silentNavigate:true, skipCloudSync:true});
@@ -290,6 +308,7 @@ async function run() {
         projectSystems = [];
         AppProjects.loadProject(saved.id);
         var restoredTotals = getQuotationDraftTotals(projectSystems[0].quotationDraft);
+        if(projState.ductDimensions.sup.w!==450 || projState.ductFilter.type!=='other')throw Error('Duct/filter selection was not restored with project');
         openDesktopView('projects');
         renderProjects();
         var projectVisible = document.body.textContent.includes('Isolated acceptance project');

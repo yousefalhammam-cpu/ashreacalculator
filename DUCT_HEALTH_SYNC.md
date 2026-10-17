@@ -1,6 +1,9 @@
 # Duct and Filter Synchronization
 
 ## Scope
+- Width and height are persisted independently, including incomplete pairs, so a first dropdown selection is not discarded by a rerender.
+- Duct/filter selections are copied into existing quotation draft snapshots without changing line prices.
+- A common selection summary is included in the quotation workspace, technical report model, technical report page HTML, and final quotation HTML/PDF page builder. It lists dimensions, filter, fan, resistance, equipment CFM, estimated filtered CFM and pressure.
 - Fan type is visible beside the dimension and filter controls, not only under fan settings.
 - The fan/filter selection persists in browser storage and project snapshots.
 - 100 mm dimensions now survive reload (the previous load guard rejected values below 150 mm).

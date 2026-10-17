@@ -3,7 +3,7 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v19-duct-health-sync';
+const CACHE_NAME = 'aircalcpro-v20-duct-quotation-transfer';
 
 const PRECACHE_ASSETS = [
   './',
