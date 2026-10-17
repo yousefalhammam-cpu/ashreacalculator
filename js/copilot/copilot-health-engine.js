@@ -140,7 +140,7 @@
     snapshot = snapshot || {};
     var metrics = {
       capacity: capacityScore(snapshot.totals && snapshot.totals.requiredBtu, snapshot.totals && snapshot.totals.selectedBtu),
-      airflow: airflowScore(snapshot.totals && snapshot.totals.requiredCfm, snapshot.totals && snapshot.totals.selectedCfm),
+      airflow: snapshot.airflowReview && snapshot.airflowReview.filterActive && !snapshot.airflowReview.filterReady?50:airflowScore(snapshot.totals && snapshot.totals.requiredCfm, snapshot.totals && snapshot.totals.selectedCfm),
       esp: espScore(snapshot),
       energy: energyScore(snapshot),
       electrical: electricalScore(snapshot),
@@ -166,7 +166,8 @@
       overall: overall,
       tone: tone(overall),
       metrics: Object.keys(metrics).map(function(key){
-        return { key: key, score: round(metrics[key]), tone: tone(metrics[key]) };
+        var actual=key==='airflow' && snapshot.totals?round(snapshot.totals.selectedCfm)+' CFM':(key==='esp' && snapshot.esp?round(snapshot.esp.totalPa)+' Pa':'');
+        return { key: key, score: round(metrics[key]), tone: tone(metrics[key]),actual:actual, estimated:key==='airflow' && !!(snapshot.airflowReview && snapshot.airflowReview.estimated),pending:key==='airflow' && !!(snapshot.airflowReview && snapshot.airflowReview.filterActive && !snapshot.airflowReview.filterReady) };
       })
     };
   }

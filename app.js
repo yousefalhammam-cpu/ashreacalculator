@@ -206,6 +206,7 @@ function saveProjectSystems(){
   try{
     localStorage.setItem(HVAC_PROJECT_SYSTEMS_KEY, JSON.stringify((projectSystems || []).map(normalizeProjectSystem)));
     localStorage.setItem('aircalc_duct_dimensions', JSON.stringify(projState.ductDimensions || {}));
+    localStorage.setItem('aircalc_duct_filter',JSON.stringify(projState.ductFilter || {type:'none'}));
   }catch(e){}
 }
 
@@ -238,8 +239,10 @@ function loadProjectSystems(){
     projState.ductDimensions = {};
     ['sup','ret'].forEach(function(side){
       var size = dimensions && dimensions[side];
-      if(size && Number.isFinite(size.w) && Number.isFinite(size.h) && size.w>=150 && size.h>=150 && size.w<=1800 && size.h<=1800) projState.ductDimensions[side] = {w:size.w,h:size.h};
+      if(size && Number.isFinite(size.w) && Number.isFinite(size.h) && size.w>=100 && size.h>=100 && size.w<=1800 && size.h<=1800) projState.ductDimensions[side] = {w:size.w,h:size.h};
     });
+    var filter=JSON.parse(localStorage.getItem('aircalc_duct_filter') || 'null');
+    projState.ductFilter=filter && typeof filter==='object'?filter:{type:'none'};
   }catch(e){
     projectSystems = [];
   }
@@ -3071,13 +3074,39 @@ function applyReportFilter(form){
   projState.ductFilter=data;persistQuoteState();renderTechReportFoundation();return false;
 }
 function renderReportFilterEditor(){
-  var ar=lang==='ar', f=projState.ductFilter || {type:'none'}, cache=window._lastDuctSizing || {};
-  var q=Number(cache.supCfm || 0);
-  var result=f.type!=='none'?calculateFilterAirflow(q,Number(f.operating),Number(f.shutoff),Number(f.drop)):null;
-  function field(name,label,value){return '<label>'+label+'<input type="number" name="'+name+'" min="0" step="any" required value="'+esc(value==null?'':String(value))+'" oninput="this.setCustomValidity(\'\')"></label>';}
-  return '<section class="tech-doc-section"><h3>'+(ar?'الفلتر وتأثيره على تدفق الدكت':'Filter impact on duct airflow')+'</h3><form class="report-inline-editor" onsubmit="return applyReportFilter(this)"><label>'+(ar?'الفلتر':'Filter')+'<select name="filterType" onchange="this.form.querySelectorAll(\'input\').forEach(function(el){el.required=this.value!==\'none\';},this)">'+['none','H13','H14','other'].map(function(t){return '<option value="'+t+'"'+(f.type===t?' selected':'')+'>'+({none:ar?'بدون فلتر إضافي':'No additional filter',other:ar?'فلتر آخر':'Other filter'}[t] || 'HEPA '+t)+'</option>';}).join('')+'</select></label>'+field('drop',ar?'مقاومة الفلتر عند تدفق التصميم Pa':'Filter resistance at design flow Pa',f.drop)+field('operating',ar?'ضغط المروحة عند نقطة التصميم Pa':'Fan pressure at original duty Pa',f.operating)+field('shutoff',ar?'ضغط المروحة عند تدفق صفري Pa':'Fan shutoff pressure Pa',f.shutoff)+'<button type="submit">'+(ar?'تطبيق وحساب التأثير':'Apply and calculate')+'</button></form><p dir="ltr">'+(ar?'تدفق التصميم':'Design flow')+': '+q.toLocaleString('en-US')+' CFM</p><p role="status">'+(f.type==='none'?(ar?'لا توجد مقاومة فلتر إضافية.':'No additional filter resistance.'):result?((ar?'التدفق التقديري بعد الفلتر: ':'Estimated flow after filter: ')+Math.round(result.cfm).toLocaleString('en-US')+' CFM · '+(ar?'الانخفاض: ':'Reduction: ')+result.lossPercent.toFixed(1)+'%'):(ar?'حدد مقاس الدكت وتدفقه وأدخل بيانات المروحة والفلتر لعرض التقدير.':'Set duct sizing/flow and enter fan and filter data to estimate impact.'))+'</p><p>'+(ar?'تقدير عند سرعة مروحة ثابتة، بافتراض منحنى مروحة خطي ومقاومة تتناسب مع مربع التدفق. أدخل مقاومة الفلتر من الكتالوج عند تدفق التصميم، وضغوط المروحة من نفس منحنى السرعة والكثافة. استخدم المقاومة النهائية لفحص الاتساخ. لا يغيّر هذا التقدير الحمل أو CFM التصميمي؛ يلزم منحنى فعلي للاعتماد، ولا ينطبق على تحكم التدفق الثابت.':'Fixed-speed estimate using a linear fan curve and quadratic resistance. Enter catalogue filter resistance at design flow and fan pressures from the same speed/density curve. Use final resistance to assess loading. This does not change load or design CFM; an actual curve is required for approval. Not applicable to constant-flow control.')+'</p></section>';
+  return '<section class="tech-doc-section">'+renderInlineAirflowControls()+'</section>';
 }
 
+function getDuctFanTypes(){
+  return [
+    {id:'unspecified',ar:'اختر نوع المروحة',en:'Select fan type'},
+    {id:'centrifugal_backward',ar:'طرد مركزي — ريش منحنية للخلف',en:'Centrifugal — backward curved'},
+    {id:'centrifugal_forward',ar:'طرد مركزي — ريش منحنية للأمام',en:'Centrifugal — forward curved'},
+    {id:'plug',ar:'مروحة بلَغ / بلينم',en:'Plug / plenum fan'},
+    {id:'axial',ar:'مروحة محورية',en:'Axial fan'},
+    {id:'mixed_flow',ar:'مروحة مختلطة التدفق',en:'Mixed-flow fan'},
+    {id:'other',ar:'نوع آخر / يدوي',en:'Other / manual'}
+  ];
+}
+function getDuctFilterReviewState(){
+  var cache=window._lastDuctSizing || {},f=projState.ductFilter || {type:'none'};
+  var q=Number(getSelectedProjectEquipmentCfm() || cache.supCfm || 0);
+  var preset=getInlineFilterPresets().find(function(item){return item.id===f.type;});
+  var count=preset && preset.pa && q>0?Math.max(1,Math.ceil(q*1.6990108/preset.flow)):0;
+  var drop=f.type==='none'?0:(preset && preset.pa?(q>0?preset.pa*Math.pow(q*1.6990108/(count*preset.flow),2):null):f.drop);
+  var estimate=drop!=null && f.type!=='none'?calculateFilterAirflow(q,Number(f.operating),Number(f.shutoff),Number(drop)):null;
+  var sup=null,ret=null;
+  ['sup','ret'].forEach(function(side){
+    var size=(projState.ductDimensions || {})[side] || cache[side];
+    var flow=side==='sup'?q:Number(cache.retCfm || q*0.9);
+    var len=Number((G(side==='sup'?'esp-len-sup':'esp-len-ret') || {value:side==='sup'?30:20}).value);
+    if(window.AppDuct && size && size.w>0 && size.h>0 && flow>0){
+      var a=window.AppDuct.advancedDuctAnalysis(flow,size.w,size.h,len);
+      if(side==='sup')sup=a;else ret=a;
+    }
+  });
+  return {equipmentCfm:q,effectiveCfm:estimate?estimate.cfm:q,estimated:!!estimate,filterActive:f.type!=='none',filterReady:f.type==='none' || !!estimate,filterLossPa:drop,filterCount:count,sup:sup,ret:ret};
+}
 function getInlineFilterPresets(){
   return [
     {id:'none',ar:'بدون فلتر إضافي',en:'No additional filter'},
@@ -3088,9 +3117,14 @@ function getInlineFilterPresets(){
   ];
 }
 function updateInlineDuctFilter(form){
+  if(!form.checkValidity()){form.reportValidity();return;}
   var q=Number((window._lastDuctSizing || {}).supCfm || 0);
-  var data={type:form.elements.filterType.value};
+  var previous=projState.ductFilter || {};
+  var fanType=form.elements.fanType?form.elements.fanType.value:'unspecified';
+  if(!getDuctFanTypes().some(function(item){return item.id===fanType;}))return;
+  var data={type:form.elements.filterType.value,fanType:fanType};
   ['drop','operating','shutoff'].forEach(function(key){var value=form.elements[key].value;data[key]=value===''?null:Number(value);});
+  if((previous.fanType || 'unspecified')!==fanType){data.operating=null;data.shutoff=null;}
   var preset=getInlineFilterPresets().find(function(item){return item.id===data.type;});
   if(!preset)return;
   if(preset.pa){
@@ -3103,16 +3137,17 @@ function updateInlineDuctFilter(form){
     var w=Number(form.elements[row[1]].value),h=Number(form.elements[row[2]].value);
     if(w>=100 && h>=100)projState.ductDimensions[row[0]]={w:w,h:h};
   });
-  persistQuoteState();renderProjBlock();renderQuote();renderAdvancedDuct();renderTechReportFoundation();
+  persistQuoteState();renderProjBlock();renderQuote();calcESP();renderAdvancedDuct();renderTechReportFoundation();
   if(window.AppHvacDesignCopilot)window.AppHvacDesignCopilot.refresh();
 }
 function renderInlineAirflowControls(){
   var ar=lang==='ar',cache=window._lastDuctSizing || {},f=projState.ductFilter || {type:'none'};
-  var q=Number(cache.supCfm || 0),presets=getInlineFilterPresets();
+  var review=getDuctFilterReviewState();
+  var q=review.equipmentCfm,presets=getInlineFilterPresets();
   var preset=presets.find(function(item){return item.id===f.type;}) || presets[presets.length-1];
-  var count=preset.pa && q>0?Math.max(1,Math.ceil(q*1.6990108/preset.flow)):0;
-  var drop=preset.pa?(q>0?preset.pa*Math.pow(q*1.6990108/(count*preset.flow),2):null):f.drop;
-  var result=f.type!=='none' && drop!=null?calculateFilterAirflow(q,Number(f.operating),Number(f.shutoff),Number(drop)):null;
+  var count=review.filterCount;
+  var drop=review.filterLossPa;
+  var result=review.estimated?{cfm:review.effectiveCfm,lossPercent:(1-review.effectiveCfm/q)*100}:null;
   function dimension(name,label,value){
     var sizes=[];for(var n=100;n<=1800;n+=50)sizes.push(n);
     if(Number(value)>0 && sizes.indexOf(Number(value))<0)sizes.push(Number(value));
@@ -3124,14 +3159,16 @@ function renderInlineAirflowControls(){
   }
   var sup=(projState.ductDimensions || {}).sup || cache.sup || {},ret=(projState.ductDimensions || {}).ret || cache.ret || {};
   var options=presets.map(function(item){return '<option value="'+item.id+'"'+(preset.id===item.id?' selected':'')+'>'+esc(ar?item.ar:item.en)+'</option>';}).join('');
+  var fanOptions=getDuctFanTypes().map(function(item){return '<option value="'+item.id+'"'+((f.fanType || 'unspecified')===item.id?' selected':'')+'>'+esc(ar?item.ar:item.en)+'</option>';}).join('');
+  var fanField='<label>'+(ar?'نوع المروحة':'Fan type')+'<select name="fanType">'+fanOptions+'</select></label>';
   var status=f.type==='none'?(ar?'بدون فلتر إضافي':'No additional filter'):result?Math.round(result.cfm).toLocaleString('en-US')+' CFM · '+result.lossPercent.toFixed(1)+'% '+(ar?'انخفاض تقديري':'estimated reduction'):(ar?'أدخل بيانات المروحة وتدفق التصميم لإظهار النتيجة':'Enter fan data and design flow to show the result');
   var ductResult=['sup','ret'].map(function(side){
-    var size=side==='sup'?sup:ret,flow=Number(side==='sup'?cache.supCfm:cache.retCfm);
+    var size=side==='sup'?sup:ret,flow=Number(side==='sup'?q:(cache.retCfm || q*0.9));
     var length=Number((G(side==='sup'?'esp-len-sup':'esp-len-ret') || {value:side==='sup'?30:20}).value);
-    var a=window.AppDuct && flow>0 && size.w>0 && size.h>0?window.AppDuct.advancedDuctAnalysis(flow,size.w,size.h,length):null;
+    var a=side==='sup'?review.sup:review.ret;
     return '<p>'+ (side==='sup'?(ar?'الإمداد':'Supply'):(ar?'الراجع':'Return'))+': <bdi>'+(a?flow.toLocaleString('en-US')+' CFM · '+a.V_ms+' m/s · '+a.dP_pa+' Pa':'—')+'</bdi></p>';
   }).join('');
-  return '<h3>'+(ar?'الدكت والفلتر':'Duct and filter')+'</h3><form class="inline-duct-form" onchange="updateInlineDuctFilter(this)" onsubmit="return false"><fieldset><legend>'+(ar?'دكت الإمداد':'Supply duct')+'</legend><div class="inline-duct-primary">'+dimension('width',ar?'العرض':'Width',sup.w)+dimension('height',ar?'الارتفاع':'Height',sup.h)+'<label>'+(ar?'الفلتر':'Filter')+'<select name="filterType">'+options+'</select></label></div>'+number('drop',ar?'مقاومة الفلتر اليدوية Pa':'Manual filter resistance Pa',drop,preset.id!=='other')+'</fieldset><fieldset><legend>'+(ar?'دكت الراجع':'Return duct')+'</legend><div class="inline-duct-primary">'+dimension('retWidth',ar?'العرض':'Width',ret.w)+dimension('retHeight',ar?'الارتفاع':'Height',ret.h)+'</div></fieldset><details class="fan-curve-settings"><summary>'+(ar?'بيانات المروحة لحساب تأثير الفلتر':'Fan data for filter impact')+'</summary><div class="inline-duct-primary">'+number('operating',ar?'الضغط عند نقطة التصميم Pa':'Duty pressure Pa',f.operating,false)+number('shutoff',ar?'ضغط المروحة عند تدفق صفري Pa':'Shutoff pressure Pa',f.shutoff,false)+'</div></details></form><div class="inline-duct-result" aria-live="polite"><strong>'+(ar?'التدفق بعد الفلتر':'Flow after filter')+'</strong><p>'+status+'</p>'+ductResult+'</div><p class="copilot-note">'+(preset.pa?(ar?'مقاومة تقديرية ':'Estimated resistance ')+(drop==null?'—':drop.toFixed(1))+' Pa · '+(ar?'عدد فلاتر متوازية مقترح: ':'Suggested parallel filters: ')+count+'. ':'')+(ar?'الفلاتر المدرجة أمثلة كتالوجية وليست مقاومة ثابتة للفئة. التقدير يستخدم منحنى مقاومة تربيعي ومروحة خطية ثابتة السرعة، ولا يغني عن منحنى المصنع. تغيير الأبعاد يحدث السرعة وفقد الضغط، ولا يغير تدفق التصميم.':'Listed filters are catalogue examples, not fixed class resistance. Estimate uses quadratic resistance and a fixed-speed linear fan approximation, not a manufacturer curve. Dimensions update velocity and pressure, not design flow.')+'</p>';
+  return '<h3>'+(ar?'الدكت والفلتر':'Duct and filter')+'</h3><form class="inline-duct-form" onchange="updateInlineDuctFilter(this)" onsubmit="return false"><fieldset><legend>'+(ar?'دكت الإمداد':'Supply duct')+'</legend><div class="inline-duct-primary">'+dimension('width',ar?'العرض':'Width',sup.w)+dimension('height',ar?'الارتفاع':'Height',sup.h)+'<label>'+(ar?'الفلتر':'Filter')+'<select name="filterType">'+options+'</select></label>'+fanField+'</div>'+number('drop',ar?'مقاومة الفلتر اليدوية Pa':'Manual filter resistance Pa',drop,preset.id!=='other')+'</fieldset><fieldset><legend>'+(ar?'دكت الراجع':'Return duct')+'</legend><div class="inline-duct-primary">'+dimension('retWidth',ar?'العرض':'Width',ret.w)+dimension('retHeight',ar?'الارتفاع':'Height',ret.h)+'</div></fieldset><details class="fan-curve-settings"><summary>'+(ar?'بيانات المروحة لحساب تأثير الفلتر':'Fan data for filter impact')+'</summary><p>'+(ar?'اختيار النوع لا يحدد أداء المروحة. عند تغييره أدخل ضغوط منحنى المروحة الجديدة.':'Fan type does not define performance. When changing type, enter pressure data from the new fan curve.')+'</p><div class="inline-duct-primary">'+number('operating',ar?'الضغط عند نقطة التصميم Pa':'Duty pressure Pa',f.operating,false)+number('shutoff',ar?'ضغط المروحة عند تدفق صفري Pa':'Shutoff pressure Pa',f.shutoff,false)+'</div></details></form><div class="inline-duct-result" aria-live="polite"><strong>'+(ar?'التدفق بعد الفلتر':'Flow after filter')+'</strong><p>'+status+'</p>'+ductResult+'</div><p class="copilot-note">'+(preset.pa?(ar?'مقاومة تقديرية ':'Estimated resistance ')+(drop==null?'—':drop.toFixed(1))+' Pa · '+(ar?'عدد فلاتر متوازية مقترح: ':'Suggested parallel filters: ')+count+'. ':'')+(ar?'الفلاتر المدرجة أمثلة كتالوجية وليست مقاومة ثابتة للفئة. التقدير يستخدم منحنى مقاومة تربيعي ومروحة خطية ثابتة السرعة، ولا يغني عن منحنى المصنع. تغيير الأبعاد يحدث السرعة وفقد الضغط، ولا يغير تدفق التصميم.':'Listed filters are catalogue examples, not fixed class resistance. Estimate uses quadratic resistance and a fixed-speed linear fan approximation, not a manufacturer curve. Dimensions update velocity and pressure, not design flow.')+'</p>';
 }
 
 function returnToHealthDashboard(){
@@ -3202,6 +3239,7 @@ function applyReportDuctAction(form){
   persistQuoteState();
   renderProjBlock();
   renderQuote();
+  calcESP();
   renderAdvancedDuct();
   renderTechReportFoundation();
   return false;
@@ -3212,6 +3250,7 @@ function resetReportDuctSize(side){
   persistQuoteState();
   renderProjBlock();
   renderQuote();
+  calcESP();
   renderAdvancedDuct();
   renderTechReportFoundation();
 }
@@ -3298,6 +3337,7 @@ function renderTechReportAirflowReviewSection(){
   var model = window._lastTechnicalReportModel || buildTechnicalReportModel();
   var airflow = model.airflowReview || {};
   var actualCfm = getSelectedProjectEquipmentCfm();
+  var filterReview=getDuctFilterReviewState();
   var shortage = Number(actualCfm || 0) - Number(airflow.requiredSupplyCfm || 0);
   return '<section class="tech-doc-section" data-report-source="technical-report-model-airflow">'+
     '<div class="tech-doc-section-head">'+(lang==='ar'?'مراجعة الهواء والتهوية':'Airflow and Ventilation Review')+'</div>'+
@@ -3305,6 +3345,7 @@ function renderTechReportAirflowReviewSection(){
       '<div class="tech-doc-cell"><span>'+(lang==='ar'?'CFM المطلوب':'Required Supply CFM')+'</span><strong>'+formatReportNumber(airflow.requiredSupplyCfm, 'CFM')+'</strong></div>'+
       '<div class="tech-doc-cell"><span>'+(lang==='ar'?'CFM مفاهيمي':'Conceptual CFM')+'</span><strong>'+formatReportNumber(airflow.conceptualCfm, 'CFM')+'</strong></div>'+
       '<div class="tech-doc-cell"><span>'+(lang==='ar'?'CFM كتالوجي بعد الاختيار':'Catalogue Equipment CFM')+'</span><strong>'+formatReportNumber(actualCfm, 'CFM')+'</strong></div>'+
+      (filterReview.filterActive?'<div class="tech-doc-cell"><span>'+(lang==='ar'?'التدفق التقديري بعد الفلتر':'Estimated flow after filter')+'</span><strong>'+(filterReview.estimated?formatReportNumber(filterReview.effectiveCfm,'CFM'):(lang==='ar'?'يلزم استكمال بيانات المروحة':'Fan data required'))+'</strong></div>':'')+
       '<div class="tech-doc-cell"><span>'+(lang==='ar'?'هواء خارجي':'Outdoor Air')+'</span><strong>'+formatReportNumber(airflow.outdoorAirCfm, 'CFM')+'</strong></div>'+
       '<div class="tech-doc-cell"><span>'+(lang==='ar'?'هواء عادم':'Exhaust Air')+'</span><strong>'+formatReportNumber(airflow.exhaustCfm, 'CFM')+'</strong></div>'+
       '<div class="tech-doc-cell"><span>'+(lang==='ar'?'فرق تدفق الهواء':'Airflow Difference')+'</span><strong>'+(shortage >= 0 ? '+' : '')+Number(shortage||0).toLocaleString()+' CFM</strong></div>'+
@@ -12436,7 +12477,7 @@ function getEspNumber(id, fallback){
   return val;
 }
 function getEspInputs(){
-  return {
+  var inputs={
     lenSup: getEspNumber('esp-len-sup', 30),
     lenRet: getEspNumber('esp-len-ret', 20),
     bends: Math.max(0, parseInt(getEspNumber('esp-bends', 4), 10) || 0),
@@ -12448,6 +12489,13 @@ function getEspInputs(){
     damperLoss: getEspNumber('esp-damper-loss', 0),
     otherLoss: getEspNumber('esp-other-loss', 0)
   };
+  var review=getDuctFilterReviewState();
+  if(projState.ductDimensions && review.sup && review.ret && inputs.lenSup+inputs.lenRet>0){
+    inputs.fric=(Number(review.sup.dP_pa)+Number(review.ret.dP_pa))/(inputs.lenSup+inputs.lenRet);
+  }
+  // This is an additional filter; retain the baseline filter loss exactly once.
+  if(review.filterActive && Number.isFinite(review.filterLossPa) && review.filterLossPa>=0)inputs.filterLoss+=review.filterLossPa;
+  return inputs;
 }
 function calculateEspBreakdown(inputs){
   var eng = window.AirCalcEngineering ? window.AirCalcEngineering.calculateEsp({

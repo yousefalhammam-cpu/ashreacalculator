@@ -108,6 +108,8 @@
     var requiredCfm = toNumber(safeCall('getProjectRequiredLoadCfm', 0));
     var selectedBtu = toNumber(safeCall('getSelectedProjectEquipmentBtu', 0));
     var selectedCfm = toNumber(safeCall('getSelectedProjectEquipmentCfm', 0));
+    var airflowReview=safeCall('getDuctFilterReviewState',null);
+    if(airflowReview && airflowReview.estimated)selectedCfm=toNumber(airflowReview.effectiveCfm);
     var validation = normalizeValidation(safeCall('getProjectEngineeringValidation', { items: [] }));
 
     return {
@@ -123,6 +125,7 @@
         requiredCfm: requiredCfm,
         selectedCfm: selectedCfm
       },
+      airflowReview: clone(airflowReview),
       rooms: {
         count: rooms.length,
         missingInputs: countMissingInputs(rooms),

@@ -5,11 +5,12 @@ const vm = require('vm');
 const source = fs.readFileSync(require('path').join(__dirname, '../app.js'), 'utf8');
 const names = ['getManufacturerRecommendationMatchRules','classifyManufacturerCapacityMatch','findManufacturerMatchesForScenario','applyReportCapacityAction','applyReportDuctAction','calcDuctSize','_makeDuctCandidate'];
 const calls = [];
+let pressureRefreshes=0;
 const ctx = {lang:'en', window:{}, projState:{}, DUCT_STD:[],
   getAllowedSystemType:x=>x, isProjectSystemEquipmentRecordCompatible:()=>true,
   getProjectRequiredLoadBtu:()=>30000, _ductCandidateScore:()=>0,
   applyProjectSystemManualCapacity:(id,value)=>calls.push([id,value]),
-  renderTechReportFoundation:()=>{}, persistQuoteState:()=>{},renderProjBlock:()=>{},renderQuote:()=>{},renderAdvancedDuct:()=>{}};
+  renderTechReportFoundation:()=>{}, persistQuoteState:()=>{},renderProjBlock:()=>{},renderQuote:()=>{},calcESP:()=>{pressureRefreshes++;},renderAdvancedDuct:()=>{}};
 vm.createContext(ctx);
 names.forEach(name=>vm.runInContext(source.match(new RegExp('function '+name+'\\([^]*?\\n\\}'))[0],ctx));
 const scenario = {systemType:'split',standardUnitCapacityBtuH:30000,quantity:1,totalConceptualCapacityBtuH:30000,conceptualAirflowCfm:1000,requiredCoolingCapacityBtuH:30000};
@@ -26,6 +27,7 @@ assert.deepStrictEqual(calls,[['unit-1',36000]]);
 ctx.applyReportCapacityAction({elements:{capacity:{value:'-1'}}});
 assert.strictEqual(calls.length,1);
 ctx.applyReportDuctAction({elements:{width:{value:'500'},height:{value:'400'},side:{value:'sup'}}});
+assert.strictEqual(pressureRefreshes,1,'Dimension changes must refresh the shared ESP result');
 const sized=ctx.calcDuctSize(1000,1000,'sup');
 assert.strictEqual(sized.std.w,500);
 assert.strictEqual(sized.std.h,400);
