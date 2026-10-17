@@ -3,7 +3,7 @@
 (function () {
   'use strict';
 
-  var GUEST_PROJECT_LIMIT = 0;
+  var GUEST_PROJECT_LIMIT = 1;
   // Deployment policy, independent of authentication and private-data rules.
   var ACCESS_POLICY = {
     mode: 'open', // 'open' or 'plans'
@@ -225,7 +225,7 @@
   }
 
   function getProjectLimit() {
-    return hasAccess('unlimitedProjects') ? Infinity : GUEST_PROJECT_LIMIT;
+    return _user() ? Infinity : GUEST_PROJECT_LIMIT;
   }
 
   function _toggleLockedElement(el, locked) {

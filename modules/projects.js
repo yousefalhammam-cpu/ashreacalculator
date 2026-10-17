@@ -706,8 +706,9 @@
         : Infinity;
       if (all.length >= limit) {
         _toast(_isAr()
-          ? 'وصلت للحد الأقصى من المشاريع في الخطة الحالية'
-          : 'You reached the project limit for the current plan');
+          ? 'المنصة مجانية. يمكنك حفظ مشروع واحد كضيف؛ سجل الدخول مجانًا لحفظ مشاريع إضافية والحصول على كامل المميزات.'
+          : 'The platform is free. Guests can save one project; sign in for free to save more projects and access all features.');
+        if(window.AppAuth && window.AppAuth.openAuthModal) window.AppAuth.openAuthModal();
         return;
       }
       var newProj = {
@@ -961,6 +962,11 @@
   function duplicateProject(id) {
     if (window.AppPlan && !window.AppPlan.requirePro('dashboard')) return;
     var found = _findProject(id);
+    if(window.AppPlan && found.all.length>=window.AppPlan.getProjectLimit()){
+      _toast(_t('المنصة مجانية. سجل الدخول مجانًا لحفظ مشروع إضافي.','The platform is free. Sign in for free to save another project.'));
+      if(window.AppAuth && window.AppAuth.openAuthModal) window.AppAuth.openAuthModal();
+      return;
+    }
     if (!found.project) {
       _toast(_t('المشروع غير موجود', 'Project not found'));
       return;

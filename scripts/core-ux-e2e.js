@@ -10,7 +10,7 @@ const { createAirCalcServer } = require('../local-static-server');
 const APP_PORT = 5512;
 const DEBUG_PORT = 9225;
 const HOST = '127.0.0.1';
-const APP_URL = `http://${HOST}:${APP_PORT}/app/index.html`;
+const APP_URL = process.env.AIRCALC_TEST_URL || `http://${HOST}:${APP_PORT}/app/index.html`;
 const DIST = path.join(process.cwd(), 'dist');
 const REPORT_PATH = path.join(DIST, 'core-ux-e2e-report.json');
 const SCREENSHOT_PATH = path.join(DIST, 'core-ux-e2e-dashboard.png');
@@ -82,7 +82,7 @@ async function withPage(target, callback) {
     const timeout = setTimeout(() => {
       ws.close();
       reject(new Error('Core UX E2E timed out.'));
-    }, 30000);
+    }, 60000);
 
     function send(method, params) {
       const id = ++nextId;
@@ -176,6 +176,12 @@ async function run() {
   try {
     const target = await waitForTarget();
     const { result, errors, warnings } = await withPage(target, async (page) => {
+      const point=await page.evaluate(`(()=>{const b=document.getElementById('topbar-account-btn');const r=b.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
+      await page.send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,x:point.x,y:point.y});
+      await page.send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,x:point.x,y:point.y});
+      const visible=await page.evaluate(`(()=>{const o=document.getElementById('auth-overlay');const r=o.getBoundingClientRect();return !o.classList.contains('hidden') && getComputedStyle(o).display!=='none' && r.width>0 && r.height>0;})()`);
+      if(!visible) throw new Error('Real pointer click did not display account dialog.');
+      await page.evaluate('closeAuthModal()');
       const state = await page.evaluate(`(async function(){
         function ready(name){ return typeof window[name] === 'function'; }
         localStorage.clear();

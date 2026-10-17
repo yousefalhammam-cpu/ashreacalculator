@@ -3,7 +3,7 @@ const text=fs.readFileSync(require('path').join(__dirname,'../modules/plan.js'),
 function load(code){const c={window:{},document:{documentElement:{lang:'en'},addEventListener(){}},console:{log(){}}};vm.createContext(c);vm.runInContext(code,c);return c.window.AppPlan;}
 const open=load(text);
 assert(open.hasAccess('export_pdf') && open.hasAccess('save_project'));
-assert.strictEqual(open.getProjectLimit(),Infinity);
+assert.strictEqual(open.getProjectLimit(),1);
 assert.strictEqual(open.hasAccess('unknown'),false);
 let called=false;assert(open.requirePro('exportPDF',()=>called=true));assert(called);
 const limited=load(text.replace('features: {}','features: { exportPDF: false }'));

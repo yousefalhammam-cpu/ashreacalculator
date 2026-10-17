@@ -13751,7 +13751,14 @@ function initProjDropdowns(){
 function updatePlanUI(){
   if(window.AppPlan && window.AppPlan.isOpenAccess && window.AppPlan.isOpenAccess()){
     var openAr=lang==='ar';
-    ['header-plan-badge','plan-status-pill','ptg-live-badge','sl-upgrade-lbl','ptg-title'].forEach(function(id){var el=G(id);if(el)el.textContent=openAr?'وصول مفتوح':'Open access';});
+    var settingsPlan=G('plan-test-group');
+    if(settingsPlan) settingsPlan.innerHTML='<h2>'+(openAr?'AirCalc Pro مجانية':'AirCalc Pro is free')+'</h2><p>'+(openAr?'جميع أدوات الحساب والتقرير والتصدير متاحة. قم بتسجيل الدخول للحصول على كامل المميزات وحفظ مشاريع إضافية ومزامنة بياناتك.':'All calculation, report and export tools are available. Sign in for all features, additional saved projects and cloud sync.')+'</p><dl class="settings-access-summary"><div><dt>'+(openAr?'بدون حساب':'Without an account')+'</dt><dd>'+(openAr?'جميع الأدوات + حفظ مشروع واحد وتحديثه':'All tools + save and update one project')+'</dd></div><div><dt>'+(openAr?'بحساب مجاني':'With a free account')+'</dt><dd>'+(openAr?'حفظ مشاريع متعددة ومزامنة سحابية':'Multiple saved projects and cloud sync')+'</dd></div></dl>';
+    if(G('plan-section-title')) G('plan-section-title').textContent=openAr?'المميزات المجانية':'Free features';
+    if(G('settings-section-title')) G('settings-section-title').textContent=openAr?'الإعدادات':'Settings';
+    if(G('account-section-title')) G('account-section-title').textContent=openAr?'الحساب المجاني':'Free account';
+    if(G('sl-lang')) G('sl-lang').textContent=openAr?'لغة المنصة':'Platform language';
+    if(G('sl-sub')) G('sl-sub').textContent=openAr?'العربية / English':'English / العربية';
+    ['header-plan-badge','plan-status-pill','ptg-live-badge','sl-upgrade-lbl','ptg-title'].forEach(function(id){var el=G(id);if(el)el.textContent=openAr?'مجانية':'Free';});
     ['sl-upgrade-sub','ptg-sub','ptg-desc'].forEach(function(id){var el=G(id);if(el)el.textContent=openAr?'المنصة متاحة دون اشتراك. تسجيل الدخول مطلوب فقط لخدمات الحساب والبيانات السحابية.':'No subscription required. Sign in only for account and cloud data services.';});
     ['ea-monthly-name','ea-monthly-price','ea-yearly-name','ea-yearly-price','ea-soon-monthly','ea-soon-yearly'].forEach(function(id){var el=G(id);if(el && el.parentElement)el.parentElement.hidden=true;});
     document.querySelectorAll('.desktop-pro-badge,.desktop-sidebar-pill').forEach(function(el){el.textContent=openAr?'متاح':'Open';});

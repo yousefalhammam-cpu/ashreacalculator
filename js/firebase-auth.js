@@ -191,19 +191,19 @@ function updateAuthUI(){
   const unlockTitle = tt('authunlocktitle', isAr() ? 'تسجيل الدخول لتفعيل PRO' : 'Sign in to unlock PRO');
   const unlockSub = tt('authunlocksub', isAr() ? 'سجّل الدخول أو أنشئ حسابًا لتفعيل PRO Early Access.' : 'Sign in or create an account to unlock PRO Early Access.');
   const defaultTitle = tt('authacct', 'Account');
-  const defaultSub = tt('authgueststatus', 'Sign in to unlock PRO for free');
+  const defaultSub = isAr()?'المنصة مجانية. سجل الدخول للحصول على كامل المميزات وحفظ مشاريع إضافية.':'The platform is free. Sign in for all features and additional saved projects.';
   const modalTitleText = (!loggedIn && proUnlockContext) ? unlockTitle : defaultTitle;
   const modalSubText = (!loggedIn && proUnlockContext) ? unlockSub : defaultSub;
 
   if(openBtn){
     openBtn.textContent = loggedIn
-      ? tt('authearlypro', 'PRO Early Access')
-      : tt('authsigninunlock', 'Sign in / Unlock PRO for Free');
+      ? (isAr()?'إدارة الحساب':'Manage account')
+      : (isAr()?'تسجيل الدخول / إنشاء حساب مجاني':'Sign in / Create free account');
   }
   if(statusSub){
     statusSub.textContent = loggedIn
       ? `${tt('authloggedin', 'Signed in as')} ${getDisplayName(currentUser)}`
-      : tt('authgueststatus', 'Sign in to unlock PRO for free');
+      : defaultSub;
   }
   if(userName) userName.textContent = getDisplayName(currentUser);
   if(userEmail) userEmail.textContent = getDisplayEmail(currentUser);
@@ -247,12 +247,12 @@ function updateAuthUI(){
 
   if(helper){
     helper.textContent = loggedIn
-      ? tt('authearlypromsg', 'PRO features are free during Early Access.')
+      ? (isAr()?'حسابك مجاني؛ يمكنك حفظ مشاريع متعددة ومزامنتها.':'Your account is free; save multiple projects and sync them.')
       : (isFileProtocol()
           ? (isAr()
               ? 'تسجيل الدخول يتطلب تشغيل التطبيق من الموقع أو من خادم محلي، وليس من file://'
               : 'Sign in requires running the app from the website or a local server, not from file://')
-          : tt('authcloudreq', 'Login required for PRO features and cloud saving'));
+          : (isAr()?'حساب مجاني لحفظ مشاريع إضافية ومزامنة بياناتك.':'A free account for additional projects and cloud sync.'));
   }
 
   if(modalSub){
@@ -537,6 +537,8 @@ function openAuthModal(){
 
 function showAccountDialog(){
   authReturnFocus = document.activeElement;
+  const overlay=GG('auth-overlay');
+  if(overlay && overlay.parentElement!==document.body) document.body.appendChild(overlay);
   // Opening the dialog must not depend on Firebase or the plan UI refreshing.
   openOverlay('auth-overlay');
   showAuthMessage('');

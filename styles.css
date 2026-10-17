@@ -9509,6 +9509,24 @@ body.light-theme .workflow-zone-card{
   }
 }
 
+/* Settings: one aligned reading column, with no pricing previews. */
+.desktop-shell .workspace-shell.desktop-page-settings #p-settings.panel.on {
+  display:flex !important; flex-direction:column !important; gap:12px !important;
+  width:100% !important; max-width:none !important;
+}
+.desktop-shell .workspace-shell.desktop-page-settings #p-settings.panel.on > * {
+  width:100% !important; max-width:none !important; margin:0 !important;
+  grid-column:auto !important; box-sizing:border-box;
+}
+#p-settings .set-group { padding:20px !important; border:2px solid #b0b0b0; border-radius:8px !important; box-shadow:none !important; }
+#p-settings .ea-price-preview { display:none !important; }
+#p-settings .settings-section-head { font-size:16px !important; padding-block:12px 0 !important; }
+#p-settings #plan-test-group h2 { font-size:20px; margin:0 0 8px; }
+#p-settings #plan-test-group p { font-size:14px; line-height:1.8; margin:0 0 16px; }
+.settings-access-summary { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:0; }
+.settings-access-summary dt { font-weight:700; margin-bottom:6px; }
+.settings-access-summary dd { margin:0;line-height:1.7; }
+@media(max-width:700px){.settings-access-summary{grid-template-columns:1fr;}#p-settings .auth-account-row{flex-wrap:wrap;gap:14px;}}
 /* Consistent structural borders across workspace pages, not inputs or alerts. */
 :root { --workspace-panel-border:2px solid #b0b0b0; }
 .panel :is(.card,.project-explorer-card,.calc-workflow-room-panel,

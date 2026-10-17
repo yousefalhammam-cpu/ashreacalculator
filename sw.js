@@ -3,7 +3,7 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v10-account-fix';
+const CACHE_NAME = 'aircalcpro-v11-free-settings';
 
 const PRECACHE_ASSETS = [
   './',
