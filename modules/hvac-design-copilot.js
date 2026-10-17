@@ -281,10 +281,12 @@
   }
 
   function renderMetric(metric){
-    return '<div class="copilot-metric copilot-tone-' + esc(metric.tone) + '">' +
-      '<span>' + esc(metricLabel(metric.key)) + '</span>' +
+    var names={capacity:['توافق السعة','Capacity match'],airflow:['تدفق الهواء','Airflow'],esp:['مراجعة الضغط','Pressure review'],energy:['مؤشر السعة — ليس كفاءة الطاقة','Capacity indicator — not energy efficiency'],electrical:['بيانات الكهرباء','Electrical data'],maintainability:['تعقيد الوحدات','Unit complexity'],dataQuality:['اكتمال البيانات','Data completeness'],equipmentVerification:['توثيق المعدات','Equipment verification']};
+    var label=names[metric.key]?text(names[metric.key][0],names[metric.key][1]):metricLabel(metric.key);
+    return '<button type="button" class="copilot-metric copilot-metric-action copilot-tone-' + esc(metric.tone) + '" onclick="openHealthMetricEditor(\''+esc(metric.key)+'\')" aria-label="'+esc(label+' — '+text('مراجعة وتعديل','Review and edit'))+'">' +
+      '<span>' + esc(label) + '<small class="metric-action-label">'+esc(text('مراجعة وتعديل ←','Review and edit →'))+'</small></span>' +
       '<strong>' + fmt(metric.score) + '<small>/100</small></strong>' +
-    '</div>';
+    '</button>';
   }
 
   function renderHealthLegend(){

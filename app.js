@@ -3078,6 +3078,38 @@ function renderReportFilterEditor(){
   return '<section class="tech-doc-section"><h3>'+(ar?'الفلتر وتأثيره على تدفق الدكت':'Filter impact on duct airflow')+'</h3><form class="report-inline-editor" onsubmit="return applyReportFilter(this)"><label>'+(ar?'الفلتر':'Filter')+'<select name="filterType" onchange="this.form.querySelectorAll(\'input\').forEach(function(el){el.required=this.value!==\'none\';},this)">'+['none','H13','H14','other'].map(function(t){return '<option value="'+t+'"'+(f.type===t?' selected':'')+'>'+({none:ar?'بدون فلتر إضافي':'No additional filter',other:ar?'فلتر آخر':'Other filter'}[t] || 'HEPA '+t)+'</option>';}).join('')+'</select></label>'+field('drop',ar?'مقاومة الفلتر عند تدفق التصميم Pa':'Filter resistance at design flow Pa',f.drop)+field('operating',ar?'ضغط المروحة عند نقطة التصميم Pa':'Fan pressure at original duty Pa',f.operating)+field('shutoff',ar?'ضغط المروحة عند تدفق صفري Pa':'Fan shutoff pressure Pa',f.shutoff)+'<button type="submit">'+(ar?'تطبيق وحساب التأثير':'Apply and calculate')+'</button></form><p dir="ltr">'+(ar?'تدفق التصميم':'Design flow')+': '+q.toLocaleString('en-US')+' CFM</p><p role="status">'+(f.type==='none'?(ar?'لا توجد مقاومة فلتر إضافية.':'No additional filter resistance.'):result?((ar?'التدفق التقديري بعد الفلتر: ':'Estimated flow after filter: ')+Math.round(result.cfm).toLocaleString('en-US')+' CFM · '+(ar?'الانخفاض: ':'Reduction: ')+result.lossPercent.toFixed(1)+'%'):(ar?'حدد مقاس الدكت وتدفقه وأدخل بيانات المروحة والفلتر لعرض التقدير.':'Set duct sizing/flow and enter fan and filter data to estimate impact.'))+'</p><p>'+(ar?'تقدير عند سرعة مروحة ثابتة، بافتراض منحنى مروحة خطي ومقاومة تتناسب مع مربع التدفق. أدخل مقاومة الفلتر من الكتالوج عند تدفق التصميم، وضغوط المروحة من نفس منحنى السرعة والكثافة. استخدم المقاومة النهائية لفحص الاتساخ. لا يغيّر هذا التقدير الحمل أو CFM التصميمي؛ يلزم منحنى فعلي للاعتماد، ولا ينطبق على تحكم التدفق الثابت.':'Fixed-speed estimate using a linear fan curve and quadratic resistance. Enter catalogue filter resistance at design flow and fan pressures from the same speed/density curve. Use final resistance to assess loading. This does not change load or design CFM; an actual curve is required for approval. Not applicable to constant-flow control.')+'</p></section>';
 }
 
+function returnToHealthDashboard(){
+  var returnButton=G('health-return-button');if(returnButton)returnButton.remove();
+  if(window.AppHvacDesignCopilot) window.AppHvacDesignCopilot.refresh();
+  openDesktopView('tech');
+  selectTechnicalReportTopic('report-decision');
+  var panel=G('hvac-design-copilot-panel');
+  if(panel){panel.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+function openHealthMetricEditor(key){
+  var actions={airflow:['report-air','تدفق الهواء','Airflow'],capacity:['report-loads','السعة','Capacity'],energy:['report-loads','مؤشر السعة','Capacity indicator'],esp:['report-air','الضغط والدكت','Pressure and ducts'],electrical:['report-equipment','بيانات المعدة الكهربائية','Equipment electrical data'],maintainability:['report-equipment','توزيع الوحدات','Unit schedule'],equipmentVerification:['report-equipment','بيانات الكتالوج','Catalogue evidence'],dataQuality:['report-loads','بيانات الغرف','Room inputs']};
+  var action=actions[key];if(!action)return;
+  if(!G('health-return-button')){
+    var back=document.createElement('button');back.id='health-return-button';back.type='button';
+    back.textContent=lang==='ar'?'تحديث والعودة للصحة الهندسية':'Refresh and return to health';
+    back.onclick=returnToHealthDashboard;document.body.appendChild(back);
+  }
+  openDesktopView('tech');selectTechnicalReportTopic(action[0]);
+  var old=G('health-metric-editor');if(old)old.remove();
+  var host=G(action[0]);if(!host)return;
+  var box=document.createElement('section');box.id='health-metric-editor';box.className='tech-doc-section';box.tabIndex=-1;
+  var ar=lang==='ar';
+  var content='';
+  if(key==='airflow')content='<p>'+ (ar?'المطلوب: ':'Required: ')+getProjectRequiredLoadCfm()+' CFM · '+(ar?'المختار: ':'Selected: ')+getSelectedProjectEquipmentCfm()+' CFM</p><p>'+(ar?'راجع سعة الوحدات أو اختر معدة بتدفق كتالوجي مناسب. تعديل الدكت يغيّر السرعة وفقد الضغط، ولا يغيّر CFM المعدة.':'Review unit capacity or choose equipment with suitable catalogue airflow. Duct dimensions affect velocity and pressure, not equipment CFM.')+'</p>'+renderReportAlertEditor({sourceRule:'capacity',title:''});
+  else if(key==='capacity' || key==='energy')content=renderReportAlertEditor({sourceRule:'capacity',title:''});
+  else if(key==='esp')content=renderReportDuctEditor();
+  var route=key==='dataQuality'?'calc':(key==='electrical' || key==='equipmentVerification' || key==='airflow'?'hist':'calc');
+  box.innerHTML='<h3>'+esc(ar?action[1]:action[2])+'</h3>'+content+'<div class="scenario-actions"><button type="button" onclick="openDesktopView(\''+route+'\')">'+(ar?(route==='hist'?'اختيار المعدة وبياناتها':'تعديل بيانات التصميم'):(route==='hist'?'Choose equipment and data':'Edit design inputs'))+'</button><button type="button" onclick="returnToHealthDashboard()">'+(ar?'تحديث والعودة إلى الصحة الهندسية':'Refresh and return to health')+'</button></div>';
+  host.insertBefore(box,host.children[1] || null);
+  Array.from(box.querySelectorAll('details')).forEach(function(el){el.open=true;});
+  box.scrollIntoView({behavior:'smooth',block:'start'});box.focus({preventScroll:true});
+}
+
 function renderReportDuctEditor(){
   var cache = window._lastDuctSizing || {};
   return '<details class="report-duct-adjustment"><summary>'+(lang==='ar'?'تعديل مقاسات الدكت':'Adjust duct dimensions')+'</summary>'+['sup','ret'].map(function(side){

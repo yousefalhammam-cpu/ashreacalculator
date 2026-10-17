@@ -176,6 +176,9 @@ async function run() {
   try {
     const target = await waitForTarget();
     const { result, errors, warnings } = await withPage(target, async (page) => {
+      const healthNavigation=await page.evaluate(`(()=>{openDesktopView('tech');AppHvacDesignCopilot.refresh();const b=document.querySelector('.copilot-metric-action[onclick*="airflow"]');if(!b)return false;b.click();const editor=document.getElementById('health-metric-editor');const ok=!!editor && editor.getBoundingClientRect().height>0 && !!document.getElementById('health-return-button');returnToHealthDashboard();openDesktopView('calc');window.scrollTo({top:0,behavior:'instant'});return ok;})()`);
+      if(!healthNavigation)throw new Error('Airflow health metric did not open its editor.');
+      await new Promise(resolve=>setTimeout(resolve,500));
       const point=await page.evaluate(`(()=>{const b=document.getElementById('topbar-account-btn');const r=b.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
       await page.send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,x:point.x,y:point.y});
       await page.send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,x:point.x,y:point.y});
