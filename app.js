@@ -3122,6 +3122,11 @@ function returnToHealthDashboard(){
   if(panel){panel.scrollIntoView({behavior:'smooth',block:'start'});}
 }
 function openHealthMetricEditor(key){
+  var inlineTargets={airflow:'health-airflow-controls',esp:'health-airflow-controls',capacity:'health-capacity-controls',energy:'health-capacity-controls',electrical:'health-equipment-controls',equipmentVerification:'health-equipment-controls',dataQuality:'health-room-controls',maintainability:'health-capacity-controls'};
+  if(inlineTargets[key] && G(inlineTargets[key])){
+    openDesktopView('tech');selectTechnicalReportTopic('report-decision');
+    var target=G(inlineTargets[key]);target.tabIndex=-1;target.scrollIntoView({behavior:'smooth',block:'start'});target.focus({preventScroll:true});return;
+  }
   if(key==='airflow' || key==='esp'){
     openDesktopView('tech');selectTechnicalReportTopic('report-decision');
     var inline=G('health-airflow-controls');
@@ -4975,12 +4980,30 @@ function renderTechReportFoundation(){
       slot.parentNode.insertBefore(wrapper, slot);
     } else slot.parentNode.insertBefore(wrapper, slot.nextSibling);
   }
-  moveTool(copilot,'report-assistant-tool','الصحة الهندسية ومساعد المراجعة','Engineering health and review assistant');
+  moveTool(copilot,'report-assistant-tool','لوحة المتابعة','Monitoring dashboard');
   var healthWrapper=G('report-assistant-tool');
   if(healthWrapper){
+    var followup=G('health-followup');
+    if(!followup){followup=document.createElement('div');followup.id='health-followup';followup.className='health-followup-grid';}
     var airflowControls=G('health-airflow-controls');
     if(!airflowControls){airflowControls=document.createElement('section');airflowControls.id='health-airflow-controls';airflowControls.className='tech-doc-section';}
-    airflowControls.innerHTML=renderInlineAirflowControls();healthWrapper.appendChild(airflowControls);
+    airflowControls.innerHTML=renderInlineAirflowControls();
+    followup.replaceChildren(airflowControls);
+    var ar=lang==='ar';
+    function monitoringPanel(title,body,route){
+      var section=document.createElement('section');section.className='tech-doc-section';
+      section.innerHTML='<h3>'+esc(title)+'</h3>'+body+(route?'<button type="button" onclick="openDesktopView(\''+route+'\')">'+(ar?'فتح الحقول المرتبطة':'Open related fields')+'</button>':'');
+      followup.appendChild(section);
+    }
+    monitoringPanel(ar?'السعة وتوزيع الوحدات':'Capacity and unit schedule','<p>'+(ar?'المطلوب: ':'Required: ')+getProjectRequiredLoadBtu()+' BTU/h · '+(ar?'المختار: ':'Selected: ')+getSelectedProjectEquipmentBtu()+' BTU/h</p>'+renderReportAlertEditor({sourceRule:'capacity',title:''})+'<p>'+(ar?'مؤشر السعة ليس قياسًا لكفاءة الطاقة. راجع توزيع الوحدات وعددها في التصميم.':'The capacity indicator does not measure energy efficiency. Review unit quantities and distribution in design.')+'</p>','calc');
+    monitoringPanel(ar?'المعدات والبيانات الكهربائية':'Equipment and electrical data','<p>'+(ar?'توثيق الموديل والجهد والفازات والتردد يتم من بيانات المعدة، وليس بتعديل الدرجة يدويًا.':'Model, voltage, phase and frequency come from equipment data, not manual score edits.')+'</p>'+renderTechReportSelectedEquipmentCompactSection(),'hist');
+    monitoringPanel(ar?'الغرف واكتمال البيانات':'Rooms and data completeness','<p>'+(ar?'راجع أبعاد الغرف والإشغال والنوافذ ونوع النظام. تعقيد الوحدات تقدير مبسط مرتبط بتوزيع التصميم.':'Review room dimensions, occupancy, glazing and system type. Unit complexity is an indicative design-distribution metric.')+'</p>'+renderTechReportRoomLoadTable(),'calc');
+    followup.children[1].id='health-capacity-controls';
+    followup.children[2].id='health-equipment-controls';
+    followup.children[3].id='health-room-controls';
+    var metricsGrid=copilot && copilot.querySelector('.copilot-grid');
+    if(metricsGrid)metricsGrid.insertBefore(followup,metricsGrid.children[1] || null);
+    else healthWrapper.appendChild(followup);
   }
   moveTool(duct,'report-duct-tool','حساب مجاري الهواء والضغط الساكن','Duct and static pressure calculations');
   var topicNav=slot.querySelector('#report-topic-nav');

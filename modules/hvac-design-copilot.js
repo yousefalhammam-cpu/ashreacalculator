@@ -719,6 +719,8 @@
   function render(snapshot, health, recommendations, visibleRecs, confidence, actionCenter, explanation, comparison, actionState, readiness, checklist, riskRegister){
     var panel = getPanel();
     if(!panel) return;
+    var followup=document.getElementById('health-followup');
+    if(followup)followup.remove();
     panel.style.display = '';
     panel.innerHTML =
       '<div class="copilot-head">' +
@@ -833,6 +835,7 @@
         });
       };
     }
+    if(followup){var grid=panel.querySelector('.copilot-grid');if(grid)grid.insertBefore(followup,grid.children[1] || null);}
     applyActiveTabView(panel);
     bindTabButtons();
     bindActionButtons(snapshot);

@@ -9509,6 +9509,14 @@ body.light-theme .workflow-zone-card{
   }
 }
 
+#hvac-design-copilot-panel > .copilot-grid:first-of-type { align-items:start; }
+#hvac-design-copilot-panel > .copilot-grid:has(#health-followup) { grid-template-columns:minmax(0,1fr); }
+.health-followup-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-width:0;align-items:start; }
+#p-tech .health-followup-grid > .tech-doc-section { margin:0;padding:16px;border:2px solid #b0b0b0;border-radius:8px;background:var(--s1,#fff);min-width:0; }
+.health-followup-grid h3 { margin:0 0 12px;font-size:17px; }
+.health-followup-grid p { font-size:13px;line-height:1.7; }
+.health-followup-grid .report-inline-editor { flex-wrap:wrap; }
+@media(max-width:800px){.health-followup-grid{grid-template-columns:minmax(0,1fr);}}
 .copilot-metric-action { width:100%;font:inherit;text-align:start;cursor:pointer; }
 .copilot-metric-action:focus-visible { outline:3px solid #2563eb;outline-offset:3px; }
 .metric-action-label { display:block;margin-top:4px;font-size:11px;color:#1557a0; }
