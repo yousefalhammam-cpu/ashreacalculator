@@ -3,7 +3,7 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v13-health-actions';
+const CACHE_NAME = 'aircalcpro-v14-inline-airflow';
 
 const PRECACHE_ASSETS = [
   './',

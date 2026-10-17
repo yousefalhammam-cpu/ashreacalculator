@@ -3078,6 +3078,41 @@ function renderReportFilterEditor(){
   return '<section class="tech-doc-section"><h3>'+(ar?'الفلتر وتأثيره على تدفق الدكت':'Filter impact on duct airflow')+'</h3><form class="report-inline-editor" onsubmit="return applyReportFilter(this)"><label>'+(ar?'الفلتر':'Filter')+'<select name="filterType" onchange="this.form.querySelectorAll(\'input\').forEach(function(el){el.required=this.value!==\'none\';},this)">'+['none','H13','H14','other'].map(function(t){return '<option value="'+t+'"'+(f.type===t?' selected':'')+'>'+({none:ar?'بدون فلتر إضافي':'No additional filter',other:ar?'فلتر آخر':'Other filter'}[t] || 'HEPA '+t)+'</option>';}).join('')+'</select></label>'+field('drop',ar?'مقاومة الفلتر عند تدفق التصميم Pa':'Filter resistance at design flow Pa',f.drop)+field('operating',ar?'ضغط المروحة عند نقطة التصميم Pa':'Fan pressure at original duty Pa',f.operating)+field('shutoff',ar?'ضغط المروحة عند تدفق صفري Pa':'Fan shutoff pressure Pa',f.shutoff)+'<button type="submit">'+(ar?'تطبيق وحساب التأثير':'Apply and calculate')+'</button></form><p dir="ltr">'+(ar?'تدفق التصميم':'Design flow')+': '+q.toLocaleString('en-US')+' CFM</p><p role="status">'+(f.type==='none'?(ar?'لا توجد مقاومة فلتر إضافية.':'No additional filter resistance.'):result?((ar?'التدفق التقديري بعد الفلتر: ':'Estimated flow after filter: ')+Math.round(result.cfm).toLocaleString('en-US')+' CFM · '+(ar?'الانخفاض: ':'Reduction: ')+result.lossPercent.toFixed(1)+'%'):(ar?'حدد مقاس الدكت وتدفقه وأدخل بيانات المروحة والفلتر لعرض التقدير.':'Set duct sizing/flow and enter fan and filter data to estimate impact.'))+'</p><p>'+(ar?'تقدير عند سرعة مروحة ثابتة، بافتراض منحنى مروحة خطي ومقاومة تتناسب مع مربع التدفق. أدخل مقاومة الفلتر من الكتالوج عند تدفق التصميم، وضغوط المروحة من نفس منحنى السرعة والكثافة. استخدم المقاومة النهائية لفحص الاتساخ. لا يغيّر هذا التقدير الحمل أو CFM التصميمي؛ يلزم منحنى فعلي للاعتماد، ولا ينطبق على تحكم التدفق الثابت.':'Fixed-speed estimate using a linear fan curve and quadratic resistance. Enter catalogue filter resistance at design flow and fan pressures from the same speed/density curve. Use final resistance to assess loading. This does not change load or design CFM; an actual curve is required for approval. Not applicable to constant-flow control.')+'</p></section>';
 }
 
+function updateInlineDuctFilter(form){
+  var data={type:form.elements.filterType.value};
+  ['drop','operating','shutoff'].forEach(function(key){var value=form.elements[key].value;data[key]=value===''?null:Number(value);});
+  projState.ductFilter=data;persistQuoteState();
+  renderTechReportFoundation();
+  if(window.AppHvacDesignCopilot)window.AppHvacDesignCopilot.refresh();
+}
+function renderInlineAirflowControls(){
+  var html=renderReportDuctEditor()+renderReportFilterEditor();
+  var container=document.createElement('div');container.innerHTML=html;
+  Array.from(container.querySelectorAll('details')).forEach(function(d){d.open=true;});
+  Array.from(container.querySelectorAll('input[name="width"],input[name="height"]')).forEach(function(input){
+    var select=document.createElement('select');select.name=input.name;select.required=true;
+    var values=[];for(var size=100;size<=1800;size+=50)values.push(size);
+    var current=Number(input.value);if(current>0 && values.indexOf(current)<0)values.push(current);
+    values.sort(function(a,b){return a-b;});
+    if(!current){var empty=document.createElement('option');empty.value='';empty.textContent=lang==='ar'?'اختر المقاس':'Select size';select.appendChild(empty);}
+    values.forEach(function(value){var option=document.createElement('option');option.value=value;option.textContent=value+' mm';option.selected=value===current;select.appendChild(option);});
+    select.setAttribute('onchange','if(this.form.checkValidity())applyReportDuctAction(this.form)');input.replaceWith(select);
+  });
+  var filterForm=container.querySelector('select[name="filterType"]').form;
+  filterForm.setAttribute('onchange','updateInlineDuctFilter(this)');
+  filterForm.querySelector('select').removeAttribute('onchange');
+  Array.from(filterForm.querySelectorAll('button[type="submit"]')).forEach(function(button){button.remove();});
+  var cache=window._lastDuctSizing || {};
+  var results=['sup','ret'].map(function(side){
+    var size=(projState.ductDimensions || {})[side] || cache[side] || {};
+    var q=Number(side==='sup'?cache.supCfm:cache.retCfm);
+    var len=Number((G(side==='sup'?'esp-len-sup':'esp-len-ret') || {value:side==='sup'?30:20}).value);
+    var analysis=window.AppDuct && q>0 && size.w>0 && size.h>0?window.AppDuct.advancedDuctAnalysis(q,size.w,size.h,len):null;
+    return '<div><strong>'+(side==='sup'?(lang==='ar'?'الإمداد':'Supply'):(lang==='ar'?'الراجع':'Return'))+'</strong><p dir="ltr">'+(analysis?q.toLocaleString('en-US')+' CFM · '+analysis.V_ms+' m/s · '+analysis.dP_pa+' Pa':(lang==='ar'?'حدد تدفق التصميم والمقاس':'Set design flow and dimensions'))+'</p></div>';
+  }).join('');
+  return '<h3>'+(lang==='ar'?'تعديل الدكت والفلتر':'Duct and filter adjustments')+'</h3><p>'+(lang==='ar'?'تتحدث السرعة وفقد الضغط عند تغيير المقاس. نوع الفلتر وحده لا يحدد انخفاض CFM؛ أدخل مقاومته وبيانات المروحة لعرض التقدير.':'Dimensions update velocity and pressure loss. Filter class alone cannot determine CFM reduction; enter its resistance and fan data for an estimate.')+'</p><div class="tech-report-summary-grid" aria-live="polite">'+results+'</div>'+container.innerHTML;
+}
+
 function returnToHealthDashboard(){
   var returnButton=G('health-return-button');if(returnButton)returnButton.remove();
   if(window.AppHvacDesignCopilot) window.AppHvacDesignCopilot.refresh();
@@ -3087,6 +3122,12 @@ function returnToHealthDashboard(){
   if(panel){panel.scrollIntoView({behavior:'smooth',block:'start'});}
 }
 function openHealthMetricEditor(key){
+  if(key==='airflow' || key==='esp'){
+    openDesktopView('tech');selectTechnicalReportTopic('report-decision');
+    var inline=G('health-airflow-controls');
+    if(inline){inline.tabIndex=-1;inline.scrollIntoView({behavior:'smooth',block:'start'});inline.focus({preventScroll:true});}
+    return;
+  }
   var actions={airflow:['report-air','تدفق الهواء','Airflow'],capacity:['report-loads','السعة','Capacity'],energy:['report-loads','مؤشر السعة','Capacity indicator'],esp:['report-air','الضغط والدكت','Pressure and ducts'],electrical:['report-equipment','بيانات المعدة الكهربائية','Equipment electrical data'],maintainability:['report-equipment','توزيع الوحدات','Unit schedule'],equipmentVerification:['report-equipment','بيانات الكتالوج','Catalogue evidence'],dataQuality:['report-loads','بيانات الغرف','Room inputs']};
   var action=actions[key];if(!action)return;
   if(!G('health-return-button')){
@@ -3129,7 +3170,7 @@ function renderReportDuctEditor(){
 
 function applyReportDuctAction(form){
   var w=Number(form.elements.width.value), h=Number(form.elements.height.value), side=form.elements.side.value;
-  if(['sup','ret'].indexOf(side)<0 || !Number.isFinite(w) || !Number.isFinite(h) || w<150 || h<150 || w>1800 || h>1800) return false;
+  if(['sup','ret'].indexOf(side)<0 || !Number.isFinite(w) || !Number.isFinite(h) || w<100 || h<100 || w>1800 || h>1800) return false;
   projState.ductDimensions = projState.ductDimensions || {};
   projState.ductDimensions[side] = {w:w,h:h};
   persistQuoteState();
@@ -4935,6 +4976,12 @@ function renderTechReportFoundation(){
     } else slot.parentNode.insertBefore(wrapper, slot.nextSibling);
   }
   moveTool(copilot,'report-assistant-tool','الصحة الهندسية ومساعد المراجعة','Engineering health and review assistant');
+  var healthWrapper=G('report-assistant-tool');
+  if(healthWrapper){
+    var airflowControls=G('health-airflow-controls');
+    if(!airflowControls){airflowControls=document.createElement('section');airflowControls.id='health-airflow-controls';airflowControls.className='tech-doc-section';}
+    airflowControls.innerHTML=renderInlineAirflowControls();healthWrapper.appendChild(airflowControls);
+  }
   moveTool(duct,'report-duct-tool','حساب مجاري الهواء والضغط الساكن','Duct and static pressure calculations');
   var topicNav=slot.querySelector('#report-topic-nav');
   var oldTopicNav=slot.parentNode.querySelector(':scope > #report-topic-nav');
