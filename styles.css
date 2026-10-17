@@ -9519,6 +9519,17 @@ body.light-theme .workflow-zone-card{
 #health-airflow-controls .report-inline-editor { padding-block:10px;border:0;border-bottom:1px solid #ddd; }
 #health-airflow-controls .report-inline-editor label { min-width:120px;flex:1; }
 #health-airflow-controls .report-inline-editor select { width:100%;min-height:40px; }
+#health-airflow-controls .inline-duct-form fieldset { border:0;border-bottom:1px solid #ddd;padding:12px 0;margin:0;min-width:0; }
+#health-airflow-controls .inline-duct-form legend { font-weight:700;font-size:14px;padding:0; }
+#health-airflow-controls .inline-duct-primary { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start; }
+#health-airflow-controls .inline-duct-form label { display:flex;flex-direction:column;gap:6px;min-width:0;font-size:13px; }
+#health-airflow-controls .inline-duct-form label[hidden] { display:none !important; }
+#health-airflow-controls .inline-duct-form select,
+#health-airflow-controls .inline-duct-form input { display:block !important;visibility:visible !important;opacity:1 !important;width:100% !important;min-width:0;height:44px !important;min-height:44px;box-sizing:border-box;border:1px solid #9aa6b5;border-radius:6px;padding:8px;background:var(--s1,#fff);color:var(--tb,#142033);font:inherit;appearance:auto; }
+#health-airflow-controls .inline-duct-form option { background:#fff;color:#142033; }
+.inline-duct-result { padding:12px 0;margin-top:12px;border-top:1px solid #ddd; }
+.fan-curve-settings { margin-top:12px; }
+@media(max-width:650px){#health-airflow-controls .inline-duct-primary{grid-template-columns:repeat(2,minmax(0,1fr));}#health-airflow-controls .inline-duct-primary > label:last-child:nth-child(3){grid-column:1/-1;}}
 @media(max-width:900px){#p-tech #report-assistant-tool{grid-template-columns:minmax(0,1fr);}#report-assistant-tool > #hvac-design-copilot-panel{grid-column:1;grid-row:2;}#report-assistant-tool > #health-followup{grid-column:1;grid-row:3;}}
 #hvac-design-copilot-panel > .copilot-grid:first-of-type { align-items:start; }
 #hvac-design-copilot-panel > .copilot-grid:has(#health-followup) { grid-template-columns:minmax(0,1fr); }

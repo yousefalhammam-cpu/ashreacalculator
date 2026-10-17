@@ -1,0 +1,10 @@
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const source=fs.readFileSync(require('path').join(__dirname,'../app.js'),'utf8');
+const ctx={};vm.createContext(ctx);vm.runInContext(source.slice(source.indexOf('function getInlineFilterPresets('),source.indexOf('function updateInlineDuctFilter(')),ctx);
+const p=ctx.getInlineFilterPresets();
+assert(p.some(x=>x.id==='other') && p.some(x=>x.id==='none'));
+assert.strictEqual(p.find(x=>x.id==='merv11').flow,2800);
+assert.strictEqual(p.find(x=>x.id==='merv14').pa,130);
+assert.strictEqual(p.find(x=>x.id==='hepa14').flow,605);
+assert(p.filter(x=>x.pa).every(x=>x.flow>0));
+console.log('Catalogue filter reference values and manual option passed.');
