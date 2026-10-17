@@ -159,6 +159,15 @@ function updateAuthUI(){
     accountButton.title = label;
     accountButton.setAttribute('aria-label', label);
     accountButton.classList.toggle('signed-in', loggedIn);
+    let nameLabel=accountButton.querySelector('.account-display-name');
+    if(!nameLabel){
+      nameLabel=document.createElement('span');
+      nameLabel.className='account-display-name';
+      accountButton.appendChild(nameLabel);
+    }
+    nameLabel.textContent=loggedIn?getDisplayName(currentUser):'';
+    nameLabel.hidden=!loggedIn;
+    accountButton.classList.toggle('has-account-name',loggedIn);
   }
   ['auth-email', 'auth-password'].forEach(id => {
     const input = GG(id);
@@ -191,7 +200,7 @@ function updateAuthUI(){
   const unlockTitle = tt('authunlocktitle', isAr() ? 'تسجيل الدخول لتفعيل PRO' : 'Sign in to unlock PRO');
   const unlockSub = tt('authunlocksub', isAr() ? 'سجّل الدخول أو أنشئ حسابًا لتفعيل PRO Early Access.' : 'Sign in or create an account to unlock PRO Early Access.');
   const defaultTitle = tt('authacct', 'Account');
-  const defaultSub = isAr()?'المنصة مجانية. سجل الدخول للحصول على كامل المميزات وحفظ مشاريع إضافية.':'The platform is free. Sign in for all features and additional saved projects.';
+  const defaultSub = isAr()?'جميع الأدوات مجانية. يحفظ الضيف مشروعًا واحدًا؛ الحساب المجاني يتيح حفظ مشاريع متعددة والمزامنة السحابية.':'All tools are free. Guests can save one project; a free account enables multiple projects and cloud sync.';
   const modalTitleText = (!loggedIn && proUnlockContext) ? unlockTitle : defaultTitle;
   const modalSubText = (!loggedIn && proUnlockContext) ? unlockSub : defaultSub;
 
