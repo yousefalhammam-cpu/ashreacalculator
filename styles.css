@@ -9509,6 +9509,17 @@ body.light-theme .workflow-zone-card{
   }
 }
 
+#p-tech #report-assistant-tool { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start;direction:ltr; }
+#report-assistant-tool > h2 { grid-column:1 / -1; }
+#report-assistant-tool > #hvac-design-copilot-panel { grid-column:2;grid-row:2;margin:0;min-width:0; }
+#report-assistant-tool > #health-followup { grid-column:1;grid-row:2;display:grid;grid-template-columns:minmax(0,1fr);gap:16px; }
+[dir="rtl"] #report-assistant-tool > * { direction:rtl; }
+[dir="ltr"] #report-assistant-tool > * { direction:ltr; }
+#report-assistant-tool .copilot-grid { grid-template-columns:minmax(0,1fr);align-items:start; }
+#health-airflow-controls .report-inline-editor { padding-block:10px;border:0;border-bottom:1px solid #ddd; }
+#health-airflow-controls .report-inline-editor label { min-width:120px;flex:1; }
+#health-airflow-controls .report-inline-editor select { width:100%;min-height:40px; }
+@media(max-width:900px){#p-tech #report-assistant-tool{grid-template-columns:minmax(0,1fr);}#report-assistant-tool > #hvac-design-copilot-panel{grid-column:1;grid-row:2;}#report-assistant-tool > #health-followup{grid-column:1;grid-row:3;}}
 #hvac-design-copilot-panel > .copilot-grid:first-of-type { align-items:start; }
 #hvac-design-copilot-panel > .copilot-grid:has(#health-followup) { grid-template-columns:minmax(0,1fr); }
 .health-followup-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-width:0;align-items:start; }

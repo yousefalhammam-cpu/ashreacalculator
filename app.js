@@ -3102,6 +3102,8 @@ function renderInlineAirflowControls(){
   filterForm.setAttribute('onchange','updateInlineDuctFilter(this)');
   filterForm.querySelector('select').removeAttribute('onchange');
   Array.from(filterForm.querySelectorAll('button[type="submit"]')).forEach(function(button){button.remove();});
+  Array.from(container.querySelectorAll('summary,section > h3')).forEach(function(node){node.remove();});
+  Array.from(container.querySelectorAll('details,section.tech-doc-section')).forEach(function(node){node.replaceWith.apply(node,Array.from(node.childNodes));});
   var cache=window._lastDuctSizing || {};
   var results=['sup','ret'].map(function(side){
     var size=(projState.ductDimensions || {})[side] || cache[side] || {};
@@ -4995,15 +4997,9 @@ function renderTechReportFoundation(){
       section.innerHTML='<h3>'+esc(title)+'</h3>'+body+(route?'<button type="button" onclick="openDesktopView(\''+route+'\')">'+(ar?'فتح الحقول المرتبطة':'Open related fields')+'</button>':'');
       followup.appendChild(section);
     }
-    monitoringPanel(ar?'السعة وتوزيع الوحدات':'Capacity and unit schedule','<p>'+(ar?'المطلوب: ':'Required: ')+getProjectRequiredLoadBtu()+' BTU/h · '+(ar?'المختار: ':'Selected: ')+getSelectedProjectEquipmentBtu()+' BTU/h</p>'+renderReportAlertEditor({sourceRule:'capacity',title:''})+'<p>'+(ar?'مؤشر السعة ليس قياسًا لكفاءة الطاقة. راجع توزيع الوحدات وعددها في التصميم.':'The capacity indicator does not measure energy efficiency. Review unit quantities and distribution in design.')+'</p>','calc');
     monitoringPanel(ar?'المعدات والبيانات الكهربائية':'Equipment and electrical data','<p>'+(ar?'توثيق الموديل والجهد والفازات والتردد يتم من بيانات المعدة، وليس بتعديل الدرجة يدويًا.':'Model, voltage, phase and frequency come from equipment data, not manual score edits.')+'</p>'+renderTechReportSelectedEquipmentCompactSection(),'hist');
-    monitoringPanel(ar?'الغرف واكتمال البيانات':'Rooms and data completeness','<p>'+(ar?'راجع أبعاد الغرف والإشغال والنوافذ ونوع النظام. تعقيد الوحدات تقدير مبسط مرتبط بتوزيع التصميم.':'Review room dimensions, occupancy, glazing and system type. Unit complexity is an indicative design-distribution metric.')+'</p>'+renderTechReportRoomLoadTable(),'calc');
-    followup.children[1].id='health-capacity-controls';
-    followup.children[2].id='health-equipment-controls';
-    followup.children[3].id='health-room-controls';
-    var metricsGrid=copilot && copilot.querySelector('.copilot-grid');
-    if(metricsGrid)metricsGrid.insertBefore(followup,metricsGrid.children[1] || null);
-    else healthWrapper.appendChild(followup);
+    followup.children[1].id='health-equipment-controls';
+    healthWrapper.appendChild(followup);
   }
   moveTool(duct,'report-duct-tool','حساب مجاري الهواء والضغط الساكن','Duct and static pressure calculations');
   var topicNav=slot.querySelector('#report-topic-nav');
