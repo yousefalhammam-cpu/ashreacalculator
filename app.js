@@ -3293,7 +3293,7 @@ function resetReportDuctSize(side){
   renderTechReportFoundation();
 }
 
-function renderTechReportCriticalAlertsSection(){
+function renderTechReportCriticalAlertsSection(compact){
   var model = window._lastTechnicalReportModel || buildTechnicalReportModel();
   var alerts = model.alerts || [];
   var status = model.engineeringStatus || {};
@@ -3313,15 +3313,15 @@ function renderTechReportCriticalAlertsSection(){
         '<p>'+esc(alert.detected || '')+'</p>'+
         (alert.actualValue && alert.requiredValue ? '<p><strong>'+(lang==='ar'?'المختار: ':'Selected: ')+esc(alert.actualValue)+'</strong> · '+(lang==='ar'?'المطلوب: ':'Required: ')+esc(alert.requiredValue)+'</p>' : '')+
         '<p class="report-alert-action"><strong>'+(lang==='ar'?'الإجراء: ':'Action: ')+'</strong>'+esc(alert.requiredAction || '')+'</p>'+
-        '<div class="report-alert-controls">'+renderReportAlertEditor(alert)+'</div>'+
-        '<details class="report-alert-evidence"><summary>'+(lang==='ar'?'القيم والأثر الهندسي':'Values and engineering impact')+'</summary><div class="tech-alert-grid">'+
+        '<div class="report-alert-controls">'+(compact && alert.sourceRule === 'project_airflow_comparison' ? '<button type="button" onclick="openHealthMetricEditor(\'airflow\')">'+(lang==='ar'?'تعديل الدكت والفلتر':'Edit duct and filter')+'</button>' : renderReportAlertEditor(alert))+'</div>'+
+        (compact ? '' : '<details class="report-alert-evidence"><summary>'+(lang==='ar'?'القيم والأثر الهندسي':'Values and engineering impact')+'</summary><div class="tech-alert-grid">'+
           '<div><span>'+(lang==='ar'?'القيمة الحالية':'Actual')+'</span><strong>'+esc(alert.actualValue || '—')+'</strong></div>'+
           '<div><span>'+(lang==='ar'?'المطلوب':'Required')+'</span><strong>'+esc(alert.requiredValue || '—')+'</strong></div>'+
           '<div><span>'+(lang==='ar'?'الأثر الهندسي':'Engineering Impact')+'</span><strong>'+esc(alert.impact || '—')+'</strong></div>'+
           '<div><span>'+(lang==='ar'?'الإجراء المطلوب':'Required Action')+'</span><strong>'+esc(alert.requiredAction || '—')+'</strong></div>'+
           '<div><span>'+(lang==='ar'?'النطاق المتأثر':'Affected Scope')+'</span><strong>'+esc(alert.affectedScope || '—')+'</strong></div>'+
           '<div><span>'+(lang==='ar'?'قاعدة المصدر':'Source Rule')+'</span><strong>'+esc(alert.sourceRule || 'Rules Engine')+'</strong></div>'+
-        '</div></details>'+
+        '</div></details>')+
       '</div>'+
     '</article>';
   }).join('') : '<div class="tech-doc-empty">'+(lang==='ar'?'لا توجد تنبيهات حرجة بناءً على المدخلات الحالية، لكن هذا لا يعني اعتماد السلامة النهائية.' :'No critical issues were detected from current inputs. This is not a final safety approval.')+'</div>';
@@ -5048,7 +5048,7 @@ function renderTechReportFoundation(){
       [['report-decision','نظرة عامة','Overview'],['report-loads','الأحمال','Loads'],['report-equipment','المعدات','Equipment'],['report-air','الهواء والدكت','Airflow and ducts'],['report-evidence','المراجع','References']].map(function(item){
         return '<button type="button" role="tab" aria-controls="'+item[0]+'" onclick="selectTechnicalReportTopic(\''+item[0]+'\')">'+esc(lang==='ar'?item[1]:item[2])+'</button>';
       }).join('')+'</nav>'+
-    section('report-decision','01','القرار الهندسي','Engineering decision',renderTechReportCriticalAlertsSection())+
+    section('report-decision','01','القرار الهندسي','Engineering decision','')+
     section('report-loads','02','الأحمال والسعة المختارة','Loads and selected capacity',renderTechReportDashboardSummarySection()+
       detail('أساس الحساب والافتراضات','Calculation basis and assumptions',renderCalculationLevelBanner()+renderTechReportEngineeringSummary())+
       detail('تفاصيل الغرف','Room schedule',renderTechReportRoomLoadTable()))+
@@ -5097,8 +5097,8 @@ function renderTechReportFoundation(){
       section.innerHTML='<h3>'+esc(title)+'</h3>'+body+(route?'<button type="button" onclick="openDesktopView(\''+route+'\')">'+(ar?'فتح الحقول المرتبطة':'Open related fields')+'</button>':'');
       followup.appendChild(section);
     }
-    monitoringPanel(ar?'المعدات والبيانات الكهربائية':'Equipment and electrical data','<p>'+(ar?'توثيق الموديل والجهد والفازات والتردد يتم من بيانات المعدة، وليس بتعديل الدرجة يدويًا.':'Model, voltage, phase and frequency come from equipment data, not manual score edits.')+'</p>'+renderTechReportSelectedEquipmentCompactSection(),'hist');
-    followup.children[1].id='health-equipment-controls';
+    monitoringPanel(ar?'القرار الهندسي':'Engineering decision',renderTechReportCriticalAlertsSection(true));
+    followup.children[1].id='health-decision-controls';
     healthWrapper.appendChild(followup);
   }
   moveTool(duct,'report-duct-tool','حساب مجاري الهواء والضغط الساكن','Duct and static pressure calculations');

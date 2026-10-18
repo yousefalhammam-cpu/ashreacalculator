@@ -9536,6 +9536,15 @@ body.light-theme .workflow-zone-card{
 .health-followup-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-width:0;align-items:start; }
 #p-tech .health-followup-grid > .tech-doc-section { margin:0;padding:16px;border:2px solid #b0b0b0;border-radius:8px;background:var(--s1,#fff);min-width:0; }
 .health-followup-grid h3 { margin:0 0 12px;font-size:17px; }
+#p-tech #report-decision:empty { display:none; }
+#p-tech #report-decision { padding:0;border:0; }
+#p-tech #report-decision > h2 { display:none; }
+#health-decision-controls .tech-alert-section { border:0;padding:0;margin:0; }
+#health-decision-controls .tech-alert-list { display:grid;grid-template-columns:minmax(0,1fr);gap:10px; }
+#health-decision-controls .tech-alert-card { padding:12px;min-height:0; }
+#health-decision-controls .tech-alert-body p { margin:6px 0;font-size:13px;line-height:1.6; }
+#health-decision-controls .tech-alert-head strong { font-size:14px; }
+#health-decision-controls .report-alert-controls:empty { display:none; }
 .health-followup-grid p { font-size:13px;line-height:1.7; }
 .health-followup-grid .report-inline-editor { flex-wrap:wrap; }
 @media(max-width:800px){.health-followup-grid{grid-template-columns:minmax(0,1fr);}}
