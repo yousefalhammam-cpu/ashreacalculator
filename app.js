@@ -2986,7 +2986,7 @@ function renderReportAlertEditor(alert){
   if(alert.sourceRule === 'preliminary_load_basis') return '<button type="button" class="no-print" onclick="openDesktopView(\'home\')">'+(lang==='ar'?'مراجعة بيانات الغرف والأحمال':'Review room inputs and loads')+'</button>';
   if(alert.sourceRule === 'missing_equipment_snapshot' || alert.sourceRule === 'Manufacturer Recommendation Engine') return '<button type="button" class="no-print" onclick="openDesktopView(\'hist\')">'+(lang==='ar'?'مراجعة خيارات عرض السعر':'Review quotation options')+'</button>';
   if(/airflow|selected_cfm|CFM Check|تدفق الهواء/i.test(rule)) return '<div class="no-print"><button type="button" onclick="scrollTechnicalReportSection(\'report-equipment\')">'+(lang==='ar'?'مراجعة تدفق المعدة واختيار البديل':'Review equipment airflow and alternatives')+'</button><button type="button" onclick="scrollTechnicalReportSection(\'report-air\')">'+(lang==='ar'?'مراجعة توزيع الهواء':'Review air distribution')+'</button><p>'+(lang==='ar'?'تعديل مقاس الدكت يغير السرعة وفقد الضغط؛ لا يغير تدفق المعدة المسجل.':'Duct dimensions affect velocity and pressure loss; they do not change recorded equipment airflow.')+'</p>'+renderReportDuctEditor()+'</div>';
-  if(/duct|مجار|دكت/i.test(rule)) return renderReportDuctEditor();
+  if(/duct|مجار|دكت/i.test(rule)) return '<button type="button" onclick="openHealthMetricEditor(\'airflow\')">'+(lang==='ar'?'تعديل الدكت والفلتر':'Edit duct and filter')+'</button>';
   if(!/capacity|السعة/i.test(rule)) return '';
   var systems = isProjectHvacMode() ? ensureProjectSystems() : [];
   if(!isProjectHvacMode()) hist.forEach(function(room,index){
@@ -3176,6 +3176,26 @@ function renderDuctAndFilterSummary(isAr){
   ];
   return '<section class="duct-filter-summary" data-duct-filter-summary="true" style="border:1px solid #b0b0b0;border-radius:6px;padding:12px;margin:12px 0;page-break-inside:avoid"><h3 style="font-size:15px;margin:0 0 8px">'+(isAr?'الدكت والفلتر المعتمدان للتسعير والمراجعة':'Duct and filter selection for pricing and review')+'</h3><table style="width:100%;font-size:12px;border-collapse:collapse"><tbody>'+rows.map(function(row){return '<tr><th style="text-align:start;padding:5px;border-bottom:1px solid #ddd">'+esc(row[0])+'</th><td style="padding:5px;border-bottom:1px solid #ddd">'+esc(row[1])+'</td></tr>';}).join('')+'</tbody></table><small>'+(isAr?'اختيارات تصميمية؛ تقدير التدفق ليس قياسًا ميدانيًا. تكلفة التوريد والتركيب تُسعّر بشكل منفصل.':'Design selections; estimated airflow is not a field measurement. Supply and installation are priced separately.')+'</small></section>';
 }
+function renderDuctDesignGuidance(review, filterType, ar){
+  var tips=ar?[
+    ['تحديد المقاس','ابدأ بتدفق الهواء المطلوب لكل مسار، وليس بسعة التكييف وحدها. اختر العرض والارتفاع مع مراعاة السقف والعزل، وتجنب المقاطع شديدة التسطح قدر الإمكان.'],
+    ['السرعة والضغط','عند ثبات التدفق، تكبير مساحة الدكت يقلل السرعة وفقد الضغط عادةً. راجع أيضًا طول المسار والأكواع والتفرعات؛ المقاس وحده لا يكفي.'],
+    ['اختيار الفلتر','اختره حسب استخدام المكان ومتطلبات جودة الهواء. راجع مقاومته عند تدفق التشغيل ومقاومته النهائية الموصى بها للاستبدال، وتحقق من قدرة المروحة.'],
+    ['بيانات المروحة','اختيار النوع وحده لا يحدد الأداء. أدخل ضغوط المروحة من كتالوجها لتقدير تأثير الفلتر؛ التقدير ليس بديلًا لمنحنى المصنع.']
+  ]:[
+    ['Duct size','Start with the required airflow for each path, not cooling capacity alone. Allow room for insulation and ceiling clearance; avoid very flat sections where practical.'],
+    ['Velocity and pressure','At fixed airflow, a larger duct area generally reduces velocity and pressure loss. Also review lengths, bends and branches; dimensions alone are not enough.'],
+    ['Filter selection','Select for room use and air-quality requirements. Check resistance at operating airflow and the recommended final replacement resistance against fan capability.'],
+    ['Fan data','Fan type alone does not define performance. Enter catalogue fan pressures to estimate filter impact; this estimate does not replace the manufacturer curve.']
+  ];
+  var message=!(review.equipmentCfm>0)?(ar?'حدد تدفق المعدة أولًا حتى يمكن تقييم الدكت والفلتر.':'Set equipment airflow first to assess the duct and filter.'):
+    review.filterActive&&!review.filterReady?(ar?'بيانات المروحة غير مكتملة؛ التدفق بعد الفلتر غير محسوب.':'Fan data is incomplete; post-filter airflow is not calculated.'):
+    !(review.sup&&review.ret)?(ar?'أكمل عرض وارتفاع دكت الإمداد والراجع لإظهار السرعة وفقد الضغط.':'Complete supply and return dimensions to show velocity and pressure loss.'):
+    (ar?'قارن السرعة وفقد الضغط بمتطلبات مشروعك وقدرة المروحة؛ تغيير المقاس لا يغير تدفق المعدة المسجل.':'Compare velocity and pressure loss with project requirements and fan capability; resizing does not change recorded equipment airflow.');
+  return '<aside class="duct-design-guidance"><h4>'+(ar?'دليل اختيار الدكت والفلتر':'Duct and filter selection guide')+'</h4><dl>'+tips.map(function(tip){return '<div><dt>'+esc(tip[0])+'</dt><dd>'+esc(tip[1])+'</dd></div>';}).join('')+'</dl>'+
+    (filterType==='hepa14'?'<p class="duct-guidance-hepa">'+(ar?'HEPA: تحقق من حاجة المشروع إليه ومساحة تركيبه وإحكامه وقدرة المروحة؛ ليس بديلًا مباشرًا لأي فلتر قائم.':'HEPA: verify project need, installation space, sealing and fan capability; it is not a direct replacement for every existing filter.')+'</p>':'')+
+    '<p class="duct-guidance-next" role="status">'+esc(message)+'</p><small>'+(ar?'مراجعة حسابية وفق المدخلات، وليست اعتمادًا نهائيًا للتصميم.':'Calculated review based on inputs, not final design approval.')+'</small></aside>';
+}
 function renderInlineAirflowControls(){
   var ar=lang==='ar',cache=window._lastDuctSizing || {},f=projState.ductFilter || {type:'none'};
   var review=getDuctFilterReviewState();
@@ -3198,7 +3218,7 @@ function renderInlineAirflowControls(){
   var fanOptions=getDuctFanTypes().map(function(item){return '<option value="'+item.id+'"'+((f.fanType || 'unspecified')===item.id?' selected':'')+'>'+esc(ar?item.ar:item.en)+'</option>';}).join('');
   var fanField='<label>'+(ar?'نوع المروحة':'Fan type')+'<select name="fanType">'+fanOptions+'</select></label>';
   var status=f.type==='none'?(ar?'بدون فلتر إضافي':'No additional filter'):result?Math.round(result.cfm).toLocaleString('en-US')+' CFM · '+result.lossPercent.toFixed(1)+'% '+(ar?'انخفاض تقديري':'estimated reduction'):(ar?'أدخل بيانات المروحة وتدفق التصميم لإظهار النتيجة':'Enter fan data and design flow to show the result');
-  var ductResult=['sup','ret'].map(function(side){
+  var ductResult=renderDuctDesignGuidance(review,f.type,ar)+['sup','ret'].map(function(side){
     var size=side==='sup'?sup:ret,flow=Number(side==='sup'?q:(cache.retCfm || q*0.9));
     var length=Number((G(side==='sup'?'esp-len-sup':'esp-len-ret') || {value:side==='sup'?30:20}).value);
     var a=side==='sup'?review.sup:review.ret;
@@ -3313,7 +3333,7 @@ function renderTechReportCriticalAlertsSection(compact){
         '<p>'+esc(alert.detected || '')+'</p>'+
         (alert.actualValue && alert.requiredValue ? '<p><strong>'+(lang==='ar'?'المختار: ':'Selected: ')+esc(alert.actualValue)+'</strong> · '+(lang==='ar'?'المطلوب: ':'Required: ')+esc(alert.requiredValue)+'</p>' : '')+
         '<p class="report-alert-action"><strong>'+(lang==='ar'?'الإجراء: ':'Action: ')+'</strong>'+esc(alert.requiredAction || '')+'</p>'+
-        '<div class="report-alert-controls">'+(compact && alert.sourceRule === 'project_airflow_comparison' ? '<button type="button" onclick="openHealthMetricEditor(\'airflow\')">'+(lang==='ar'?'تعديل الدكت والفلتر':'Edit duct and filter')+'</button>' : renderReportAlertEditor(alert))+'</div>'+
+        '<div class="report-alert-controls">'+(compact && /airflow|selected_cfm|CFM Check|تدفق الهواء/i.test(String(alert.sourceRule||'')+' '+String(alert.title||'')) ? '<button type="button" onclick="openHealthMetricEditor(\'airflow\')">'+(lang==='ar'?'مراجعة الدكت والفلتر':'Review duct and filter')+'</button>' : renderReportAlertEditor(alert))+'</div>'+
         (compact ? '' : '<details class="report-alert-evidence"><summary>'+(lang==='ar'?'القيم والأثر الهندسي':'Values and engineering impact')+'</summary><div class="tech-alert-grid">'+
           '<div><span>'+(lang==='ar'?'القيمة الحالية':'Actual')+'</span><strong>'+esc(alert.actualValue || '—')+'</strong></div>'+
           '<div><span>'+(lang==='ar'?'المطلوب':'Required')+'</span><strong>'+esc(alert.requiredValue || '—')+'</strong></div>'+
