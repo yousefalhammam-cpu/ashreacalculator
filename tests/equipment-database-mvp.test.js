@@ -41,6 +41,18 @@ assert.ok(manufacturers.some((m) => m.id === 'mitsubishi-heavy-industries'), 'ma
 assert.ok(manufacturers.every((m) => m.verifiedModelCount === 0), 'registry names alone must not imply verified models');
 
 const hiddenRecords = global.AppEquipmentDatabase.allRecords();
+elements['equip-detail-modal']={classList:{add(){}}};
+elements['equip-detail-body']={innerHTML:''};
+const detailRecord=hiddenRecords.find(r=>r.exactModelNumber==='30RB 060');
+global.AppEquipmentDatabase.openDetails(detailRecord.id);
+assert(elements['equip-detail-body'].innerHTML.includes('No details available'));
+assert(elements['equip-detail-body'].innerHTML.includes('Electrical and efficiency'));
+assert(elements['equip-detail-body'].innerHTML.includes('Open source'));
+global.lang='ar';
+global.AppEquipmentDatabase.openDetails(detailRecord.id);
+assert(elements['equip-detail-body'].innerHTML.includes('لا توجد تفاصيل'));
+assert(elements['equip-detail-body'].innerHTML.includes('الكهرباء والكفاءة'));
+global.lang='en';
 assert.strictEqual(hiddenRecords.length, 164, 'real equipment seed records should be available by default');
 assert.ok(hiddenRecords.every((record) => !record.sampleData), 'sample equipment records should be hidden by default');
 assert.ok(hiddenRecords.some((record) => record.exactModelNumber === 'UAYN350AFY1A'), 'real Daikin seed records should be loaded');

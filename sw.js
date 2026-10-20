@@ -3,7 +3,7 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v25-catalogue-verification';
+const CACHE_NAME = 'aircalcpro-v26-equipment-details';
 
 const PRECACHE_ASSETS = [
   './',

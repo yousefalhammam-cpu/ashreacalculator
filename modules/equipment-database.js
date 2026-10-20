@@ -93,12 +93,13 @@
 
   function fmtNum(value, suffix) {
     if (value === '' || value == null || !isFinite(Number(value))) {
-      return '<span class="equip-muted">' + t('غير متوفر', 'Not provided') + '</span>';
+      return '<span class="equip-muted">' + t('لا توجد تفاصيل', 'No details available') + '</span>';
     }
     return Number(value).toLocaleString('en-US') + (suffix ? ' ' + suffix : '');
   }
 
   function fmtText(value) {
+    if(value==null || value==='' || value==='unknown')return esc(t('لا توجد تفاصيل','No details available'));
     var S = schema();
     return esc(S ? S.displayValue(value, lang()) : (value || t('غير متوفر', 'Not provided')));
   }
@@ -1186,7 +1187,16 @@
     var modal = G('equip-detail-modal');
     var body = G('equip-detail-body');
     if (!record || !modal || !body) return;
-    var fields = (schema() && schema().EQUIPMENT_FIELDS) || Object.keys(record);
+    var groups=[
+      [t('تعريف الجهاز','Equipment identity'),[
+        ['manufacturerName','الشركة','Manufacturer'],['series','السلسلة','Series'],['exactModelNumber','الموديل','Model'],['indoorModelNumber','موديل الوحدة الداخلية','Indoor model'],['outdoorModelNumber','موديل الوحدة الخارجية','Outdoor model']]],
+      [t('الأداء والهواء','Capacity and airflow'),[
+        ['coolingCapacityBtuH','سعة التبريد','Cooling capacity','BTU/h'],['coolingCapacityKw','سعة التبريد','Cooling capacity','kW'],['coolingCapacityTR','طن التبريد','Cooling tons','TR'],['sensibleCapacityBtuH','السعة المحسوسة','Sensible capacity','BTU/h'],['airflowNominalCfm','تدفق الهواء الاسمي','Nominal airflow','CFM'],['availableEspPa','الضغط الاستاتيكي المتاح','Available static pressure','Pa']]],
+      [t('الكهرباء والكفاءة','Electrical and efficiency'),[
+        ['voltage','الجهد','Voltage','V'],['phase','عدد الفازات','Phase'],['frequencyHz','التردد','Frequency','Hz'],['inputPowerKw','القدرة الكهربائية','Input power','kW'],['runningCurrentA','تيار التشغيل','Running current','A'],['eer','نسبة كفاءة الطاقة','EER'],['seer','الكفاءة الموسمية','SEER'],['cop','معامل الأداء','COP'],['refrigerant','وسيط التبريد','Refrigerant']]],
+      [t('المصدر وملاحظات الاختيار','Source and selection notes'),[
+        ['sourceDocumentName','مرجع البيانات','Source document'],['sourceReference','رابط أو مرجع المصدر','Source reference'],['catalogueVersionLabel','إصدار الكتالوج','Catalogue version'],['notes','ملاحظات المصدر وظروف الأداء','Source notes and rating conditions']]]
+    ];
     body.innerHTML =
       '<div class="equip-detail-head">' +
         '<div><strong>' + fmtText(record.exactModelNumber) + '</strong><span>' + fmtText(record.manufacturerName) + ' · ' + esc(typeLabel(record.equipmentType)) + '</span></div>' +
@@ -1194,9 +1204,12 @@
       '</div>' +
       (record.sampleData ? '<div class="equip-sample-banner">SAMPLE DATA - NOT FOR ENGINEERING SELECTION</div>' : '') +
       renderConflictPreview(record) +
-      '<div class="equip-detail-grid">' + fields.map(function (field) {
-        return '<div class="equip-detail-row"><span>' + esc(field) + '</span><strong>' + fmtText(record[field]) + '</strong></div>';
-      }).join('') + '</div>';
+      groups.map(function(group){return '<section class="equip-details-section"><h3>'+esc(group[0])+'</h3><div class="equip-detail-grid">'+group[1].map(function(field){
+        var value=record[field[0]],present=value!=null&&value!==''&&value!=='unknown';
+        var display=field[3]?fmtNum(value,field[3]):fmtText(value);
+        if(field[0]==='sourceReference' && /^https:\/\//i.test(String(value||'')))display='<a href="'+escAttr(value)+'" target="_blank" rel="noopener noreferrer">'+t('فتح المصدر الرسمي','Open source')+'</a>';
+        return '<div class="equip-detail-row"><span>'+esc(field[isAr()?1:2])+'</span><strong'+(!present?' class="equip-muted"':'')+'>'+display+'</strong></div>';
+      }).join('')+'</div></section>';}).join('');
     modal.classList.add('on');
   }
 

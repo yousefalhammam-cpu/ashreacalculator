@@ -9571,6 +9571,10 @@ body.light-theme .workflow-zone-card{
 .equip-results-group h3 span { font-size:13px;color:#617083; }
 .equip-results-group header p { margin:5px 0;font-size:13px; }
 .equip-coverage-details { margin:20px 0; }
+.equip-details-section { margin:16px 0;padding-top:12px;border-top:1px solid #b0b0b0; }
+.equip-details-section h3 { margin:0 0 10px;font-size:16px; }
+.equip-details-section .equip-detail-row { min-width:0;overflow-wrap:anywhere; }
+.equip-details-section .equip-detail-row strong { white-space:normal;line-height:1.65; }
 @media(max-width:1200px){.equip-type-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
 @media(max-width:600px){.equip-type-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.equip-type-grid img{height:72px;}}
 .duct-design-guidance dl { margin:0;display:grid;gap:8px; }
