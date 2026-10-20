@@ -698,7 +698,7 @@
       records.map(function (r) {
         return '<tr>' +
           '<td>' + (window.AirCalcManufacturerLogo?window.AirCalcManufacturerLogo(r.manufacturerName):'') + fmtText(r.manufacturerName) + '</td>' +
-          '<td><strong>' + fmtText(r.exactModelNumber) + '</strong><span class="equip-muted">' + fmtText(r.series) + '</span></td>' +
+          '<td><strong>' + fmtText(r.exactModelNumber) + '</strong><span class="equip-muted">' + fmtText(r.series) + '</span>'+(!(Number(r.coolingCapacityBtuH)>0)?'<span class="equip-status warn">'+t('عائلة منتجات؛ يلزم اختيار موديل وسعة','Product family; model and capacity required')+'</span>':'')+'</td>' +
           '<td>' + esc(typeLabel(r.equipmentType)) + '</td>' +
           '<td>' + fmtNum(r.coolingCapacityBtuH, '') + '</td>' +
           '<td>' + fmtNum(r.airflowNominalCfm, '') + '</td>' +
@@ -761,12 +761,22 @@
       '</tbody></table></div>';
   }
 
+  function renderTypeCoverage(records) {
+    var groups={};
+    records.forEach(function(r){
+      if(r.sampleData)return;
+      var type=r.equipmentType;
+      if(!groups[type])groups[type]=new Set();
+      groups[type].add(r.manufacturerName || r.brand);
+    });
+    return '<section class="equip-type-coverage"><h3>'+t('الشركات حسب نوع الوحدة','Manufacturers by equipment type')+'</h3><p>'+t('تغطية قاعدة البيانات، وليست تأكيد توفر محلي. عائلات المنتجات دون سعة لا تدخل في مطابقة التسعير.','Database coverage, not confirmation of local availability. Families without capacity are excluded from pricing matches.')+'</p><div class="equip-table-wrap"><table class="equip-table"><thead><tr><th>'+t('نوع الوحدة','Equipment type')+'</th><th>'+t('الشركات','Manufacturers')+'</th></tr></thead><tbody>'+Object.keys(groups).sort().map(function(type){return '<tr><th>'+esc(typeLabel(type))+'</th><td>'+Array.from(groups[type]).sort().map(esc).join(' · ')+'</td></tr>';}).join('')+'</tbody></table></div></section>';
+  }
   function renderRecords() {
     renderFilterOptions();
     var records = filteredRecords();
     renderStats(records);
     var host = G('equip-results');
-    if (host) host.innerHTML = viewMode === 'cards' ? renderCards(records) : renderTable(records);
+    if (host) host.innerHTML = renderTypeCoverage(records)+(viewMode === 'cards' ? renderCards(records) : renderTable(records));
     renderReviewQueue(allRecords());
     renderConflictReview(allRecords());
     renderVersionComparison();

@@ -498,6 +498,54 @@
       'Saudi Shaker V8 catalogue: published T3 cooling kW, not the larger T1 rating. Combined outdoor modules, not a single cabinet; indoor terminals and piping derating must be selected separately. 380-415 V three phase 50/60 Hz; confirm stock.',null);
   });
 
+  // Exact public ratings, not capacities inferred from the model name.
+  function addCatalogueModel(brand, type, model, btu, url, extra) {
+    var key=brand.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    var entry=baseRecord(Object.assign({id:'catalogue-20261020-'+key+'-'+model.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+      manufacturerId:key,manufacturerName:brand,equipmentType:type,exactModelNumber:model,
+      series:model,coolingCapacityBtuH:btu,sourceReference:url,sourceDocumentName:brand+' official product specifications',
+      catalogueId:key+'-'+type+'-20261020',catalogueVersionId:key+'-'+type+'-20261020',
+      catalogueVersionLabel:'Public catalogue checked 2026-10-20',marketRegion:'SA',
+      saudiMarketStatus:'supplier_confirmation_required',
+      notes:'Published rating only. Confirm design ambient performance, electrical supply and local availability before final selection.'},extra||{}));
+    entry.updatedAt='2026-10-20T00:00:00.000Z';
+    window.AirCalcRealEquipmentRecords.push(entry);
+  }
+  var mideaRooftopSource='https://www.hh-shaker.com.sa/wp-content/uploads/2025/01/specification/CAC_Tech_Specs/Desert_series_rooftop.pdf';
+  [['MRCT-050CWN1-M',48000,2000,50,230,1],['MRCT-062CWN1-Y(D)',64000,2200,60,400,3],['MRCT-075CWN1-Y(D)',72000,2800,70,400,3],['MRCT-100CWN1-Y(D)',107000,3800,70,400,3],['MRCT-125CWN1-Y(D)',134000,4200,90,400,3]].forEach(function(r){
+    addCatalogueModel('Midea','package',r[0],r[1],mideaRooftopSource,{series:'Tropical Desert Series 60 Hz',
+      airflowNominalCfm:r[2],availableEspPa:r[3],voltage:r[4],phase:r[5],frequencyHz:60,refrigerant:'R410A',
+      notes:'Shaker Saudi technical manual printed pages 8 and 11: Cooling2 rating, outdoor 46 C DB and indoor 29 C DB / 19 C WB. Standard indoor fan airflow and nominal ESP, not maximum ESP. Confirm voltage range and design selection with supplier.'});
+  });
+  var carrierChillerSource='https://www.carrier.com/marine-offshore/en/worldwide/products/chillers/air-cooled-chillers/30rb/';
+  [['060',200.6],['070',232.8],['080',267.3],['090',304.6],['100',326.5],['110',372.8],['120',415],['130',448.1],['150',492.4],['160',537.5],['170',576.9],['190',654.7],['210',687.3],['225',725],['250',800.3],['275',881],['300',955.8],['315',1075.1],['330',1114.5],['345',1153.9],['360',1231.6],['390',1309.3]].forEach(function(r){
+    addCatalogueModel('Carrier','chiller','30RB '+r[0],kwToBtuH(r[1]),carrierChillerSource,{
+      series:'AquaSnap 30RB standard units',coolingCapacityKw:r[1],marketRegion:'international',refrigerant:'R410A',
+      notes:'Official standard-unit AHRI rating: outdoor entering air 35 C, leaving water 6.7 C. NOT a Saudi high-ambient rating. Confirm exact regional configuration and project conditions; no supply CFM, ESP or electrical values inferred.'});
+  });
+  addCatalogueModel('Haier','window','HW-18LME13/R2(T3)',14400,'https://www.haier.com/sa/air-conditioners/hw-18lme13r2-t3-.shtml',{
+    airflowNominalCfm:m3hToCfm(740),voltage:230,phase:1,frequencyHz:60,
+    notes:'Official Saudi page: T3 cooling 14400 BTU/h, T1 17200 BTU/h; circulation 740 m3/h. T3 capacity used for this record. Confirm project rating conditions.'});
+  addCatalogueModel('Midea','floor','MFPA-24CRDN8-QB6',24000,'https://www.midea.com/ke/air-treatment/air-conditioners/midea-inverter-floor-standing-air-conditioner-pa-series.mfpa-24crdn8-qb6',{
+    marketRegion:'Kenya',notes:'Official regional model, nominal 24000 BTU/h. Saudi supply and high-ambient capacity are not confirmed; obtain local supplier submittal.'});
+
+  // Product-family coverage is visible in the database, but has no fabricated
+  // cooling rating and cannot qualify as a capacity-matched quotation model.
+  [
+    ['Carrier','ahu','Airovision 39HQ','https://www.carrier.com/commercial/en/sa/products/commercial/air-handlers/'],
+    ['Carrier','fcu','AirStream fan coils','https://www.carrier.com/us/en/commercial/airside/'],
+    ['SKM','ahu','Air Handling Units','https://www.skmaircon.com/skm_products.php'],
+    ['SKM','fcu','Fan Coil Units','https://www.skmaircon.com/skm_products.php'],
+    ['SKM','ducted','Ducted Mini Split System','https://www.skmaircon.com/skm_products.php'],
+    ['SKM','vrf','SKM VRF','https://www.skmaircon.com/skm_products.php'],
+    ['Samsung','cassette','360 Cassette','https://www.samsung.com/sa_en/business/system-air-conditioners/single-split-cac/ceiling-air-conditioner-360-cassette1-ac024tn4lcc-su/'],
+    ['Midea','chiller','Inverter Direct-Drive Centrifugal Chiller','https://mbt.midea.com/global/hvac-goods/midea-products-category/chillers/chillers/inverter-direct-drive-centrifugal-chiller']
+  ].forEach(function(r){
+    addCatalogueModel(r[0],r[1],r[2]+' [family]',null,r[3],{series:r[2],
+      marketRegion:'manufacturer_product_family',
+      notes:'Product family only, not an exact selectable model. Manufacturer source confirms the product type. Capacity, airflow, ESP and electrical selection require a project-specific catalogue/submittal. Saudi stock not confirmed.'});
+  });
+
   // Official APMR 50 Hz catalogue, printed pages 7-8, rating (2): outdoor 46 C,
   // indoor 27 C DB / 19.5 C WB. MBh = 1000 BTU/h. Published values are gross.
   [

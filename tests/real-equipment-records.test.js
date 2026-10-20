@@ -15,10 +15,10 @@ load('js/equipment/equipment-schema.js');
 load('data/equipment-records.real.js');
 
 assert.ok(Array.isArray(global.AirCalcRealEquipmentRecords), 'real equipment records should be exposed.');
-assert.strictEqual(global.AirCalcRealEquipmentRecords.length, 127, 'seed includes the sourced Saudi market expansion.');
+assert.strictEqual(global.AirCalcRealEquipmentRecords.length, 164, 'seed includes the sourced Saudi market expansion.');
 const additions=global.AirCalcRealEquipmentRecords.filter(r=>r.id.startsWith('real-sa-20261016-'));
 assert.strictEqual(additions.length,30);
-assert.strictEqual(new Set(global.AirCalcRealEquipmentRecords.map(r=>r.id)).size,127);
+assert.strictEqual(new Set(global.AirCalcRealEquipmentRecords.map(r=>r.id)).size,164);
 const applied=global.AirCalcRealEquipmentRecords.filter(r=>r.id.startsWith('real-applied-20261016-'));
 assert.strictEqual(applied.length,14);
 assert.strictEqual(applied.filter(r=>r.equipmentType==='chiller').length,10);

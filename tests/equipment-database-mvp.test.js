@@ -41,13 +41,13 @@ assert.ok(manufacturers.some((m) => m.id === 'mitsubishi-heavy-industries'), 'ma
 assert.ok(manufacturers.every((m) => m.verifiedModelCount === 0), 'registry names alone must not imply verified models');
 
 const hiddenRecords = global.AppEquipmentDatabase.allRecords();
-assert.strictEqual(hiddenRecords.length, 127, 'real equipment seed records should be available by default');
+assert.strictEqual(hiddenRecords.length, 164, 'real equipment seed records should be available by default');
 assert.ok(hiddenRecords.every((record) => !record.sampleData), 'sample equipment records should be hidden by default');
 assert.ok(hiddenRecords.some((record) => record.exactModelNumber === 'UAYN350AFY1A'), 'real Daikin seed records should be loaded');
 
 global.localStorage.setItem('aircalc_show_sample_equipment', '1');
 const visibleRecords = global.AppEquipmentDatabase.allRecords();
-assert.strictEqual(visibleRecords.length, 129, 'sample equipment records should be appended only when explicitly enabled');
+assert.strictEqual(visibleRecords.length, 166, 'sample equipment records should be appended only when explicitly enabled');
 assert.strictEqual(visibleRecords.filter((record) => record.sampleData).length, 2, 'sample records should be clearly marked');
 assert.ok(
   visibleRecords.filter((record) => record.sampleData).every((record) => record.sourceDocumentName.includes('SAMPLE DATA')),
