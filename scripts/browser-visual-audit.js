@@ -14,6 +14,7 @@ const APP_URL = `http://${HOST}:${APP_PORT}/app/index.html`;
 const OUT_DIR = path.join(process.cwd(), 'dist', 'browser-audit');
 const QUOTE_MODE = process.argv.includes('--quotation');
 const REPORT_MODE = process.argv.includes('--technical-report') || QUOTE_MODE;
+const EQUIPMENT_MODE = process.argv.includes('--equipment');
 
 function requestJson(url, timeoutMs = 1000) {
   return new Promise((resolve, reject) => {
@@ -201,6 +202,31 @@ async function auditViewport(client, name, width, height) {
     }
   }
 
+  if(EQUIPMENT_MODE){
+    const setup=await client.call('Runtime.evaluate',{expression:`(() => {
+      openDesktopView('equipment');AppEquipmentDatabase.render();
+      document.querySelector('#p-equipment').scrollIntoView();
+      return true;
+    })()`,returnByValue:true});
+    if(setup.exceptionDetails)throw Error(JSON.stringify(setup.exceptionDetails));
+    await new Promise(resolve=>setTimeout(resolve,1600));
+    const check=await client.call('Runtime.evaluate',{expression:`(() => {
+      const page=document.querySelector('#p-equipment');
+      if(document.querySelectorAll('#equip-type-browser .equip-type-grid button').length!==10)throw Error('Missing categories');
+      if([...document.querySelectorAll('#equip-type-browser img')].some(i=>!i.complete||!i.naturalWidth))throw Error('Category image missing');
+      const type=document.querySelector('#equip-filter-type');type.value='cassette';type.dispatchEvent(new Event('change'));
+      if(document.querySelectorAll('.equip-results-group').length!==1)throw Error('Category filtering failed');
+      const search=document.querySelector('#equip-search');search.value='Samsung';search.dispatchEvent(new Event('input'));
+      if(!document.querySelector('#equip-results').textContent.includes('Samsung'))throw Error('Search failed');
+      search.value='unlikely-no-such-model-123';search.dispatchEvent(new Event('input'));
+      if(!document.querySelector('#equip-results .equip-empty'))throw Error('Empty state missing');
+      search.value='';type.value='all';search.dispatchEvent(new Event('input'));
+      if(page.scrollWidth>page.clientWidth+2)throw Error('Equipment page overflows '+page.scrollWidth+'/'+page.clientWidth+' '+JSON.stringify([...page.children[0].children].map(e=>[e.className,e.clientWidth,e.scrollWidth])));
+      return true;
+    })()`,returnByValue:true});
+    if(check.exceptionDetails)throw Error(JSON.stringify(check.exceptionDetails));
+    name='equipment-'+name;
+  }
   const textResult = await client.call('Runtime.evaluate', {
     expression: `(() => {
       const bodyText = document.body ? document.body.innerText : '';

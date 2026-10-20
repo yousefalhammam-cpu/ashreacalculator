@@ -221,6 +221,7 @@
       fcu: [ 'FCU', 'FCU' ],
       vrf: [ 'VRF', 'VRF' ],
       chiller: [ 'Chiller', 'Chiller' ]
+      ,cassette: ['كاسيت سقفي','Ceiling cassette'],window:['مكيف شباك','Window AC'],floor:['دولابي قائم','Floor standing']
     };
     var hit = map[String(type || '').toLowerCase()] || [ type || '-', type || '-' ];
     return isAr() ? hit[0] : hit[1];
@@ -241,6 +242,7 @@
   }
 
   function matches(record, filters) {
+    var brandAliases={zamil:'الزامل زامل',carrier:'كاريير كارير',daikin:'دايكن دايكن',gree:'قري جري',midea:'ميديا',haier:'هاير',samsung:'سامسونج',lg:'ال جي',york:'يورك',trane:'ترين',skm:'اس كي ام'};
     var haystack = [
       record.manufacturerName,
       record.brand,
@@ -248,8 +250,9 @@
       record.exactModelNumber,
       record.indoorModelNumber,
       record.outdoorModelNumber
+      ,record.equipmentType,typeLabel(record.equipmentType),record.coolingCapacityBtuH,brandAliases[record.manufacturerId] || ''
     ].join(' ').toLowerCase();
-    if (filters.query && haystack.indexOf(filters.query) < 0) return false;
+    if (filters.query && !filters.query.split(/\s+/).every(function(word){return haystack.indexOf(word)>=0;})) return false;
     if (filters.manufacturerId !== 'all' && record.manufacturerId !== filters.manufacturerId) return false;
     if (filters.equipmentType !== 'all' && record.equipmentType !== filters.equipmentType) return false;
     if (filters.minCapacity && Number(record.coolingCapacityBtuH || 0) < filters.minCapacity) return false;
@@ -771,12 +774,63 @@
     });
     return '<section class="equip-type-coverage"><h3>'+t('الشركات حسب نوع الوحدة','Manufacturers by equipment type')+'</h3><p>'+t('تغطية قاعدة البيانات، وليست تأكيد توفر محلي. عائلات المنتجات دون سعة لا تدخل في مطابقة التسعير.','Database coverage, not confirmation of local availability. Families without capacity are excluded from pricing matches.')+'</p><div class="equip-table-wrap"><table class="equip-table"><thead><tr><th>'+t('نوع الوحدة','Equipment type')+'</th><th>'+t('الشركات','Manufacturers')+'</th></tr></thead><tbody>'+Object.keys(groups).sort().map(function(type){return '<tr><th>'+esc(typeLabel(type))+'</th><td>'+Array.from(groups[type]).sort().map(esc).join(' · ')+'</td></tr>';}).join('')+'</tbody></table></div></section>';
   }
+  var typeDescriptions={
+    split:['وحدة جدارية داخلية متصلة بوحدة خارجية؛ لتكييف الغرف بشكل مستقل.','Wall-mounted indoor unit connected to an outdoor unit for individual rooms.'],
+    cassette:['تثبت داخل السقف المستعار وتوزع الهواء من واجهتها داخل الغرفة.','Recessed ceiling unit distributing air directly into the room.'],
+    ducted:['وحدة مخفية توزع الهواء عبر الدكت؛ يلزم التحقق من الضغط المتاح.','Concealed unit supplying air through ducts; available static pressure must be checked.'],
+    package:['وحدة مجمعة خارجية للتبريد وتوزيع الهواء عبر مجاري الهواء.','Outdoor packaged cooling unit delivering conditioned air through ductwork.'],
+    chiller:['يبرد الماء لتغذية وحدات مناولة الهواء أو الفان كويل، وليس الهواء مباشرة.','Chills water for air handlers or fan coils rather than supplying room air directly.'],
+    ahu:['وحدة لمعالجة وتوزيع الهواء؛ يعتمد أداؤها على الملف والمروحة والفلاتر المختارة.','Air treatment and distribution assembly with selected coils, fans and filters.'],
+    fcu:['وحدة ملف ومروحة لتكييف المناطق؛ تحتاج مصدر مياه مبردة في النظام المائي.','Zone fan-coil terminal requiring a chilled-water source in hydronic systems.'],
+    vrf:['نظام تدفق مبرد متغير يربط عدة وحدات داخلية بوحدات خارجية مشتركة.','Variable refrigerant flow system connecting multiple indoor units to shared outdoor units.'],
+    window:['وحدة مدمجة تثبت في فتحة جدار أو نافذة وتخدم الحيز مباشرة.','Self-contained unit fitted in a wall or window opening.'],
+    floor:['وحدة داخلية قائمة لتوزيع الهواء مباشرة في القاعات والمساحات المفتوحة.','Floor-standing indoor unit distributing air directly into halls and open areas.']
+  };
+  function renderTypeBrowser(){
+    if(!document.querySelector)return;
+    var filterGrid=document.querySelector('#p-equipment .equipment-filter-grid');
+    if(filterGrid && !G('equip-search-bar')){
+      var searchField=G('equip-search').parentNode;
+      searchField.id='equip-search-bar';
+      filterGrid.parentNode.insertBefore(searchField,filterGrid);
+      var advanced=document.createElement('details');advanced.id='equip-advanced-filters';
+      var summary=document.createElement('summary');summary.textContent=t('تصفية متقدمة','Advanced filters');
+      advanced.appendChild(summary);filterGrid.parentNode.insertBefore(advanced,filterGrid);advanced.appendChild(filterGrid);
+    }
+    var advancedSummary=document.querySelector('#equip-advanced-filters > summary');
+    if(advancedSummary)advancedSummary.textContent=t('تصفية متقدمة','Advanced filters');
+    var host=G('equip-type-browser');
+    if(!host){
+      var filters=document.querySelector('#p-equipment .equipment-filter-grid');
+      if(!filters)return;
+      host=document.createElement('nav');host.id='equip-type-browser';host.setAttribute('aria-label',t('أنواع وحدات التكييف','Equipment categories'));
+      var shell=document.querySelector('#p-equipment .equipment-db-shell');
+      shell.insertBefore(host,G('equip-advanced-filters') || filters);
+    }
+    var records=allRecords(),selected=currentFilters().equipmentType;
+    var counts={};records.forEach(function(r){counts[r.equipmentType]=(counts[r.equipmentType]||0)+1;});
+    host.innerHTML='<button type="button" class="equip-all-types" data-type="all" aria-pressed="'+(selected==='all')+'">'+t('جميع الوحدات','All equipment')+' <b>'+records.length+'</b></button><div class="equip-type-grid">'+Object.keys(typeDescriptions).map(function(type){
+      var ext=type==='window'?'jpg':type==='floor'?'webp':'png';
+      return '<button type="button" data-type="'+type+'" aria-pressed="'+(selected===type)+'"><img src="./assets/equipment-types/'+type+'.'+ext+'" alt="" width="120" height="72"><span><strong>'+esc(typeLabel(type))+'</strong><small>'+esc(typeDescriptions[type][isAr()?0:1])+'</small></span><b>'+Number(counts[type]||0)+'</b></button>';
+    }).join('')+'</div>';
+    host.querySelectorAll('[data-type]').forEach(function(button){button.onclick=function(){var field=G('equip-filter-type');if(field)field.value=button.dataset.type;renderRecords();};});
+    var select=G('equip-filter-type');
+    if(select){select.innerHTML='<option value="all">'+t('جميع الأنواع','All types')+'</option>'+Object.keys(typeDescriptions).map(function(type){return '<option value="'+type+'"'+(selected===type?' selected':'')+'>'+esc(typeLabel(type))+'</option>';}).join('');}
+  }
+  function renderGroupedRecords(records){
+    if(!records.length)return renderTable(records);
+    return Object.keys(typeDescriptions).map(function(type){
+      var own=records.filter(function(r){return r.equipmentType===type;});if(!own.length)return '';
+      return '<section class="equip-results-group"><header><h3>'+esc(typeLabel(type))+' <span>'+own.length+'</span></h3><p>'+esc(typeDescriptions[type][isAr()?0:1])+'</p></header>'+(viewMode==='cards'?renderCards(own):renderTable(own))+'</section>';
+    }).join('');
+  }
   function renderRecords() {
     renderFilterOptions();
     var records = filteredRecords();
     renderStats(records);
     var host = G('equip-results');
-    if (host) host.innerHTML = renderTypeCoverage(records)+(viewMode === 'cards' ? renderCards(records) : renderTable(records));
+    if (host) host.innerHTML = '<p class="equip-result-count" role="status">'+records.length+' '+t('نتيجة مطابقة','matching records')+'</p>'+renderGroupedRecords(records)+'<details class="equip-coverage-details"><summary>'+t('تغطية الشركات حسب النوع','Manufacturer coverage by type')+'</summary>'+renderTypeCoverage(records)+'</details>';
+    renderTypeBrowser();
     renderReviewQueue(allRecords());
     renderConflictReview(allRecords());
     renderVersionComparison();

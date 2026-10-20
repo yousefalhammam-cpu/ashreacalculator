@@ -9538,6 +9538,41 @@ body.light-theme .workflow-zone-card{
 .health-followup-grid h3 { margin:0 0 12px;font-size:17px; }
 .duct-design-guidance { margin:12px 0;padding:12px;background:var(--s1,#fff);border:1px solid #b0b0b0;border-radius:6px;text-align:start; }
 .duct-design-guidance h4 { margin:0 0 8px;font-size:14px; }
+#p-equipment .equipment-db-shell { width:100%;max-width:100%; }
+#equip-type-browser { margin:8px 0;order:-2;min-width:0; }
+#p-equipment .equipment-filter-grid { order:-3; }
+#p-equipment .equipment-stats { order:-1; }
+#p-equipment .equipment-section:has(#equip-results) { order:0; }
+#equip-search-bar { order:-3;width:100%; }
+#equip-search-bar label { display:block;font-size:13px;margin-bottom:6px; }
+#equip-advanced-filters { order:-1; }
+#equip-advanced-filters > summary { cursor:pointer;font-size:14px;padding:10px 0; }
+#p-equipment .equipment-stats { order:0; }
+#p-equipment .equipment-section:has(#equip-results) { order:1; }
+#equip-search-bar input { width:100%;border:1px solid #aeb8c2;background:var(--s1,#fff);color:inherit;border-radius:5px;padding:10px 12px;box-sizing:border-box; }
+#p-equipment .equipment-db-shell > * { min-width:0;max-width:100%;box-sizing:border-box; }
+#p-equipment .equipment-section { overflow-x:auto !important; }
+#p-equipment .equip-manufacturer-row > div { min-width:0;overflow-wrap:anywhere; }
+#p-equipment .equipment-field { min-width:0; }
+#p-equipment .equipment-field .ninput { width:100%;max-width:100%;min-width:0;box-sizing:border-box;border:1px solid #aeb8c2;border-radius:5px;padding:9px 10px;background:var(--s1,#fff);color:inherit; }
+.equip-all-types { padding:9px 16px;border:1px solid #aeb8c2;background:var(--s1,#fff);color:inherit;border-radius:6px;margin-bottom:12px;cursor:pointer; }
+.equip-type-grid { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px; }
+.equip-type-grid button { position:relative;display:flex;flex-direction:column;align-items:stretch;text-align:start;min-width:0;padding:12px;border:1px solid #b0b0b0;border-radius:6px;background:var(--s1,#fff);color:inherit;cursor:pointer; }
+.equip-type-grid img { width:100%;height:84px;object-fit:contain;background:white;border-radius:3px;margin-bottom:10px; }
+.equip-type-grid strong { display:block;font-size:15px; }
+.equip-type-grid small { display:block;font-size:12px;line-height:1.6;margin-top:5px; }
+.equip-type-grid b { position:absolute;top:15px;inset-inline-end:15px;font-size:12px;background:#eef3f7;color:#263845;padding:2px 6px;border-radius:3px; }
+#equip-type-browser [aria-pressed=true] { border-color:#1374b6;box-shadow:inset 0 0 0 1px #1374b6; }
+#p-equipment .equipment-field.wide { grid-column:1/-1; }
+#equip-search { min-height:48px;font-size:16px; }
+.equip-results-group { margin:0 0 28px;min-width:0; }
+.equip-results-group header { border-bottom:1px solid #b0b0b0;padding:8px 0;margin-bottom:10px; }
+.equip-results-group h3 { margin:0;font-size:18px; }
+.equip-results-group h3 span { font-size:13px;color:#617083; }
+.equip-results-group header p { margin:5px 0;font-size:13px; }
+.equip-coverage-details { margin:20px 0; }
+@media(max-width:1200px){.equip-type-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media(max-width:600px){.equip-type-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.equip-type-grid img{height:72px;}}
 .duct-design-guidance dl { margin:0;display:grid;gap:8px; }
 .duct-design-guidance dt { font-size:13px;font-weight:700; }
 .duct-design-guidance dd { margin:2px 0 0;font-size:13px;line-height:1.65; }

@@ -3,7 +3,7 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v23-equipment-type-coverage';
+const CACHE_NAME = 'aircalcpro-v24-equipment-browser';
 
 const PRECACHE_ASSETS = [
   './',
@@ -12,6 +12,16 @@ const PRECACHE_ASSETS = [
   './app/',
   './app/index.html',
   './styles.css',
+  './assets/equipment-types/split.png',
+  './assets/equipment-types/cassette.png',
+  './assets/equipment-types/ducted.png',
+  './assets/equipment-types/package.png',
+  './assets/equipment-types/chiller.png',
+  './assets/equipment-types/ahu.png',
+  './assets/equipment-types/fcu.png',
+  './assets/equipment-types/vrf.png',
+  './assets/equipment-types/window.jpg',
+  './assets/equipment-types/floor.webp',
   './app.js',
   './main.js',
   './js/firebase-auth.js',
