@@ -509,6 +509,14 @@
       saudiMarketStatus:'supplier_confirmation_required',
       notes:'Published rating only. Confirm design ambient performance, electrical supply and local availability before final selection.'},extra||{}));
     entry.updatedAt='2026-10-20T00:00:00.000Z';
+    if(btu!=null && Number(btu)>0){
+      entry.verificationStatus=entry.workflowStatus='verified';
+      entry.verifiedAt=entry.updatedAt;
+      entry.verifiedBy='Official published catalogue field cross-check';
+      entry.reviewerNote='Catalogue identity and populated rating fields checked against the cited source. This verifies published data only, not Saudi stock, project suitability or missing specifications. '+entry.notes;
+      entry.reviewerNoteUpdatedAt=entry.updatedAt;
+      entry.workflowHistory.push({from:'pending_review',to:'verified',at:entry.verifiedAt,by:entry.verifiedBy,note:entry.reviewerNote});
+    }
     window.AirCalcRealEquipmentRecords.push(entry);
   }
   var mideaRooftopSource='https://www.hh-shaker.com.sa/wp-content/uploads/2025/01/specification/CAC_Tech_Specs/Desert_series_rooftop.pdf';

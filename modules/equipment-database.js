@@ -119,7 +119,7 @@
     if (status === 'published') return isAr() ? '\u0645\u0646\u0634\u0648\u0631' : 'Published';
     if (status === 'archived') return isAr() ? '\u0645\u0624\u0631\u0634\u0641' : 'Archived';
     var map = {
-      verified: [ 'موثق', 'Verified' ],
+      verified: [ 'موثق كتالوجيًا', 'Catalogue verified' ],
       pending: [ 'بانتظار المراجعة', 'Pending review' ],
       draft: [ 'مسودة', 'Draft' ],
       sample: [ 'Sample - غير للاختيار', 'Sample - not for selection' ],
