@@ -203,6 +203,14 @@ async function auditViewport(client, name, width, height) {
   }
 
   if(EQUIPMENT_MODE){
+    const deadline=Date.now()+45000;
+    let ready=false;
+    while(Date.now()<deadline){
+      const state=await client.call('Runtime.evaluate',{expression:'typeof openDesktopView === "function" && !!window.AppEquipmentDatabase && !!window.AirCalcEquipmentSourceEvidence',returnByValue:true});
+      if(state.result && state.result.value){ready=true;break;}
+      await new Promise(resolve=>setTimeout(resolve,500));
+    }
+    if(!ready)throw Error('Equipment catalogue did not finish loading');
     const setup=await client.call('Runtime.evaluate',{expression:`(() => {
       openDesktopView('equipment');AppEquipmentDatabase.render();
       document.querySelector('#p-equipment').scrollIntoView();
@@ -221,6 +229,20 @@ async function auditViewport(client, name, width, height) {
       search.value='unlikely-no-such-model-123';search.dispatchEvent(new Event('input'));
       if(!document.querySelector('#equip-results .equip-empty'))throw Error('Empty state missing');
       search.value='';type.value='all';search.dispatchEvent(new Event('input'));
+      if(document.querySelectorAll('#equip-results .equip-model-card').length!==12)throw Error('Catalogue pagination failed');
+      if(document.querySelector('#equip-results [onclick*="updateRecordStatus"]'))throw Error('Workflow actions leaked into browsing');
+      if(!document.getElementById('equip-data-management') || document.getElementById('equip-data-management').open)throw Error('Catalogue administration is not separated');
+      AppEquipmentDatabase.changePage(1);
+      if(!document.querySelector('.equip-pagination span').textContent.startsWith('2 /'))throw Error('Next page failed');
+      AppEquipmentDatabase.changePage(-1);
+      const record=AppEquipmentDatabase.allRecords().find(r=>r.exactModelNumber==='30RB 060');
+      AppEquipmentDatabase.openDetails(record.id);
+      const detail=document.querySelector('#equip-detail-body');
+      if(!detail.textContent.includes('70.6'))throw Error('Enriched electrical specifications missing');
+      if(!detail.querySelector('.equip-source-status'))throw Error('Source trace missing');
+      if(detail.scrollWidth>detail.clientWidth+2)throw Error('Details overflow');
+      AppEquipmentDatabase.closeDetails();
+      window.scrollTo({top:0,behavior:'instant'});
       if(page.scrollWidth>page.clientWidth+2)throw Error('Equipment page overflows '+page.scrollWidth+'/'+page.clientWidth+' '+JSON.stringify([...page.children[0].children].map(e=>[e.className,e.clientWidth,e.scrollWidth])));
       return true;
     })()`,returnByValue:true});

@@ -4,7 +4,12 @@
   var STORAGE_KEY = 'aircalc_equipment_records';
   var DEV_SAMPLE_KEY = 'aircalc_show_sample_equipment';
   var selectedCompareIds = [];
-  var viewMode = 'table';
+  var viewMode = 'cards';
+  var cataloguePage = 1;
+  var catalogueFilterKey = '';
+  var cataloguePageSize = 12;
+  var moduleScript=typeof document!=='undefined'?document.currentScript:null;
+  var evidenceUrl=moduleScript && moduleScript.src?new URL('../data/equipment-source-evidence.js',moduleScript.src).href:'./data/equipment-source-evidence.js';
   var importSummary = null;
   var catalogueSyncTimer = null;
   var catalogueSourceFileMeta = null;
@@ -219,9 +224,9 @@
       ducted: [ 'سبليت مخفي', 'Ducted split' ],
       package: [ 'باكج', 'Package unit' ],
       ahu: [ 'وحدة مناولة هواء', 'AHU' ],
-      fcu: [ 'FCU', 'FCU' ],
+      fcu: [ 'فان كويل FCU', 'Fan coil FCU' ],
       vrf: [ 'VRF', 'VRF' ],
-      chiller: [ 'Chiller', 'Chiller' ]
+      chiller: [ 'تشيلر', 'Chiller' ]
       ,cassette: ['كاسيت سقفي','Ceiling cassette'],window:['مكيف شباك','Window AC'],floor:['دولابي قائم','Floor standing']
     };
     var hit = map[String(type || '').toLowerCase()] || [ type || '-', type || '-' ];
@@ -244,6 +249,7 @@
 
   function matches(record, filters) {
     var brandAliases={zamil:'الزامل زامل',carrier:'كاريير كارير',daikin:'دايكن دايكن',gree:'قري جري',midea:'ميديا',haier:'هاير',samsung:'سامسونج',lg:'ال جي',york:'يورك',trane:'ترين',skm:'اس كي ام'};
+    var typeAliases={split:'سبليت جداري wall mounted split',cassette:'كاسيت سقفي ceiling cassette',ducted:'سبليت مخفي ducted split',package:'باكج باكيج روف توب rooftop package',ahu:'مناولة هواء air handling unit',fcu:'فان كويل fan coil',vrf:'تدفق مبرد متغير vrf vrv',chiller:'تشيلر مبرد ماء chiller',floor:'دولابي قائم floor standing',window:'شباك window'};
     var haystack = [
       record.manufacturerName,
       record.brand,
@@ -251,7 +257,7 @@
       record.exactModelNumber,
       record.indoorModelNumber,
       record.outdoorModelNumber
-      ,record.equipmentType,typeLabel(record.equipmentType),record.coolingCapacityBtuH,brandAliases[record.manufacturerId] || ''
+      ,record.equipmentType,typeLabel(record.equipmentType),record.coolingCapacityBtuH,brandAliases[record.manufacturerId] || '',typeAliases[record.equipmentType] || ''
     ].join(' ').toLowerCase();
     if (filters.query && !filters.query.split(/\s+/).every(function(word){return haystack.indexOf(word)>=0;})) return false;
     if (filters.manufacturerId !== 'all' && record.manufacturerId !== filters.manufacturerId) return false;
@@ -501,13 +507,12 @@
     var host = G('equip-stats');
     if (!host) return;
     var verified = records.filter(function (r) { var s = normalizeWorkflowStatus(r.verificationStatus); return s === 'verified' || s === 'published'; }).length;
-    var pending = records.filter(function (r) { var s = normalizeWorkflowStatus(r.verificationStatus); return s === 'pending_review' || s === 'imported'; }).length;
-    var sample = records.filter(function (r) { return r.sampleData; }).length;
+    var families = records.filter(isFamilyRecord).length;
     host.innerHTML =
       statCard(t('إجمالي السجلات المعروضة', 'Displayed records'), records.length) +
-      statCard(t('موديلات موثقة', 'Verified models'), verified) +
-      statCard(t('بانتظار المراجعة', 'Pending review'), pending) +
-      statCard(t('عينات اختبار', 'Sample records'), sample);
+      statCard(t('موديلات فعلية', 'Exact model records'), records.length-families) +
+      statCard(t('عائلات / اختيار حسب المشروع', 'Families / project selection'), families) +
+      statCard(t('بيانات موثقة كتالوجيًا', 'Catalogue-verified records'), verified);
   }
 
   function statCard(label, value) {
@@ -552,8 +557,9 @@
   function recordActions(record) {
     var checked = selectedCompareIds.indexOf(record.id) >= 0 ? ' checked' : '';
     var selectDisabled = record.sampleData ? ' disabled title="' + esc(t('\u0639\u064a\u0646\u0627\u062a \u0627\u0644\u0627\u062e\u062a\u0628\u0627\u0631 \u0644\u0627 \u064a\u0645\u0643\u0646 \u0627\u062e\u062a\u064a\u0627\u0631\u0647\u0627 \u0644\u0644\u0645\u0634\u0631\u0648\u0639', 'Sample records cannot be selected for projects')) + '"' : '';
-    var workflowButtons = recordWorkflowButtons(record);
-    var conflictButtons = recordConflictButtons(record);
+    var workflowButtons = '';
+    var conflictButtons = '';
+    if(isFamilyRecord(record)) selectDisabled=' disabled';
     return '<div class="equip-actions">' +
       '<button type="button" onclick="AppEquipmentDatabase.openDetails(\'' + esc(record.id) + '\')">' + t('\u0627\u0644\u062a\u0641\u0627\u0635\u064a\u0644', 'Details') + '</button>' +
       '<button type="button"' + selectDisabled + ' onclick="AppEquipmentDatabase.selectForProject(\'' + esc(record.id) + '\')">' + t('\u0627\u062e\u062a\u064a\u0627\u0631 \u0644\u0644\u0645\u0634\u0631\u0648\u0639', 'Use for project') + '</button>' +
@@ -708,7 +714,7 @@
           '<td>' + fmtNum(r.airflowNominalCfm, '') + '</td>' +
           '<td>' + fmtNum(r.availableEspPa, 'Pa') + '</td>' +
           '<td>' + fmtNum(r.voltage, 'V') + ' / ' + fmtNum(r.phase, 'Ph') + '</td>' +
-          '<td><span class="equip-status ' + statusClass(r.verificationStatus) + '">' + esc(statusLabel(r.verificationStatus)) + '</span>' + (r.cloudConflict ? '<span class="equip-status warn">Cloud conflict</span>' : '') + '</td>' +
+'<td><span class="equip-status ' + statusClass(r.verificationStatus) + '">' + esc(isFamilyRecord(r)?t('عائلة منتجات','Product family'):statusLabel(r.verificationStatus)) + '</span>' + (r.cloudConflict ? '<span class="equip-status warn">Cloud conflict</span>' : '') + '</td>' +
           '<td>' + recordActions(r) + '</td>' +
         '</tr>';
       }).join('') +
@@ -719,13 +725,16 @@
     if (!records.length) return renderTable(records);
     return '<div class="equip-card-grid">' + records.map(function (r) {
       return '<div class="equip-model-card">' +
-        '<div class="equip-model-head"><div>' + (window.AirCalcManufacturerLogo?window.AirCalcManufacturerLogo(r.manufacturerName):'') + '<strong>' + fmtText(r.exactModelNumber) + '</strong><span>' + fmtText(r.manufacturerName) + '</span></div><span class="equip-status ' + statusClass(r.verificationStatus) + '">' + esc(statusLabel(r.verificationStatus)) + '</span></div>' +
+        '<div class="equip-model-visual"><img src="'+imageForType(r.equipmentType)+'" alt="" width="160" height="90"><span>'+esc(typeLabel(r.equipmentType))+'</span></div>'+
+        '<div class="equip-model-head"><div>' + (window.AirCalcManufacturerLogo?window.AirCalcManufacturerLogo(r.manufacturerName):'') + '<strong>' + fmtText(r.exactModelNumber) + '</strong><span>' + fmtText(r.manufacturerName) + '</span></div><span class="equip-status ' + statusClass(r.verificationStatus) + '">' + esc(isFamilyRecord(r)?t('عائلة منتجات','Product family'):statusLabel(r.verificationStatus)) + '</span></div>' +
+        '<p class="equip-model-description">'+esc(recordDescription(r))+'</p>'+
+        (isFamilyRecord(r)?'<p class="equip-family-note">'+t('عائلة منتجات / اختيار حسب المشروع، وليست موديلًا نهائيًا.','Product family / project selection, not a final model.')+'</p>':'')+
         (r.cloudConflict ? '<div class="equip-sample-banner equip-conflict-banner">Cloud conflict - review before replacing local record</div>' : '') +
         (r.cloudConflict ? renderConflictPreview(r) : '') +
         '<div class="equip-model-specs">' +
           '<div><span>BTU/h</span><strong>' + fmtNum(r.coolingCapacityBtuH, '') + '</strong></div>' +
-          '<div><span>CFM</span><strong>' + fmtNum(r.airflowNominalCfm, '') + '</strong></div>' +
-          '<div><span>ESP</span><strong>' + fmtNum(r.availableEspPa, 'Pa') + '</strong></div>' +
+          '<div><span>'+(r.equipmentType==='chiller'?t('قدرة التبريد kW','Cooling kW'):'CFM')+'</span><strong>' + fmtNum(r.equipmentType==='chiller'?r.coolingCapacityKw:r.airflowNominalCfm, '') + '</strong></div>' +
+          '<div><span>'+(r.equipmentType==='chiller'?t('وسيط التبريد','Refrigerant'):'ESP')+'</span><strong>' + (r.equipmentType==='chiller'?fmtText(r.refrigerant):fmtNum(r.availableEspPa, 'Pa')) + '</strong></div>' +
           '<div><span>' + t('النوع', 'Type') + '</span><strong>' + esc(typeLabel(r.equipmentType)) + '</strong></div>' +
         '</div>' +
         recordActions(r) +
@@ -787,6 +796,32 @@
     window:['وحدة مدمجة تثبت في فتحة جدار أو نافذة وتخدم الحيز مباشرة.','Self-contained unit fitted in a wall or window opening.'],
     floor:['وحدة داخلية قائمة لتوزيع الهواء مباشرة في القاعات والمساحات المفتوحة.','Floor-standing indoor unit distributing air directly into halls and open areas.']
   };
+  function isFamilyRecord(record){
+    var evidence=(window.AirCalcEquipmentSourceEvidence || {})[record.id];
+    return (evidence && evidence.recordKind==='product_family') || /FAMILY|\[family\]|MODULAR-[RP]-SIZE|FWH-AT\/AF-/i.test(record.exactModelNumber || '') || /^(Zamil -|ZamilAC -|Cooline PRO|Zamil Cooline)/.test(record.exactModelNumber || '');
+  }
+  function imageForType(type){return './assets/equipment-types/'+type+'.'+(type==='floor'?'webp':type==='window'?'jpg':'png');}
+  function recordDescription(record){
+    return (typeDescriptions[record.equipmentType] || ['لا توجد تفاصيل','No details available'])[isAr()?0:1];
+  }
+  function organizeCatalogueTools(){
+    if(!document.querySelector)return;
+    var shell=document.querySelector('#p-equipment .equipment-db-shell');if(!shell)return;
+    var management=G('equip-data-management');
+    if(!management){
+      management=document.createElement('details');management.id='equip-data-management';
+      var summary=document.createElement('summary');management.appendChild(summary);shell.appendChild(management);
+      Array.from(shell.querySelectorAll(':scope > .equipment-section')).forEach(function(section){
+        if(!section.querySelector('#equip-results') && !section.querySelector('#equip-compare'))management.appendChild(section);
+      });
+      var actions=document.createElement('div');actions.className='equipment-db-actions';
+      ['equip-sample-toggle','equip-cloud-sync-btn','equip-cloud-import-btn','equip-catalogue-sync-status'].forEach(function(id){var node=G(id);if(node)actions.appendChild(node);});
+      management.insertBefore(actions,management.children[1] || null);
+    }
+    management.firstElementChild.textContent=t('إدارة بيانات الكتالوج','Catalogue data management');
+    var compare=G('equip-compare');
+    if(compare && compare.parentNode){compare.parentNode.hidden=selectedCompareIds.length===0;compare.parentNode.classList.add('equip-comparison-section');}
+  }
   function renderTypeBrowser(){
     if(!document.querySelector)return;
     var filterGrid=document.querySelector('#p-equipment .equipment-filter-grid');
@@ -812,11 +847,14 @@
     var counts={};records.forEach(function(r){counts[r.equipmentType]=(counts[r.equipmentType]||0)+1;});
     host.innerHTML='<button type="button" class="equip-all-types" data-type="all" aria-pressed="'+(selected==='all')+'">'+t('جميع الوحدات','All equipment')+' <b>'+records.length+'</b></button><div class="equip-type-grid">'+Object.keys(typeDescriptions).map(function(type){
       var ext=type==='window'?'jpg':type==='floor'?'webp':'png';
-      return '<button type="button" data-type="'+type+'" aria-pressed="'+(selected===type)+'"><img src="./assets/equipment-types/'+type+'.'+ext+'" alt="" width="120" height="72"><span><strong>'+esc(typeLabel(type))+'</strong><small>'+esc(typeDescriptions[type][isAr()?0:1])+'</small></span><b>'+Number(counts[type]||0)+'</b></button>';
+      return '<button type="button" data-type="'+type+'" aria-pressed="'+(selected===type)+'"><img src="./assets/equipment-types/'+type+'.'+ext+'" alt="" width="80" height="48"><span><strong>'+esc(typeLabel(type))+'</strong></span><b>'+Number(counts[type]||0)+'</b></button>';
     }).join('')+'</div>';
     host.querySelectorAll('[data-type]').forEach(function(button){button.onclick=function(){var field=G('equip-filter-type');if(field)field.value=button.dataset.type;renderRecords();};});
     var select=G('equip-filter-type');
     if(select){select.innerHTML='<option value="all">'+t('جميع الأنواع','All types')+'</option>'+Object.keys(typeDescriptions).map(function(type){return '<option value="'+type+'"'+(selected===type?' selected':'')+'>'+esc(typeLabel(type))+'</option>';}).join('');}
+    var description=document.createElement('p');description.className='equip-category-description';
+    description.textContent=selected==='all'?t('كتالوج الوحدات والمواصفات المنشورة حسب الشركة والنوع.','Equipment catalogue and published specifications by manufacturer and type.'):typeDescriptions[selected][isAr()?0:1];
+    host.appendChild(description);
   }
   function renderGroupedRecords(records){
     if(!records.length)return renderTable(records);
@@ -828,9 +866,14 @@
   function renderRecords() {
     renderFilterOptions();
     var records = filteredRecords();
+    var filterKey=JSON.stringify(currentFilters());
+    if(filterKey!==catalogueFilterKey){cataloguePage=1;catalogueFilterKey=filterKey;}
+    var pageCount=Math.max(1,Math.ceil(records.length/cataloguePageSize));
+    cataloguePage=Math.min(cataloguePage,pageCount);
     renderStats(records);
     var host = G('equip-results');
-    if (host) host.innerHTML = '<p class="equip-result-count" role="status">'+records.length+' '+t('نتيجة مطابقة','matching records')+'</p>'+renderGroupedRecords(records)+'<details class="equip-coverage-details"><summary>'+t('تغطية الشركات حسب النوع','Manufacturer coverage by type')+'</summary>'+renderTypeCoverage(records)+'</details>';
+    if (host) host.innerHTML = '<p class="equip-result-count" role="status">'+records.length+' '+t('نتيجة مطابقة','matching records')+'</p>'+renderGroupedRecords(records.slice((cataloguePage-1)*cataloguePageSize,cataloguePage*cataloguePageSize))+
+      '<nav class="equip-pagination" aria-label="'+t('صفحات النتائج','Result pages')+'"><button type="button" '+(cataloguePage===1?'disabled':'')+' onclick="AppEquipmentDatabase.changePage(-1)">'+t('السابق','Previous')+'</button><span>'+cataloguePage+' / '+pageCount+'</span><button type="button" '+(cataloguePage===pageCount?'disabled':'')+' onclick="AppEquipmentDatabase.changePage(1)">'+t('التالي','Next')+'</button></nav>';
     renderTypeBrowser();
     renderReviewQueue(allRecords());
     renderConflictReview(allRecords());
@@ -839,7 +882,10 @@
     renderRegistry();
     renderCatalogueSyncStatus();
     updateLabels();
+    organizeCatalogueTools();
+    ['cards','table'].forEach(function(mode){var button=G('equip-view-'+mode);if(button&&button.classList)button.classList.toggle('on',mode===viewMode);});
   }
+  function changePage(delta){cataloguePage=Math.max(1,cataloguePage+delta);renderRecords();var host=G('equip-results');if(host&&host.scrollIntoView)host.scrollIntoView({behavior:'smooth',block:'start'});}
 
   function renderCatalogueSyncStatus() {
     var host = G('equip-catalogue-sync-status');
@@ -1187,30 +1233,42 @@
     var modal = G('equip-detail-modal');
     var body = G('equip-detail-body');
     if (!record || !modal || !body) return;
+    var sourceEvidence=(window.AirCalcEquipmentSourceEvidence || {})[record.id] || {};
     var groups=[
       [t('تعريف الجهاز','Equipment identity'),[
         ['manufacturerName','الشركة','Manufacturer'],['series','السلسلة','Series'],['exactModelNumber','الموديل','Model'],['indoorModelNumber','موديل الوحدة الداخلية','Indoor model'],['outdoorModelNumber','موديل الوحدة الخارجية','Outdoor model']]],
       [t('الأداء والهواء','Capacity and airflow'),[
         ['coolingCapacityBtuH','سعة التبريد','Cooling capacity','BTU/h'],['coolingCapacityKw','سعة التبريد','Cooling capacity','kW'],['coolingCapacityTR','طن التبريد','Cooling tons','TR'],['sensibleCapacityBtuH','السعة المحسوسة','Sensible capacity','BTU/h'],['airflowNominalCfm','تدفق الهواء الاسمي','Nominal airflow','CFM'],['availableEspPa','الضغط الاستاتيكي المتاح','Available static pressure','Pa']]],
       [t('الكهرباء والكفاءة','Electrical and efficiency'),[
-        ['voltage','الجهد','Voltage','V'],['phase','عدد الفازات','Phase'],['frequencyHz','التردد','Frequency','Hz'],['inputPowerKw','القدرة الكهربائية','Input power','kW'],['runningCurrentA','تيار التشغيل','Running current','A'],['eer','نسبة كفاءة الطاقة','EER'],['seer','الكفاءة الموسمية','SEER'],['cop','معامل الأداء','COP'],['refrigerant','وسيط التبريد','Refrigerant']]],
+        ['voltage','الجهد الاسمي؛ راجع نطاق المصدر','Nominal voltage; check source range','V'],['phase','عدد الفازات','Phase'],['frequencyHz','التردد','Frequency','Hz'],['inputPowerKw','القدرة الكهربائية','Input power','kW'],['runningCurrentA','تيار التشغيل','Running current','A'],['eer','نسبة كفاءة الطاقة','EER'],['seer','الكفاءة الموسمية','SEER'],['cop','معامل الأداء','COP'],['iplv','كفاءة الحمل الجزئي؛ راجع وحدات المصدر','IPLV; check source units'],['refrigerant','وسيط التبريد','Refrigerant'],['compressorType','نوع الضاغط','Compressor type']]],
+      [t('الأبعاد والتركيب','Dimensions and installation'),[
+        ['dimensions','الأبعاد (العرض × الارتفاع × العمق)','Dimensions (W × H × D)','dimensions'],['weightKg','الوزن المنشور؛ راجع صافي/تشغيلي بالمصدر','Published weight; check net/operating basis','kg'],['soundLevelDb','مستوى الضوضاء؛ راجع ظروف القياس','Noise level; check measurement conditions','dB(A)'],['minOutdoorTemperatureC','أقل حرارة تشغيل خارجية','Minimum outdoor operating temperature','C'],['maxOutdoorTemperatureC','أعلى حرارة تشغيل خارجية','Maximum outdoor operating temperature','C']]],
       [t('المصدر وملاحظات الاختيار','Source and selection notes'),[
         ['sourceDocumentName','مرجع البيانات','Source document'],['sourceReference','رابط أو مرجع المصدر','Source reference'],['catalogueVersionLabel','إصدار الكتالوج','Catalogue version'],['notes','ملاحظات المصدر وظروف الأداء','Source notes and rating conditions']]]
     ];
     body.innerHTML =
       '<div class="equip-detail-head">' +
         '<div><strong>' + fmtText(record.exactModelNumber) + '</strong><span>' + fmtText(record.manufacturerName) + ' · ' + esc(typeLabel(record.equipmentType)) + '</span></div>' +
-        '<span class="equip-status ' + statusClass(record.verificationStatus) + '">' + esc(statusLabel(record.verificationStatus)) + '</span>' +
+        '<span class="equip-status ' + statusClass(record.verificationStatus) + '">' + esc(isFamilyRecord(record)?t('عائلة منتجات','Product family'):statusLabel(record.verificationStatus)) + '</span>' +
       '</div>' +
       (record.sampleData ? '<div class="equip-sample-banner">SAMPLE DATA - NOT FOR ENGINEERING SELECTION</div>' : '') +
       renderConflictPreview(record) +
+      '<div class="equip-detail-intro"><img src="'+imageForType(record.equipmentType)+'" alt="" width="180" height="100"><div><p>'+esc(recordDescription(record))+'</p><p>'+esc(isFamilyRecord(record)?t('عائلة منتجات؛ يلزم تحديد موديل وأداء حسب المشروع.','Product family; select a model and performance for the project.'):t('المواصفات أدناه وفق مصدر السجل؛ البيانات غير المنشورة لا تفترض قيمًا.','Specifications below follow the cited source; unpublished values are not inferred.'))+'</p></div></div>'+
       groups.map(function(group){return '<section class="equip-details-section"><h3>'+esc(group[0])+'</h3><div class="equip-detail-grid">'+group[1].map(function(field){
         var value=record[field[0]],present=value!=null&&value!==''&&value!=='unknown';
         var display=field[3]?fmtNum(value,field[3]):fmtText(value);
+        if(field[3]==='dimensions')display=value&&value.widthMm&&value.heightMm&&value.depthMm?'<bdi>'+value.widthMm+' × '+value.heightMm+' × '+value.depthMm+' mm</bdi>':fmtText(null);
+        if(record.equipmentType==='chiller' && /^(airflow|availableEsp)/.test(field[0]))display=t('لا ينطبق على هواء الإمداد؛ الوحدة تبرد الماء','Not applicable to supply air; this unit chills water');
         if(field[0]==='sourceReference' && /^https:\/\//i.test(String(value||'')))display='<a href="'+escAttr(value)+'" target="_blank" rel="noopener noreferrer">'+t('فتح المصدر الرسمي','Open source')+'</a>';
         return '<div class="equip-detail-row"><span>'+esc(field[isAr()?1:2])+'</span><strong'+(!present?' class="equip-muted"':'')+'>'+display+'</strong></div>';
-      }).join('')+'</div></section>';}).join('');
+      }).join('')+'</div></section>';}).join('')+
+      '<section class="equip-details-section"><h3>'+t('تفاصيل إضافية من المصدر','Additional source specifications')+'</h3>'+
+      (sourceEvidence.specifications && sourceEvidence.specifications.length?'<dl class="equip-source-specs">'+sourceEvidence.specifications.map(function(spec){return '<div><dt>'+esc(isAr()?spec.ar:spec.en)+'</dt><dd>'+esc(spec.value)+'</dd></div>';}).join('')+'</dl>':'<p>'+t('لا توجد تفاصيل إضافية متاحة في المصدر الذي أمكن الوصول إليه.','No additional details available from the accessible source.')+'</p>')+
+      '<p class="equip-source-status">'+esc(sourceEvidence.retrievedAt?t('آخر محاولة للتحقق من المصدر: ','Last source check: ')+sourceEvidence.retrievedAt.slice(0,10):t('لا يوجد سجل جلب حديث للمصدر.','No recent source retrieval record.'))+' · '+esc(sourceEvidence.sourceStatus==='retrieved'?t('تم الوصول للمصدر','Source retrieved'):t('تعذر جلب المصدر حاليًا؛ لا يعني ذلك أن المعدة غير صالحة','Source currently unavailable; this does not establish equipment failure'))+'</p>'+
+      (sourceEvidence.blocks && sourceEvidence.blocks.length?'<details class="equip-source-evidence"><summary>'+t('النص والجداول الأصلية (بلغة المصدر؛ قد تشمل موديلات أخرى)','Original source text and tables (may include other models)')+'</summary>'+sourceEvidence.blocks.map(function(block){return '<h4>'+esc(block.label)+'</h4><pre dir="auto">'+esc(block.text)+'</pre>';}).join('')+'</details>':'')+'</section>';
     modal.classList.add('on');
+    if(modal.setAttribute){modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-label',record.exactModelNumber);}
+    var box=modal.querySelector && modal.querySelector('.equip-detail-box');if(box)box.scrollTop=0;
   }
 
   function closeDetails() {
@@ -1347,6 +1405,10 @@
   function selectForProject(id, selectionOption) {
     var record = allRecords().filter(function (r) { return r.id === id; })[0];
     if (!record) return;
+    if(isFamilyRecord(record)){
+      if(window.toast)window.toast(t('هذه عائلة منتجات؛ حدد موديلًا فعليًا قبل الاختيار للمشروع.','This is a product family; select an exact model before using it for a project.'));
+      return;
+    }
     if (record.sampleData) {
       if (window.toast) window.toast(t('لا يمكن اختيار Sample Data للمشروع', 'Sample data cannot be selected for a project'));
       return;
@@ -1474,6 +1536,11 @@
   }
 
   function init() {
+    if(!window.AirCalcEquipmentSourceEvidence && document.createElement){
+      var evidence=document.createElement('script');evidence.src=evidenceUrl;
+      evidence.onload=function(){renderRecords();};
+      (document.head || document.body).appendChild(evidence);
+    }
     bind();
     renderRecords();
     renderImportSummary(null);
@@ -1490,7 +1557,7 @@
         var originalApplyLang = window.applyLang;
         window.applyLang = function () {
           var result = originalApplyLang.apply(this, arguments);
-          updateLabels();
+          renderRecords();
           return result;
         };
         window.applyLang._equipmentPatched = true;
@@ -1500,6 +1567,7 @@
 
   window.AppEquipmentDatabase = {
     render: renderRecords,
+    changePage: changePage,
     setView: setView,
     toggleSampleData: toggleSampleData,
     toggleCompare: toggleCompare,

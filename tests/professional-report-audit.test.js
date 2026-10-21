@@ -221,7 +221,7 @@ mustContain(appSource, 'enforceTechnicalReportEnglishDigits();', 'technical repo
   'renderTechReportRoomLoadTable()',
   'renderTechReportValidationTable()',
   'renderTechReportNotesRecommendationsSection()',
-  'renderTechReportCriticalAlertsSection()',
+  'renderTechReportCriticalAlertsSection(true)',
   'renderTechReportDuctRecommendationsSection()',
   'renderTechReportAshraeReferencesSection()'
 ].forEach((section) => {
