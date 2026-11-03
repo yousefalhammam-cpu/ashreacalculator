@@ -110,7 +110,7 @@
       var requiredBtu = readRoomRequiredBtu(room, index);
       var supplyCfm = readRoomSupplyCfm(room, index);
       var state = readRoomSystemState(index);
-      var selectedCapacity = number(state.selectedCapacityBtu || room.selectedBtu || 0, 0);
+      var selectedCapacity = number(state.selectedCapacityBtu != null ? state.selectedCapacityBtu : (room.selectedBtu || 0), 0);
       return {
         index: index + 1,
         name: roomName(room, lang, index),
@@ -121,10 +121,10 @@
         coolingLoadTr: requiredBtu / 12000,
         selectedCapacityBtuH: selectedCapacity,
         supplyCfm: supplyCfm,
-        outdoorAirCfm: number(room.oa || room.outdoorAirCfm || 0, 0) * count,
+        outdoorAirCfm: number(room.outdoorAirCfm != null ? room.outdoorAirCfm : room.oa, 0) * count,
         exhaustCfm: number(room.exh || room.exhaust || room.exhaustCfm || 0, 0) * count,
         totalAch: number(room.ach || room.totalAch || 0, 0),
-        outdoorAirAch: number(room.oaAch || room.outdoorAirAch || 0, 0),
+        outdoorAirAch: number(room.outdoorAch != null ? room.outdoorAch : (room.oaAch || room.outdoorAirAch || room.oaStd || 0), 0),
         pressureRelationship: text(room.pressure || room.pres || room.pressureRelationship, ''),
         temperatureRangeC: clone(room.tempRange || room.tr || null),
         humidityRangeRh: clone(room.rhRange || room.rh || null),
@@ -246,7 +246,7 @@
     totals.coolingLoadTr = totals.coolingLoadBtuH / 12000;
     var projectSelectedBtu = callNumber('getSelectedProjectEquipmentBtu', totals.selectedCapacityBtuH);
     var projectSelectedCfm = callNumber('getSelectedProjectEquipmentCfm', 0);
-    if (projectSelectedBtu > 0) totals.selectedCapacityBtuH = projectSelectedBtu;
+    if (typeof root.getSelectedProjectEquipmentBtu === 'function') totals.selectedCapacityBtuH = projectSelectedBtu;
     totals.selectedCapacityTr = totals.selectedCapacityBtuH / 12000;
 
     var projectNo = text(options.projectNo || readElementValue('tech-no', '') || readElementValue('quote-no', ''), 'Q-001');

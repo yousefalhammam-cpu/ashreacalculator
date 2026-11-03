@@ -1,4 +1,4 @@
-???<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <!-- Google tag (gtag.js) -->
@@ -21,7 +21,7 @@
 </script>
 <meta charset="UTF-8">
 <base href="../">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
 <meta name="theme-color" content="#0a0e17">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -44,29 +44,29 @@
         <img src="./assets/logo/logo-header.png" class="desktop-sidebar-logo" alt="AirCalc Pro">
         <div class="desktop-sidebar-brandtext">
           <div class="desktop-sidebar-title">AirCalc Pro</div>
-          <div class="desktop-sidebar-subtitle" id="desktop-sidebar-subtitle">???? ?????? ????? ???????</div>
+          <div class="desktop-sidebar-subtitle" id="desktop-sidebar-subtitle">منصة حسابات وعروض أسعار التكييف</div>
         </div>
       </div>
       <button class="desktop-sidebar-toggle" type="button" onclick="toggleDesktopSidebar()" aria-label="Toggle sidebar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     </div>
     <nav class="desktop-sidebar-nav">
       <button class="desktop-nav-item on" id="dni-dashboard" type="button" onclick="openDesktopView('dashboard')">
-        <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span><span class="desktop-nav-label" id="desktop-nav-dashboard">????????</span>
+        <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span><span class="desktop-nav-label" id="desktop-nav-dashboard">تصميم المشروع</span>
       </button>
       <button class="desktop-nav-item" id="dni-tech" type="button" onclick="openDesktopView('tech')">
-        <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 3v5h5M9 13h6M9 17h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span class="desktop-nav-label" id="desktop-nav-tech">??????? ?????</span>
+        <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 3v5h5M9 13h6M9 17h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span class="desktop-nav-label" id="desktop-nav-tech">التقرير الفني</span>
       </button>
       <button class="desktop-nav-item" id="dni-hist" type="button" onclick="openDesktopView('hist')">
-        <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 7v10" fill="none" stroke="currentColor" stroke-width="2" opacity=".45"/></svg></span><span class="desktop-nav-label" id="desktop-nav-hist">??? ?????</span>
+        <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 7v10" fill="none" stroke="currentColor" stroke-width="2" opacity=".45"/></svg></span><span class="desktop-nav-label" id="desktop-nav-hist">عرض السعر التجاري</span>
       </button>
       <button class="desktop-nav-item" id="dni-projects" type="button" onclick="openDesktopView('projects')">
-        <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span><span class="desktop-nav-label" id="desktop-nav-projects">????????</span>
+        <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span><span class="desktop-nav-label" id="desktop-nav-projects">المشاريع</span>
       </button>
       <button class="desktop-nav-item" id="dni-equipment" type="button" onclick="openDesktopView('equipment')">
         <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 17v3M16 17v3M8 11h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span class="desktop-nav-label" id="desktop-nav-equipment">Equipment DB</span>
       </button>
       <button class="desktop-nav-item" id="dni-settings" type="button" onclick="openDesktopView('settings')">
-        <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8.5A3.5 3.5 0 1 0 12 15.5A3.5 3.5 0 1 0 12 8.5z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1 1 0 0 1 0 1.4l-1.2 1.2a1 1 0 0 1-1.4 0l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1 1 0 0 1-1 1h-1.7a1 1 0 0 1-1-1v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1 1 0 0 1-1.4 0l-1.2-1.2a1 1 0 0 1 0-1.4l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a1 1 0 0 1-1-1v-1.7a1 1 0 0 1 1-1h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1 1 0 0 1 0-1.4l1.2-1.2a1 1 0 0 1 1.4 0l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a1 1 0 0 1 1-1h1.7a1 1 0 0 1 1 1v.2a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a1 1 0 0 1 1.4 0l1.2 1.2a1 1 0 0 1 0 1.4l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6h.2a1 1 0 0 1 1 1v1.7a1 1 0 0 1-1 1h-.2a1 1 0 0 0-.9.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span class="desktop-nav-label" id="desktop-nav-settings">?????????</span>
+        <span class="desktop-nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 8.5A3.5 3.5 0 1 0 12 15.5A3.5 3.5 0 1 0 12 8.5z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1 1 0 0 1 0 1.4l-1.2 1.2a1 1 0 0 1-1.4 0l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1 1 0 0 1-1 1h-1.7a1 1 0 0 1-1-1v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1 1 0 0 1-1.4 0l-1.2-1.2a1 1 0 0 1 0-1.4l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a1 1 0 0 1-1-1v-1.7a1 1 0 0 1 1-1h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1 1 0 0 1 0-1.4l1.2-1.2a1 1 0 0 1 1.4 0l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V4a1 1 0 0 1 1-1h1.7a1 1 0 0 1 1 1v.2a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a1 1 0 0 1 1.4 0l1.2 1.2a1 1 0 0 1 0 1.4l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6h.2a1 1 0 0 1 1 1v1.7a1 1 0 0 1-1 1h-.2a1 1 0 0 0-.9.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span class="desktop-nav-label" id="desktop-nav-settings">الإعدادات</span>
       </button>
     </nav>
     <div class="desktop-sidebar-foot">
@@ -74,7 +74,7 @@
         <span class="desktop-sidebar-avatar">AC</span>
         <div class="desktop-sidebar-usertext">
           <div class="desktop-sidebar-username">AirCalc Workspace</div>
-          <span class="desktop-sidebar-footnote" id="desktop-sidebar-footnote">????? ????? ??????? ???????</span>
+          <span class="desktop-sidebar-footnote" id="desktop-sidebar-footnote">تجربة محسنة للشاشات الكبيرة</span>
         </div>
       </div>
       <div class="desktop-sidebar-meta">
@@ -82,7 +82,7 @@
         <span class="desktop-sidebar-version">v9.0</span>
       </div>
       <button class="desktop-sidebar-help" type="button" onclick="goPanel('settings')">
-        <span class="desktop-sidebar-help-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.3c-.8.4-1.1.8-1.1 1.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg></span><span id="desktop-sidebar-help-label">????? ?????????</span>
+        <span class="desktop-sidebar-help-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.3c-.8.4-1.1.8-1.1 1.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor"/></svg></span><span id="desktop-sidebar-help-label">الدعم والمساعدة</span>
       </button>
     </div>
   </aside>
@@ -92,17 +92,17 @@
 
     <div class="desktop-topbar-project">
       <div class="desktop-topbar-field">
-        <label class="desktop-topbar-label" for="desktop-project" id="desktop-project-label">??? ???????</label>
-        <input class="desktop-topbar-input" id="desktop-project" type="text" placeholder="�" oninput="syncDesktopProjectFields('desktop')">
+        <label class="desktop-topbar-label" for="desktop-project" id="desktop-project-label">اسم المشروع</label>
+        <input class="desktop-topbar-input" id="desktop-project" type="text" placeholder="—" oninput="syncDesktopProjectFields('desktop')">
       </div>
       <div class="desktop-topbar-field desktop-topbar-field-compact">
-        <label class="desktop-topbar-label" for="desktop-no" id="desktop-no-label">??? ???????</label>
+        <label class="desktop-topbar-label" for="desktop-no" id="desktop-no-label">رقم المشروع</label>
         <input class="desktop-topbar-input" id="desktop-no" type="text" placeholder="Q-001" oninput="syncDesktopProjectFields('desktop')">
       </div>
     </div>
     <div class="desktop-topbar-actions">
       <button class="desktop-topbar-btn primary" type="button" onclick="saveCurrentProject()">
-        <span id="desktop-save-label">??? ??????? ??????</span>
+        <span id="desktop-save-label">حفظ المشروع الحالي</span>
       </button>
       <button class="desktop-topbar-btn" type="button" onclick="exportHAP()">
         <span id="desktop-export-hap-label">Export HAP</span>
@@ -122,7 +122,7 @@
     </div>
   </div>
   <div class="desktop-recommendation-note" id="desktop-recommendation-note">
-    <span id="desktop-rec-ar">????? ????? ?? ???????? ?????????? ???? ???????? ????????? ?? ?????? ???????.</span>
+    <span id="desktop-rec-ar">يفضل استخدام المنصة على جهاز كمبيوتر لعرض الجداول والتقارير بوضوح.</span>
   </div>
   <div class="workspace-shell desktop-page-dashboard insights-hidden">
     <main class="workspace-main">
@@ -132,12 +132,12 @@
     <div class="dash results-dash">
       <div class="results-head">
         <div>
-          <div class="results-kicker" id="results-kicker">??????? ????????</div>
-          <div class="results-caption" id="results-caption">???? ??? ??? ????? ??????? ?????? ??? ??????.</div>
+          <div class="results-kicker" id="results-kicker">نتائج المشروع</div>
+          <div class="results-caption" id="results-caption">تتحدث النتائج بعد حساب الغرف واختيار الوحدات.</div>
         </div>
         <div class="results-mode-toggle" aria-label="????? ??? ???????">
-          <button type="button" class="results-mode-btn" id="results-mode-last" onclick="setResultsMode('last')">??? ????</button>
-          <button type="button" class="results-mode-btn on" id="results-mode-total" onclick="setResultsMode('total')">?????? ?????</button>
+          <button type="button" class="results-mode-btn" id="results-mode-last" onclick="setResultsMode('last')">آخر غرفة</button>
+          <button type="button" class="results-mode-btn on" id="results-mode-total" onclick="setResultsMode('total')">إجمالي المشروع</button>
         </div>
       </div>
       <div class="dash-grid">
@@ -150,7 +150,7 @@
     <div class="card input-card room-card">
       <div class="input-head">
         <div>
-          <div class="input-kicker" id="room-step-kicker">?????? 1</div>
+          <div class="input-kicker" id="room-step-kicker">الخطوة 1</div>
           <div class="input-title" id="room-input-title">Room Information</div>
         </div>
         <div class="input-note" id="room-input-note">Enter dimensions in meters; volume is calculated automatically.</div>
@@ -160,55 +160,55 @@
         <div class="dd-wrap">
           <div class="lbl" id="lbl-type">Room Type</div>
           <div class="dd-btn" id="f-type" onclick="toggleDD('dd-room')">
-            <span id="dt" style="font-size:13px">�</span><span class="dd-arr">?</span>
+            <span id="dt" style="font-size:13px">—</span><span class="dd-arr">?</span>
           </div>
           <div class="dd-menu" id="dd-room">
 <div class="dd-cat-hdr">General / ???</div>
-<div class="dd-item sel" onclick="pickRoom(this,'r_office')"><div class="dd-item-info"><div>Office / ????</div><div class="dd-item-sub">????? ??????</div></div><span class="dd-badge">BTU/m�</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_residential')"><div class="dd-item-info"><div>Residential / ????</div><div class="dd-item-sub">????? ????</div></div><span class="dd-badge">BTU/m�</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_retail')"><div class="dd-item-info"><div>Retail / ???</div></div><span class="dd-badge">BTU/m�</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_kitchen')"><div class="dd-item-info"><div>Kitchen / ????</div></div><span class="dd-badge">BTU/m�</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_server')"><div class="dd-item-info"><div>Server Room / ?????</div></div><span class="dd-badge">BTU/m�</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_classroom')"><div class="dd-item-info"><div>Classroom / ????</div></div><span class="dd-badge">BTU/m�</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_gym')"><div class="dd-item-info"><div>Gym / ????</div></div><span class="dd-badge">BTU/m�</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_mosque')"><div class="dd-item-info"><div>Mosque / ????</div></div><span class="dd-badge">BTU/m�</span></div>
-<div class="dd-item" onclick="pickRoom(this,'r_restaurant')"><div class="dd-item-info"><div>Restaurant / ????</div></div><span class="dd-badge">BTU/m�</span></div>
-<div class="dd-cat-hdr">Healthcare � ASHRAE 170</div>
-<div class="dd-item" onclick="pickRoom(this,'h_patient_room')"><div class="dd-item-info"><div>Patient Room / ???? ??????</div><div class="dd-item-sub">2 OA � 6 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_corridor')"><div class="dd-item-info"><div>Patient Corridor / ???</div><div class="dd-item-sub">2 OA � 4 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_or')"><div class="dd-item-info"><div>Operating Room / ??????</div><div class="dd-item-sub">4 OA � 20 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_or_sub')"><div class="dd-item-info"><div>OR Sub-sterile / ?????</div><div class="dd-item-sub">2 OA � 10 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_icu')"><div class="dd-item-info"><div>?? ICU / ????? ?????</div><div class="dd-item-sub">2 OA � 8 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_ccu')"><div class="dd-item-info"><div>?? CCU / ????? ?????</div><div class="dd-item-sub">2 OA � 8 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_emergency')"><div class="dd-item-info"><div>Emergency / ???????</div><div class="dd-item-sub">2 OA � 12 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_exam')"><div class="dd-item-info"><div>?? Examination Room / ???</div><div class="dd-item-sub">2 OA � 6 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_treatment')"><div class="dd-item-info"><div>Treatment Room / ????</div><div class="dd-item-sub">2 OA � 6 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_medication')"><div class="dd-item-info"><div>Medication Room / ?????</div><div class="dd-item-sub">2 OA � 4 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_isolation')"><div class="dd-item-info"><div>Isolation Room / ???</div><div class="dd-item-sub">2 OA � 12 ACH � Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_airborne')"><div class="dd-item-info"><div>Airborne Precaution / ????</div><div class="dd-item-sub">2 OA � 12 ACH � Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_protective')"><div class="dd-item-info"><div>Protective Environment</div><div class="dd-item-sub">2 OA � 12 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_nicu')"><div class="dd-item-info"><div>NICU / ????? ???????</div><div class="dd-item-sub">2 OA � 6 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_nursery')"><div class="dd-item-info"><div>Nursery / ?????</div><div class="dd-item-sub">2 OA � 6 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_labor')"><div class="dd-item-info"><div>Labor &amp; Delivery / ?????</div><div class="dd-item-sub">2 OA � 6 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_lab')"><div class="dd-item-info"><div>Laboratory / ?????</div><div class="dd-item-sub">2 OA � 6 ACH � Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_pathology')"><div class="dd-item-info"><div>Pathology / ?????????</div><div class="dd-item-sub">2 OA � 10 ACH � Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_autopsy')"><div class="dd-item-info"><div>Autopsy / ?????</div><div class="dd-item-sub">2 OA � 12 ACH � Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_radiology')"><div class="dd-item-info"><div>?? Radiology / ????</div><div class="dd-item-sub">2 OA � 6 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_mri')"><div class="dd-item-info"><div>MRI / ???? ????????</div><div class="dd-item-sub">3 OA � 8 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_dialysis')"><div class="dd-item-info"><div>?? Dialysis / ???? ????</div><div class="dd-item-sub">2 OA � 6 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_sterile_decontam')"><div class="dd-item-info"><div>Sterile Decontam / ????? ????</div><div class="dd-item-sub">2 OA � 10 ACH � Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_sterile_clean')"><div class="dd-item-info"><div>Sterile Clean Assembly</div><div class="dd-item-sub">2 OA � 4 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_sterile_storage')"><div class="dd-item-info"><div>Sterile Storage / ?????</div><div class="dd-item-sub">2 OA � 4 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_dental')"><div class="dd-item-info"><div>Dental Operatory / ?????</div><div class="dd-item-sub">2 OA � 15 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_physio')"><div class="dd-item-info"><div>Physical Therapy / ???? ?????</div><div class="dd-item-sub">2 OA � 6 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_waiting')"><div class="dd-item-info"><div>Waiting Room / ??????</div><div class="dd-item-sub">2 OA � 8 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_nurse')"><div class="dd-item-info"><div>Nurse Station / ?????</div><div class="dd-item-sub">2 OA � 4 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_pharmacy')"><div class="dd-item-info"><div>Pharmacy / ??????</div><div class="dd-item-sub">2 OA � 6 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_hkitchen')"><div class="dd-item-info"><div>Hospital Kitchen / ????</div><div class="dd-item-sub">2 OA � 15 ACH � Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_soiled')"><div class="dd-item-info"><div>Soiled Utility / ??????</div><div class="dd-item-sub">2 OA � 10 ACH � Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_clean')"><div class="dd-item-info"><div>Clean Utility / ????? ?????</div><div class="dd-item-sub">2 OA � 4 ACH � Positive</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_toilet')"><div class="dd-item-info"><div>Patient Toilet / ????</div><div class="dd-item-sub">Exhaust � 10 ACH � Negative</div></div><span class="dd-badge">ASHRAE</span></div>
-<div class="dd-item" onclick="pickRoom(this,'h_records')"><div class="dd-item-info"><div>Medical Records / ?????</div><div class="dd-item-sub">2 OA � 4 ACH � Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item sel" onclick="pickRoom(this,'r_office')"><div class="dd-item-info"><div>Office / ????</div><div class="dd-item-sub">????? ??????</div></div><span class="dd-badge">BTU/m³</span></div>
+<div class="dd-item" onclick="pickRoom(this,'r_residential')"><div class="dd-item-info"><div>Residential / ????</div><div class="dd-item-sub">????? ????</div></div><span class="dd-badge">BTU/m³</span></div>
+<div class="dd-item" onclick="pickRoom(this,'r_retail')"><div class="dd-item-info"><div>Retail / ???</div></div><span class="dd-badge">BTU/m³</span></div>
+<div class="dd-item" onclick="pickRoom(this,'r_kitchen')"><div class="dd-item-info"><div>Kitchen / ????</div></div><span class="dd-badge">BTU/m³</span></div>
+<div class="dd-item" onclick="pickRoom(this,'r_server')"><div class="dd-item-info"><div>Server Room / ?????</div></div><span class="dd-badge">BTU/m³</span></div>
+<div class="dd-item" onclick="pickRoom(this,'r_classroom')"><div class="dd-item-info"><div>Classroom / ????</div></div><span class="dd-badge">BTU/m³</span></div>
+<div class="dd-item" onclick="pickRoom(this,'r_gym')"><div class="dd-item-info"><div>Gym / ????</div></div><span class="dd-badge">BTU/m³</span></div>
+<div class="dd-item" onclick="pickRoom(this,'r_mosque')"><div class="dd-item-info"><div>Mosque / ????</div></div><span class="dd-badge">BTU/m³</span></div>
+<div class="dd-item" onclick="pickRoom(this,'r_restaurant')"><div class="dd-item-info"><div>Restaurant / ????</div></div><span class="dd-badge">BTU/m³</span></div>
+<div class="dd-cat-hdr">Healthcare — ASHRAE 170</div>
+<div class="dd-item" onclick="pickRoom(this,'h_patient_room')"><div class="dd-item-info"><div>Patient Room / ???? ??????</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_corridor')"><div class="dd-item-info"><div>Patient Corridor / ???</div><div class="dd-item-sub">2 OA · 4 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_or')"><div class="dd-item-info"><div>Operating Room / ??????</div><div class="dd-item-sub">4 OA · 20 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_or_sub')"><div class="dd-item-info"><div>OR Sub-sterile / ?????</div><div class="dd-item-sub">2 OA · 10 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_icu')"><div class="dd-item-info"><div>?? ICU / ????? ?????</div><div class="dd-item-sub">2 OA · 8 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_ccu')"><div class="dd-item-info"><div>?? CCU / ????? ?????</div><div class="dd-item-sub">2 OA · 8 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_emergency')"><div class="dd-item-info"><div>Emergency / ???????</div><div class="dd-item-sub">2 OA · 12 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_exam')"><div class="dd-item-info"><div>?? Examination Room / ???</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_treatment')"><div class="dd-item-info"><div>Treatment Room / ????</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_medication')"><div class="dd-item-info"><div>Medication Room / ?????</div><div class="dd-item-sub">2 OA · 4 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_isolation')"><div class="dd-item-info"><div>Isolation Room / ???</div><div class="dd-item-sub">2 OA · 12 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_airborne')"><div class="dd-item-info"><div>Airborne Precaution / ????</div><div class="dd-item-sub">2 OA · 12 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_protective')"><div class="dd-item-info"><div>Protective Environment</div><div class="dd-item-sub">2 OA · 12 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_nicu')"><div class="dd-item-info"><div>NICU / ????? ???????</div><div class="dd-item-sub">2 OA · 6 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_nursery')"><div class="dd-item-info"><div>Nursery / ?????</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_labor')"><div class="dd-item-info"><div>Labor &amp; Delivery / ?????</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_lab')"><div class="dd-item-info"><div>Laboratory / ?????</div><div class="dd-item-sub">2 OA · 6 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_pathology')"><div class="dd-item-info"><div>Pathology / ?????????</div><div class="dd-item-sub">2 OA · 10 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_autopsy')"><div class="dd-item-info"><div>Autopsy / ?????</div><div class="dd-item-sub">2 OA · 12 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_radiology')"><div class="dd-item-info"><div>?? Radiology / ????</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_mri')"><div class="dd-item-info"><div>MRI / ???? ????????</div><div class="dd-item-sub">3 OA · 8 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_dialysis')"><div class="dd-item-info"><div>?? Dialysis / ???? ????</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_sterile_decontam')"><div class="dd-item-info"><div>Sterile Decontam / ????? ????</div><div class="dd-item-sub">2 OA · 10 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_sterile_clean')"><div class="dd-item-info"><div>Sterile Clean Assembly</div><div class="dd-item-sub">2 OA · 4 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_sterile_storage')"><div class="dd-item-info"><div>Sterile Storage / ?????</div><div class="dd-item-sub">2 OA · 4 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_dental')"><div class="dd-item-info"><div>Dental Operatory / ?????</div><div class="dd-item-sub">2 OA · 15 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_physio')"><div class="dd-item-info"><div>Physical Therapy / ???? ?????</div><div class="dd-item-sub">2 OA · 6 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_waiting')"><div class="dd-item-info"><div>Waiting Room / ??????</div><div class="dd-item-sub">2 OA · 8 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_nurse')"><div class="dd-item-info"><div>Nurse Station / ?????</div><div class="dd-item-sub">2 OA · 4 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_pharmacy')"><div class="dd-item-info"><div>Pharmacy / ??????</div><div class="dd-item-sub">2 OA · 6 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_hkitchen')"><div class="dd-item-info"><div>Hospital Kitchen / ????</div><div class="dd-item-sub">2 OA · 15 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_soiled')"><div class="dd-item-info"><div>Soiled Utility / ??????</div><div class="dd-item-sub">2 OA · 10 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_clean')"><div class="dd-item-info"><div>Clean Utility / ????? ?????</div><div class="dd-item-sub">2 OA · 4 ACH · Positive</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_toilet')"><div class="dd-item-info"><div>Patient Toilet / ????</div><div class="dd-item-sub">Exhaust · 10 ACH · Negative</div></div><span class="dd-badge">ASHRAE</span></div>
+<div class="dd-item" onclick="pickRoom(this,'h_records')"><div class="dd-item-info"><div>Medical Records / ?????</div><div class="dd-item-sub">2 OA · 4 ACH · Neutral</div></div><span class="dd-badge">ASHRAE</span></div>
 </div>
 </div>
         <div class="room-top-city-field">
@@ -228,7 +228,7 @@
           </div>
         </div>
         <div>
-          <div class="lbl" id="lbl-ppl">??? ??????? � 400 BTU/h</div>
+          <div class="lbl" id="lbl-ppl">??? ??????? — 400 BTU/h</div>
           <div class="ifield-wrap horizontal-stepper" id="persons-stepper" aria-label="????? ??? ???????">
             <button type="button" class="qbtn" onclick="stepRoomNumber('inp-ppl',1,0)" aria-label="????? ??? ???????">+</button>
             <input class="ninput count-like-input" id="inp-ppl" type="number" inputmode="numeric" min="0" step="1" placeholder="0" oninput="onPplInput()">
@@ -241,11 +241,11 @@
           <div class="lbl" id="lbl-load-factor-value">????? ???????</div>
           <div class="ifield-wrap load-factor-value-wrap">
             <input class="ninput readonly-like sync-readonly" id="inp-load-factor" type="number" inputmode="numeric" min="100" max="800" step="10" placeholder="265" readonly>
-            <span class="unit-chip">BTU/m�</span>
+            <span class="unit-chip">BTU/m³</span>
           </div>
         </div>
       </div>
-      <div class="load-factor-helper" id="load-factor-helper">????? ???? � ?? ?????? ?????? ????????</div>
+      <div class="load-factor-helper" id="load-factor-helper">????? ???? — ?? ?????? ?????? ????????</div>
       <div class="calc-mode-note" id="calc-mode-note" style="display:none"></div>
       <div class="selected-room-preview" id="selected-room-preview"></div>
       <div class="row2 fresh-air-row" id="fresh-air-row" style="display:none">
@@ -260,7 +260,7 @@
         </div>
       </div>
       <div class="calc-mode-note fresh-air-warning" id="fresh-air-warning" style="display:none"></div>
-      <div class="advanced-helper people-helper" id="occupancy-helper">�</div>
+      <div class="advanced-helper people-helper" id="occupancy-helper">—</div>
       <div class="dim-grid" id="dim-grid" aria-label="????? ??????">
         <div>
           <div class="lbl" id="lbl-len">Length (m)</div>
@@ -277,12 +277,12 @@
       </div>
       <div class="row1">
         <div class="lbl" id="lbl-vol">Calculated Volume</div>
-        <div class="ifield-wrap calc-volume-wrap"><input class="ninput calculated-volume-input" id="inp-vol" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0.0" oninput="onVolInput()" readonly><span class="unit-chip">m�</span></div>
+        <div class="ifield-wrap calc-volume-wrap"><input class="ninput calculated-volume-input" id="inp-vol" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0.0" oninput="onVolInput()" readonly><span class="unit-chip">m³</span></div>
       </div>
       <div class="devices-card-inline">
         <div class="input-head devices-inline-head">
           <div>
-            <div class="input-kicker" id="devices-step-kicker">?????? 2</div>
+            <div class="input-kicker" id="devices-step-kicker">الخطوة 2</div>
             <div class="input-title" id="devices-title">????? ???????</div>
           </div>
           <div class="input-note" id="devices-note">??? ????? ??????? ??? ????? ???? ????? ?? ???????.</div>
@@ -309,10 +309,10 @@
             </div>
           </div>
           <div>
-            <div class="lbl" id="lbl-window-area">????? ??????? (?�)</div>
+            <div class="lbl" id="lbl-window-area">????? ??????? (?²)</div>
             <div class="ifield-wrap dim-field">
               <input class="ninput" id="inp-window-area" type="text" inputmode="decimal" pattern="[0-9?-??-?.,?]*" placeholder="0.0" oninput="onWindowAreaInput()">
-              <span class="unit-chip">m�</span>
+              <span class="unit-chip">m²</span>
             </div>
           </div>
           <div>
@@ -328,7 +328,7 @@
       </div>
       <div class="calc-workflow-actions room-calc-actions" id="calc-workflow-actions">
         <button class="calc-btn workflow-calc-btn" id="workflow-calc-btn" onclick="doCalc(false)">
-          <span id="workflow-calc-label">???? ???????</span>
+          <span id="workflow-calc-label">احسب الأحمال</span>
         </button>
       </div>
     </div>
@@ -336,7 +336,7 @@
     <div class="card home-project-summary-card" id="home-project-summary-card" style="display:none">
       <div class="input-head">
         <div>
-          <div class="input-kicker" id="home-project-summary-kicker">???? ???????</div>
+          <div class="input-kicker" id="home-project-summary-kicker">ملخص المشروع</div>
           <div class="input-title" id="home-project-summary-title">???????? ???????</div>
         </div>
         <div class="input-note" id="home-project-summary-note">???? ??? ???????? ??????? ?????? ???????? ??????? ???????.</div>
@@ -348,10 +348,10 @@
     <div class="card input-card calc-workflow-card" id="calc-workflow-card">
       <div class="input-head calc-workflow-head">
         <div>
-          <div class="input-kicker" id="workflow-step-kicker">?????? 2</div>
-          <div class="input-title calc-workflow-title" id="workflow-input-title">????? ????? ????????</div>
+          <div class="input-kicker" id="workflow-step-kicker">الخطوة 2</div>
+          <div class="input-title calc-workflow-title" id="workflow-input-title">إدارة الغرف والوحدات</div>
         </div>
-        <div class="input-note" id="workflow-input-note">???? ???? ?????? ????? ???????? ????? ??? ??? ????? ???? ?????? ????????.</div>
+        <div class="input-note" id="workflow-input-note">تابع جميع الغرف، وعيّن الوحدات، وبدّل بين وضع الغرف ووضع الوحدة المركزية.</div>
       </div>
       <div class="calc-workflow-toolbar">
         <div class="calc-mode-switcher" id="calc-mode-switcher">
@@ -367,51 +367,51 @@
     <div class="calc-cta-panel">
       <div class="input-head cta-head">
         <div>
-          <div class="input-kicker" id="calc-step-kicker">?????? 3</div>
+          <div class="input-kicker" id="calc-step-kicker">الخطوة 3</div>
           <div class="input-title" id="calc-title">???? ?????</div>
         </div>
         <div class="input-note" id="calc-note">???? ?????? ?? ???? ??????? ???????? ???? ?????? ???????.</div>
       </div>
     <div class="disclaimer">
-      <div id="dis-ar">????? ???? ??? ??????? � ?? ????? ???? ??????? ???????.</div>
-      <div id="dis-en" style="display:none">Preliminary HVAC sizing only � not for final design or construction submittals.</div>
+      <div id="dis-ar">????? ???? ??? ??????? — ?? ????? ???? ??????? ???????.</div>
+      <div id="dis-en" style="display:none">Preliminary HVAC sizing only — not for final design or construction submittals.</div>
     </div>
     <button class="calc-btn" id="lbl-calc" onclick="doCalc()">???? ?</button>
     </div>
     <div class="card breakdown" id="breakdown">
       <div class="sec-ttl" id="breakdown-ttl">???????</div>
       <div class="breakdown-meta-grid" id="breakdown-meta-grid" style="display:none">
-        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-city-lbl">???????</span><strong class="breakdown-meta-val" id="brm-city-val">�</strong></div>
-        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-factor-lbl">????? ???????</span><strong class="breakdown-meta-val" id="brm-factor-val">�</strong></div>
-        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-insulation-lbl">??? ?????</span><strong class="breakdown-meta-val" id="brm-insulation-val">�</strong></div>
-        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-multiplier-lbl">????? ?????</span><strong class="breakdown-meta-val" id="brm-multiplier-val">�</strong></div>
-        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-people-lbl">??? ???????</span><strong class="breakdown-meta-val" id="brm-people-val">�</strong></div>
-        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-window-area-lbl">????? ???????</span><strong class="breakdown-meta-val" id="brm-window-area-val">�</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-city-lbl">???????</span><strong class="breakdown-meta-val" id="brm-city-val">—</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-factor-lbl">????? ???????</span><strong class="breakdown-meta-val" id="brm-factor-val">—</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-insulation-lbl">??? ?????</span><strong class="breakdown-meta-val" id="brm-insulation-val">—</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-multiplier-lbl">????? ?????</span><strong class="breakdown-meta-val" id="brm-multiplier-val">—</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-people-lbl">??? ???????</span><strong class="breakdown-meta-val" id="brm-people-val">—</strong></div>
+        <div class="breakdown-meta-card"><span class="breakdown-meta-lbl" id="brm-window-area-lbl">????? ???????</span><strong class="breakdown-meta-val" id="brm-window-area-val">—</strong></div>
       </div>
-      <div class="br-row"><span class="br-lbl" id="brl-vol">??? ??????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-vol">�</span><span class="badge ba">m�</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-base">????? ???????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-base">�</span><span class="badge bam">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-window">??? ???????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-window">�</span><span class="badge bg">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-ppl">??? ???????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-ppl">�</span><span class="badge bg">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-dev">??? ???????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-dev">�</span><span class="badge bam">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-sub">????????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sub">�</span><span class="badge ba">BTU/h</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="brl-sf">+ ????? ???? 10%</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sf">�</span><span class="badge ba">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-vol">??? ??????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-vol">—</span><span class="badge ba">m³</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-base">????? ???????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-base">—</span><span class="badge bam">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-window">??? ???????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-window">—</span><span class="badge bg">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-ppl">??? ???????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-ppl">—</span><span class="badge bg">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-dev">??? ???????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-dev">—</span><span class="badge bam">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-sub">????????</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sub">—</span><span class="badge ba">BTU/h</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="brl-sf">+ ????? ???? 10%</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="brv-sf">—</span><span class="badge ba">BTU/h</span></div></div>
     </div>
     <div class="card hc-card" id="hc-card" style="display:none">
-      <div class="sec-ttl" id="hcttl">ASHRAE 170 � AIRFLOW</div>
+      <div class="sec-ttl" id="hcttl">ASHRAE 170 — AIRFLOW</div>
       <div class="hc-badge-row">
-        <span class="hc-pill" id="hc-pill">�</span>
-        <span class="hc-meta" id="hc-temp">�</span>
-        <span class="hc-meta" id="hc-rh">�</span>
+        <span class="hc-pill" id="hc-pill">—</span>
+        <span class="hc-meta" id="hc-temp">—</span>
+        <span class="hc-meta" id="hc-rh">—</span>
       </div>
-      <div class="br-row"><span class="br-lbl" id="hcl-ach">Total ACH</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-ach">�</span><span class="badge ba">ACH</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-sup">Supply CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-sup">�</span><span class="badge ba">CFM</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-oa">Outdoor Air CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-oa">�</span><span class="badge bg">CFM</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-rec">Recirculated CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-rec">�</span><span class="badge ba">CFM</span></div></div>
-      <div class="br-row"><span class="br-lbl" id="hcl-exh">Exhaust CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-exh">�</span><span class="badge bam">CFM</span></div></div>
-      <div class="br-row" id="hc-note-row" style="display:none"><span class="br-lbl" id="hc-note-lbl">??????</span><span class="br-val" id="hcv-note" style="font-size:11px;color:var(--tm)">�</span></div>
+      <div class="br-row"><span class="br-lbl" id="hcl-ach">Total ACH</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-ach">—</span><span class="badge ba">ACH</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="hcl-sup">Supply CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-sup">—</span><span class="badge ba">CFM</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="hcl-oa">Outdoor Air CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-oa">—</span><span class="badge bg">CFM</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="hcl-rec">Recirculated CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-rec">—</span><span class="badge ba">CFM</span></div></div>
+      <div class="br-row"><span class="br-lbl" id="hcl-exh">Exhaust CFM</span><div style="display:flex;align-items:center;gap:6px"><span class="br-val" id="hcv-exh">—</span><span class="badge bam">CFM</span></div></div>
+      <div class="br-row" id="hc-note-row" style="display:none"><span class="br-lbl" id="hc-note-lbl">??????</span><span class="br-val" id="hcv-note" style="font-size:11px;color:var(--tm)">—</span></div>
     </div>
 
-  <!-- CALCULATED ROOMS + QUOTATION BUTTON � inside p-calc so goPanel() hides it with the panel -->
+  <!-- CALCULATED ROOMS + QUOTATION BUTTON — inside p-calc so goPanel() hides it with the panel -->
   <div class="card calc-rooms-card" id="calc-rooms-card" style="display:none">
     <div class="hist-hdr">
       <div class="sec-ttl" style="margin-bottom:0"><span class="room-count" id="calc-rooms-count">0</span><span id="calc-rooms-title">Calculated Rooms</span></div>
@@ -540,12 +540,12 @@
         <!-- Duct sizes result -->
         <div class="duct-row">
           <span class="duct-lbl" id="duct-sup-lbl">???? ??????? ???????:</span>
-          <span class="duct-val" id="duct-sup-val">�</span>
+          <span class="duct-val" id="duct-sup-val">—</span>
           <span class="duct-lbl" id="duct-ret-lbl">???? ?????? ???????:</span>
-          <span class="duct-val" id="duct-ret-val">�</span>
+          <span class="duct-val" id="duct-ret-val">—</span>
         </div>
         <div class="duct-note" id="duct-m3s-row" style="font-family:var(--fe);color:var(--a);font-size:10px;margin-bottom:2px"></div>
-        <div class="duct-note" id="duct-note-txt">????? ???? � ??? ?????? ?? ????? ?????? ???????.</div>
+        <div class="duct-note" id="duct-note-txt">????? ???? — ??? ?????? ?? ????? ?????? ???????.</div>
 
         <!-- ESP Calculation block -->
         <div class="esp-block" id="esp-block">
@@ -605,7 +605,7 @@
           <div class="esp-section esp-section-result">
             <div class="esp-section-title" id="esp-group-result">????? ESP</div>
             <div class="esp-result" id="esp-result">
-              <span style="font-size:10px;color:var(--tm)" id="esp-result-txt">�</span>
+              <span style="font-size:10px;color:var(--tm)" id="esp-result-txt">—</span>
             </div>
           </div>
           <div class="esp-section">
@@ -615,8 +615,8 @@
             </div>
             <div class="esp-breakdown hidden" id="esp-breakdown"></div>
           </div>
-          <div class="esp-note" id="esp-note">????? ???? ????? ?????? � ??? ?????? ?? ?????? ?????? ????? ????? ??? ????????.</div>
-          <div class="esp-catalog-note" id="esp-catalog-note">?????? ESP ?? ?????? ?????? ??? ?????? � ???? ?? ?????? ?????? ???????.</div>
+          <div class="esp-note" id="esp-note">????? ???? ????? ?????? — ??? ?????? ?? ?????? ?????? ????? ????? ??? ????????.</div>
+          <div class="esp-catalog-note" id="esp-catalog-note">?????? ESP ?? ?????? ?????? ??? ?????? — ???? ?? ?????? ?????? ???????.</div>
         </div>
       </div>
       <!-- Line total display -->
@@ -640,34 +640,34 @@
     <div class="adv-duct-block" id="adv-duct-block" style="display:none">
       <div class="adv-duct-header">
         <span class="adv-duct-title" id="adv-duct-title">??????? ??????? ??????? ???????</span>
-        <span class="adv-duct-ref">ASHRAE Ch.21 � Darcy-Weisbach</span>
+        <span class="adv-duct-ref">ASHRAE Ch.21 · Darcy-Weisbach</span>
       </div>
       <!-- Supply duct analysis -->
       <div class="adv-section-label" id="adv-sup-label">???? ???????</div>
       <div class="adv-grid" id="adv-sup-grid">
         <div class="adv-field">
           <div class="adv-field-lbl" id="adv-lbl-area-sup">??????? A</div>
-          <div class="adv-field-val" id="adv-val-area-sup">�</div>
-          <div class="adv-field-unit">ft�</div>
+          <div class="adv-field-val" id="adv-val-area-sup">—</div>
+          <div class="adv-field-unit">ft²</div>
         </div>
         <div class="adv-field">
           <div class="adv-field-lbl" id="adv-lbl-vel-sup">?????? V</div>
-          <div class="adv-field-val" id="adv-val-vel-sup">�</div>
+          <div class="adv-field-val" id="adv-val-vel-sup">—</div>
           <div class="adv-field-unit">fpm</div>
         </div>
         <div class="adv-field">
           <div class="adv-field-lbl" id="adv-lbl-dh-sup">????? ??????????? Dh</div>
-          <div class="adv-field-val" id="adv-val-dh-sup">�</div>
+          <div class="adv-field-val" id="adv-val-dh-sup">—</div>
           <div class="adv-field-unit">in</div>
         </div>
         <div class="adv-field">
           <div class="adv-field-lbl" id="adv-lbl-pv-sup">??? ?????? Pv</div>
-          <div class="adv-field-val" id="adv-val-pv-sup">�</div>
+          <div class="adv-field-val" id="adv-val-pv-sup">—</div>
           <div class="adv-field-unit">in.w.g.</div>
         </div>
         <div class="adv-field adv-field-wide">
           <div class="adv-field-lbl" id="adv-lbl-dp-sup">??? ???????? ????????</div>
-          <div class="adv-field-val" id="adv-val-dp-sup">�</div>
+          <div class="adv-field-val" id="adv-val-dp-sup">—</div>
           <div class="adv-field-unit" id="adv-unit-dp-sup">in.w.g. / 100ft</div>
         </div>
       </div>
@@ -676,32 +676,32 @@
       <div class="adv-grid" id="adv-ret-grid">
         <div class="adv-field">
           <div class="adv-field-lbl" id="adv-lbl-area-ret">??????? A</div>
-          <div class="adv-field-val" id="adv-val-area-ret">�</div>
-          <div class="adv-field-unit">ft�</div>
+          <div class="adv-field-val" id="adv-val-area-ret">—</div>
+          <div class="adv-field-unit">ft²</div>
         </div>
         <div class="adv-field">
           <div class="adv-field-lbl" id="adv-lbl-vel-ret">?????? V</div>
-          <div class="adv-field-val" id="adv-val-vel-ret">�</div>
+          <div class="adv-field-val" id="adv-val-vel-ret">—</div>
           <div class="adv-field-unit">fpm</div>
         </div>
         <div class="adv-field">
           <div class="adv-field-lbl" id="adv-lbl-dh-ret">????? ??????????? Dh</div>
-          <div class="adv-field-val" id="adv-val-dh-ret">�</div>
+          <div class="adv-field-val" id="adv-val-dh-ret">—</div>
           <div class="adv-field-unit">in</div>
         </div>
         <div class="adv-field">
           <div class="adv-field-lbl" id="adv-lbl-pv-ret">??? ?????? Pv</div>
-          <div class="adv-field-val" id="adv-val-pv-ret">�</div>
+          <div class="adv-field-val" id="adv-val-pv-ret">—</div>
           <div class="adv-field-unit">in.w.g.</div>
         </div>
         <div class="adv-field adv-field-wide">
           <div class="adv-field-lbl" id="adv-lbl-dp-ret">??? ???????? ????????</div>
-          <div class="adv-field-val" id="adv-val-dp-ret">�</div>
+          <div class="adv-field-val" id="adv-val-dp-ret">—</div>
           <div class="adv-field-unit" id="adv-unit-dp-ret">in.w.g. / 100ft</div>
         </div>
       </div>
       <div class="adv-duct-note" id="adv-duct-note">
-        Darcy-Weisbach � f = 0.02 (galvanised steel) � ASHRAE Standard Air 20�C � Preliminary sizing only
+        Darcy-Weisbach · f = 0.02 (galvanised steel) · ASHRAE Standard Air 20°C · Preliminary sizing only
       </div>
     </div>
 
@@ -712,7 +712,7 @@
           <div class="lbl" id="lbl-project">??? ???????</div>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="ifield-wrap" style="flex:1;margin-bottom:0;">
-              <input class="ninput sync-readonly" id="quote-project" type="text" placeholder="�" style="text-align:start;font-size:14px;" readonly aria-readonly="true">
+              <input class="ninput sync-readonly" id="quote-project" type="text" placeholder="—" style="text-align:start;font-size:14px;" readonly aria-readonly="true">
             </div>
             <button
               id="quote-save-btn"
@@ -737,7 +737,7 @@
       <div id="quote-settings-slot"></div>
       <div id="quote-proj-pricing-slot"></div>
       <div class="qi-list" id="quote-view-list">
-        <div class="qi-empty" id="quote-view-empty">?? ???? ??? � ???? ???? ?????</div>
+        <div class="qi-empty" id="quote-view-empty">?? ???? ??? — ???? ???? ?????</div>
       </div>
       <div class="q-summary" id="q-summary">
         <div class="q-sr"><span class="q-sl" id="qs-subl">??????? ??????</span><span class="q-sv" id="qs-subtotal-v">0.00</span></div>
@@ -804,7 +804,7 @@
           <div class="lbl" id="tech-project-lbl">??? ???????</div>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="ifield-wrap" style="flex:1;margin-bottom:0;">
-              <input class="ninput" id="tech-project" type="text" placeholder="�" style="text-align:start;font-size:14px;" oninput="syncProjectFields('tech')">
+              <input class="ninput" id="tech-project" type="text" placeholder="—" style="text-align:start;font-size:14px;" oninput="syncProjectFields('tech')">
             </div>
             <button
               id="tech-save-btn"
@@ -851,7 +851,7 @@
       <div id="tech-controls-slot"></div>
       <div id="tech-room-slot">
         <div class="qi-list" id="qi-list">
-          <div class="qi-empty" id="qi-empty">?? ???? ??? � ???? ???? ?????</div>
+          <div class="qi-empty" id="qi-empty">?? ???? ??? — ???? ???? ?????</div>
         </div>
       </div>
       <div id="tech-proj-slot"></div>
@@ -1026,8 +1026,8 @@
       </div>
       <div class="set-item auth-account-meta" id="auth-user-row" style="display:none;">
         <div>
-          <div class="set-lbl" id="auth-user-name">�</div>
-          <div class="set-sub" id="auth-user-email">�</div>
+          <div class="set-lbl" id="auth-user-name">—</div>
+          <div class="set-sub" id="auth-user-email">—</div>
         </div>
         <button class="auth-logout-btn" id="auth-logout-btn" type="button" onclick="logoutAuth()">????? ??????</button>
       </div>
@@ -1103,7 +1103,7 @@
     </div>
     <!-- -- END PLAN STATUS ------------------------------------------ -->
 
-    <div style="text-align:center;color:var(--tm);font-size:12px;padding:16px;font-family:var(--fe)">Air Calc Pro v9.0 � Made in Saudi Arabia ????</div>
+    <div style="text-align:center;color:var(--tm);font-size:12px;padding:16px;font-family:var(--fe)">AirCalc Pro v9.0 · صنع في السعودية</div>
   </div>
     </main>
     <aside class="desktop-insights" id="desktop-insights">
@@ -1116,23 +1116,23 @@
         <div class="desktop-insight-metrics" id="desktop-insight-metrics">
           <div class="desktop-insight-metric">
             <span class="desktop-insight-label" id="desktop-metric-btu-label">????? ???????</span>
-            <strong class="desktop-insight-value" id="desktop-metric-btu">�</strong>
+            <strong class="desktop-insight-value" id="desktop-metric-btu">—</strong>
           </div>
           <div class="desktop-insight-metric">
             <span class="desktop-insight-label" id="desktop-metric-tr-label">?? ???????</span>
-            <strong class="desktop-insight-value" id="desktop-metric-tr">�</strong>
+            <strong class="desktop-insight-value" id="desktop-metric-tr">—</strong>
           </div>
           <div class="desktop-insight-metric">
             <span class="desktop-insight-label" id="desktop-metric-cfm-label">???? ???????</span>
-            <strong class="desktop-insight-value" id="desktop-metric-cfm">�</strong>
+            <strong class="desktop-insight-value" id="desktop-metric-cfm">—</strong>
           </div>
           <div class="desktop-insight-metric">
             <span class="desktop-insight-label" id="desktop-metric-mkt-label">??? ?????</span>
-            <strong class="desktop-insight-value" id="desktop-metric-mkt">�</strong>
+            <strong class="desktop-insight-value" id="desktop-metric-mkt">—</strong>
           </div>
           <div class="desktop-insight-metric accent">
             <span class="desktop-insight-label" id="desktop-metric-diff-label">??? ????? %</span>
-            <strong class="desktop-insight-value" id="desktop-metric-diff">�</strong>
+            <strong class="desktop-insight-value" id="desktop-metric-diff">—</strong>
           </div>
         </div>
       </div>
@@ -1143,10 +1143,10 @@
       <div class="desktop-insight-card">
         <div class="desktop-insight-title" id="desktop-insight-status-title">???? ????????</div>
         <div class="desktop-status-box" id="desktop-status-box">
-          <div class="desktop-status-message" id="desktop-status-message">�</div>
+          <div class="desktop-status-message" id="desktop-status-message">—</div>
           <div class="desktop-insight-list compact">
-            <div class="desktop-insight-row"><span id="desktop-status-diff-label">????? BTU</span><strong id="desktop-status-diff">�</strong></div>
-            <div class="desktop-insight-row"><span id="desktop-status-percent-label">????? %</span><strong id="desktop-status-percent">�</strong></div>
+            <div class="desktop-insight-row"><span id="desktop-status-diff-label">????? BTU</span><strong id="desktop-status-diff">—</strong></div>
+            <div class="desktop-insight-row"><span id="desktop-status-percent-label">????? %</span><strong id="desktop-status-percent">—</strong></div>
           </div>
         </div>
       </div>
@@ -1154,24 +1154,24 @@
         <div class="desktop-insight-title" id="desktop-insight-validation-title">?????? ???????</div>
         <div class="desktop-insight-list" id="desktop-validation-summary">
           <div class="desktop-validation-row">
-            <div class="desktop-validation-row-head"><span id="desktop-val-capacity">??? ?????</span><strong id="desktop-val-capacity-status">�</strong></div>
-            <div class="desktop-validation-row-note" id="desktop-val-capacity-note">�</div>
+            <div class="desktop-validation-row-head"><span id="desktop-val-capacity">??? ?????</span><strong id="desktop-val-capacity-status">—</strong></div>
+            <div class="desktop-validation-row-note" id="desktop-val-capacity-note">—</div>
           </div>
           <div class="desktop-validation-row">
-            <div class="desktop-validation-row-head"><span id="desktop-val-cfm">??? ???? ??????</span><strong id="desktop-val-cfm-status">�</strong></div>
-            <div class="desktop-validation-row-note" id="desktop-val-cfm-note">�</div>
+            <div class="desktop-validation-row-head"><span id="desktop-val-cfm">??? ???? ??????</span><strong id="desktop-val-cfm-status">—</strong></div>
+            <div class="desktop-validation-row-note" id="desktop-val-cfm-note">—</div>
           </div>
           <div class="desktop-validation-row">
-            <div class="desktop-validation-row-head"><span id="desktop-val-duct">??? ???? ?????</span><strong id="desktop-val-duct-status">�</strong></div>
-            <div class="desktop-validation-row-note" id="desktop-val-duct-note">�</div>
+            <div class="desktop-validation-row-head"><span id="desktop-val-duct">??? ???? ?????</span><strong id="desktop-val-duct-status">—</strong></div>
+            <div class="desktop-validation-row-note" id="desktop-val-duct-note">—</div>
           </div>
           <div class="desktop-validation-row">
-            <div class="desktop-validation-row-head"><span id="desktop-val-esp">??? ESP</span><strong id="desktop-val-esp-status">�</strong></div>
-            <div class="desktop-validation-row-note" id="desktop-val-esp-note">�</div>
+            <div class="desktop-validation-row-head"><span id="desktop-val-esp">??? ESP</span><strong id="desktop-val-esp-status">—</strong></div>
+            <div class="desktop-validation-row-note" id="desktop-val-esp-note">—</div>
           </div>
           <div class="desktop-validation-row">
-            <div class="desktop-validation-row-head"><span id="desktop-val-ashrae">???? ASHRAE</span><strong id="desktop-val-ashrae-status">�</strong></div>
-            <div class="desktop-validation-row-note" id="desktop-val-ashrae-note">�</div>
+            <div class="desktop-validation-row-head"><span id="desktop-val-ashrae">???? ASHRAE</span><strong id="desktop-val-ashrae-status">—</strong></div>
+            <div class="desktop-validation-row-note" id="desktop-val-ashrae-note">—</div>
           </div>
         </div>
       </div>
@@ -1333,8 +1333,8 @@
       <button class="auth-mode-btn" id="auth-tab-create" type="button">????? ????</button>
     </div>
     <div class="auth-user-summary" id="auth-user-summary" style="display:none;">
-      <div class="auth-user-summary-name" id="auth-summary-name">�</div>
-      <div class="auth-user-summary-email" id="auth-summary-email">�</div>
+      <div class="auth-user-summary-name" id="auth-summary-name">—</div>
+      <div class="auth-user-summary-email" id="auth-summary-email">—</div>
     </div>
     <div class="auth-form-wrap" id="auth-form-wrap">
       <div class="auth-field" id="auth-fullname-row" style="display:none;">
@@ -1460,7 +1460,7 @@
 <script src="./js/copilot/copilot-review-store.js?v=20260725a"></script>
 
 
-<!-- Phase 3: modules (sync � window.App* must exist before app.js defer) -->
+<!-- Phase 3: modules (sync — window.App* must exist before app.js defer) -->
 <script src="./modules/plan.js"></script>
 <script src="./modules/devices.js"></script>
 <script src="./modules/history.js"></script>
@@ -1469,20 +1469,20 @@
 <script src="./modules/calc.js"></script>
 <script src="./modules/quote.js"></script>
 <script src="./modules/pdf.js"></script>
-<script src="./modules/projects.js?v=20260915a"></script>
+<script src="./modules/projects.js?v=20261103a"></script>
 <script src="./modules/engineering-agent.js"></script>
 <script src="./modules/equipment-database.js?v=20260723a"></script>
 <script src="./modules/equipment-selector.js?v=20260725c"></script>
 <script src="./modules/hvac-design-copilot.js?v=20261001a"></script>
 
-<!-- Legacy app logic (deferred � overwrites module globals with live-state versions) -->
-<script src="./app.js?v=20261001a" defer></script>
+<!-- Legacy app logic (deferred — overwrites module globals with live-state versions) -->
+<script src="./app.js?v=20261103a" defer></script>
 <script>window.showAirCalcAccount=function(){var overlay=document.getElementById("auth-overlay");if(window.openAuthModal){window.openAuthModal();return;}if(overlay){overlay.classList.remove("hidden");var email=document.getElementById("auth-email");if(email)email.focus();}};</script>
 <script defer src="./js/firebase-auth.js?v=20260915c"></script>
 <script src="./data.bootstrap.js?v=20260525a"></script>
 
-<!-- Bootstrap (deferred � runs after app.js defines loadAppData/initApp) -->
-<script src="./main.js?v=20260525a" defer></script>
+<!-- Bootstrap (deferred — runs after app.js defines loadAppData/initApp) -->
+<script src="./main.js?v=20261103a" defer></script>
 </body>
 </html>
 

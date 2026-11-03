@@ -45,7 +45,7 @@ includes(projects, "resolveCloudConflict(\\'' + proj.id + '\\',\\'restore_cloud\
 includes(projects, 'importMissingCloudProjects({ silent:true })', 'Opening the dashboard should quietly import missing cloud projects.');
 
 includes(index, 'id="pm-cloud-refresh-btn"', 'Project dashboard should include a cloud refresh button.');
-includes(index, 'modules/projects.js?v=20260915a', 'Index should load the cache-busted projects module.');
+includes(index, 'modules/projects.js?v=20261103a', 'Index should load the cache-busted projects module.');
 includes(index, 'firebase-auth.js?v=20260915c', 'Index should load the cache-busted Firebase auth module.');
 includes(index, 'styles.css?v=20261001a', 'Index should load the cache-busted stylesheet.');
 

@@ -6,7 +6,7 @@ const source = fs.readFileSync(require('path').join(__dirname, '../app.js'), 'ut
 const names = ['getManufacturerRecommendationMatchRules','classifyManufacturerCapacityMatch','findManufacturerMatchesForScenario','applyReportCapacityAction','applyReportDuctAction','calcDuctSize','_makeDuctCandidate'];
 const calls = [];
 let pressureRefreshes=0;
-const ctx = {lang:'en', window:{}, projState:{}, DUCT_STD:[],
+const ctx = {lang:'en', window:{}, projState:{}, DUCT_STD:[], ASHRAE_RECT_MAX_RATIO:4,
   getAllowedSystemType:x=>x, isProjectSystemEquipmentRecordCompatible:()=>true,
   getProjectRequiredLoadBtu:()=>30000, _ductCandidateScore:()=>0,
   applyProjectSystemManualCapacity:(id,value)=>calls.push([id,value]),
@@ -31,6 +31,9 @@ assert.strictEqual(pressureRefreshes,1,'Dimension changes must refresh the share
 const sized=ctx.calcDuctSize(1000,1000,'sup');
 assert.strictEqual(sized.std.w,500);
 assert.strictEqual(sized.std.h,400);
+ctx.projState.ductDimensions.sup={w:2000,h:400};
+assert.strictEqual(ctx.calcDuctSize(1000,1000,'sup'),null,'manual dimensions must obey the hard size bound');
+ctx.projState.ductDimensions.sup={w:500,h:400};
 assert.strictEqual(sized.std.actualFpm,Math.round(1000/(500*400/92903.04)));
 ctx.applyReportDuctAction({elements:{width:{value:'-1'},height:{value:'400'},side:{value:'sup'}}});
 assert.strictEqual(ctx.projState.ductDimensions.sup.w,500);

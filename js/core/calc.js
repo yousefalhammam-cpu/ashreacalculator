@@ -37,6 +37,7 @@
       peopleCount: ppl,
       deviceLoadBtuh: devBtu
     });
+    if(eng && !eng.ok) return eng;
     var ft3 = vol * 35.3147;
     var sup = eng && eng.ok ? eng.supplyCfm : Math.round((room.tach * ft3) / 60);
     var oa = eng && eng.ok ? eng.outdoorAirCfm : Math.round((room.oach * ft3) / 60);
@@ -65,6 +66,11 @@
       hc: {
         sup: sup,
         oa: oa,
+        outdoorAirCfm:oa,
+        outdoorAch:room.oach,
+        oaStd:room.oach,
+        ach:room.tach,
+        airflowSchemaVersion:2,
         exh: exh,
         pres: room.pres
       }

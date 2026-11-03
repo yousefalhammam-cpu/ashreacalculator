@@ -22,6 +22,7 @@
   }
 
   var ROOM_STANDARD_KEY_BY_ROOM_ID = {
+    r_residential: 'residential',
     h_patient_room: 'patient_room',
     h_corridor: 'corridor',
     h_or: 'operating_room',
@@ -80,8 +81,8 @@
     if (rid.indexOf('cath') >= 0 || en.indexOf('cath') >= 0) return 'cath_lab';
     if (rid.indexOf('endoscopy') >= 0 || en.indexOf('endoscopy') >= 0) return 'endoscopy';
 
-    if (rid.indexOf('icu') >= 0 || en.indexOf('icu') >= 0) return 'icu';
     if (rid.indexOf('nicu') >= 0 || en.indexOf('nicu') >= 0) return 'nicu';
+    if (rid.indexOf('icu') >= 0 || en.indexOf('icu') >= 0) return 'icu';
 
     if (rid.indexOf('isolation') >= 0 || en.indexOf('isolation') >= 0) return 'isolation_room';
     if (rid.indexOf('protective') >= 0 || en.indexOf('protective') >= 0) return 'protective_environment';
@@ -101,12 +102,22 @@
     if (rid.indexOf('wait') >= 0 || en.indexOf('waiting') >= 0) return 'waiting_area';
     if (rid.indexOf('corridor') >= 0 || en.indexOf('corridor') >= 0) return 'corridor';
     if (room.mode === 'hc') return 'healthcare_room_specific';
+    if (/^r_/.test(rid)) return rid.slice(2);
     return 'office';
   }
 
   function getRoomStandard(room) {
     var key = inferRoomStandardKey(room);
-    if (_standards()[key]) return _standards()[key];
+    if (_standards()[key]) {
+      var standard = Object.assign({}, _standards()[key]);
+      if (room && room.mode === 'hc') {
+        standard.ach = room.tach;
+        standard.oa = room.oach;
+        standard.pressure = titlePressure(room.pres);
+        standard.sourceConfirmationRequired = true;
+      }
+      return standard;
+    }
     if (room && room.mode === 'hc') return makeRoomSpecificHealthcareStandard(room);
     return {
       category: 'unknown',
@@ -136,8 +147,7 @@
   function applyRoomEquipmentPreset(roomKey) {
     var preset = _presets()[roomKey];
     var next = normalizePreset(preset);
-    if (!next) return;
-    if (typeof devs !== 'undefined') devs = next;
+    if (typeof devs !== 'undefined') devs = next || [];
   }
 
   function getEquipmentSummary() {
