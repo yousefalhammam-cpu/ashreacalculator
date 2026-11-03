@@ -13,7 +13,19 @@ if (!(Test-Path -LiteralPath $zip)) {
 }
 
 $zipItem = Get-Item -LiteralPath $zip
-$hash = Get-FileHash -LiteralPath $zip -Algorithm SHA256
+# Use the framework implementation so manifest generation does not depend on
+# Get-FileHash being installed/autoloaded in the Windows PowerShell host.
+$algorithm = [System.Security.Cryptography.SHA256]::Create()
+$stream = [System.IO.File]::OpenRead($zip)
+try {
+  $hashBytes = $algorithm.ComputeHash($stream)
+} finally {
+  $stream.Dispose()
+  $algorithm.Dispose()
+}
+$hash = [pscustomobject]@{
+  Hash = ([System.BitConverter]::ToString($hashBytes)).Replace("-", "")
+}
 
 $payload = [ordered]@{
   product = "AirCalc Pro"
