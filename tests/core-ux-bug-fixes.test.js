@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+// Git on Windows checks out CRLF; source assertions should be platform-independent.
+const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8').replace(/\r\n/g, '\n');
 const styles = fs.readFileSync(path.join(root, 'styles.css'), 'utf8');
 
 assert.ok(app.includes('function getSelectedUnitCapacityBtu'), 'installed capacity should have one central unit-capacity resolver.');
