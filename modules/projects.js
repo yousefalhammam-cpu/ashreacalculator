@@ -419,7 +419,7 @@
     };
 
     snap.vatOn = (typeof vatOn !== 'undefined') ? vatOn : true;
-    snap.instPct = parseInt((_getCurrentProjectField('qs-inst', '10')), 10) || 10;
+    snap.instPct = Math.max(0, Number(_getCurrentProjectField('qs-inst', '10')) || 0);
     snap.qsValidity = parseInt((_getCurrentProjectField('qs-validity', '14')), 10) || 14;
     snap.qsNotes = _getCurrentProjectField('qs-notes', '') || '';
 
@@ -535,12 +535,18 @@
     if (!snap) return;
     var qState = snap.quotation || null;
 
-    if (typeof hist !== 'undefined') hist = _clone(snap.hist || []);
-    if (typeof qlines !== 'undefined') qlines = _clone((qState && qState.lines) || snap.qlines || []);
+    if (typeof hist !== 'undefined') {
+      hist = _clone(snap.hist || []);
+      if (window.AppStorage && window.AppStorage.normalizeHistory) hist = window.AppStorage.normalizeHistory(hist);
+    }
+    if (typeof qlines !== 'undefined') {
+      qlines = _clone((qState && qState.lines) || snap.qlines || []);
+      if(window.AppStorage && window.AppStorage.normalizeQuoteLines) qlines = window.AppStorage.normalizeQuoteLines(qlines);
+    }
     if (typeof devs !== 'undefined') devs = _clone(snap.devs || []);
 
     if (typeof vatOn !== 'undefined') vatOn = (qState && qState.settings && qState.settings.vatOn !== undefined) ? qState.settings.vatOn : (snap.vatOn !== undefined ? snap.vatOn : true);
-    if (typeof instPct !== 'undefined') instPct = (qState && qState.settings && qState.settings.instPct) || snap.instPct || 10;
+    if (typeof instPct !== 'undefined') instPct = (qState && qState.settings && qState.settings.instPct != null) ? qState.settings.instPct : (snap.instPct != null ? snap.instPct : 10);
     if (typeof qsValidity !== 'undefined') qsValidity = (qState && qState.settings && qState.settings.qsValidity) || snap.qsValidity || 14;
     if (typeof qsNotes !== 'undefined') qsNotes = (qState && qState.settings && qState.settings.qsNotes !== undefined) ? qState.settings.qsNotes : (snap.qsNotes || '');
     if (typeof quoteMode !== 'undefined') quoteMode = snap.quoteMode || 'room';
@@ -584,7 +590,7 @@
     sv('report-location', (qState && qState.identity && qState.identity.location) || (snap.reportMeta && snap.reportMeta.location) || '');
     sv('report-designer', (qState && qState.identity && qState.identity.designer) || (snap.reportMeta && snap.reportMeta.designer) || '');
     sv('report-language', (qState && qState.identity && qState.identity.reportLanguage) || (snap.reportMeta && snap.reportMeta.language) || 'auto');
-    sv('qs-inst', (qState && qState.settings && qState.settings.instPct) || snap.instPct || 10);
+    sv('qs-inst', (qState && qState.settings && qState.settings.instPct != null) ? qState.settings.instPct : (snap.instPct != null ? snap.instPct : 10));
     sv('qs-validity', (qState && qState.settings && qState.settings.qsValidity) || snap.qsValidity || 14);
     sv('qs-notes', (qState && qState.settings && qState.settings.qsNotes !== undefined) ? qState.settings.qsNotes : (snap.qsNotes || ''));
     sv('duct-vel-sup', snap.ductVelSup || 1000);
@@ -602,7 +608,7 @@
       localStorage.setItem('acp9q', JSON.stringify((qState && qState.lines) || snap.qlines || []));
       localStorage.setItem('acp9qs', JSON.stringify({
         vatOn: (qState && qState.settings && qState.settings.vatOn !== undefined) ? qState.settings.vatOn : snap.vatOn,
-        instPct: (qState && qState.settings && qState.settings.instPct) || snap.instPct,
+        instPct: (qState && qState.settings && qState.settings.instPct != null) ? qState.settings.instPct : snap.instPct,
         qsValidity: (qState && qState.settings && qState.settings.qsValidity) || snap.qsValidity,
         qsNotes: (qState && qState.settings && qState.settings.qsNotes !== undefined) ? qState.settings.qsNotes : snap.qsNotes
       }));

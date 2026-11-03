@@ -3,7 +3,7 @@
 //   Network-first for index.html
 //   Cache-first for static assets
 
-const CACHE_NAME = 'aircalcpro-v27-catalogue-explorer';
+const CACHE_NAME = 'aircalcpro-v28-audit-integrity';
 
 const PRECACHE_ASSETS = [
   './',
@@ -24,6 +24,28 @@ const PRECACHE_ASSETS = [
   './assets/equipment-types/floor.webp',
   './app.js',
   './main.js',
+  './data.bootstrap.js',
+  './modules/hvac-design-copilot.js',
+  './modules/equipment-selector.js',
+  './modules/equipment-database.js',
+  './modules/engineering-agent.js',
+  './modules/rooms.js',
+  './js/copilot/copilot-review-store.js',
+  './js/copilot/copilot-ai-adapter.js',
+  './js/copilot/copilot-health-engine.js',
+  './js/copilot/copilot-state-adapter.js',
+  './data/equipment-records.sample.js',
+  './data/equipment-records.real.js',
+  './data/equipment-manufacturers.js',
+  './js/reports/professional-report-data-builder.js',
+  './js/ai/ai-explanation-client.js',
+  './js/ai/ai-config.js',
+  './js/equipment/equipment-selection-engine.js',
+  './js/equipment/equipment-import.js',
+  './js/equipment/equipment-catalogue.js',
+  './js/equipment/equipment-schema.js',
+  './js/knowledge/engineering-knowledge-base.js',
+  './js/core/engineering-calculation-engine.js',
   './js/firebase-auth.js',
   './data.json',
   './data/equipment-source-evidence.js',
@@ -104,61 +126,47 @@ self.addEventListener('activate', function (event) {
   );
 });
 
-// Fetch
+// Cache each resource under its own URL. A script must never overwrite HTML.
 self.addEventListener('fetch', function (event) {
   if (event.request.method !== 'GET') return;
-
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
-
   const pathname = url.pathname;
-  const isHTML =
-    pathname.endsWith('.html') ||
-    pathname.endsWith('/') ||
-    pathname.indexOf('/app') !== -1 ||
-    pathname === '/ashreacalculator/' ||
-    pathname === '/ashreacalculator';
+  const isHTML = event.request.mode === 'navigate' || event.request.destination === 'document' ||
+    pathname.endsWith('.html') || pathname.endsWith('/') || pathname.endsWith('/app');
+  const isCodeOrData = /\.(?:js|css|json|webmanifest)$/.test(pathname);
 
-  if (isHTML) {
-    event.respondWith(
-      fetch(event.request)
-        .then(function (response) {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(function (cache) {
-              cache.put(event.request, clone);
-              cache.put('./index.html', clone.clone());
-            });
-          }
-          return response;
-        })
-        .catch(function () {
-          return caches.match(event.request)
-            .then(function (cached) {
-              if (cached) return cached;
-              if (pathname.indexOf('/app') !== -1) {
-                return caches.match('./app/index.html') || caches.match('./app/');
-              }
-              return caches.match('./index.html') || caches.match('./');
-            });
-        })
-    );
-    return;
+  async function cachedResponse() {
+    var cached = await caches.match(event.request);
+    if (!cached) cached = await caches.match(event.request, { ignoreSearch:true });
+    if (cached || !isHTML) return cached;
+    var appPage = pathname.endsWith('/app') || pathname.indexOf('/app/') !== -1;
+    return (await caches.match(appPage ? './app/index.html' : './index.html')) ||
+      (await caches.match(appPage ? './app/' : './'));
   }
 
-  event.respondWith(
-    caches.match(event.request).then(function (cached) {
-      if (cached) return cached;
+  async function fromNetwork() {
+    var response = await fetch(event.request);
+    if (response && response.status === 200) {
+      var copy = response.clone();
+      event.waitUntil(caches.open(CACHE_NAME).then(function(cache){ return cache.put(event.request, copy); }));
+    }
+    return response;
+  }
 
-      return fetch(event.request).then(function (response) {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(event.request, clone);
-          });
-        }
-        return response;
-      });
-    })
-  );
+  if (isHTML || isCodeOrData) {
+    event.respondWith((async function(){
+      try {
+        var response = await fromNetwork();
+        if (response && response.ok) return response;
+        return (await cachedResponse()) || response;
+      } catch (_err) {
+        return (await cachedResponse()) || new Response('Offline resource unavailable', { status:503 });
+      }
+    })());
+    return;
+  }
+  event.respondWith((async function(){
+    return (await cachedResponse()) || fromNetwork();
+  })());
 });

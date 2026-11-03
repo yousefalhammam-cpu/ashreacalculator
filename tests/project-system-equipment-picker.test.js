@@ -85,7 +85,7 @@ assert.ok(indexHtml.includes('<option value="window">Window</option>'), 'selecto
 assert.ok(indexHtml.includes('data/equipment-records.real.js?v=20260725g'), 'index should load real equipment seed records.');
 assert.ok(indexHtml.includes('modules/equipment-selector.js?v=20260725c'), 'index should load the updated equipment selector script.');
 assert.ok(indexHtml.includes('onclick="applyBestProjectSystemAutomatically()"'), 'project auto-select CTA should call the deterministic project unit selector.');
-assert.ok(indexHtml.includes('app.js?v=20261001a'), 'index should load the updated app script.');
+assert.ok(indexHtml.includes('app.js?v=20261103a'), 'index should load the updated app script.');
 assert.ok(indexHtml.includes('styles.css?v=20261001a'), 'index should load the updated stylesheet.');
 assert.ok(!indexHtml.includes('desktop-export-pdf-label'), 'topbar should not expose a generic PDF button; exports should live inside their workflow pages.');
 assert.ok(!indexHtml.includes('xlsx.full.min.js'), 'index should not load the Excel CDN during startup.');

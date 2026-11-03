@@ -102,9 +102,11 @@
       totalAch: r.tach,
       outdoorAch: r.oach,
       pressure: r.pres,
+      freshAirMode: typeof getFreshAirMode === 'function' ? getFreshAirMode() : 'ashrae',
       peopleCount: ppl,
       deviceLoadBtuh: devb
     });
+    if(eng && !eng.ok) return eng;
     var ft3  = (H ? H.m3toft3(vol) : vol * 35.3147);
     var sup  = eng && eng.ok ? eng.supplyCfm : Math.round((r.tach * ft3) / 60);
     var oa   = eng && eng.ok ? eng.outdoorAirCfm : Math.round((r.oach * ft3) / 60);
@@ -154,7 +156,7 @@
     var hcCard = G('hc-card'); if (hcCard) hcCard.style.display = 'block';
 
     if (typeof saveHist === 'function') {
-      saveHist(vol, ppl, tr, sup, total, mkt, devb, { sup: sup, oa: oa, exh: exh, pres: r.pres });
+      saveHist(vol, ppl, tr, sup, total, mkt, devb, { sup:sup, oa:oa, outdoorAirCfm:oa, outdoorAch:r.oach, oaStd:r.oach, ach:r.tach, airflowSchemaVersion:2, freshAirMode:typeof getFreshAirMode === 'function' ? getFreshAirMode() : 'ashrae', recirc:Math.max(0,sup-oa), exh:exh, pres:r.pres, finalLoadVerified:false, airflowBalanceVerified:false });
     }
 
     var aw = G('add-quote-wrap'); if (aw) aw.style.display = 'block';

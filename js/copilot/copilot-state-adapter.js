@@ -32,7 +32,7 @@
         name: room.ar || room.en || room.roomType || ('Room ' + (index + 1)),
         btu: toNumber(room.btu || room.requiredBtu || room.finalBtu),
         cfm: toNumber(room.cfm || room.requiredCfm),
-        outdoorAirCfm: toNumber(room.oa || room.outdoorAirCfm),
+        outdoorAirCfm: toNumber(room.outdoorAirCfm != null ? room.outdoorAirCfm : room.oa),
         exhaustCfm: toNumber(room.exh || room.exhaustCfm),
         roomType: room.roomType || room.category || '',
         mode: room.calcMode || room.mode || '',

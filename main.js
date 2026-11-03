@@ -46,7 +46,7 @@
     // Quote settings
     var qs = AS.restoreQuoteSettings();
     if (qs.vatOn      !== undefined) S.vatOn      = qs.vatOn;
-    if (qs.instPct)                  S.instPct    = qs.instPct;
+    if (qs.instPct != null)                  S.instPct    = qs.instPct;
     if (qs.qsValidity)               S.qsValidity = qs.qsValidity;
     if (qs.qsNotes    !== undefined) S.qsNotes    = qs.qsNotes;
 
@@ -90,7 +90,7 @@
     S.qlines = S.qlines.slice(0, S.hist.length);
     var qs = H.safeJSONParse(localStorage.getItem('acp9qs'), {});
     if (qs.vatOn !== undefined) S.vatOn = qs.vatOn;
-    if (qs.instPct)             S.instPct = qs.instPct;
+    if (qs.instPct != null)             S.instPct = qs.instPct;
     if (qs.qsValidity)          S.qsValidity = qs.qsValidity;
     if (qs.qsNotes !== undefined) S.qsNotes = qs.qsNotes;
     var qm = localStorage.getItem('acp9mode');
@@ -380,10 +380,12 @@
 
     function getRoomSystemState(i) {
       var room = hist[i] || {};
+      if(window.AppStorage && window.AppStorage.normalizeRoomRecord) window.AppStorage.normalizeRoomRecord(room);
       var requiredBtu = getRoomRequiredBtu(i);
       var requiredCfm = getRoomRequiredCfm(i);
       var systems = ensureRoomSystems(i).map(normalizeQuoteSystem);
       var selectedCapacityBtu = systems.reduce(function(sum, system) {
+        if(typeof getSelectedInstalledCapacity === 'function') return sum + getSelectedInstalledCapacity(system);
         var btu = typeof toSystemBtu === 'function' ? toSystemBtu(system.selectedBtu) : (parseInt(system.selectedBtu, 10) || 0);
         return sum + (btu * Math.max(1, parseInt(system.qty, 10) || 1));
       }, 0);

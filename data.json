@@ -120,14 +120,14 @@
       "tach": 20,
       "pres": "positive",
       "tr": [
-        18,
-        26
+        20,
+        24
       ],
       "rh": [
         20,
         60
       ],
-      "note": "Operating room."
+      "note": "ASHRAE Handbook 2023, Healthcare Facilities, sample of Standard 170-2021: 20-24 C (rounded). Confirm governing edition and project requirements."
     },
     "h_or_sub": {
       "id": "h_or_sub",
@@ -2581,6 +2581,15 @@
       "exhaust": 10,
       "pressure": "Negative",
       "notes": "Draft sterile processing baseline"
+    },
+    "residential": {
+      "category": "non_clinical",
+      "roomType": "Residential",
+      "ach": null,
+      "oa": null,
+      "exhaust": null,
+      "pressure": "Neutral",
+      "notes": "Preliminary residential estimate; project ventilation and detailed load design required"
     }
   },
   "ROOM_EQUIPMENT_PRESETS": {
@@ -2677,7 +2686,8 @@
       "printer"
     ],
     "waiting_area": [],
-    "corridor": []
+    "corridor": [],
+    "residential": []
   },
   "ENGINEERING_SOURCE_STATUS": {
     "healthcareRoomValues": {

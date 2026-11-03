@@ -76,7 +76,8 @@
   function validateNonNegative(input, fields) {
     var errors = [];
     fields.forEach(function (field) {
-      if (number(input[field], 0) < 0) errors.push(field + ' must be non-negative.');
+      if (input[field] == null) return;
+      if (!Number.isFinite(Number(input[field])) || Number(input[field]) < 0) errors.push(field + ' must be a finite non-negative number.');
     });
     return errors;
   }
@@ -259,6 +260,7 @@
     var volumeM3 = nonNegative(input.volumeM3);
     var totalAch = nonNegative(input.totalAch);
     var outdoorAch = nonNegative(input.outdoorAch);
+    if (outdoorAch > totalAch) return { ok:false, errors:['outdoorAch cannot exceed totalAch.'] };
     var freshAirMode = input.freshAirMode === 'fresh100' ? 'fresh100' : 'ashrae';
     var supplyCfm = airflowFromAch(volumeM3, totalAch);
     var outdoorAirCfm = freshAirMode === 'fresh100'
@@ -285,6 +287,10 @@
       outdoorAirCfm: outdoorAirCfm,
       recirculatedCfm: recirculatedCfm,
       exhaustCfm: exhaustCfm,
+      loadMethod: 'preliminary_airflow_proxy',
+      finalLoadVerified: false,
+      airflowBalanceVerified: false,
+      warnings: ['Outdoor-air conditioning, latent load and pressure balance are not established by this estimate.'],
       baseBtuh: baseBtuh,
       peopleBtuh: peopleBtuh,
       deviceLoadBtuh: deviceLoadBtuh,
@@ -378,17 +384,14 @@
       if (!h) return;
       var w = Math.max(minSide, Math.ceil((areaMm2 / h) / 50) * 50);
       var ratio = Math.max(w, h) / Math.min(w, h);
-      if (w <= maxSide && ratio <= maxAspectRatio) {
+      if (w <= maxSide && h >= minSide && h <= maxSide && ratio <= maxAspectRatio) {
         var cand = makeDuctCandidate(w, h, areaMm2, cfm, 'calc');
         if (!best || cand.score < best.score) best = cand;
       }
     });
 
-    if (!best) {
-      var fallbackHeight = 800;
-      var fallbackWidth = Math.max(minSide, Math.ceil((areaMm2 / fallbackHeight) / 50) * 50);
-      best = makeDuctCandidate(fallbackWidth, fallbackHeight, areaMm2, cfm, 'calc');
-    }
+    if (!best) best = stdBest;
+    if (!best) return { ok:false, errors:['No duct size satisfies the specified size and aspect-ratio limits.'] };
 
     return { ok: true, calc: best, std: stdBest || best };
   }

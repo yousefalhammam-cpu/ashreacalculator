@@ -584,7 +584,7 @@ function initApp(){
   try{
     var _qs = AppStorage.restoreQuoteSettings();
     if(_qs.vatOn !== undefined) vatOn = _qs.vatOn;
-    if(_qs.instPct) instPct = _qs.instPct;
+    if(_qs.instPct != null) instPct = _qs.instPct;
     if(_qs.qsValidity) qsValidity = _qs.qsValidity;
     if(_qs.qsNotes !== undefined) qsNotes = _qs.qsNotes;
   }catch(e){}
@@ -767,7 +767,7 @@ function qsPersist(){
   var qsNotesEl = G('qs-notes');
 
   vatOn = vatTog ? vatTog.classList.contains('on') : true;
-  instPct = qsInstEl ? (parseInt(qsInstEl.value) || 10) : 10;
+  instPct = getInstallationPercent();
   qsValidity = qsValidityEl ? (parseInt(qsValidityEl.value) || 14) : 14;
   qsNotes = qsNotesEl ? (qsNotesEl.value || '') : '';
 
@@ -1030,9 +1030,9 @@ var T = {
       tnov:'⚠️ أدخل أبعاد الغرفة أولاً',tcalc:'✅ تم الحساب',tclr:'🗑️ تم المسح',
       slang:'اللغة / Language',slsub:'تبديل واجهة اللغة',
       hcttl:'ASHRAE 170 — تدفق الهواء',
-      hcach:'إجمالي ACH',hcsup:'تدفق الإمداد',hcoa:'هواء خارجي',hcrec:'هواء راجع',hcexh:'تدفق العادم',
+      hcach:'إجمالي ACH',hcsup:'تدفق الإمداد',hcoa:'هواء خارجي',hcrec:'هواء راجع',hcexh:'تدفق سحب تقديري (راجع/عادم)',
       lfhelper:'تقدير سريع — لا يستبدل الحساب التفصيلي',
-      freshairmode:'وضع الهواء النقي',freshairashrae:'حسب ASHRAE',freshair100:'هواء نقي 100%',freshairwarning:'وضع 100% هواء نقي يزيد الحمل واستهلاك الطاقة ويتطلب مراجعة مهندس.',
+      freshairmode:'وضع الهواء النقي',freshairashrae:'حسب ASHRAE',freshair100:'هواء نقي 100%',freshairwarning:'هذا الوضع يغير تدفق الهواء الخارجي فقط؛ الحمل المعروض تقدير أولي لا يشمل معالجة الهواء الخارجي والرطوبة. يلزم حساب ملف تبريد مستقل.',
       exporthap:'تصدير إلى HAP',haprooms:'الغرف',hapsummary:'الملخص',hapmeta:'البيانات',calcmode:'وضع الحساب',ashraehc:'ASHRAE للرعاية الصحية',loadmode:'معامل حمل سريع',freshairlabel:'وضع الهواء النقي',mixedair:'حسب ASHRAE',fresh100lbl:'هواء نقي 100%',
       ppos:'ضغط موجب ▲',pneg:'ضغط سالب ▼',pneu:'ضغط محايد',
       vcfm:'تدفق الإمداد',cumttl:'الإجمالي التراكمي لعدة غرف',histttl:'سجل الغرف',
@@ -1062,9 +1062,9 @@ var T = {
       tnov:'⚠️ Enter room dimensions first',tcalc:'✅ Calculated',tclr:'🗑️ Cleared',
       slang:'Language',slsub:'Switch interface language',
       hcttl:'ASHRAE 170 — Airflow',
-      hcach:'Total ACH',hcsup:'Supply CFM',hcoa:'Outdoor Air CFM',hcrec:'Recirculated CFM',hcexh:'Exhaust CFM',
+      hcach:'Total ACH',hcsup:'Supply CFM',hcoa:'Outdoor Air CFM',hcrec:'Recirculated CFM',hcexh:'Estimated extract (return/exhaust)',
       lfhelper:'Quick estimate — not a substitute for detailed calculation',
-      freshairmode:'Fresh Air Mode',freshairashrae:'ASHRAE Mixed Air',freshair100:'100% Fresh Air',freshairwarning:'100% Fresh Air increases load and energy use. Engineer review required.',
+      freshairmode:'Fresh Air Mode',freshairashrae:'ASHRAE Mixed Air',freshair100:'100% Fresh Air',freshairwarning:'This mode changes outdoor airflow only. The displayed preliminary load excludes outdoor-air conditioning and humidity treatment. A separate cooling-coil load calculation is required.',
       exporthap:'Export to HAP',haprooms:'Rooms',hapsummary:'Summary',hapmeta:'Metadata',calcmode:'Calculation Mode',ashraehc:'ASHRAE Healthcare',loadmode:'Load Factor Estimate',freshairlabel:'Fresh Air Mode',mixedair:'ASHRAE Mixed Air',fresh100lbl:'100% Fresh Air',
       ppos:'Positive Pressure ▲',pneg:'Negative Pressure ▼',pneu:'Neutral Pressure',
       vcfm:'Supply CFM',cumttl:'Cumulative Total — Multiple Rooms',histttl:'Quotation',
@@ -1084,7 +1084,7 @@ Object.assign(T.ar,{
   rmtotal:'إجمالي الغرف',
   cmhc:'وضع الحساب: ASHRAE للرعاية الصحية',
   cmrot:'وضع الحساب: تقدير المدينة',
-  cmhcsub:'معايير ASHRAE محفوظة لهذه الغرفة — لا يتم استبدال تهوية ASHRAE بعوامل التقدير العامة.',
+  cmhcsub:'تدفقات مبدئية حسب بيانات الغرفة؛ الحمل تقدير من تدفق الهواء ولا يشمل حمل الهواء الخارجي أو إزالة الرطوبة. يلزم تحقق هندسي من المرجع والتصميم.',
   cmrotsub:'تقدير المدينة والعزل والنوافذ والإشغال مستخدم لهذه الغرفة قبل تنفيذ الحساب.',
   step1:'الخطوة 1',
   step2:'الخطوة 2',
@@ -1191,7 +1191,7 @@ Object.assign(T.en,{
   rmtotal:'All Rooms Total',
   cmhc:'Calculation Mode: ASHRAE Healthcare',
   cmrot:'Calculation Mode: City Estimate',
-  cmhcsub:'ASHRAE standards are preserved for this room — ventilation is not replaced by general estimate inputs.',
+  cmhcsub:'Preliminary room-data airflows. Load is an airflow-based estimate excluding outdoor-air conditioning and dehumidification; reference and design verification are required.',
   cmrotsub:'City factor, insulation, windows, and occupancy are used for this room before calculation.',
   step1:'Step 1',
   step2:'Step 2',
@@ -1568,12 +1568,12 @@ function getSelectedSystemsAirflowCfm(i){
 function getRoomQuoteSubtotal(i){
   var assignment = getRoomAssignment(i);
   if(assignment.mode !== 'independent') return 0;
-  return hasRoomSystems(i) ? getRoomSystemsSubtotal(i) : (getQty(i) * getUP(i));
+  return hasRoomSystems(i) ? getRoomSystemsSubtotal(i) : 0;
 }
 function getRoomQuoteTotalQty(i){
   var assignment = getRoomAssignment(i);
   if(assignment.mode !== 'independent') return 0;
-  return hasRoomSystems(i) ? getRoomSystemsQty(i) : getQty(i);
+  return hasRoomSystems(i) ? getRoomSystemsQty(i) : 0;
 }
 function getRoomModeQuoteTotals(){
   var totalQty = 0, subtotal = 0;
@@ -2112,9 +2112,9 @@ function evaluateAshraeGuidedValidation(roomState, room){
     );
   }
   var detail = lang==='ar'
-    ? 'تمت مراجعة ACH/OA/Exhaust/Pressure بشكل استرشادي' + (pressureReq ? ' — الضغط: ' + pressureReq : '') + '.'
-    : 'ACH/OA/Exhaust/Pressure reviewed as an ASHRAE-guided check' + (pressureReq ? ' — pressure: ' + pressureReq : '') + '.';
-  return buildValidationItem(lang==='ar' ? 'تحقق مسترشد بـ ASHRAE' : 'ASHRAE-guided check', pressureReq ? 'pass' : 'warning', detail, baseValues);
+    ? 'تدفق الإمداد يحقق التقدير المسجل؛ يلزم تحقق مستقل من إصدار المرجع والهواء الخارجي والفلترة واتزان الضغط والرطوبة والحمل الكامن.'
+    : 'Supply meets the recorded estimate; standard edition, outdoor air, filtration, pressure balance, humidity and latent load require independent verification.';
+  return buildValidationItem(lang==='ar' ? 'تحقق مسترشد بـ ASHRAE' : 'ASHRAE-guided check', 'warning', detail, baseValues);
 }
 function evaluateDuctVelocityValidation(selectedCfm, isDuctedSystem){
   var thresholds = getEngineeringValidationThresholds();
@@ -2128,6 +2128,7 @@ function evaluateDuctVelocityValidation(selectedCfm, isDuctedSystem){
   var retDuct = calcDuctSize(sizing.retCfm || selectedCfm, retTarget, 'ret');
   var sup = supDuct ? (supDuct.std || supDuct.calc) : null;
   var ret = retDuct ? (retDuct.std || retDuct.calc) : null;
+  if(!sup || !ret) return buildValidationItem(lang==='ar' ? 'فحص سرعة المجرى' : 'Duct Velocity Check', 'fail', lang==='ar' ? 'لا يوجد مقاس مجرى صالح ضمن الحدود؛ راجع المقاسات أو قسم مسارات الهواء.' : 'No valid duct size within the limits; review dimensions or split the air paths.');
   var supFpm = sup && sup.actualFpm ? sup.actualFpm : supTarget;
   var retFpm = ret && ret.actualFpm ? ret.actualFpm : retTarget;
   var worst = Math.max(supFpm, retFpm);
@@ -5816,7 +5817,7 @@ function buildHvacScenarioProjectInput(){
   var roomCount = Math.max(0, hist.length || 0);
   var peak = getProjectReferenceRoomLoad();
   var outdoorAirCfm = hist.reduce(function(sum, room){
-    return sum + (Number((room || {}).oaStd || (room || {}).oa || (room || {}).outdoorAirCfm || (room || {}).freshAirCfm || 0) || 0);
+    return sum + (Number((room || {}).outdoorAirCfm != null ? room.outdoorAirCfm : ((room || {}).oa || (room || {}).freshAirCfm || 0)) || 0) * Math.max(1, Number((room || {}).roomCount) || 1);
   }, 0);
   var healthcareRooms = hist.filter(function(room){ return isHealthcareRoom(room); }).length;
   return {
@@ -7362,7 +7363,7 @@ function applyLangInputsAndLabels(){
 
   var isl = G('qs-instl');
   if (isl){
-    var ip2 = parseInt((G('qs-inst') || { value:'10' }).value, 10) || 10;
+    var ip2 = getInstallationPercent();
     isl.textContent = t('qsinstl') + ' (' + ip2 + '%)';
   }
 
@@ -8989,7 +8990,7 @@ function getSelectedCityKey(){
 }
 
 function isHealthcareRoom(room){
-  return !!(room && room.mode === 'hc');
+  return !!(room && (room.mode === 'hc' || room.calcMode === 'hc' || /^h_/.test(room.rid || room.id || '')));
 }
 
 function isMosqueRoom(room){
@@ -9246,7 +9247,10 @@ function getRoomCount(){
   return Math.max(1,n||1);
 }
 function doCalc(silentMode){
-  var wasEditing = editIdx >= 0;
+  if(roomLiveSyncTimer){ clearTimeout(roomLiveSyncTimer); roomLiveSyncTimer = null; }
+  var editingIndex = editIdx;
+  var wasEditing = editingIndex >= 0;
+  if(silentMode && !wasEditing) return;
   var volState=setRoomVolumeFromDimensions();
   if(curRoom && curRoom.mode !== 'hc' && !peopleManualOverride) syncPeopleEstimate(true);
   var vol=volState.volume||0;
@@ -9264,6 +9268,7 @@ function doCalc(silentMode){
   });
   if(curRoom.mode==='hc') calcHC(vol,ppl,silentMode);
   else calcROT(vol,ppl,silentMode);
+  if(wasEditing) editIdx = editingIndex;
   if(!wasEditing){
     setTimeout(function(){
       resetCalcEntryForm();
@@ -9288,6 +9293,7 @@ function calcROT(vol,ppl,silentMode){
     peopleCount: ppl,
     deviceLoadBtuh: devb
   }) : null;
+  if(eng && !eng.ok){ toast(eng.errors.join(' ')); return; }
   var base=eng && eng.ok ? eng.baseBtuh : vol*effectiveFactor*insulation.multiplier;
   var pplb=eng && eng.ok ? eng.peopleBtuh : ppl*400;
   var sub=eng && eng.ok ? eng.subtotalBtuh : base+windowLoad+pplb+devb;
@@ -9357,6 +9363,7 @@ function calcHC(vol,ppl,silentMode){
     peopleCount: ppl,
     deviceLoadBtuh: devb
   }) : null;
+  if(eng && !eng.ok){ toast(eng.errors.join(' ')); return; }
   var ft3=m3toft3(vol);
   var sup=eng && eng.ok ? eng.supplyCfm : Math.round((r.tach*ft3)/60);
   var oa=eng && eng.ok ? eng.outdoorAirCfm : (freshMode === 'fresh100' ? Math.round((r.tach*ft3)/60) : Math.round((r.oach*ft3)/60));
@@ -9398,7 +9405,14 @@ function calcHC(vol,ppl,silentMode){
     category:'support_clinical',
     roomType:r.en || r.ar || 'Healthcare Room',
     ach:r.tach || null,
-    oa:r.oach || null,
+    outdoorAirCfm:oa,
+    outdoorAch:r.oach || 0,
+    oaAch:r.oach || 0,
+    oaStd:r.oach || 0,
+    airflowSchemaVersion:2,
+    loadMethod:'preliminary_airflow_proxy',
+    finalLoadVerified:false,
+    airflowBalanceVerified:false,
     tempRange:Array.isArray(r.tr) ? r.tr.slice() : null,
     rhRange:Array.isArray(r.rh) ? r.rh.slice() : null,
     exhaust:exh || null,
@@ -9419,6 +9433,7 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     rid:curRoom.id, ar:curRoom.ar, en:curRoom.en,
     vol:vol, ppl:ppl, peopleCount:ppl, roomCount:roomCount, loadFactor:isHCMode ? 0 : getSelectedLoadFactor(),
     calcMode: isHCMode ? 'hc' : 'rot',
+    mode: isHCMode ? 'hc' : 'rot',
     dims:lastRoomDims,
     devSum:eq.text,
     devBtu:eq.totalBtu,
@@ -9431,7 +9446,9 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
     Object.keys(hcdata).forEach(function(key){
       if(hcdata[key] !== undefined) rec[key] = hcdata[key];
     });
-    if(hcdata.oa != null) rec.oaStd = hcdata.oa;
+    if(hcdata.oaStd != null) rec.oaStd = hcdata.oaStd;
+    else if(hcdata.outdoorAch != null) rec.oaStd = hcdata.outdoorAch;
+    else if(!isHCMode && hcdata.oa != null) rec.oaStd = hcdata.oa;
   }
   var _copies = Math.max(1, parseInt(rec.roomCount,10) || 1);
   function _makeExpandedRecords(baseRec){
@@ -9495,6 +9512,7 @@ function saveHist(vol,ppl,tr,cfm,totalBtu,mkt,devBtu,hcdata){
 }
 
 function resetCalcEntryForm(){
+  if(roomLiveSyncTimer){ clearTimeout(roomLiveSyncTimer); roomLiveSyncTimer = null; }
   curRoom = null;
   document.querySelectorAll('#dd-room .dd-item').forEach(function(item){
     item.classList.remove('sel');
@@ -9516,6 +9534,7 @@ function resetCalcEntryForm(){
   setFreshAirMode('ashrae');
   updateFactorInputsUI();
   updateCalculationModeUI(null);
+  renderSelectedRoomPreview();
   devs = [];
   renderDevs();
   G('breakdown').classList.remove('show');
@@ -9543,7 +9562,10 @@ var roomLiveSyncTimer = null;
 function scheduleLiveRoomSync(){
   if(editIdx < 0 || !curRoom) return;
   if(roomLiveSyncTimer) clearTimeout(roomLiveSyncTimer);
+  var targetIndex = editIdx, targetRecord = hist[editIdx], targetRoom = curRoom;
   roomLiveSyncTimer = setTimeout(function(){
+    roomLiveSyncTimer = null;
+    if(editIdx !== targetIndex || hist[targetIndex] !== targetRecord || curRoom !== targetRoom) return;
     doCalc(true);
   }, 180);
 }
@@ -10427,6 +10449,8 @@ function delRec(idx){
   if(window.AppProjects&&window.AppProjects.updateNavDots) window.AppProjects.updateNavDots();
 }
 function editRec(idx){
+  if(roomLiveSyncTimer){ clearTimeout(roomLiveSyncTimer); roomLiveSyncTimer = null; }
+  editIdx = -1;
   var h=hist[idx]; if(!h) return;
   calcRoomsOpenIdx = idx;
   goPanel('calc');
@@ -11163,7 +11187,7 @@ function renderQuote(){
         recommendationHtml+
       '</div>';
     if(list) list.appendChild(item);
-    if(quoteView && quoteMode!=='proj'){
+    if(quoteView && quoteMode!=='proj' && hasMixedSystems){
       var ro=document.createElement('div');
       ro.className='quote-readonly-card';
       if(hasMixedSystems){
@@ -11270,10 +11294,16 @@ function setUnitType(i,v){
 
 function setUp(i,v){ if(!qlines[i]) qlines[i]={qty:1,up:0}; qlines[i].up=parseFloat(v)||0; save(); var e=G('qlt-'+i); if(e) e.textContent=money(getRoomQuoteSubtotal(i)); refreshGrandTotal(); }
 
+function getInstallationPercent(){
+  var el = G('qs-inst');
+  var value = el && el.value !== '' ? Number(el.value) : Number(instPct);
+  return Number.isFinite(value) && value >= 0 ? value : 10;
+}
+
 function refreshGrandTotal(){
   var roomTotals = getRoomModeQuoteTotals();
   var totalQty = roomTotals.totalQty, subtotal = roomTotals.subtotal;
-  var ip=parseInt((G('qs-inst')||{value:'10'}).value)||10;
+  var ip=getInstallationPercent();
   var instAmt=subtotal*ip/100;
   var vatBase=subtotal+instAmt;
   var vatAmt=vatOn?vatBase*0.15:0;
@@ -11294,7 +11324,7 @@ function exportCSV(){
   var proj=G('quote-project').value.trim()||(lang==='ar'?'\u063a\u064a\u0631 \u0645\u062d\u062f\u062f':'Untitled');
   var qno=G('quote-no').value.trim()||'Q-001';
   var today=new Date().toISOString().slice(0,10);
-  var ip=parseInt((G('qs-inst')||{value:'10'}).value)||10;
+  var ip=getInstallationPercent();
   var vd=parseInt((G('qs-validity')||{value:'14'}).value)||14;
   var notes=(G('qs-notes')||{value:''}).value||'';
   var quoteTotals = getRoomModeQuoteTotals();
@@ -11606,7 +11636,7 @@ function invCommon(){
   var proj = (G('quote-project')||{value:''}).value.trim()||(lang==='ar'?'غير محدد':'Untitled');
   var qno  = (G('quote-no')||{value:''}).value.trim()||'Q-001';
   var today = new Date().toLocaleDateString(lang==='ar'?'ar-SA':'en-GB');
-  var ip = parseInt(((G('qs-inst')||{value:'10'})).value)||10;
+  var ip = getInstallationPercent();
   var validDays = parseInt(((G('qs-validity')||{value:'14'})).value)||14;
   var validLabel = lang==='ar'
     ? validDays+(validDays===7?' أيام':' يوم')
@@ -11851,7 +11881,7 @@ function buildPage2(c){
           '<div class="hc-item"><div class="hc-lbl">OA ACH</div><div class="hc-val">'+(h.oaStd!=null?h.oaStd:'—')+'</div></div>'+
         '</div>'+
         '<div class="hc-grid" style="margin-top:8px">'+
-          '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'العادم':'Exhaust')+'</div><div class="hc-val">'+(h.exhaust!=null?h.exhaust:'—')+'</div></div>'+
+          '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'سحب تقديري (راجع/عادم)':'Estimated extract (return/exhaust)')+'</div><div class="hc-val">'+(h.exhaust!=null?h.exhaust:'—')+'</div></div>'+
           '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'الضغط':'Pressure')+'</div><div class="hc-val">'+(h.pressure||'—')+'</div></div>'+
           '<div class="hc-item"><div class="hc-lbl">'+t('freshairlabel')+'</div><div class="hc-val">'+(h.freshAirMode==='fresh100'?t('fresh100lbl'):h.calcMode==='hc'?t('mixedair'):'—')+'</div></div>'+
           '<div class="hc-item"><div class="hc-lbl">'+(c.isAr?'الفئة':'Category')+'</div><div class="hc-val">'+(h.category?getCategoryLabel(h.category):'—')+'</div></div>'+
@@ -12920,12 +12950,7 @@ function getRoomModeSelectedEquipmentSummary(){
       }, 0);
       continue;
     }
-    var legacyBtu = (parseInt(getSelBtu(i),10)||0) * Math.max(1, parseInt(getQty(i),10)||1);
-    if(legacyBtu > 0){
-      totalBtu += legacyBtu;
-      totalCfm += (legacyBtu / 12000) * getCurrentCfmPerTr();
-      unitCount += Math.max(1, parseInt(getQty(i),10)||1);
-    }
+
   }
   return {
     btu: totalBtu,
@@ -13355,7 +13380,7 @@ refreshGrandTotal = function(){
       return sum + ((draft.lines || []).filter(function(line){ return line && line.key === 'equipment'; })[0] || { quantity:0 }).quantity;
     }, 0);
   }
-  var ip=parseInt((G('qs-inst')||{value:'10'}).value)||10;
+  var ip=getInstallationPercent();
   var instAmt=quoteMode === 'proj' ? 0 : subtotal*ip/100;
   var discount = quoteMode === 'proj' ? getProjectQuotationDrafts().reduce(function(sum, draft){ return sum + getQuotationDraftTotals(draft).discount; }, 0) : 0;
   var vatBase=Math.max(0, subtotal+instAmt-discount);
@@ -14547,6 +14572,7 @@ function _makeDuctCandidate(ww, hh, areaMm2, cfm, velocityFpm, method){
 function calcDuctSize(cfm, velocityFpm, side){
   var manual = side && projState && projState.ductDimensions && projState.ductDimensions[side];
   if(manual && cfm > 0 && velocityFpm > 0 && manual.w >= 150 && manual.h >= 150){
+    if(manual.w > 1800 || manual.h > 1800 || Math.max(manual.w,manual.h)/Math.min(manual.w,manual.h) > ASHRAE_RECT_MAX_RATIO) return null;
     var candidate = _makeDuctCandidate(manual.w, manual.h, cfm / velocityFpm * 92903.04, cfm, velocityFpm, 'manual');
     return {calc:candidate, std:candidate};
   }
@@ -14593,12 +14619,8 @@ function calcDuctSize(cfm, velocityFpm, side){
     }
   }
 
-  if(!best){
-    var h2 = 800;
-    var wRaw2 = areaMm2 / h2;
-    var w2 = Math.max(minSide, Math.ceil(wRaw2 / 50) * 50);
-    best = _makeDuctCandidate(w2, h2, areaMm2, cfm, velocityFpm, 'calc');
-  }
+  if(!best) best = stdBest;
+  if(!best) return null;
 
   return {calc:best, std:stdBest || best};
 }
