@@ -79,6 +79,23 @@ figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
 @media(max-width:840px){.nav{display:none}.hero-grid{grid-template-columns:1fr;gap:2rem}.frame{width:min(100%,590px);margin-inline:auto}.grid{grid-template-columns:1fr}}
 @media(max-width:450px){.wrap{width:calc(100% - 2rem)}.bar{gap:.4rem}.actions{gap:.35rem}.actions .btn,.lang{padding-inline:.57rem;font-size:.85rem}.brand{font-size:1rem}.frame{padding:8px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+.quick-panel{padding:clamp(1.15rem,4vw,2.5rem);border:1px solid #38506a;border-radius:20px;background:var(--panel)}
+.quick-copy{color:var(--muted);margin-block:.65rem 1rem}
+.quick-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;align-items:end;gap:1rem}
+.quick-fields label{display:block;font-weight:650;margin-block-end:.35rem}
+.quick-input{display:flex;align-items:center;min-height:44px;gap:.75rem;border:1px solid #526782;border-radius:10px;padding-inline:.75rem;background:var(--bg)}
+.quick-input:focus-within{outline:2px solid var(--blue);outline-offset:2px}
+.quick-input input{min-width:0;width:100%;padding-block:.5rem;background:transparent;border:0;outline:0;color:var(--ink);font:inherit}
+.quick-input span{white-space:nowrap;color:var(--muted)}
+#quick-error{color:#ffb4ad;margin-block-start:.65rem}
+.quick-result{margin-block-start:1.2rem}
+.quick-units{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}
+.quick-units div{border-radius:10px;border:1px solid var(--line);padding:.65rem .8rem;color:var(--muted);overflow-wrap:anywhere}
+.quick-units b{color:var(--accent);font-size:1.2rem}
+#quick-note{margin-block-end:0}
+#quick-estimate + .section{padding-block-start:0}
+@media(max-width:600px){.quick-fields{grid-template-columns:1fr}.quick-fields button{justify-self:start}.quick-units b{display:block}}
   </style>
 </head>
 <body id="top">
@@ -86,13 +103,14 @@ figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
     <div class="wrap bar">
       <a href="#top" class="brand" dir="ltr"><bdi>Air<span>Calc</span> Pro</bdi></a>
       <nav class="nav" aria-label="AirCalc Pro">
+        <a href="#quick-estimate" data-i18n="quickNav">الحساب السريع</a>
         <a href="#features" data-i18n="navFeatures">المزايا</a>
         <a href="#workflow" data-i18n="navWorkflow">طريقة العمل</a>
         <a href="#contact" data-i18n="navContact">تواصل</a>
       </nav>
       <div class="actions">
         <button type="button" class="lang" id="langToggle" lang="en" aria-label="Switch to English">EN</button>
-        <a class="btn secondary" href="./app/index.html" data-i18n="open">افتح التطبيق</a>
+        <a class="btn secondary" href="./app/index.html" data-i18n="open">جرّب الآن</a>
       </div>
     </div>
   </header>
@@ -104,8 +122,8 @@ figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
           <h1 id="hero-title" data-i18n="title">من حساب الحمل إلى عرض السعر</h1>
           <p class="lead" data-i18n="intro">احسب أحمال التبريد وتدفقات الهواء، وراجع متطلبات التهوية للغرف الصحية، وحوّل نتائج المشروع إلى عرض سعر.</p>
           <div class="buttons">
-            <a class="btn primary" href="./app/index.html" data-i18n="start">ابدأ الحساب</a>
-            <a class="btn secondary" href="#features" data-i18n="explore">استكشف المزايا</a>
+            <a class="btn primary" href="./app/index.html" data-i18n="start">جرّب الآن</a>
+            <a class="btn secondary" href="#quick-estimate" data-i18n="quickNav">الحساب السريع</a>
           </div>
         </div>
         <figure class="frame">
@@ -113,6 +131,39 @@ figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
           <img class="shot" src="./home.png" width="1260" height="2507" fetchpriority="high" alt="لقطة شاشة من حاسبة AirCalc Pro تعرض مثالًا لحمل التبريد وتدفق الهواء">
           <figcaption data-i18n="example">لقطة من التطبيق • بيانات مثال</figcaption>
         </figure>
+      </div>
+    </section>
+    <section class="section wrap" id="quick-estimate" aria-labelledby="quick-title">
+      <div class="quick-panel">
+        <h2 id="quick-title" data-i18n="quickTitle">الحساب السريع للتبريد</h2>
+        <p class="quick-copy" data-i18n="quickIntro">أدخل مساحة الفراغ ومعامل حمل التبريد لكل متر مربع لتحصل على تقدير مبدئي.</p>
+        <div class="quick-fields">
+          <div>
+            <label for="quick-area" data-i18n="quickArea">مساحة الفراغ</label>
+            <div class="quick-input">
+              <input type="text" inputmode="decimal" id="quick-area" dir="ltr" aria-describedby="quick-area-unit quick-note" autocomplete="off">
+              <span id="quick-area-unit" dir="ltr">m²</span>
+            </div>
+          </div>
+          <div>
+            <label for="quick-factor" data-i18n="quickFactor">معامل حمل التبريد</label>
+            <div class="quick-input">
+              <input type="text" inputmode="decimal" id="quick-factor" dir="ltr" aria-describedby="quick-factor-unit quick-note" autocomplete="off">
+              <span id="quick-factor-unit" dir="ltr">W/m²</span>
+            </div>
+          </div>
+          <button type="button" class="btn secondary" id="quick-sample" data-i18n="quickSample">جرّب بمثال</button>
+        </div>
+        <p id="quick-error" role="status" hidden data-i18n="quickError">أدخل رقمًا موجبًا في كل خانة.</p>
+        <div class="quick-result" role="status" aria-atomic="true">
+          <h3 data-i18n="quickResults">حمل التبريد التقديري</h3>
+          <div class="quick-units">
+            <div dir="ltr"><b id="quick-kw">—</b> kW</div>
+            <div dir="ltr"><b id="quick-btu">—</b> BTU/h</div>
+            <div dir="ltr"><b id="quick-tr">—</b> TR</div>
+          </div>
+        </div>
+        <p id="quick-note" class="quick-copy" data-i18n="quickNote">الحمل التقديري = المساحة × المعامل المدخل. استخدم المنصة للحساب التفصيلي.</p>
       </div>
     </section>
     <section class="section wrap" id="features" aria-labelledby="features-title">
@@ -136,7 +187,7 @@ figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
     <section class="section wrap" aria-labelledby="cta-title">
       <div class="cta">
         <h2 id="cta-title" data-i18n="cta">جاهز تحسب أول غرفة؟</h2>
-        <a class="btn primary" href="./app/index.html" data-i18n="open">افتح التطبيق</a>
+        <a class="btn primary" href="./app/index.html" data-i18n="open">جرّب الآن</a>
       </div>
     </section>
   </main>
@@ -149,6 +200,43 @@ figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
   </footer>
   <script>
     const strings = {
+      "quickTitle": [
+        "الحساب السريع للتبريد",
+        "Quick cooling load estimate"
+      ],
+      "quickIntro": [
+        "أدخل مساحة الفراغ ومعامل حمل التبريد لكل متر مربع لتحصل على تقدير مبدئي.",
+        "Enter the floor area and cooling load per square metre for a preliminary estimate."
+      ],
+      "quickArea": [
+        "مساحة الفراغ",
+        "Floor area"
+      ],
+      "quickFactor": [
+        "معامل حمل التبريد",
+        "Cooling load factor"
+      ],
+      "quickSample": [
+        "جرّب بمثال",
+        "Try an example"
+      ],
+      "quickResults": [
+        "حمل التبريد التقديري",
+        "Estimated cooling load"
+      ],
+      "quickNote": [
+        "الحمل التقديري = المساحة × المعامل المدخل. استخدم المنصة للحساب التفصيلي.",
+        "Estimated load = area × the factor you enter. Open the app for detailed calculations."
+      ],
+      "quickError": [
+        "أدخل رقمًا موجبًا في كل خانة.",
+        "Enter a positive number in each field."
+      ],
+      "quickNav": [
+        "الحساب السريع",
+        "Quick estimate"
+      ]
+    ,
       "navFeatures": [
         "المزايا",
         "Features"
@@ -162,8 +250,8 @@ figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
         "Contact"
       ],
       "open": [
-        "افتح التطبيق",
-        "Open app"
+        "جرّب الآن",
+        "Try now"
       ],
       "eyebrow": [
         "منصة هندسة التكييف والتهوية",
@@ -178,8 +266,8 @@ figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
         "Estimate cooling loads and airflow, review healthcare ventilation requirements, and turn project results into a quotation."
       ],
       "start": [
-        "ابدأ الحساب",
-        "Start calculating"
+        "جرّب الآن",
+        "Try now"
       ],
       "explore": [
         "استكشف المزايا",
@@ -269,6 +357,44 @@ figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
     const root = document.documentElement;
     const toggle = document.getElementById('langToggle');
 
+
+    const quickArea = document.getElementById('quick-area');
+    const quickFactor = document.getElementById('quick-factor');
+    const quickError = document.getElementById('quick-error');
+    const quickOutputs = ['quick-kw', 'quick-btu', 'quick-tr'].map((id) => document.getElementById(id));
+
+    function parseQuickNumber(value) {
+      const normalized = value.trim().replace(/[٠-٩۰-۹]/g, (digit) =>
+        String('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(digit) % 10)
+      ).replace(/[٫,]/g, '.');
+      return /^(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized) ? Number(normalized) : NaN;
+    }
+
+    function renderQuickEstimate() {
+      const area = parseQuickNumber(quickArea.value);
+      const factor = parseQuickNumber(quickFactor.value);
+      const watts = area * factor;
+      const valid = area > 0 && factor > 0 && Number.isFinite(watts) && watts > 0;
+      const incomplete = !quickArea.value.trim() || !quickFactor.value.trim();
+      quickError.hidden = incomplete || valid;
+      const formatter = new Intl.NumberFormat(root.lang === 'ar' ? 'ar-SA' : 'en', {
+        maximumSignificantDigits: 4
+      });
+      // NIST SP 811 conversion factors for refrigeration capacity.
+      const results = [watts / 1000, watts / 0.2930711, watts / 3516.853];
+      quickOutputs.forEach((output, index) => {
+        output.textContent = valid && Number.isFinite(results[index]) ? formatter.format(results[index]) : '—';
+      });
+    }
+
+    quickArea.addEventListener('input', renderQuickEstimate);
+    quickFactor.addEventListener('input', renderQuickEstimate);
+    document.getElementById('quick-sample').addEventListener('click', () => {
+      quickArea.value = '40';
+      quickFactor.value = '150';
+      renderQuickEstimate();
+    });
+
     function applyLanguage(language) {
       const english = language === 'en';
       const index = Number(english);
@@ -283,6 +409,7 @@ figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
       document.querySelectorAll('[data-i18n]').forEach((element) => {
         element.textContent = strings[element.dataset.i18n][index];
       });
+      renderQuickEstimate();
     }
 
     toggle.addEventListener('click', () => {
