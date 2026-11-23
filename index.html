@@ -1,14 +1,6 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b1220">
-  <meta name="description" content="احسب أحمال التبريد وتدفقات الهواء، وراجع متطلبات التهوية للغرف الصحية، وحوّل نتائج المشروع إلى عرض سعر.">
-  <title>AirCalc Pro | منصة هندسة التكييف والتهوية</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&amp;family=Inter:wght@400;600;700&amp;display=swap">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-3FZ87Q1V31"></script>
   <script>
@@ -27,400 +19,454 @@
     }
     console.log("GA4 loaded:", typeof window.gtag === "function");
   </script>
-  <style>
-:root{color-scheme:dark;--bg:#0b1220;--panel:#111e30;--ink:#f2f7fc;--muted:#b2c1d3;--line:#2a3a50;--blue:#83dcff;--accent:#bdf0aa}
-*,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.7 "IBM Plex Sans Arabic",system-ui,sans-serif}
-html[lang=en] body{font-family:"Inter",system-ui,sans-serif}
-a{color:inherit;text-decoration:none}
-a:hover{color:var(--blue)}
-button{font:inherit;color:inherit;cursor:pointer}
-:focus-visible{outline:3px solid var(--blue);outline-offset:4px}
-.wrap{width:min(1180px,calc(100% - 3rem));margin-inline:auto}
-header{border-block-end:1px solid var(--line);background:#0b1220}
-.bar,.brand,.nav,.actions,.buttons,.frame-head,.foot{display:flex;align-items:center}
-.bar,.frame-head,.foot{justify-content:space-between}
-.bar{min-height:76px;gap:1.15rem}
-.brand{gap:.55rem;font-weight:750;white-space:nowrap;font-size:1.1rem}
-.brand span{color:var(--blue)}
-.nav,.actions,.buttons{gap:1.2rem}
-.nav,.foot{color:var(--muted)}
-.lang,.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:.5rem 1rem;font-weight:650}
-.lang,.secondary{background:#142136}
-.primary{background:var(--accent);border-color:transparent;color:#152311}
-.primary:hover{background:#d6ffc9;color:#152311}
-.hero{background:radial-gradient(ellipse at 18% 10%,#14304b 0%,transparent 58%),var(--bg);border-block-end:1px solid var(--line)}
-.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,6vw,5rem);align-items:center;padding-block:clamp(3.5rem,8vw,7rem)}
-.eyebrow{font-weight:700;color:var(--blue);margin:0 0 .85rem}
-h1,h2,h3,p,figure{margin:0}
-h1{font-size:clamp(2.65rem,5.25vw,4.65rem);line-height:1.17;letter-spacing:-.035em;text-wrap:balance}
-html[lang=ar] h1{letter-spacing:normal;line-height:1.28}
-h2{font-size:clamp(1.7rem,3.4vw,2.75rem);line-height:1.32;text-wrap:balance;max-width:25ch}
-h3{font-size:1.22rem;line-height:1.4;margin-block-end:.45rem}
-.lead{font-size:clamp(1rem,1.6vw,1.18rem);color:var(--muted);max-width:46ch;margin-block:1.3rem 1.7rem}
-.buttons{flex-wrap:wrap;gap:.75rem}
-.frame{padding:12px;background:#112033;border:1px solid #38506a;border-radius:21px;box-shadow:0 20px 65px #050b14a8;min-width:0}
-.frame-head{gap:.7rem;padding:.45rem .5rem .85rem;font-size:.9rem;font-weight:650}
-.frame-head bdi{color:var(--blue)}
-.shot{display:block;width:100%;aspect-ratio:1.4;object-fit:cover;object-position:center top;border:1px solid var(--line);border-radius:12px;background:#101826}
-figcaption{padding:.65rem .5rem .1rem;font-size:.85rem;color:var(--muted)}
-.section{padding-block:clamp(3rem,7vw,5.5rem)}
-.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-block-start:1.6rem}
-.card,.step{padding:1.45rem;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
-.card p,.step p{color:var(--muted)}
-.unit{display:inline-flex;align-items:center;justify-content:center;min-width:3.4rem;padding:.24rem .5rem;background:#203650;color:var(--blue);border-radius:8px;font:600 .85rem/1.6 monospace;margin-block-end:1rem}
-.workflow{border-block:1px solid var(--line);background:#0e1929}
-.step{background:transparent}
-.step .unit{color:var(--accent);background:#23382f}
-.cta{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.2rem;padding:clamp(1.5rem,4vw,3rem);border:1px solid #3a5b61;border-radius:20px;background:#122c39}
-.foot{gap:.8rem 1.5rem;flex-wrap:wrap;border-block-start:1px solid var(--line);padding-block:1.5rem}
-.contact{display:flex;gap:.6rem 1.2rem;flex-wrap:wrap;font-size:.92rem;overflow-wrap:anywhere}
-@media(max-width:840px){.nav{display:none}.hero-grid{grid-template-columns:1fr;gap:2rem}.frame{width:min(100%,590px);margin-inline:auto}.grid{grid-template-columns:1fr}}
-@media(max-width:450px){.wrap{width:calc(100% - 2rem)}.bar{gap:.4rem}.actions{gap:.35rem}.actions .btn,.lang{padding-inline:.57rem;font-size:.85rem}.brand{font-size:1rem}.frame{padding:8px}}
-@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-
-.quick-panel{padding:clamp(1.15rem,4vw,2.5rem);border:1px solid #38506a;border-radius:20px;background:var(--panel)}
-.quick-copy{color:var(--muted);margin-block:.65rem 1rem}
-.quick-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;align-items:end;gap:1rem}
-.quick-fields label{display:block;font-weight:650;margin-block-end:.35rem}
-.quick-input{display:flex;align-items:center;min-height:44px;gap:.75rem;border:1px solid #526782;border-radius:10px;padding-inline:.75rem;background:var(--bg)}
-.quick-input:focus-within{outline:2px solid var(--blue);outline-offset:2px}
-.quick-input input{min-width:0;width:100%;padding-block:.5rem;background:transparent;border:0;outline:0;color:var(--ink);font:inherit}
-.quick-input span{white-space:nowrap;color:var(--muted)}
-#quick-error{color:#ffb4ad;margin-block-start:.65rem}
-.quick-result{margin-block-start:1.2rem}
-.quick-units{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}
-.quick-units div{border-radius:10px;border:1px solid var(--line);padding:.65rem .8rem;color:var(--muted);overflow-wrap:anywhere}
-.quick-units b{color:var(--accent);font-size:1.2rem}
-#quick-note{margin-block-end:0}
-#quick-estimate + .section{padding-block-start:0}
-@media(max-width:600px){.quick-fields{grid-template-columns:1fr}.quick-fields button{justify-self:start}.quick-units b{display:block}}
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AirCalc Pro - Landing</title>
+  <link rel="stylesheet" href="./landing.css">
 </head>
-<body id="top">
-  <header>
-    <div class="wrap bar">
-      <a href="#top" class="brand" dir="ltr"><bdi>Air<span>Calc</span> Pro</bdi></a>
-      <nav class="nav" aria-label="AirCalc Pro">
-        <a href="#quick-estimate" data-i18n="quickNav">الحساب السريع</a>
-        <a href="#features" data-i18n="navFeatures">المزايا</a>
-        <a href="#workflow" data-i18n="navWorkflow">طريقة العمل</a>
-        <a href="#contact" data-i18n="navContact">تواصل</a>
+<body>
+  <div class="landing-shell">
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="AirCalc Pro">
+        <img src="./assets/logo/logo-header.png" alt="AirCalc Pro" class="brand-logo">
+        <div class="brand-copy">
+          <div class="brand-title">AirCalc Pro <span class="pro-badge">PRO</span></div>
+          <div class="brand-subtitle" data-i18n="subtitle">منصة حسابات وعروض أسعار التكييف</div>
+        </div>
+      </a>
+
+      <nav class="site-nav">
+        <a href="#top" data-i18n="nav_home">الرئيسية</a>
+        <a href="#features" data-i18n="nav_features">الميزات</a>
+        <a href="#problem-solution" data-i18n="nav_solution">الحل</a>
+        <a href="#workflow" data-i18n="nav_workflow">طريقة العمل</a>
+        <a href="#contact" data-i18n="nav_contact">تواصل</a>
       </nav>
-      <div class="actions">
-        <button type="button" class="lang" id="langToggle" lang="en" aria-label="Switch to English">EN</button>
-        <a class="btn secondary" href="./app/index.html" data-i18n="open">جرّب الآن</a>
-      </div>
-    </div>
-  </header>
-  <main>
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="wrap hero-grid">
+
+      <button class="lang-toggle" id="langToggle" type="button">EN</button>
+    </header>
+
+    <main>
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <div class="eyebrow" data-i18n="hero_eyebrow">منصة HVAC احترافية</div>
+          <h1>AirCalc Pro</h1>
+          <p class="hero-subtitle" data-i18n="subtitle">منصة حسابات وعروض أسعار التكييف</p>
+          <p class="hero-text" data-i18n="hero_desc">
+            احسب أحمال التكييف واصدر عرض سعر خلال دقائق — بدون إكسل وبدون تعقيد.
+          </p>
+          <p class="hero-support" data-i18n="hero_support">أداة للتقدير المبدئي مسترشدة بالمراجع الهندسية، وتتطلب مراجعة التصميم النهائي.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-large" href="./app/index.html" data-i18n="hero_primary">ابدأ الحساب الآن</a>
+            <a class="btn btn-secondary btn-large" href="#features" data-i18n="hero_secondary">شاهد الميزات</a>
+          </div>
+          <div class="hero-urgency" data-i18n="hero_urgency">الأدوات متاحة مجانًا؛ الحساب يتيح مزامنة المشاريع</div>
+        </div>
+
+        <div class="hero-side-grid" aria-label="AirCalc Pro Highlights">
+          <article class="hero-highlight">
+            <div class="hero-highlight-icon">❄</div>
+            <h3 data-i18n="hero_h1_title">نتائج فورية وواضحة</h3>
+            <p data-i18n="hero_h1_text">اعرف BTU وTR وCFM والسعة المناسبة خلال خطوات قليلة.</p>
+          </article>
+          <article class="hero-highlight">
+            <div class="hero-highlight-icon">🏥</div>
+            <h3 data-i18n="hero_h2_title">منطق ASHRAE حقيقي</h3>
+            <p data-i18n="hero_h2_text">ACH والهواء الخارجي والعادم والضغط ضمن نفس مسار العمل.</p>
+          </article>
+          <article class="hero-highlight">
+            <div class="hero-highlight-icon">💼</div>
+            <h3 data-i18n="hero_h3_title">من الحساب إلى العرض</h3>
+            <p data-i18n="hero_h3_text">احفظ المشاريع وجهّز التقرير وعرض السعر من أداة واحدة.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="problem-solution">
+        <div class="split-grid">
+          <article class="info-panel problem-panel">
+            <div class="section-head compact">
+              <div class="eyebrow" data-i18n="problem_eyebrow">المشكلة</div>
+              <h2 data-i18n="problem_title">لماذا تتأخر الحسابات وعروض السعر؟</h2>
+            </div>
+            <div class="bullet-list">
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="problem_1">الحساب اليدوي يأخذ وقت</span></div>
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="problem_2">الاعتماد على إكسل معقد</span></div>
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="problem_3">أخطاء في تقدير الأحمال</span></div>
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="problem_4">صعوبة تجهيز عرض سعر سريع</span></div>
+            </div>
+          </article>
+
+          <article class="info-panel solution-panel">
+            <div class="section-head compact">
+              <div class="eyebrow" data-i18n="solution_eyebrow">الحل</div>
+              <h2 data-i18n="solution_title">أداة واحدة تجمع المسار كاملًا</h2>
+            </div>
+            <div class="bullet-list">
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="solution_1">AirCalc Pro يجمع كل شيء في أداة واحدة</span></div>
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="solution_2">حساب + تدفق هواء + عرض سعر</span></div>
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="solution_3">نتائج فورية</span></div>
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="solution_4">بدون تعقيد</span></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="features">
+        <div class="section-head">
+          <div class="eyebrow" data-i18n="features_eyebrow">الميزات</div>
+          <h2 data-i18n="features_title">مزايا تترجم إلى وقت أقل وقرار أسرع</h2>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon">❄</div>
+            <h3 data-i18n="f1_title">حساب أحمال التبريد</h3>
+            <p data-i18n="f1_text">قدّر الحمل الحراري مبدئيًا مع عرض TR وBTU والسعة المناسبة تلقائيًا.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">🌬</div>
+            <h3 data-i18n="f2_title">حساب تدفق الهواء</h3>
+            <p data-i18n="f2_text">راجع CFM وتدفق الإمداد بسرعة لدعم اختيار النظام والمقاس المناسب.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">🏥</div>
+            <h3 data-i18n="f3_title">دعم ASHRAE للمنشآت الصحية</h3>
+            <p data-i18n="f3_text">تدفقات مبدئية للغرف الصحية؛ يلزم التحقق من إصدار المرجع والفلترة والضغط والرطوبة.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">💰</div>
+            <h3 data-i18n="f4_title">نظام عرض السعر</h3>
+            <p data-i18n="f4_text">إنشاء عرض سعر كامل خلال ثواني مع الضريبة والتركيب.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">📁</div>
+            <h3 data-i18n="f5_title">لوحة إدارة المشاريع</h3>
+            <p data-i18n="f5_text">إدارة مشاريعك ومراجعة النتائج بسرعة مع حفظ السجلات والتقارير.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">💨</div>
+            <h3 data-i18n="f6_title">وضع الهواء النقي 100%</h3>
+            <p data-i18n="f6_text">قارن بين ASHRAE mixed air ووضع 100% fresh air للغرف الصحية.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div class="eyebrow" data-i18n="trust_eyebrow">الثقة</div>
+          <h2 data-i18n="trust_title">المنشآت الصحية والمستشفيات</h2>
+        </div>
+        <div class="trust-grid">
+          <article class="trust-card">
+            <div class="feature-icon">🏥</div>
+            <h3 data-i18n="trust_1_title">دعم غرف العمليات</h3>
+            <p data-i18n="trust_1_text">منطق واضح للغرف الصحية الحرجة ومسارات تهوية أكثر مهنية.</p>
+          </article>
+          <article class="trust-card">
+            <div class="feature-icon">📐</div>
+            <h3 data-i18n="trust_2_title">حساب ACH والضغط</h3>
+            <p data-i18n="trust_2_text">مراجعة ACH والهواء الخارجي والعادم والضغط ضمن نفس الأداة.</p>
+          </article>
+          <article class="trust-card">
+            <div class="feature-icon">👷</div>
+            <h3 data-i18n="trust_3_title">مناسب للمهندسين والمقاولين</h3>
+            <p data-i18n="trust_3_text">نتائج سريعة تساعد في الدراسة والتسعير واتخاذ القرار.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="workflow">
+        <div class="section-head">
+          <div class="eyebrow" data-i18n="workflow_eyebrow">طريقة العمل</div>
+          <h2 data-i18n="workflow_title">كيف يعمل AirCalc Pro</h2>
+        </div>
+        <div class="workflow-grid">
+          <article class="workflow-step">
+            <span class="workflow-index">1</span>
+            <h3 data-i18n="w1_title">أدخل أبعاد الغرفة</h3>
+          </article>
+          <article class="workflow-step">
+            <span class="workflow-index">2</span>
+            <h3 data-i18n="w2_title">اختر نوع الغرفة ومعامل الحمل</h3>
+          </article>
+          <article class="workflow-step">
+            <span class="workflow-index">3</span>
+            <h3 data-i18n="w3_title">أضف أحمال الأجهزة</h3>
+          </article>
+          <article class="workflow-step">
+            <span class="workflow-index">4</span>
+            <h3 data-i18n="w4_title">راجع النتائج</h3>
+          </article>
+          <article class="workflow-step">
+            <span class="workflow-index">5</span>
+            <h3 data-i18n="w5_title">صدّر التقرير أو عرض السعر</h3>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div class="eyebrow" data-i18n="compare_eyebrow">قبل وبعد</div>
+          <h2 data-i18n="compare_title">فرّق بين الأسلوب التقليدي وأسلوب AirCalc Pro</h2>
+        </div>
+        <div class="compare-grid">
+          <article class="compare-card compare-before">
+            <h3 data-i18n="before_title">قبل</h3>
+            <div class="bullet-list">
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="before_1">Excel</span></div>
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="before_2">حساب يدوي</span></div>
+              <div class="bullet-item"><span class="bullet-icon bad">✕</span><span data-i18n="before_3">وقت طويل</span></div>
+            </div>
+          </article>
+          <article class="compare-card compare-after">
+            <h3 data-i18n="after_title">بعد</h3>
+            <div class="bullet-list">
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="after_1">AirCalc Pro</span></div>
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="after_2">نتائج فورية</span></div>
+              <div class="bullet-item"><span class="bullet-icon good">✓</span><span data-i18n="after_3">عرض سعر جاهز</span></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="early-access-card">
+          <div class="early-access-title" data-i18n="early_title">الخطة الحالية</div>
+          <div class="early-access-text" data-i18n="early_access">
+            جميع الأدوات مجانية. الحساب يتيح حفظ مشاريع متعددة ومزامنتها.
+          </div>
+          <div class="pricing-list">
+            <span class="pricing-pill" data-i18n="plan_1">وصول كامل</span>
+            <span class="pricing-pill" data-i18n="plan_2">بدون قيود</span>
+            <span class="pricing-pill" data-i18n="plan_3">مجاني</span>
+          </div>
+          <div class="early-access-note" data-i18n="plan_note">حساب مجاني لمزامنة المشاريع</div>
+        </div>
+      </section>
+
+      <section class="cta-band">
         <div>
-          <p class="eyebrow" data-i18n="eyebrow">منصة هندسة التكييف والتهوية</p>
-          <h1 id="hero-title" data-i18n="title">من حساب الحمل إلى عرض السعر</h1>
-          <p class="lead" data-i18n="intro">احسب أحمال التبريد وتدفقات الهواء، وراجع متطلبات التهوية للغرف الصحية، وحوّل نتائج المشروع إلى عرض سعر.</p>
-          <div class="buttons">
-            <a class="btn primary" href="./app/index.html" data-i18n="start">جرّب الآن</a>
-            <a class="btn secondary" href="#quick-estimate" data-i18n="quickNav">الحساب السريع</a>
-          </div>
+          <div class="eyebrow">AirCalc Pro</div>
+          <h2 data-i18n="cta_title">ابدأ الآن وجرّب بنفسك</h2>
         </div>
-        <figure class="frame">
-          <div class="frame-head"><span data-i18n="preview">واجهة الحاسبة</span><bdi>AirCalc Pro</bdi></div>
-          <img class="shot" src="./home.png" width="1260" height="2507" fetchpriority="high" alt="لقطة شاشة من حاسبة AirCalc Pro تعرض مثالًا لحمل التبريد وتدفق الهواء">
-          <figcaption data-i18n="example">لقطة من التطبيق • بيانات مثال</figcaption>
-        </figure>
-      </div>
-    </section>
-    <section class="section wrap" id="quick-estimate" aria-labelledby="quick-title">
-      <div class="quick-panel">
-        <h2 id="quick-title" data-i18n="quickTitle">الحساب السريع للتبريد</h2>
-        <p class="quick-copy" data-i18n="quickIntro">أدخل مساحة الفراغ ومعامل حمل التبريد لكل متر مربع لتحصل على تقدير مبدئي.</p>
-        <div class="quick-fields">
-          <div>
-            <label for="quick-area" data-i18n="quickArea">مساحة الفراغ</label>
-            <div class="quick-input">
-              <input type="text" inputmode="decimal" id="quick-area" dir="ltr" aria-describedby="quick-area-unit quick-note" autocomplete="off">
-              <span id="quick-area-unit" dir="ltr">m²</span>
-            </div>
-          </div>
-          <div>
-            <label for="quick-factor" data-i18n="quickFactor">معامل حمل التبريد</label>
-            <div class="quick-input">
-              <input type="text" inputmode="decimal" id="quick-factor" dir="ltr" aria-describedby="quick-factor-unit quick-note" autocomplete="off">
-              <span id="quick-factor-unit" dir="ltr">W/m²</span>
-            </div>
-          </div>
-          <button type="button" class="btn secondary" id="quick-sample" data-i18n="quickSample">جرّب بمثال</button>
+        <div class="cta-actions">
+          <a class="btn btn-primary btn-large" href="./app/index.html" data-i18n="cta_button">افتح AirCalc Pro</a>
         </div>
-        <p id="quick-error" role="status" hidden data-i18n="quickError">أدخل رقمًا موجبًا في كل خانة.</p>
-        <div class="quick-result" role="status" aria-atomic="true">
-          <h3 data-i18n="quickResults">حمل التبريد التقديري</h3>
-          <div class="quick-units">
-            <div dir="ltr"><b id="quick-kw">—</b> kW</div>
-            <div dir="ltr"><b id="quick-btu">—</b> BTU/h</div>
-            <div dir="ltr"><b id="quick-tr">—</b> TR</div>
-          </div>
-        </div>
-        <p id="quick-note" class="quick-copy" data-i18n="quickNote">الحمل التقديري = المساحة × المعامل المدخل. استخدم المنصة للحساب التفصيلي.</p>
+      </section>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div class="footer-brand">
+        <div class="brand-title">AirCalc Pro</div>
+        <div class="footer-note" data-i18n="footer_note">منصة حسابات وعروض أسعار التكييف</div>
       </div>
-    </section>
-    <section class="section wrap" id="features" aria-labelledby="features-title">
-      <h2 id="features-title" data-i18n="features">الحسابات والتسعير في مساحة عمل واحدة</h2>
-      <div class="grid">
-        <article class="card"><span class="unit" aria-hidden="true" dir="ltr">TR / CFM</span><h3 data-i18n="load">أحمال التبريد وتدفق الهواء</h3><p data-i18n="loadCopy">أدخل بيانات الفراغ والإشغال والأجهزة لتقدير حمل التبريد وتدفق هواء الإمداد.</p></article>
-        <article class="card"><span class="unit" aria-hidden="true" dir="ltr">ACH</span><h3 data-i18n="health">تهوية المنشآت الصحية</h3><p data-i18n="healthCopy">راجع معدلات تبديل الهواء والهواء الخارجي وعلاقة الضغط حسب نوع الغرفة بالاستناد إلى بيانات ASHRAE 170.</p></article>
-        <article class="card"><span class="unit" aria-hidden="true" dir="ltr">PDF</span><h3 data-i18n="quote">التقارير وعروض الأسعار</h3><p data-i18n="quoteCopy">نظّم نتائج الغرف حسب المشروع، وراجع ملخص الحساب وأعدّ عرض السعر من نفس مساحة العمل.</p></article>
+      <div class="footer-links">
+        <a href="#top" data-i18n="nav_home">الرئيسية</a>
+        <a href="./app/index.html" data-i18n="nav_app">التطبيق</a>
+        <a href="#contact" data-i18n="nav_contact">تواصل</a>
       </div>
-    </section>
-    <section class="section workflow" id="workflow" aria-labelledby="workflow-title">
-      <div class="wrap">
-        <h2 id="workflow-title" data-i18n="workflow">من بيانات الغرفة إلى مخرجات المشروع</h2>
-        <div class="grid">
-          <article class="step"><span class="unit" aria-hidden="true" dir="ltr">01</span><h3 data-i18n="step1">أدخل بيانات الغرفة</h3><p data-i18n="step1Copy">حدّد الأبعاد والاستخدام والأحمال الداخلية.</p></article>
-          <article class="step"><span class="unit" aria-hidden="true" dir="ltr">02</span><h3 data-i18n="step2">راجع نتائج الحساب</h3><p data-i18n="step2Copy">تحقق من الحمل والتدفق ومدخلات التهوية.</p></article>
-          <article class="step"><span class="unit" aria-hidden="true" dir="ltr">03</span><h3 data-i18n="step3">جهّز مخرجات المشروع</h3><p data-i18n="step3Copy">اجمع نتائج الغرف وأعدّ التقرير أو عرض السعر.</p></article>
-        </div>
+      <div class="footer-contact">
+        <a href="tel:0560282701" data-i18n="footer_mobile">رقم الجوال: 0560282701</a>
+        <a href="mailto:yousef.alhammam@live.com" data-i18n="footer_email">البريد الإلكتروني: yousef.alhammam@live.com</a>
       </div>
-    </section>
-    <section class="section wrap" aria-labelledby="cta-title">
-      <div class="cta">
-        <h2 id="cta-title" data-i18n="cta">جاهز تحسب أول غرفة؟</h2>
-        <a class="btn primary" href="./app/index.html" data-i18n="open">جرّب الآن</a>
-      </div>
-    </section>
-  </main>
-  <footer id="contact" class="wrap foot">
-    <div><bdi>AirCalc Pro</bdi> · <span data-i18n="footer">منصة هندسة التكييف والتهوية</span></div>
-    <div class="contact">
-      <a href="tel:0560282701" dir="ltr">0560282701</a>
-      <a href="mailto:yousef.alhammam@live.com" dir="ltr">yousef.alhammam@live.com</a>
-    </div>
-  </footer>
+    </footer>
+  </div>
+
   <script>
-    const strings = {
-      "quickTitle": [
-        "الحساب السريع للتبريد",
-        "Quick cooling load estimate"
-      ],
-      "quickIntro": [
-        "أدخل مساحة الفراغ ومعامل حمل التبريد لكل متر مربع لتحصل على تقدير مبدئي.",
-        "Enter the floor area and cooling load per square metre for a preliminary estimate."
-      ],
-      "quickArea": [
-        "مساحة الفراغ",
-        "Floor area"
-      ],
-      "quickFactor": [
-        "معامل حمل التبريد",
-        "Cooling load factor"
-      ],
-      "quickSample": [
-        "جرّب بمثال",
-        "Try an example"
-      ],
-      "quickResults": [
-        "حمل التبريد التقديري",
-        "Estimated cooling load"
-      ],
-      "quickNote": [
-        "الحمل التقديري = المساحة × المعامل المدخل. استخدم المنصة للحساب التفصيلي.",
-        "Estimated load = area × the factor you enter. Open the app for detailed calculations."
-      ],
-      "quickError": [
-        "أدخل رقمًا موجبًا في كل خانة.",
-        "Enter a positive number in each field."
-      ],
-      "quickNav": [
-        "الحساب السريع",
-        "Quick estimate"
-      ]
-    ,
-      "navFeatures": [
-        "المزايا",
-        "Features"
-      ],
-      "navWorkflow": [
-        "طريقة العمل",
-        "Workflow"
-      ],
-      "navContact": [
-        "تواصل",
-        "Contact"
-      ],
-      "open": [
-        "جرّب الآن",
-        "Try now"
-      ],
-      "eyebrow": [
-        "منصة هندسة التكييف والتهوية",
-        "HVAC ENGINEERING PLATFORM"
-      ],
-      "title": [
-        "من حساب الحمل إلى عرض السعر",
-        "From cooling load to quotation"
-      ],
-      "intro": [
-        "احسب أحمال التبريد وتدفقات الهواء، وراجع متطلبات التهوية للغرف الصحية، وحوّل نتائج المشروع إلى عرض سعر.",
-        "Estimate cooling loads and airflow, review healthcare ventilation requirements, and turn project results into a quotation."
-      ],
-      "start": [
-        "جرّب الآن",
-        "Try now"
-      ],
-      "explore": [
-        "استكشف المزايا",
-        "Explore features"
-      ],
-      "preview": [
-        "واجهة الحاسبة",
-        "Calculator preview"
-      ],
-      "example": [
-        "لقطة من التطبيق • بيانات مثال",
-        "Product screenshot · Sample data"
-      ],
-      "features": [
-        "الحسابات والتسعير في مساحة عمل واحدة",
-        "Calculations and pricing in one workspace"
-      ],
-      "load": [
-        "أحمال التبريد وتدفق الهواء",
-        "Cooling load and airflow"
-      ],
-      "loadCopy": [
-        "أدخل بيانات الفراغ والإشغال والأجهزة لتقدير حمل التبريد وتدفق هواء الإمداد.",
-        "Enter room, occupancy, and equipment data to estimate cooling load and supply airflow."
-      ],
-      "health": [
-        "تهوية المنشآت الصحية",
-        "Healthcare ventilation"
-      ],
-      "healthCopy": [
-        "راجع معدلات تبديل الهواء والهواء الخارجي وعلاقة الضغط حسب نوع الغرفة بالاستناد إلى بيانات ASHRAE 170.",
-        "Review air changes, outdoor airflow, and pressure relationships by room type using ASHRAE 170 reference data."
-      ],
-      "quote": [
-        "التقارير وعروض الأسعار",
-        "Reports and quotations"
-      ],
-      "quoteCopy": [
-        "نظّم نتائج الغرف حسب المشروع، وراجع ملخص الحساب وأعدّ عرض السعر من نفس مساحة العمل.",
-        "Organize room results by project, review the calculation summary, and prepare a quotation in the same workspace."
-      ],
-      "workflow": [
-        "من بيانات الغرفة إلى مخرجات المشروع",
-        "From room inputs to project deliverables"
-      ],
-      "step1": [
-        "أدخل بيانات الغرفة",
-        "Enter room data"
-      ],
-      "step1Copy": [
-        "حدّد الأبعاد والاستخدام والأحمال الداخلية.",
-        "Set room dimensions, use, and internal loads."
-      ],
-      "step2": [
-        "راجع نتائج الحساب",
-        "Review the results"
-      ],
-      "step2Copy": [
-        "تحقق من الحمل والتدفق ومدخلات التهوية.",
-        "Check load, airflow, and ventilation inputs."
-      ],
-      "step3": [
-        "جهّز مخرجات المشروع",
-        "Prepare project outputs"
-      ],
-      "step3Copy": [
-        "اجمع نتائج الغرف وأعدّ التقرير أو عرض السعر.",
-        "Bring room results together and prepare a report or quotation."
-      ],
-      "cta": [
-        "جاهز تحسب أول غرفة؟",
-        "Ready to calculate your first room?"
-      ],
-      "footer": [
-        "منصة هندسة التكييف والتهوية",
-        "HVAC engineering platform"
-      ],
-      "imageAlt": [
-        "لقطة شاشة من حاسبة AirCalc Pro تعرض مثالًا لحمل التبريد وتدفق الهواء",
-        "AirCalc Pro calculator screenshot showing example cooling load and airflow results"
-      ],
-      "toggle": [
-        "Switch to English",
-        "التبديل إلى العربية"
-      ]
+    const T = {
+      ar: {
+        subtitle: 'منصة حسابات وعروض أسعار التكييف',
+        nav_home: 'الرئيسية',
+        nav_features: 'الميزات',
+        nav_solution: 'الحل',
+        nav_workflow: 'طريقة العمل',
+        nav_contact: 'تواصل',
+        nav_app: 'التطبيق',
+        hero_eyebrow: 'منصة HVAC احترافية',
+        hero_desc: 'احسب أحمال التكييف واصدر عرض سعر خلال دقائق — بدون إكسل وبدون تعقيد.',
+        hero_support: 'أداة للتقدير المبدئي مسترشدة بالمراجع الهندسية، وتتطلب مراجعة التصميم النهائي.',
+        hero_primary: 'ابدأ الحساب الآن',
+        hero_secondary: 'شاهد الميزات',
+        hero_urgency: 'الأدوات متاحة مجانًا؛ الحساب يتيح مزامنة المشاريع',
+        hero_h1_title: 'نتائج فورية وواضحة',
+        hero_h1_text: 'اعرف BTU وTR وCFM والسعة المناسبة خلال خطوات قليلة.',
+        hero_h2_title: 'منطق ASHRAE حقيقي',
+        hero_h2_text: 'ACH والهواء الخارجي والعادم والضغط ضمن نفس مسار العمل.',
+        hero_h3_title: 'من الحساب إلى العرض',
+        hero_h3_text: 'احفظ المشاريع وجهّز التقرير وعرض السعر من أداة واحدة.',
+        problem_eyebrow: 'المشكلة',
+        problem_title: 'لماذا تتأخر الحسابات وعروض السعر؟',
+        problem_1: 'الحساب اليدوي يأخذ وقت',
+        problem_2: 'الاعتماد على إكسل معقد',
+        problem_3: 'أخطاء في تقدير الأحمال',
+        problem_4: 'صعوبة تجهيز عرض سعر سريع',
+        solution_eyebrow: 'الحل',
+        solution_title: 'أداة واحدة تجمع المسار كاملًا',
+        solution_1: 'AirCalc Pro يجمع كل شيء في أداة واحدة',
+        solution_2: 'حساب + تدفق هواء + عرض سعر',
+        solution_3: 'نتائج فورية',
+        solution_4: 'بدون تعقيد',
+        features_eyebrow: 'الميزات',
+        features_title: 'مزايا تترجم إلى وقت أقل وقرار أسرع',
+        f1_title: 'حساب أحمال التبريد',
+        f1_text: 'قدّر الحمل الحراري مبدئيًا مع عرض TR وBTU والسعة المناسبة تلقائيًا.',
+        f2_title: 'حساب تدفق الهواء',
+        f2_text: 'راجع CFM وتدفق الإمداد بسرعة لدعم اختيار النظام والمقاس المناسب.',
+        f3_title: 'دعم ASHRAE للمنشآت الصحية',
+        f3_text: 'تدفقات مبدئية للغرف الصحية؛ يلزم التحقق من إصدار المرجع والفلترة والضغط والرطوبة.',
+        f4_title: 'نظام عرض السعر',
+        f4_text: 'إنشاء عرض سعر كامل خلال ثواني مع الضريبة والتركيب.',
+        f5_title: 'لوحة إدارة المشاريع',
+        f5_text: 'إدارة مشاريعك ومراجعة النتائج بسرعة مع حفظ السجلات والتقارير.',
+        f6_title: 'وضع الهواء النقي 100%',
+        f6_text: 'قارن بين ASHRAE mixed air ووضع 100% fresh air للغرف الصحية.',
+        trust_eyebrow: 'الثقة',
+        trust_title: 'المنشآت الصحية والمستشفيات',
+        trust_1_title: 'دعم غرف العمليات',
+        trust_1_text: 'منطق واضح للغرف الصحية الحرجة ومسارات تهوية أكثر مهنية.',
+        trust_2_title: 'حساب ACH والضغط',
+        trust_2_text: 'مراجعة ACH والهواء الخارجي والعادم والضغط ضمن نفس الأداة.',
+        trust_3_title: 'مناسب للمهندسين والمقاولين',
+        trust_3_text: 'نتائج سريعة تساعد في الدراسة والتسعير واتخاذ القرار.',
+        workflow_eyebrow: 'طريقة العمل',
+        workflow_title: 'كيف يعمل AirCalc Pro',
+        w1_title: 'أدخل أبعاد الغرفة',
+        w2_title: 'اختر نوع الغرفة ومعامل الحمل',
+        w3_title: 'أضف أحمال الأجهزة',
+        w4_title: 'راجع النتائج',
+        w5_title: 'صدّر التقرير أو عرض السعر',
+        compare_eyebrow: 'قبل وبعد',
+        compare_title: 'فرّق بين الأسلوب التقليدي وأسلوب AirCalc Pro',
+        before_title: 'قبل',
+        before_1: 'Excel',
+        before_2: 'حساب يدوي',
+        before_3: 'وقت طويل',
+        after_title: 'بعد',
+        after_1: 'AirCalc Pro',
+        after_2: 'نتائج فورية',
+        after_3: 'عرض سعر جاهز',
+        early_title: 'الخطة الحالية',
+        early_access: 'جميع الأدوات مجانية. الحساب يتيح حفظ مشاريع متعددة ومزامنتها.',
+        plan_1: 'وصول كامل',
+        plan_2: 'بدون قيود',
+        plan_3: 'مجاني',
+        plan_note: 'حساب مجاني لمزامنة المشاريع',
+        cta_title: 'ابدأ الآن وجرّب بنفسك',
+        cta_button: 'افتح AirCalc Pro',
+        footer_note: 'منصة حسابات وعروض أسعار التكييف',
+        footer_mobile: 'رقم الجوال: 0560282701',
+        footer_email: 'البريد الإلكتروني: yousef.alhammam@live.com'
+      },
+      en: {
+        subtitle: 'HVAC Calculation & Quotation Suite',
+        nav_home: 'Home',
+        nav_features: 'Features',
+        nav_solution: 'Solution',
+        nav_workflow: 'How it Works',
+        nav_contact: 'Contact',
+        nav_app: 'App',
+        hero_eyebrow: 'Professional HVAC Platform',
+        hero_desc: 'Calculate HVAC loads and generate quotations in minutes — no Excel, no guesswork.',
+        hero_support: 'Preliminary sizing guided by engineering references; final design requires professional review.',
+        hero_primary: 'Start Calculating',
+        hero_secondary: 'Explore Features',
+        hero_urgency: 'Tools are free; an account enables project synchronization',
+        hero_h1_title: 'Fast, readable results',
+        hero_h1_text: 'See BTU, TR, CFM, and suggested capacity in a few steps.',
+        hero_h2_title: 'Real ASHRAE logic',
+        hero_h2_text: 'ACH, outdoor air, exhaust, and pressure in one workflow.',
+        hero_h3_title: 'From load to quotation',
+        hero_h3_text: 'Save projects and prepare reports and quotations in one tool.',
+        problem_eyebrow: 'Problem',
+        problem_title: 'Why do load studies and quotations slow teams down?',
+        problem_1: 'Manual calculations take time',
+        problem_2: 'Excel-based workflows are messy',
+        problem_3: 'Load estimates are easy to miss',
+        problem_4: 'Fast quotations are hard to prepare',
+        solution_eyebrow: 'Solution',
+        solution_title: 'One tool for the full workflow',
+        solution_1: 'AirCalc Pro brings everything together',
+        solution_2: 'Load + airflow + quotation',
+        solution_3: 'Instant results',
+        solution_4: 'No unnecessary complexity',
+        features_eyebrow: 'Features',
+        features_title: 'Features that turn into faster delivery and clearer decisions',
+        f1_title: 'Cooling Load Calculation',
+        f1_text: 'Estimate preliminary cooling loads with TR, BTU and indicative market capacity.',
+        f2_title: 'Airflow & CFM',
+        f2_text: 'Review supply airflow and CFM values quickly to support HVAC sizing.',
+        f3_title: 'ASHRAE Healthcare Support',
+        f3_text: 'Review preliminary healthcare airflow; verify the governing edition, filtration, pressure and humidity.',
+        f4_title: 'Quotation System',
+        f4_text: 'Generate complete HVAC quotations in seconds with VAT and installation costs.',
+        f5_title: 'Project Dashboard',
+        f5_text: 'Manage projects and review results quickly with saved records and exports.',
+        f6_title: '100% Fresh Air Mode',
+        f6_text: 'Compare ASHRAE mixed air against 100% fresh air for healthcare rooms.',
+        trust_eyebrow: 'Trust',
+        trust_title: 'Built on real healthcare facility project experience',
+        trust_1_title: 'Operating room support',
+        trust_1_text: 'Practical logic for critical healthcare spaces and ventilation paths.',
+        trust_2_title: 'ACH and pressure review',
+        trust_2_text: 'Review ACH, outdoor air, exhaust, and pressure in the same tool.',
+        trust_3_title: 'Built for engineers and contractors',
+        trust_3_text: 'Fast outputs that support study, pricing, and decision-making.',
+        workflow_eyebrow: 'Workflow',
+        workflow_title: 'How it works',
+        w1_title: 'Enter room dimensions',
+        w2_title: 'Select room type and load factor',
+        w3_title: 'Add equipment loads',
+        w4_title: 'Review results',
+        w5_title: 'Export report or quotation',
+        compare_eyebrow: 'Before / After',
+        compare_title: 'See the difference between the old workflow and AirCalc Pro',
+        before_title: 'Before',
+        before_1: 'Excel',
+        before_2: 'Manual calculations',
+        before_3: 'Long turnaround',
+        after_title: 'After',
+        after_1: 'AirCalc Pro',
+        after_2: 'Instant results',
+        after_3: 'Ready quotation',
+        early_title: 'Current Plan',
+        early_access: 'All tools are free. An account enables multiple saved projects and cloud synchronization.',
+        plan_1: 'Full access',
+        plan_2: 'No restrictions',
+        plan_3: 'Free access',
+        plan_note: 'Free account for project synchronization',
+        cta_title: 'Start now and try it yourself',
+        cta_button: 'Open AirCalc Pro',
+        footer_note: 'HVAC Calculation & Quotation Suite',
+        footer_mobile: 'Mobile: 0560282701',
+        footer_email: 'Email: yousef.alhammam@live.com'
+      }
     };
-    const root = document.documentElement;
-    const toggle = document.getElementById('langToggle');
 
+    let lang = 'ar';
 
-    const quickArea = document.getElementById('quick-area');
-    const quickFactor = document.getElementById('quick-factor');
-    const quickError = document.getElementById('quick-error');
-    const quickOutputs = ['quick-kw', 'quick-btu', 'quick-tr'].map((id) => document.getElementById(id));
-
-    function parseQuickNumber(value) {
-      const normalized = value.trim().replace(/[٠-٩۰-۹]/g, (digit) =>
-        String('٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹'.indexOf(digit) % 10)
-      ).replace(/[٫,]/g, '.');
-      return /^(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized) ? Number(normalized) : NaN;
-    }
-
-    function renderQuickEstimate() {
-      const area = parseQuickNumber(quickArea.value);
-      const factor = parseQuickNumber(quickFactor.value);
-      const watts = area * factor;
-      const valid = area > 0 && factor > 0 && Number.isFinite(watts) && watts > 0;
-      const incomplete = !quickArea.value.trim() || !quickFactor.value.trim();
-      quickError.hidden = incomplete || valid;
-      const formatter = new Intl.NumberFormat(root.lang === 'ar' ? 'ar-SA' : 'en', {
-        maximumSignificantDigits: 4
-      });
-      // NIST SP 811 conversion factors for refrigeration capacity.
-      const results = [watts / 1000, watts / 0.2930711, watts / 3516.853];
-      quickOutputs.forEach((output, index) => {
-        output.textContent = valid && Number.isFinite(results[index]) ? formatter.format(results[index]) : '—';
+    function applyLang(next) {
+      lang = next === 'en' ? 'en' : 'ar';
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      document.body.classList.toggle('ltr', lang === 'en');
+      document.getElementById('langToggle').textContent = lang === 'ar' ? 'EN' : 'ع';
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (T[lang][key]) el.textContent = T[lang][key];
       });
     }
 
-    quickArea.addEventListener('input', renderQuickEstimate);
-    quickFactor.addEventListener('input', renderQuickEstimate);
-    document.getElementById('quick-sample').addEventListener('click', () => {
-      quickArea.value = '40';
-      quickFactor.value = '150';
-      renderQuickEstimate();
+    document.getElementById('langToggle').addEventListener('click', () => {
+      applyLang(lang === 'ar' ? 'en' : 'ar');
     });
 
-    function applyLanguage(language) {
-      const english = language === 'en';
-      const index = Number(english);
-      root.lang = language;
-      root.dir = english ? 'ltr' : 'rtl';
-      document.title = 'AirCalc Pro | ' + strings.footer[index];
-      document.querySelector('meta[name="description"]').content = strings.intro[index];
-      document.querySelector('.shot').alt = strings.imageAlt[index];
-      toggle.textContent = english ? 'ع' : 'EN';
-      toggle.lang = english ? 'ar' : 'en';
-      toggle.setAttribute('aria-label', strings.toggle[index]);
-      document.querySelectorAll('[data-i18n]').forEach((element) => {
-        element.textContent = strings[element.dataset.i18n][index];
-      });
-      renderQuickEstimate();
-    }
+    applyLang('ar');
+    trackEvent('landing_page_view', { language: lang, page: 'root_landing' });
 
-    toggle.addEventListener('click', () => {
-      applyLanguage(root.lang === 'ar' ? 'en' : 'ar');
-    });
-
-    trackEvent('landing_page_view', { language: root.lang, page: 'root_landing' });
-    document.querySelectorAll('a[href="./app/index.html"]').forEach((link) => {
+    document.querySelectorAll('a[href*="app/index.html"]').forEach((link) => {
       link.addEventListener('click', () => {
         trackEvent('start_calculating_click', {
-          language: root.lang,
+          language: lang,
           page: 'root_landing',
           target: 'app/index.html'
         });
